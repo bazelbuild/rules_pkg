@@ -1,0 +1,41 @@
+# Use Trusty CI Environment
+dist: trusty
+sudo: required
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8'
+        key_url: 'https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg'
+    packages:
+      - bazel
+
+install:
+  - go get -u github.com/bazelbuild/buildtools/buildifier
+  - go get -u github.com/bazelbuild/buildtools/buildozer
+
+stages:
+  - checks
+  - test
+
+jobs:
+  include:
+    - stage: checks
+      # Check if buildifier finds any issues
+      script:
+        - buildifier -mode=check $(find . -name BUILD -type f)
+        - buildifier -mode=check $(find . -name WORKSPACE -type f)
+        - buildifier -mode=check $(find . -name '*.bzl' -type f)
+    - stage: checks
+      # Check if the packages in deb_packages rules need to be updated
+      script:
+        - cp WORKSPACE WORKSPACE.old
+        - bazel clean && bazel run update_deb_packages
+        - diff WORKSPACE WORKSPACE.old
+    - stage: test
+      # Run all tests - don't stop on the first failure and output to stdout
+      script:
+        - bazel clean && bazel test --keep_going --test_output=errors ...
+
+notifications:
+  email: false
