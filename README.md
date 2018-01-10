@@ -25,9 +25,11 @@ project as well as discussions about the goal of that project and are intended a
 bundled software packages from various places.
 
 The initial scope is currently targeting `Debian` style distributions, because the Bazel
-(docker rules)[https://github.com/bazelbuild/rules_docker] allow optional `deb` and `tar`
+[docker rules](https://github.com/bazelbuild/rules_docker) allow optional `deb` and `tar`
 files to be included in their container images.
 
 Currently these rules are focused on retrieving already built packages from repositories,
 not creating them as artifacts (e.g. like the Bazel
-(packaging rules)[https://docs.bazel.build/versions/master/be/pkg.html]).
+[packaging rules](https://docs.bazel.build/versions/master/be/pkg.html)).
+In the future it is also planned to consolidate rules that are creating package files in this
+repository, to have a central place to look for package related rules for use in Bazel builds.
