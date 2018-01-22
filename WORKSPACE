@@ -142,7 +142,7 @@ deb_packages(
         "openssl": "268091ec6e08143f1612c3a30dd30e6f0212e3c2de95c0e93bd64cfdd2eb2954",
         "tzdata": "f3302284266843c6a3ab5250a338641bdba8970527d60dbcad0e030ed9569aa7",
     },
-    pgp_key = "jessie_archive_key",
+    pgp_key = "stretch_archive_key",
 )
 
 # For the debug image
