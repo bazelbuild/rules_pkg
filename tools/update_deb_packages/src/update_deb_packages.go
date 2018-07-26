@@ -541,7 +541,18 @@ func updateWorkspace(workspaceContents []byte) string {
 func addNewPackagesToWorkspace(workspaceContents []byte) string {
 	// TODO: add more rule types here if necessary
 	// e.g. cacerts()
-	allDebs := getAllLabels("debs", "//...", "%docker_build", workspaceContents)
+	allDebs := make(map[string][]string)
+	for _, rule_type := range []string{"container_layer", "container_image"} {
+		tmp := getAllLabels("debs", "//...", "%"+rule_type, workspaceContents)
+		for k, _ := range tmp {
+			if _, ok := allDebs[k]; !ok {
+				allDebs[k] = make([]string, 0)
+			}
+			for _, pack := range tmp[k] {
+				allDebs[k] = appendUniq(allDebs[k], pack)
+			}
+		}
+	}
 
 	for rule := range allDebs {
 		tags := getListField("tags", "-", rule, workspaceContents)
