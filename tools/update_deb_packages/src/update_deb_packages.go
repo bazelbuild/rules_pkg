@@ -458,19 +458,10 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule, packageNames, packageShaNames)
 	}
 
-	pgpKeypath := path.Join("bazel-rules_pkg", "external", pgpKeyRuleName, "file")
-	//todo: make this dynamic
+	wd, err := os.Getwd()
+	projectName := path.Base(wd)
+	pgpKeyname := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
 
-	pgpKeyurls := getListField("urls", "-", pgpKeyRuleName, workspaceContents)
-	var pgpKeyFileName string
-	for _, keyurl := range pgpKeyurls {
-		keyURL, err := url.Parse(keyurl)
-		logFatalErr(err)
-		pgpKeyFileName = path.Base(keyURL.Path)
-		break
-	}
-
-	pgpKeyname := path.Join(pgpKeypath, pgpKeyFileName)
 	allPackages := getPackages(arch, distroType, distro, mirrors, pgpKeyname)
 
 	newPackages := make(map[string]string)
