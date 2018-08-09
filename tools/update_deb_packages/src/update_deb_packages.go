@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -23,6 +24,13 @@ import (
 	"github.com/knqyf263/go-deb-version"
 	"github.com/stapelberg/godebiancontrol"
 )
+
+var FORCE_PACKAGE_IDENT = `{
+  "IsListArg": {
+    "packages": false
+  }
+}
+`
 
 func appendUniq(slice []string, v string) []string {
 	for _, x := range slice {
@@ -379,9 +387,24 @@ func getAllLabels(labelName string, fileName string, ruleName string, workspaceC
 	return pkgs
 }
 
-func setStringField(fieldName string, fieldContents string, fileName string, ruleName string, workspaceContents []byte) string {
+func setStringField(fieldName string, fieldContents string, fileName string, ruleName string, workspaceContents []byte, forceTable *string) string {
 	// buildozer 'set FIELDNAME_GOES_HERE FIELDCONTENTS_GO_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	cmd := exec.Command("buildozer", "set "+fieldName+" "+fieldContents, fileName+":"+ruleName)
+	// log.Printf("(setStringField) buildozer 'set %s %s' %s:%s\n", fieldName, fieldContents, fileName, ruleName)
+	var cmd *exec.Cmd
+	if forceTable != nil {
+		dir, err := ioutil.TempDir("", "table_hack")
+		defer os.RemoveAll(dir)
+		if err != nil {
+			logFatalErr(err)
+		}
+		tableFile := filepath.Join(dir, "force_table.json")
+		if err := ioutil.WriteFile(tableFile, []byte(*forceTable), 0666); err != nil {
+			logFatalErr(err)
+		}
+		cmd = exec.Command("buildozer", "-add_tables="+tableFile, "set "+fieldName+" "+fieldContents, fileName+":"+ruleName)
+	} else {
+		cmd = exec.Command("buildozer", "set "+fieldName+" "+fieldContents, fileName+":"+ruleName)
+	}
 	wsreader := bytes.NewReader(workspaceContents)
 	if fileName == "-" {
 		// see edit.stdinPackageName why this is a "-"
@@ -507,11 +530,11 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 	logFatalErr(err)
 
 	// set packages
-	workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents))
+	workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents, &FORCE_PACKAGE_IDENT))
 	// set packages_sha256
-	workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents))
+	workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents, nil))
 	// final run that just replaces a known value with itself to make sure the output is prettyfied
-	workspaceContents = []byte(setStringField("distro", "\""+distro+"\"", "-", rule, workspaceContents))
+	workspaceContents = []byte(setStringField("distro", "\""+distro+"\"", "-", rule, workspaceContents, nil))
 
 	return string(workspaceContents)
 }
@@ -567,9 +590,9 @@ func addNewPackagesToWorkspace(workspaceContents []byte) string {
 		logFatalErr(err)
 
 		// set packages
-		workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents))
+		workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents, &FORCE_PACKAGE_IDENT))
 		// set packages_sha256
-		workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents))
+		workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents, nil))
 	}
 
 	return string(workspaceContents)
