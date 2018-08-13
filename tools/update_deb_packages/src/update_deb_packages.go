@@ -144,7 +144,7 @@ func checkPgpSignature(keyfile string, checkfile string, sigfile string) {
 	logFatalErr(err)
 }
 
-func getPackages(arch string, distroType string, distro string, mirrors []string, pgpKeyFile string) (packages []godebiancontrol.Paragraph) {
+func getPackages(arch string, distroType string, distro string, mirrors []string, components []string, pgpKeyFile string) (packages []godebiancontrol.Paragraph) {
 	releasefile, err := ioutil.TempFile("", "Release")
 	logFatalErr(err)
 
@@ -178,7 +178,17 @@ func getPackages(arch string, distroType string, distro string, mirrors []string
 		}
 		hash := fields[0]
 		path := fields[2]
-		if strings.HasSuffix(path, "/binary-"+arch+"/Packages.gz") {
+		isAcceptedComponent := true
+		if len(components) > 0 {
+			isAcceptedComponent = false
+			for _, component := range components {
+				if strings.HasPrefix(path, component+"/") {
+					isAcceptedComponent = true
+					break
+				}
+			}
+		}
+		if isAcceptedComponent && strings.HasSuffix(path, "/binary-"+arch+"/Packages.gz") {
 			tmpPackagesfile, err := ioutil.TempFile("", "Packages")
 			logFatalErr(err)
 			getFileFromMirror(tmpPackagesfile.Name(), path, distro, mirrors)
@@ -281,9 +291,13 @@ func getListField(fieldName string, fileName string, ruleName string, workspaceC
 		}
 	}
 
+	trimmedOut := strings.TrimSpace(out.String())
+	if trimmedOut == "(missing)" {
+		return []string{}
+	}
 	var resultlist []string
 	// remove trailing newline, remove [] and split at spaces
-	returnlist := strings.Split(strings.Replace(strings.Trim(strings.TrimSpace(out.String()), "[]"), "\n", ",", -1), " ")
+	returnlist := strings.Split(strings.Replace(strings.Trim(trimmedOut, "[]"), "\n", ",", -1), " ")
 	// also split at commas
 	for _, result := range returnlist {
 		resultlist = append(resultlist, strings.Split(result, ",")...)
@@ -462,7 +476,7 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 	projectName := path.Base(wd)
 	pgpKeyname := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
 
-	allPackages := getPackages(arch, distroType, distro, mirrors, pgpKeyname)
+	allPackages := getPackages(arch, distroType, distro, mirrors, components, pgpKeyname)
 
 	newPackages := make(map[string]string)
 	newPackagesSha256 := make(map[string]string)
@@ -511,7 +525,7 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 			}
 		}
 		if done == false {
-			log.Fatalf("Package %s isn't available in %s", pack, distro)
+			log.Fatalf("Package %s isn't available in %s (rule: %s)", pack, distro, rule)
 		}
 	}
 

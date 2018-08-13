@@ -237,7 +237,7 @@ The string `latest` is also supported if you want to use version pinning.
 ## deb_packages
 
 ```python
-deb_packages(name, arch, distro, distro_type, mirrors, packages, packages_sha256)
+deb_packages(name, arch, distro, distro_type, components, mirrors, packages, packages_sha256)
 ```
 
 A rule that downloads `.deb` packages from a Debian style repository and makes them available in the WORKSPACE.
@@ -286,6 +286,14 @@ Every key name in the `packages` section must exactly match a key name in the `p
       <td>
         <p><code>the name of the distribution type, required</code></p>
         <p>currently only <code>debian</code> and <code>ubuntu</code> are supported</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>components</code></td>
+      <td>
+        <p><code>the list of components to search packages in, optional</code></p>
+        <p>If missing, all components available in the repository will be used</p>
+        <p>Examples: universe, multiverse, security</p>
       </td>
     </tr>
     <tr>
