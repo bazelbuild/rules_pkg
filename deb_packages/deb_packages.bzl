@@ -52,6 +52,9 @@ _deb_packages = repository_rule(
         "mirrors": attr.string_list(
             doc = "a list of full URLs of the package repository, required - e.g. http://deb.debian.org/debian",
         ),
+        "components": attr.string_list(
+            doc = "a list of accepted components - e.g. universe, multiverse",
+        ),
         "pgp_key": attr.string(
             doc = "the name of the http_file rule that contains the pgp key that signed the Release file at <mirrorURL>/dists/<distro>/Release, required",
         ),
