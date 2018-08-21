@@ -389,12 +389,17 @@ func getAllLabels(labelName string, fileName string, ruleName string, workspaceC
 		}
 	}
 
-	// output is quite messed up... best indication for useful lines is that a line ending in "," contains stuff we look for.
+	// output is quite messed up... best indication for useful lines is that a line containing "[" and "]" contains stuff we look for.
 	pkgs := make(map[string][]string)
 
 	for _, line := range strings.Split(out.String(), "\n") {
-		if strings.HasSuffix(line, ",") {
+		if strings.Contains(line, "[") && strings.Contains(line, "]") {
 			name := strings.TrimSpace(strings.Split(line, "[")[0])
+			// If there is only a single deb then the output contains the rule name separated with a space on the same line
+			singleLinePackageName := strings.Split(name, " ")
+			if len(singleLinePackageName) > 1 {
+				name = singleLinePackageName[1]
+			}
 			pkgs[name] = appendUniq(pkgs[name], strings.Trim(strings.TrimSpace(strings.Split(line, "[")[1]), "\",]"))
 		}
 	}
@@ -570,8 +575,12 @@ func addNewPackagesToWorkspace(workspaceContents []byte) string {
 	// TODO: add more rule types here if necessary
 	// e.g. cacerts()
 	allDebs := make(map[string][]string)
-	for _, rule_type := range []string{"container_layer", "container_image"} {
+	for _, rule_type := range []string{"container_layer", "container_image", "cacerts"} {
 		tmp := getAllLabels("debs", "//...", "%"+rule_type, workspaceContents)
+		// cacerts rule only allows a single_file deb
+		if len(tmp) == 0 {
+			tmp = getAllLabels("deb", "//...", "%"+rule_type, workspaceContents)
+		}
 		for k, _ := range tmp {
 			if _, ok := allDebs[k]; !ok {
 				allDebs[k] = make([]string, 0)
