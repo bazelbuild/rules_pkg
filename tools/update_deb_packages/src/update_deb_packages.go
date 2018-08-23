@@ -453,6 +453,7 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 	distroType := getStringField("distro_type", "-", rule, workspaceContents)
 	distro := getStringField("distro", "-", rule, workspaceContents)
 	mirrors := getListField("mirrors", "-", rule, workspaceContents)
+	components := getListField("components", "-", rule, workspaceContents)
 	packages := getMapField("packages", "-", rule, workspaceContents)
 	packagesSha256 := getMapField("packages_sha256", "-", rule, workspaceContents)
 	pgpKeyRuleName := getStringField("pgp_key", "-", rule, workspaceContents)
