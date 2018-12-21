@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "patch")
+
 def _deb_packages_impl(repository_ctx):
   # check that keys in "packages" and "packages_sha256" are the same
   for package in repository_ctx.attr.packages:
@@ -23,6 +25,8 @@ def _deb_packages_impl(repository_ctx):
 
   # create the deb_packages.bzl file that contains the package name : filename mapping
   repository_ctx.file("debs/deb_packages.bzl", repository_ctx.name + " = " + struct(**package_rule_dict).to_json(), executable=False)
+
+  patch(repository_ctx)
 
   # create the BUILD file that globs all the deb files
   repository_ctx.file("debs/BUILD", """
@@ -57,6 +61,22 @@ _deb_packages = repository_rule(
         ),
         "pgp_key": attr.string(
             doc = "the name of the http_file rule that contains the pgp key that signed the Release file at <mirrorURL>/dists/<distro>/Release, required",
+        ),
+        "patches": attr.label_list(
+            default = [],
+            doc = "a list of files that are to be applied as patches after extracting the archive",
+        ),
+        "patch_tool": attr.string(
+            default = "patch",
+            doc = "the patch(1) utility to use",
+        ),
+        "patch_args": attr.string_list(
+            default = ["-p0"],
+            doc = "arguments given to the patch tool, defaults to [\"-p0\"]",
+        ),
+        "patch_cmds": attr.string_list(
+            default = [],
+            doc = "sequence of commands to be applied after patches are applied",
         ),
     },
 )
