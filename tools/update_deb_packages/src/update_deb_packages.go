@@ -62,6 +62,9 @@ func downloadFile(filepath string, url string) (err error) {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode != 200{
+		log.Fatalf("Failed downloading %s to %s. Got status code: %d", url, filepath, resp.StatusCode)
+	}
 	defer resp.Body.Close()
 
 	// Writer the body to file
