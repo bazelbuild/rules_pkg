@@ -163,11 +163,6 @@ http_file(
 # Docker rules.
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-#git_repository(
-#    name = "io_bazel_rules_docker",
-#    commit = "0f186411c31763b05f0aeea8dd3f870080078480",
-#    remote = "https://github.com/bazelbuild/rules_docker.git",
-#)
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "aed1c249d4ec8f703edddf35cbe9dfaca0b5f5ea6e4cd9e83e99f3b0d1136c3d",

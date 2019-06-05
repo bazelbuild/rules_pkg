@@ -28,8 +28,6 @@ The initial scope is currently targeting `Debian` style distributions, because t
 [docker rules](https://github.com/bazelbuild/rules_docker) allow optional `deb` and `tar`
 files to be included in their container images.  That work was done in December 2017.
 
-[packaging rules](https://docs.bazel.build/versions/master/be/pkg.html)).
-
 We are currently (June 2019) in the process of migrating the
 [Bazel packaging rules](https://docs.bazel.build/versions/master/be/pkg.html)
 from Bazel to this repo.  Tracking issue: https://github.com/bazelbuild/bazel/issues/8489.
