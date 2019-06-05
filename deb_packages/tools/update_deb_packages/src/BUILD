@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "update_deb_packages.go",
     ],
-    importpath = "github.com/bazelbuild/rules_pkg/tools/update_deb_packages/src",
+    importpath = "github.com/bazelbuild/rules_pkg/deb_packages/tools/update_deb_packages/src",
     deps = [
         #"@com_github_bazelbuild_buildtools//:go_default_library",
         "@com_github_knqyf263_go_deb_version//:go_default_library",
@@ -17,7 +17,7 @@ go_library(
 go_binary(
     name = "update_deb_packages",
     srcs = ["update_deb_packages.go"],
-    importpath = "github.com/bazelbuild/rules_pkg/tools/update_deb_packages/src",
+    importpath = "github.com/bazelbuild/rules_pkg/deb_packages/tools/update_deb_packages/src",
     visibility = ["//visibility:public"],
     deps = [
         ":go_default_library",
