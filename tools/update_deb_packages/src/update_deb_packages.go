@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -61,6 +62,9 @@ func downloadFile(filepath string, url string) (err error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Download from %s failed with statuscode %d", url, resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
