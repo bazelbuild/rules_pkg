@@ -4,7 +4,7 @@ Similar to the `gazelle` tool which helps with managing golang bazel rules, it i
 Add the following to the `BUILD` or `BUILD.bazel` file in the root directory of your repository:
 
 ```bzl
-load("@rules_pkg//tools/update_deb_packages:update_deb_packages.bzl", "update_deb_packages")
+load("@rules_pkg//deb_packages/tools/update_deb_packages:update_deb_packages.bzl", "update_deb_packages")
 
 update_deb_packages(
     name = "update_deb_packages",
