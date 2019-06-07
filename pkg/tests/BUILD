@@ -122,7 +122,6 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    build_tar = "@rules_pkg//:build_tar",
     strip_prefix = "",
 )
 
@@ -131,7 +130,6 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    build_tar = "@rules_pkg//:build_tar",
 )
 
 pkg_tar(
@@ -139,7 +137,6 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    build_tar = "@rules_pkg//:build_tar",
     strip_prefix = "etc",
 )
 
@@ -148,13 +145,11 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    build_tar = "@rules_pkg//:build_tar",
     strip_prefix = ".",
 )
 
 pkg_tar(
     name = "test-tar-files_dict",
-    build_tar = "@rules_pkg//:build_tar",
     files = {
         ":etc/nsswitch.conf": "not-etc/mapped-filename.conf",
     },
@@ -162,7 +157,6 @@ pkg_tar(
 
 pkg_tar(
     name = "test-tar-empty_files",
-    build_tar = "@rules_pkg//:build_tar",
     empty_files = [
         "/a",
         "/b",
@@ -172,7 +166,6 @@ pkg_tar(
 
 pkg_tar(
     name = "test-tar-empty_dirs",
-    build_tar = "@rules_pkg//:build_tar",
     empty_dirs = [
         "/tmp",
         "/pmt",
@@ -185,7 +178,6 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    build_tar = "@rules_pkg//:build_tar",
     mtime = 946684740,  # 1999-12-31, 23:59
     portable_mtime = False,
 )

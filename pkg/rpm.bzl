@@ -155,7 +155,7 @@ pkg_rpm = rule(
         # Implicit dependencies.
         "rpmbuild_path": attr.string(),
         "_make_rpm": attr.label(
-            default = Label("//tools/build_defs/pkg:make_rpm"),
+            default = Label("@rules_pkg//:make_rpm"),
             cfg = "host",
             executable = True,
             allow_files = True,
