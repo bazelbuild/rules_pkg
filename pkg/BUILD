@@ -6,6 +6,12 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "standard_package",
+    srcs = glob(["BUILD", "*.bzl", "*.py", "*.md"]),
+    visibility = ["@//distro:__pkg__"],
+)
+
 py_library(
     name = "archive",
     srcs = [

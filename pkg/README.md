@@ -14,6 +14,18 @@
 These build rules are used for building various packaging such as tarball
 and debian package.
 
+<a name="workspace-setup"></a>
+## WORKSPACE setup
+
+http_archive(
+    name = "rules_pkg",
+    url = "https://github.com/bazelbuild/rules_pkg/releases/1.0.0/rules_pkg-1.0.0.tar.gz",
+    sha256 = "..."
+)
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+
+
 <a name="basic-example"></a>
 ## Basic Example
 
