@@ -6,13 +6,16 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 VERSION = "0.1.0"
 
+# Build the artifact to put on the github release page.
 pkg_tar(
     name = "rules_pkg-%s" % VERSION,
     srcs = [
         "@rules_pkg//:standard_package",
     ],
     extension = "tar.gz",
-    mode = "0644",
+    # It is all source code, so make it read-only.
+    mode = "0444",
+    # Make it owned by root so it does not have the uid of the CI robot.
     owner = "0.0",
     package_dir = ".",
 )
