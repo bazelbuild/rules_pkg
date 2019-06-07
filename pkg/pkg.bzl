@@ -251,7 +251,7 @@ _real_pkg_tar = rule(
         "remap_paths": attr.string_dict(),
         # Implicit dependencies.
         "build_tar": attr.label(
-            default = Label("//tools/build_defs/pkg:build_tar"),
+            default = Label("@rules_pkg//:build_tar"),
             cfg = "host",
             executable = True,
             allow_files = True,
@@ -311,7 +311,7 @@ pkg_deb = rule(
         "recommends": attr.string_list(default = []),
         # Implicit dependencies.
         "make_deb": attr.label(
-            default = Label("//tools/build_defs/pkg:make_deb"),
+            default = Label("@rules_pkg//:make_deb"),
             cfg = "host",
             executable = True,
             allow_files = True,

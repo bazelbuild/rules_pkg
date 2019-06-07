@@ -13,7 +13,7 @@ py_library(
         "archive.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = ["@//tests:__pkg__"],
 )
 
 py_binary(
