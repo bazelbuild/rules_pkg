@@ -19,7 +19,14 @@ py_library(
         "archive.py",
     ],
     srcs_version = "PY2AND3",
-    visibility = ["@//tests:__pkg__"],
+    # This points to a fundemental bazel workspace deficiency. What we need is a
+    # way to specify "the workspace that this BUILD or .bzl file comes from".
+    # I do not want to say '@rules_pkg'. That forces my name on everyone who uses
+    # me. '@' seems to be the outer workspace.
+    visibility = [
+        "@//tests:__pkg__",
+        "@rules_pkg//tests:__pkg__"
+    ],
 )
 
 py_binary(
