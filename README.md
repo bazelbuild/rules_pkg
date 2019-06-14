@@ -13,7 +13,7 @@ Travis CI
 
 ### Package Building Rules
 
-* [pkg](https://github.com/bazelbuild/rules_pkg/pkg) - Rules for building
+* [pkg](https://github.com/bazelbuild/rules_pkg/tree/master/pkg) - Rules for building
   packages of various types.
 
 
