@@ -70,7 +70,7 @@ class PackagingTest(unittest.TestCase):
 
     content = subprocess.check_output(
         ['/bin/tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
-    self.assertEqual('./\n./BUILD\n', content)
+    self.assertEqual(b'./\n./BUILD\n', content)
 
 
 if __name__ == '__main__':

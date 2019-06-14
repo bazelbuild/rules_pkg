@@ -2,13 +2,11 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-
-VERSION = "0.1.0"
+load("@rules_pkg//:pkg.bzl", "pkg_tar", "version")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
-    name = "rules_pkg-%s" % VERSION,
+    name = "rules_pkg-%s" % version,
     srcs = [
         "@rules_pkg//:standard_package",
     ],
@@ -25,7 +23,7 @@ py_library(
     srcs = [
         "__init__.py",
         "release_tools.py",
-        "release_version.py",
+        ":release_version.py",
     ],
     srcs_version = "PY3",
     deps = [
@@ -39,7 +37,7 @@ py_binary(
         "print_rel_notes.py",
     ],
     data = [
-        ":rules_pkg-%s.tar.gz" % VERSION,
+        ":rules_pkg-%s.tar.gz" % version,
     ],
     python_version = "PY3",
     deps = [
@@ -55,7 +53,7 @@ py_test(
         "packaging_test.py",
     ],
     data = [
-        ":rules_pkg-%s.tar.gz" % VERSION,
+        ":rules_pkg-%s.tar.gz" % version,
         "testdata/BUILD.tmpl",
     ],
     local = True,
@@ -68,4 +66,10 @@ py_test(
         ":util",
         "@bazel_tools//tools/python/runfiles",
     ],
+)
+
+genrule(
+    name = "version_as_py",
+    outs = ["release_version.py"],
+    cmd = "echo RELEASE_VERSION = \\'%s\\' >$@" % version
 )

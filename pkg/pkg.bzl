@@ -15,6 +15,8 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 
+version = '0.2.0'
+
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
