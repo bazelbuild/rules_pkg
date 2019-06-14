@@ -6,9 +6,11 @@ def _maybe(repo, name, **kwargs):
     if not native.existing_rule(name):
         repo(name = name, **kwargs)
 
+# @federation: BEGIN @rules_pkg
 def rules_pkg_dependencies():
     # Needed for helper tools
-    http_archive(
+    _maybe(
+        http_archive,
         name = "abseil_py",
         urls = [
             "https://github.com/abseil/abseil-py/archive/pypi-v0.7.1.tar.gz",
@@ -18,8 +20,9 @@ def rules_pkg_dependencies():
     )
 
     # Needed by abseil-py. They do not use deps yet.
-    http_archive(
-       name = "six_archive",
+    _maybe(
+        http_archive,
+        name = "six_archive",
         urls = [
             "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
             "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
@@ -28,3 +31,8 @@ def rules_pkg_dependencies():
         strip_prefix = "six-1.10.0",
         build_file = "@abseil_py//third_party:six.BUILD"
     )
+
+
+def rules_pkg_register_toolchains():
+    pass
+# @federation: END @rules_pkg
