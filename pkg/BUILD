@@ -44,7 +44,7 @@ py_binary(
 py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [

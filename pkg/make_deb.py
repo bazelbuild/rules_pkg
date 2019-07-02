@@ -138,8 +138,10 @@ def AddArFileEntry(fileobj, filename,
 
 def MakeDebianControlField(name, value, wrap=False):
   """Add a field to a debian control file."""
+  #if isinstance(name, bytes):
+  #  name = name.decode('utf-8')
   result = name + ': '
-  if isinstance(value, str):
+  if isinstance(value, bytes):
     value = value.decode('utf-8')
   if isinstance(value, list):
     value = u', '.join(value)
@@ -156,7 +158,7 @@ def MakeDebianControlField(name, value, wrap=False):
 def CreateDebControl(extrafiles=None, **kwargs):
   """Create the control.tar.gz file."""
   # create the control file
-  controlfile = ''
+  controlfile = u''
   for values in DEBIAN_FIELDS:
     fieldname = values[0]
     key = fieldname[0].lower() + fieldname[1:].replace('-', '')
@@ -168,13 +170,20 @@ def CreateDebControl(extrafiles=None, **kwargs):
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
       tarinfo = tarfile.TarInfo('control')
       # Don't discard unicode characters when computing the size
-      tarinfo.size = len(controlfile.encode('utf-8'))
-      f.addfile(tarinfo, fileobj=BytesIO(controlfile.encode('utf-8')))
+      try:
+        tarinfo.size = len(controlfile.encode('utf-8'))
+        f.addfile(tarinfo, fileobj=BytesIO(controlfile.encode('utf-8')))
+      except UnicodeEncodeError as e:
+        print(type(controlfile))
+        print(e)
+        print(controlfile)
+        print('-----------------')
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
           tarinfo = tarfile.TarInfo(name)
           tarinfo.size = len(data)
           tarinfo.mode = mode
+          print('extrafiles:', name)
           f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
   control = tar.getvalue()
   tar.close()
@@ -276,7 +285,7 @@ def CreateChanges(output,
   debsize = str(os.path.getsize(deb_file))
   deb_basename = os.path.basename(deb_file)
 
-  changesdata = ''.join([
+  changesdata = u''.join([
       MakeDebianControlField('Format', '1.8'),
       MakeDebianControlField('Date', time.ctime(timestamp)),
       MakeDebianControlField('Source', package),
@@ -303,16 +312,22 @@ def CreateChanges(output,
           'Checksums-Sha256',
           '\n' + ' '.join([checksums['sha256'], debsize, deb_basename]))
   ])
-  with open(output, 'w') as changes_fh:
+  print('============== changesdata')
+  print(changesdata.encode('utf-8'))
+  with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
 
 
 def GetFlagValue(flagvalue, strip=True):
   if flagvalue:
-    flagvalue = flagvalue.decode('utf-8')
+    if sys.version_info[0] < 3:
+      flagvalue = flagvalue.decode('utf-8')
+    else:
+      flagvalue = str(flagvalue)
     if flagvalue[0] == '@':
-      with open(flagvalue[1:], 'r') as f:
-        flagvalue = f.read().decode('utf-8')
+      with open(flagvalue[1:], 'rb') as f:
+        flagvalue = f.read()
+        flagvalue = flagvalue.decode('utf-8')
     if strip:
       return flagvalue.strip()
   return flagvalue
@@ -326,6 +341,9 @@ def GetFlagValues(flagvalues):
 
 
 def main(unused_argv):
+  print('Maintainer: type:', type(FLAGS.maintainer))
+  print('Maintainer: value:', str(FLAGS.maintainer.encode('utf-8')))
+  print('Maintainer: value type:', type(FLAGS.maintainer.encode('utf-8')))
   CreateDeb(
       FLAGS.output,
       FLAGS.data,
@@ -339,7 +357,7 @@ def main(unused_argv):
       package=FLAGS.package,
       version=GetFlagValue(FLAGS.version),
       description=GetFlagValue(FLAGS.description),
-      maintainer=FLAGS.maintainer,
+      maintainer=GetFlagValue(FLAGS.maintainer),
       section=FLAGS.section,
       architecture=FLAGS.architecture,
       depends=GetFlagValues(FLAGS.depends),
@@ -347,7 +365,7 @@ def main(unused_argv):
       enhances=FLAGS.enhances,
       preDepends=FLAGS.pre_depends,
       recommends=FLAGS.recommends,
-      homepage=FLAGS.homepage,
+      homepage=GetFlagValue(FLAGS.homepage),
       builtUsing=GetFlagValue(FLAGS.built_using),
       priority=FLAGS.priority,
       conflicts=FLAGS.conflicts,
@@ -363,6 +381,8 @@ def main(unused_argv):
       urgency=FLAGS.urgency)
 
 if __name__ == '__main__':
+  # sys.stdout.encoding = 'utf-8'
   MakeGflags()
   FLAGS = flags.FLAGS
-  main(FLAGS(sys.argv))
+  main(FLAGS([None if arg is None else os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
+  # XXmain(FLAGS(sys.argv))

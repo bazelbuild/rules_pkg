@@ -120,6 +120,12 @@ def _pkg_tar_impl(ctx):
         arguments = ["--flagfile", arg_file.path],
         outputs = [ctx.outputs.out],
         mnemonic = "PackageTar",
+        env = {
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "UTF-8",
+            "PYTHONIOENCODING": "UTF8",
+            "PYTHONUTF8": "1",
+        },
         use_default_shell_env = True,
     )
 
