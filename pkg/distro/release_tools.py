@@ -27,7 +27,7 @@ def package_basename(version):
 def get_package_info(version):
   tar_path = runfiles.Create().Rlocation(
       os.path.join('rules_pkg', 'distro', package_basename(version)))
-  with open(tar_path, 'r') as pkg_content:
+  with open(tar_path, 'rb') as pkg_content:
     tar_sha256 = hashlib.sha256(pkg_content.read()).hexdigest()
   return tar_path, tar_sha256
 

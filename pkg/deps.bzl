@@ -6,6 +6,7 @@ def _maybe(repo, name, **kwargs):
     if not native.existing_rule(name):
         repo(name = name, **kwargs)
 
+
 # @federation: BEGIN @rules_pkg
 def rules_pkg_dependencies():
     # Needed for helper tools
@@ -14,9 +15,9 @@ def rules_pkg_dependencies():
         name = "abseil_py",
         urls = [
             "https://github.com/abseil/abseil-py/archive/pypi-v0.7.1.tar.gz",
-      ],
-      sha256 = "3d0f39e0920379ff1393de04b573bca3484d82a5f8b939e9e83b20b6106c9bbe",
-      strip_prefix = "abseil-py-pypi-v0.7.1",
+        ],
+        sha256 = "3d0f39e0920379ff1393de04b573bca3484d82a5f8b939e9e83b20b6106c9bbe",
+        strip_prefix = "abseil-py-pypi-v0.7.1",
     )
 
     # Needed by abseil-py. They do not use deps yet.
@@ -35,4 +36,5 @@ def rules_pkg_dependencies():
 
 def rules_pkg_register_toolchains():
     pass
+
 # @federation: END @rules_pkg
