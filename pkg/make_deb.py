@@ -380,4 +380,10 @@ def main(unused_argv):
 if __name__ == '__main__':
   MakeGflags()
   FLAGS = flags.FLAGS
+  # sys.argv is not actually proper str types on Unix with Python3
+  # The bytes of the arg are each directly transcribed to the characters of
+  # the str. It is actually more complex than that, as described in the docs.
+  # https://docs.python.org/3/library/sys.html#sys.argv
+  # https://docs.python.org/3/library/os.html#os.fsencode
+  # https://www.python.org/dev/peps/pep-0383/
   main(FLAGS([os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
