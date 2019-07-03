@@ -327,8 +327,7 @@ def GetFlagValue(flagvalue, strip=True):
       flagvalue = str(flagvalue)
     if flagvalue[0] == '@':
       with open(flagvalue[1:], 'rb') as f:
-        flagvalue = f.read()
-        flagvalue = flagvalue.decode('utf-8')
+        flagvalue = f.read().decode('utf-8')
     if strip:
       return flagvalue.strip()
   return flagvalue
