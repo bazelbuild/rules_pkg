@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 
-version = '0.2.0'
+version = "0.2.0"
 
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
@@ -115,11 +115,17 @@ def _pkg_tar_impl(ctx):
     ctx.actions.write(arg_file, "\n".join(args))
 
     ctx.actions.run(
+        mnemonic = "PackageTar",
         inputs = file_inputs + ctx.files.deps + [arg_file],
         executable = ctx.executable.build_tar,
         arguments = ["--flagfile", arg_file.path],
         outputs = [ctx.outputs.out],
-        mnemonic = "PackageTar",
+        env = {
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "UTF-8",
+            "PYTHONIOENCODING": "UTF-8",
+            "PYTHONUTF8": "1",
+        },
         use_default_shell_env = True,
     )
 
@@ -216,11 +222,17 @@ def _pkg_deb_impl(ctx):
     args += ["--recommends=" + d for d in ctx.attr.recommends]
 
     ctx.actions.run(
+        mnemonic = "MakeDeb",
         executable = ctx.executable.make_deb,
         arguments = args,
         inputs = files,
         outputs = [ctx.outputs.deb, ctx.outputs.changes],
-        mnemonic = "MakeDeb",
+        env = {
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "UTF-8",
+            "PYTHONIOENCODING": "UTF-8",
+            "PYTHONUTF8": "1",
+        },
     )
     ctx.actions.run_shell(
         command = "ln -s %s %s" % (ctx.outputs.deb.basename, ctx.outputs.out.path),

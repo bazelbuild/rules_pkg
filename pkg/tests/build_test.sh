@@ -177,11 +177,9 @@ drwxrwxrwx 0/0               0 2000-01-01 00:00 ./pmt/" \
     "$(get_tar_verbose_listing test-tar-mtime.tar)"
 }
 
-function test_deb() {
-  if ! (which dpkg-deb); then
-    echo "Unable to run test for debian, no dpkg-deb!" >&2
-    return 0
-  fi
+function check_deb() {
+  package="$1"
+
   local listing="./
 ./etc/
 ./etc/nsswitch.conf
@@ -189,10 +187,10 @@ function test_deb() {
 ./usr/titi
 ./usr/bin/
 ./usr/bin/java -> /path/to/bin/java"
-  check_eq "$listing" "$(get_deb_listing test-deb.deb)"
-  check_eq "-rwxr-xr-x" "$(get_deb_permission test-deb.deb ./usr/titi)"
-  check_eq "-rw-r--r--" "$(get_deb_permission test-deb.deb ./etc/nsswitch.conf)"
-  get_deb_description test-deb.deb >$TEST_log
+  check_eq "$listing" "$(get_deb_listing ${package})"
+  check_eq "-rwxr-xr-x" "$(get_deb_permission ${package} ./usr/titi)"
+  check_eq "-rw-r--r--" "$(get_deb_permission ${package} ./etc/nsswitch.conf)"
+  get_deb_description ${package} >$TEST_log
   expect_log "Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é"
   expect_log "Package: titi"
   expect_log "soméone@somewhere.com"
@@ -203,14 +201,14 @@ function test_deb() {
   expect_log "Urgency: low"
   expect_log "Distribution: trusty"
 
-  get_deb_ctl_file test-deb.deb templates >$TEST_log
+  get_deb_ctl_file ${package} templates >$TEST_log
   expect_log "Template: titi/test"
   expect_log "Type: string"
 
-  get_deb_ctl_file test-deb.deb config >$TEST_log
+  get_deb_ctl_file ${package} config >$TEST_log
   expect_log "# test config file"
 
-  if ! dpkg_deb_supports_ctrl_tarfile test-deb.deb ; then
+  if ! dpkg_deb_supports_ctrl_tarfile ${package} ; then
     echo "Unable to test deb control files listing, too old dpkg-deb!" >&2
     return 0
   fi
@@ -221,14 +219,23 @@ templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look
   # at root causes later. I am not sure if this is WAI or not.
-  check_eq "$ctrl_listing" "$(get_deb_ctl_listing test-deb.deb)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission test-deb.deb conffiles)"
-  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission test-deb.deb config)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission test-deb.deb control)"
-  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission test-deb.deb templates)"
+  check_eq "$ctrl_listing" "$(get_deb_ctl_listing ${package})"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} conffiles)"
+  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission ${package} config)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} control)"
+  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission ${package} templates)"
   local conffiles="/etc/nsswitch.conf
 /etc/other"
-  check_eq "$conffiles" "$(get_deb_ctl_file test-deb.deb conffiles)"
+  check_eq "$conffiles" "$(get_deb_ctl_file ${package} conffiles)"
+}
+
+function test_deb() {
+  if ! (which dpkg-deb); then
+    echo "Unable to run test for debian, no dpkg-deb!" >&2
+    return 0
+  fi
+  check_deb "test-deb.deb"
+  check_deb "test-deb-py2.deb"
 }
 
 run_suite "build_test"

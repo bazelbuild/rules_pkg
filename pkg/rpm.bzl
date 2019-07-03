@@ -82,12 +82,18 @@ def _pkg_rpm_impl(ctx):
     # Call the generator script.
     # TODO(katre): Generate a source RPM.
     ctx.actions.run(
+        mnemonic = "MakeRpm",
         executable = ctx.executable._make_rpm,
         use_default_shell_env = True,
         arguments = args,
         inputs = files,
         outputs = [ctx.outputs.rpm],
-        mnemonic = "MakeRpm",
+        env = {
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "UTF-8",
+            "PYTHONIOENCODING": "UTF-8",
+            "PYTHONUTF8": "1",
+        },
     )
 
     # Link the RPM to the expected output name.

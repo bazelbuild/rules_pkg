@@ -82,6 +82,29 @@ pkg_deb(
     version = "test",
 )
 
+pkg_deb(
+    name = "test-deb-py2",
+    built_using = "some_test_data (0.1.2)",
+    conffiles = [
+        "/etc/nsswitch.conf",
+        "/etc/other",
+    ],
+    config = ":testdata/config",
+    data = ":test-tar-gz.tar.gz",
+    depends = [
+        "dep1",
+        "dep2",
+    ],
+    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
+    distribution = "trusty",
+    maintainer = "soméone@somewhere.com",
+    make_deb = "@rules_pkg//:make_deb_py2",
+    package = "titi",
+    templates = ":testdata/templates",
+    urgency = "low",
+    version = "test_py2",
+)
+
 [pkg_tar(
     name = "test-tar-%s" % ext[1:],
     srcs = [
@@ -191,6 +214,7 @@ sh_test(
     data = [
         "testenv.sh",
         ":test-deb.deb",
+        ":test-deb-py2.deb",
         ":test-tar-.tar",
         ":test-tar-bz2.tar.bz2",
         ":test-tar-empty_dirs.tar",

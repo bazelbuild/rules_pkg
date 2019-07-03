@@ -139,7 +139,7 @@ def AddArFileEntry(fileobj, filename,
 def MakeDebianControlField(name, value, wrap=False):
   """Add a field to a debian control file."""
   result = name + ': '
-  if isinstance(value, str):
+  if isinstance(value, bytes):
     value = value.decode('utf-8')
   if isinstance(value, list):
     value = u', '.join(value)
@@ -156,7 +156,7 @@ def MakeDebianControlField(name, value, wrap=False):
 def CreateDebControl(extrafiles=None, **kwargs):
   """Create the control.tar.gz file."""
   # create the control file
-  controlfile = ''
+  controlfile = u''
   for values in DEBIAN_FIELDS:
     fieldname = values[0]
     key = fieldname[0].lower() + fieldname[1:].replace('-', '')
@@ -167,9 +167,9 @@ def CreateDebControl(extrafiles=None, **kwargs):
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
       tarinfo = tarfile.TarInfo('control')
-      # Don't discard unicode characters when computing the size
-      tarinfo.size = len(controlfile.encode('utf-8'))
-      f.addfile(tarinfo, fileobj=BytesIO(controlfile.encode('utf-8')))
+      control_file_data = controlfile.encode('utf-8')
+      tarinfo.size = len(control_file_data)
+      f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
           tarinfo = tarfile.TarInfo(name)
@@ -276,7 +276,7 @@ def CreateChanges(output,
   debsize = str(os.path.getsize(deb_file))
   deb_basename = os.path.basename(deb_file)
 
-  changesdata = ''.join([
+  changesdata = u''.join([
       MakeDebianControlField('Format', '1.8'),
       MakeDebianControlField('Date', time.ctime(timestamp)),
       MakeDebianControlField('Source', package),
@@ -303,16 +303,45 @@ def CreateChanges(output,
           'Checksums-Sha256',
           '\n' + ' '.join([checksums['sha256'], debsize, deb_basename]))
   ])
-  with open(output, 'w') as changes_fh:
+  with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
 
 
 def GetFlagValue(flagvalue, strip=True):
+  """Converts a raw flag string to a useable value.
+
+  1. Expand @filename style flags to the content of filename.
+  2. Cope with Python3 strangness of sys.argv.
+     sys.argv is not actually proper str types on Unix with Python3
+     The bytes of the arg are each directly transcribed to the characters of
+     the str. It is actually more complex than that, as described in the docs.
+       https://docs.python.org/3/library/sys.html#sys.argv
+       https://docs.python.org/3/library/os.html#os.fsencode
+       https://www.python.org/dev/peps/pep-0383/
+
+  Args:
+    flagvalue: (str) raw flag value
+    strip: (bool) Strip white space.
+
+  Returns:
+    Python2: unicode
+    Python3: str
+  """
   if flagvalue:
-    flagvalue = flagvalue.decode('utf-8')
+    if sys.version_info[0] < 3:
+      # python2 gives us raw bytes in argv.
+      flagvalue = flagvalue.decode('utf-8')
+    # assertion: py2: flagvalue is unicode
+    # assertion: py3: flagvalue is str, but in weird format
     if flagvalue[0] == '@':
-      with open(flagvalue[1:], 'r') as f:
+      # Subtle: We do not want to re-encode the value here, because it
+      # is encoded in the right format for file open operations.
+      with open(flagvalue[1:], 'rb') as f:
         flagvalue = f.read().decode('utf-8')
+    else:
+      # convert fs specific encoding back to proper unicode.
+      flagvalue = os.fsencode(flagvalue).decode('utf-8')
+
     if strip:
       return flagvalue.strip()
   return flagvalue
@@ -339,7 +368,7 @@ def main(unused_argv):
       package=FLAGS.package,
       version=GetFlagValue(FLAGS.version),
       description=GetFlagValue(FLAGS.description),
-      maintainer=FLAGS.maintainer,
+      maintainer=GetFlagValue(FLAGS.maintainer),
       section=FLAGS.section,
       architecture=FLAGS.architecture,
       depends=GetFlagValues(FLAGS.depends),
@@ -347,7 +376,7 @@ def main(unused_argv):
       enhances=FLAGS.enhances,
       preDepends=FLAGS.pre_depends,
       recommends=FLAGS.recommends,
-      homepage=FLAGS.homepage,
+      homepage=GetFlagValue(FLAGS.homepage),
       builtUsing=GetFlagValue(FLAGS.built_using),
       priority=FLAGS.priority,
       conflicts=FLAGS.conflicts,
@@ -357,7 +386,7 @@ def main(unused_argv):
       deb_file=FLAGS.output,
       architecture=FLAGS.architecture,
       short_description=GetFlagValue(FLAGS.description).split('\n')[0],
-      maintainer=FLAGS.maintainer, package=FLAGS.package,
+      maintainer=GetFlagValue(FLAGS.maintainer), package=FLAGS.package,
       version=GetFlagValue(FLAGS.version), section=FLAGS.section,
       priority=FLAGS.priority, distribution=FLAGS.distribution,
       urgency=FLAGS.urgency)
