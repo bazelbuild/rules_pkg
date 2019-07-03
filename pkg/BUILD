@@ -41,10 +41,13 @@ py_binary(
     ],
 )
 
+
+# NOTE: This works for PY2 and PY3.
+# TODO: Figure out how to use "whatever version" we have on the machine.
 py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
-    python_version = "PY3",
+    python_version = "PY2",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [

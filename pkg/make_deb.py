@@ -138,8 +138,6 @@ def AddArFileEntry(fileobj, filename,
 
 def MakeDebianControlField(name, value, wrap=False):
   """Add a field to a debian control file."""
-  #if isinstance(name, bytes):
-  #  name = name.decode('utf-8')
   result = name + ': '
   if isinstance(value, bytes):
     value = value.decode('utf-8')
@@ -169,21 +167,14 @@ def CreateDebControl(extrafiles=None, **kwargs):
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
       tarinfo = tarfile.TarInfo('control')
-      # Don't discard unicode characters when computing the size
-      try:
-        tarinfo.size = len(controlfile.encode('utf-8'))
-        f.addfile(tarinfo, fileobj=BytesIO(controlfile.encode('utf-8')))
-      except UnicodeEncodeError as e:
-        print(type(controlfile))
-        print(e)
-        print(controlfile)
-        print('-----------------')
+      control_file_data = controlfile.encode('utf-8')
+      tarinfo.size = len(control_file_data)
+      f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
           tarinfo = tarfile.TarInfo(name)
           tarinfo.size = len(data)
           tarinfo.mode = mode
-          print('extrafiles:', name)
           f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
   control = tar.getvalue()
   tar.close()
@@ -312,13 +303,23 @@ def CreateChanges(output,
           'Checksums-Sha256',
           '\n' + ' '.join([checksums['sha256'], debsize, deb_basename]))
   ])
-  print('============== changesdata')
-  print(changesdata.encode('utf-8'))
   with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
 
 
 def GetFlagValue(flagvalue, strip=True):
+  """Normalize a flag value.
+
+  Handles @filename expansions.
+
+  Args:
+    flagvalue: (bytes|str|unicode) A value
+    strip: Strip white space?
+
+  Returns:
+    Python2: unicode
+    Python3: str
+  """
   if flagvalue:
     if sys.version_info[0] < 3:
       flagvalue = flagvalue.decode('utf-8')
@@ -341,9 +342,6 @@ def GetFlagValues(flagvalues):
 
 
 def main(unused_argv):
-  print('Maintainer: type:', type(FLAGS.maintainer))
-  print('Maintainer: value:', str(FLAGS.maintainer.encode('utf-8')))
-  print('Maintainer: value type:', type(FLAGS.maintainer.encode('utf-8')))
   CreateDeb(
       FLAGS.output,
       FLAGS.data,
@@ -381,8 +379,6 @@ def main(unused_argv):
       urgency=FLAGS.urgency)
 
 if __name__ == '__main__':
-  # sys.stdout.encoding = 'utf-8'
   MakeGflags()
   FLAGS = flags.FLAGS
-  main(FLAGS([None if arg is None else os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
-  # XXmain(FLAGS(sys.argv))
+  main(FLAGS([os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
