@@ -308,13 +308,20 @@ def CreateChanges(output,
 
 
 def GetFlagValue(flagvalue, strip=True):
-  """Normalize a flag value.
+  """Converts a raw flag string to a useable value.
 
-  Handles @filename expansions.
+  1. Expand @filename style flags to the content of filename.
+  2. Cope with Python3 strangness of sys.argv.
+     sys.argv is not actually proper str types on Unix with Python3
+     The bytes of the arg are each directly transcribed to the characters of
+     the str. It is actually more complex than that, as described in the docs.
+       https://docs.python.org/3/library/sys.html#sys.argv
+       https://docs.python.org/3/library/os.html#os.fsencode
+       https://www.python.org/dev/peps/pep-0383/
 
   Args:
-    flagvalue: (bytes|str|unicode) A value
-    strip: Strip white space?
+    flagvalue: (str) raw flag value
+    strip: (bool) Strip white space.
 
   Returns:
     Python2: unicode
@@ -322,12 +329,19 @@ def GetFlagValue(flagvalue, strip=True):
   """
   if flagvalue:
     if sys.version_info[0] < 3:
+      # python2 gives us raw bytes in argv.
       flagvalue = flagvalue.decode('utf-8')
-    else:
-      flagvalue = str(flagvalue)
+    # assertion: py2: flagvalue is unicode
+    # assertion: py3: flagvalue is str, but in weird format
     if flagvalue[0] == '@':
+      # Subtle: We do not want to re-encode the value here, because it
+      # is encoded in the right format for file open operations.
       with open(flagvalue[1:], 'rb') as f:
         flagvalue = f.read().decode('utf-8')
+    else:
+      # convert fs specific encoding back to proper unicode.
+      flagvalue = os.fsencode(flagvalue).decode('utf-8')
+
     if strip:
       return flagvalue.strip()
   return flagvalue
@@ -372,7 +386,7 @@ def main(unused_argv):
       deb_file=FLAGS.output,
       architecture=FLAGS.architecture,
       short_description=GetFlagValue(FLAGS.description).split('\n')[0],
-      maintainer=FLAGS.maintainer, package=FLAGS.package,
+      maintainer=GetFlagValue(FLAGS.maintainer), package=FLAGS.package,
       version=GetFlagValue(FLAGS.version), section=FLAGS.section,
       priority=FLAGS.priority, distribution=FLAGS.distribution,
       urgency=FLAGS.urgency)
@@ -386,4 +400,5 @@ if __name__ == '__main__':
   # https://docs.python.org/3/library/sys.html#sys.argv
   # https://docs.python.org/3/library/os.html#os.fsencode
   # https://www.python.org/dev/peps/pep-0383/
-  main(FLAGS([os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
+  # main(FLAGS([os.fsencode(arg).decode('utf-8') for arg in sys.argv]))
+  main(FLAGS(sys.argv))

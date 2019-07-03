@@ -42,11 +42,22 @@ py_binary(
 )
 
 
-# NOTE: This works for PY2 and PY3.
-# TODO: Figure out how to use "whatever version" we have on the machine.
 py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":archive",
+        "@abseil_py//absl/flags",
+    ],
+)
+
+py_binary(
+    name = "make_deb_py2",
+    srcs = ["make_deb.py"],
+    main = "make_deb.py",
     python_version = "PY2",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
