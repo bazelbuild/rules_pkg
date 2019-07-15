@@ -90,6 +90,16 @@ flags.DEFINE_string('root_directory', './',
 FLAGS = flags.FLAGS
 
 
+def GetFlagValue(flagvalue, strip=True):
+    if flagvalue:
+        if flagvalue[0] == '@':
+            with open(flagvalue[1:], 'r') as f:
+                flagvalue = f.read()
+        if strip:
+            return flagvalue.strip()
+    return flagvalue
+
+
 class TarFile(object):
   """A class to generates a TAR file."""
 
@@ -335,7 +345,7 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
+  with TarFile(FLAGS.output, GetFlagValue(FLAGS.directory), FLAGS.compression,
                FLAGS.root_directory, FLAGS.mtime) as output:
 
     def file_attributes(filename):
