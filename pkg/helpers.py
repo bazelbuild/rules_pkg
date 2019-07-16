@@ -48,7 +48,8 @@ def GetFlagValue(flagvalue, strip=True):
         flagvalue = f.read().decode('utf-8')
     else:
       # convert fs specific encoding back to proper unicode.
-      flagvalue = os.fsencode(flagvalue).decode('utf-8')
+      if sys.version_info[0] > 2:
+        flagvalue = os.fsencode(flagvalue).decode('utf-8')
 
     if strip:
       return flagvalue.strip()
