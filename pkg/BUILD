@@ -17,6 +17,7 @@ py_library(
     srcs = [
         "__init__.py",
         "archive.py",
+        "helpers.py"
     ],
     srcs_version = "PY2AND3",
     # This points to a fundemental bazel workspace deficiency. What we need is a
@@ -74,6 +75,7 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
+        ":archive",
         ":make_rpm_lib",
     ],
 )

@@ -28,6 +28,7 @@ import tempfile
 
 from absl import flags
 
+from helpers import GetFlagValue
 
 flags.DEFINE_string('rpmbuild', '', 'Path to rpmbuild executable')
 flags.DEFINE_string('name', '', 'The name of the software being packaged.')
@@ -87,16 +88,6 @@ def Tempdir():
 
   with Cd(dirpath, Cleanup):
     yield dirpath
-
-
-def GetFlagValue(flagvalue, strip=True):
-  if flagvalue:
-    if flagvalue[0] == '@':
-      with open(flagvalue[1:], 'r') as f:
-        flagvalue = f.read()
-    if strip:
-      return flagvalue.strip()
-  return flagvalue
 
 
 WROTE_FILE_RE = re.compile(r'Wrote: (?P<rpm_path>.+)', re.MULTILINE)

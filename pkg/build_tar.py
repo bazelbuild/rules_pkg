@@ -23,6 +23,8 @@ import tempfile
 from rules_pkg import archive
 from absl import flags
 
+from helpers import GetFlagValue
+
 flags.DEFINE_string('output', None, 'The output file, mandatory')
 flags.mark_flag_as_required('output')
 
@@ -88,16 +90,6 @@ flags.DEFINE_string('root_directory', './',
                     'Default root directory is named "."')
 
 FLAGS = flags.FLAGS
-
-
-def GetFlagValue(flagvalue, strip=True):
-    if flagvalue:
-        if flagvalue[0] == '@':
-            with open(flagvalue[1:], 'r') as f:
-                flagvalue = f.read()
-        if strip:
-            return flagvalue.strip()
-    return flagvalue
 
 
 class TarFile(object):
