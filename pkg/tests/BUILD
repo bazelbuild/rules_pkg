@@ -59,6 +59,16 @@ py_test(
     ],
 )
 
+py_test(
+    name = "helpers_test",
+    srcs = ["helpers_test.py"],
+    python_version = "PY2",
+    srcs_version = "PY2AND3",
+    deps = [
+        "//:archive",
+    ],
+)
+
 pkg_deb(
     name = "test-deb",
     built_using = "some_test_data (0.1.2)",
