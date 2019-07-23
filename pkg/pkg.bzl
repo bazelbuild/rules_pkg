@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 
-version = "0.2.0"
+version = "0.2.1"
 
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
@@ -128,6 +128,7 @@ def _pkg_tar_impl(ctx):
         },
         use_default_shell_env = True,
     )
+    return OutputGroupInfo(out=[ctx.outputs.out]);
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
@@ -239,9 +240,15 @@ def _pkg_deb_impl(ctx):
         inputs = [ctx.outputs.deb],
         outputs = [ctx.outputs.out],
     )
+    output_groups = {"out": [ctx.outputs.out]}
+    if hasattr(ctx.outputs, "deb"):
+        output_groups["deb"] = [ctx.outputs.deb]
+    if hasattr(ctx.outputs, "changes"):
+        output_groups["changes"] = [ctx.outputs.changes]
+    return OutputGroupInfo(**output_groups)
 
 # A rule for creating a tar file, see README.md
-_real_pkg_tar = rule(
+pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(),
@@ -263,6 +270,10 @@ _real_pkg_tar = rule(
         "include_runfiles": attr.bool(),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
+
+        # Outputs
+        "out": attr.output(),
+
         # Implicit dependencies.
         "build_tar": attr.label(
             default = Label("@rules_pkg//:build_tar"),
@@ -270,9 +281,6 @@ _real_pkg_tar = rule(
             executable = True,
             allow_files = True,
         ),
-    },
-    outputs = {
-        "out": "%{name}.%{extension}",
     },
 )
 
@@ -287,10 +295,14 @@ def pkg_tar(**kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
-    _real_pkg_tar(**kwargs)
+    extension = kwargs.get("extension") or "tar"
+    pkg_tar_impl(
+        out = kwargs["name"] + "." + extension,
+        **kwargs
+    )
 
 # A rule for creating a deb file, see README.md
-pkg_deb = rule(
+pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
     attrs = {
         "data": attr.label(mandatory = True, allow_single_file = tar_filetype),
@@ -323,6 +335,12 @@ pkg_deb = rule(
         "conflicts": attr.string_list(default = []),
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
+
+        # Outputs.
+        "out": attr.output(mandatory = True),
+        "deb": attr.output(mandatory = True),
+        "changes": attr.output(mandatory = True),
+
         # Implicit dependencies.
         "make_deb": attr.label(
             default = Label("@rules_pkg//:make_deb"),
@@ -331,9 +349,19 @@ pkg_deb = rule(
             allow_files = True,
         ),
     },
-    outputs = {
-        "out": "%{name}.deb",
-        "deb": "%{package}_%{version}_%{architecture}.deb",
-        "changes": "%{package}_%{version}_%{architecture}.changes",
-    },
 )
+
+def pkg_deb(name, package, **kwargs):
+    """Creates a deb file. See pkg_deb_impl."""
+    version = kwargs.get("version") or ""
+    architecture = kwargs.get("architecture") or "all"
+    out_deb = "%s_%s_%s.deb" % (package, version, architecture)
+    out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+    pkg_deb_impl(
+        name = name,
+        package = package,
+        out = name + ".deb",
+        deb = out_deb,
+        changes = out_changes,
+        **kwargs
+    )
