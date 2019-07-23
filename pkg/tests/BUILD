@@ -12,9 +12,35 @@ genrule(
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
 )
 
+pkg_tar(
+    name = "test-tar-package-dir",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    package_dir = "/package"
+)
+
+genrule(
+    name = "test-tar-package-dir-file-gen",
+    outs = ["test-tar.pkgdir"],
+    srcs = [],
+    cmd = "echo '/package' > $@"
+)
+
+pkg_tar(
+    name = "test-tar-package-dir-file",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    package_dir_file = ":test-tar-package-dir-file-gen"
+)
+
 filegroup(
     name = "archive_testdata",
-    srcs = glob(["testdata/**"]),
+    srcs = glob(["testdata/**"]) + [
+        ":test-tar-package-dir",
+        ":test-tar-package-dir-file"
+    ],
     visibility = ["//visibility:private"],
 )
 
