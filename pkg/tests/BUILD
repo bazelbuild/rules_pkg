@@ -13,33 +13,26 @@ genrule(
 )
 
 pkg_tar(
-    name = "test-tar-package-dir",
+    name = "test_tar_package_dir",
     srcs = [
         ":etc/nsswitch.conf",
     ],
     package_dir = "/package"
 )
 
-genrule(
-    name = "test-tar-package-dir-file-gen",
-    outs = ["test-tar.pkgdir"],
-    srcs = [],
-    cmd = "echo '/package' > $@"
-)
-
 pkg_tar(
-    name = "test-tar-package-dir-file",
+    name = "test_tar_package_dir_file",
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir_file = ":test-tar-package-dir-file-gen"
+    package_dir_file = "testdata/test_tar_package_dir_file.txt"
 )
 
 filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
-        ":test-tar-package-dir",
-        ":test-tar-package-dir-file"
+        ":test_tar_package_dir",
+        ":test_tar_package_dir_file"
     ],
     visibility = ["//visibility:private"],
 )
