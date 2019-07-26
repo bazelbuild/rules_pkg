@@ -221,9 +221,9 @@ templates"
   # at root causes later. I am not sure if this is WAI or not.
   check_eq "$ctrl_listing" "$(get_deb_ctl_listing ${package})"
   check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} conffiles)"
-  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission ${package} config)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} config)"
   check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} control)"
-  check_eq "-rwxr-xr-x" "$(get_deb_ctl_permission ${package} templates)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} templates)"
   local conffiles="/etc/nsswitch.conf
 /etc/other"
   check_eq "$conffiles" "$(get_deb_ctl_file ${package} conffiles)"
