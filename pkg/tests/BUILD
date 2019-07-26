@@ -75,6 +75,7 @@ py_test(
     ],
     deps = [
         "@rules_pkg//:make_rpm_lib",
+        "@rules_pkg//:archive",
     ],
 )
 
@@ -84,7 +85,7 @@ py_test(
     python_version = "PY2",
     srcs_version = "PY2AND3",
     deps = [
-        "//:archive",
+        "@rules_pkg//:archive",
     ],
 )
 
