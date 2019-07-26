@@ -23,6 +23,8 @@ import tempfile
 from rules_pkg import archive
 from absl import flags
 
+from helpers import GetFlagValue
+
 flags.DEFINE_string('output', None, 'The output file, mandatory')
 flags.mark_flag_as_required('output')
 
@@ -335,7 +337,7 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory, FLAGS.compression,
+  with TarFile(FLAGS.output, GetFlagValue(FLAGS.directory), FLAGS.compression,
                FLAGS.root_directory, FLAGS.mtime) as output:
 
     def file_attributes(filename):

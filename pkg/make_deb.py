@@ -28,6 +28,8 @@ from absl import flags
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
+from helpers import GetFlagValue
+
 DEBIAN_FIELDS = [
     ('Package', True, False),
     ('Version', True, False),
@@ -305,46 +307,6 @@ def CreateChanges(output,
   ])
   with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
-
-
-def GetFlagValue(flagvalue, strip=True):
-  """Converts a raw flag string to a useable value.
-
-  1. Expand @filename style flags to the content of filename.
-  2. Cope with Python3 strangness of sys.argv.
-     sys.argv is not actually proper str types on Unix with Python3
-     The bytes of the arg are each directly transcribed to the characters of
-     the str. It is actually more complex than that, as described in the docs.
-       https://docs.python.org/3/library/sys.html#sys.argv
-       https://docs.python.org/3/library/os.html#os.fsencode
-       https://www.python.org/dev/peps/pep-0383/
-
-  Args:
-    flagvalue: (str) raw flag value
-    strip: (bool) Strip white space.
-
-  Returns:
-    Python2: unicode
-    Python3: str
-  """
-  if flagvalue:
-    if sys.version_info[0] < 3:
-      # python2 gives us raw bytes in argv.
-      flagvalue = flagvalue.decode('utf-8')
-    # assertion: py2: flagvalue is unicode
-    # assertion: py3: flagvalue is str, but in weird format
-    if flagvalue[0] == '@':
-      # Subtle: We do not want to re-encode the value here, because it
-      # is encoded in the right format for file open operations.
-      with open(flagvalue[1:], 'rb') as f:
-        flagvalue = f.read().decode('utf-8')
-    else:
-      # convert fs specific encoding back to proper unicode.
-      flagvalue = os.fsencode(flagvalue).decode('utf-8')
-
-    if strip:
-      return flagvalue.strip()
-  return flagvalue
 
 
 def GetFlagValues(flagvalues):

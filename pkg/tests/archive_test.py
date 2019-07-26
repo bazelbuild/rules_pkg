@@ -339,5 +339,26 @@ class TarFileWriterTest(unittest.TestCase):
     ]
     self.assertTarFileContent(self.tempfile, content)
 
+  def testPackageDirFileAttribute(self):
+      """
+      Test package_dir and package_dir_file attributes of pkg_tar
+
+      Verifies that passing package_dir (string) and package_dir_file(label)
+      to pkg_tar yields identical results
+      """
+      package_dir = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "test_tar_package_dir.tar"))
+      package_dir_file = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "test_tar_package_dir_file.tar"))
+
+      expected_content = [
+          {'name': '.'},
+          {'name': './package'},
+          {'name': './package/nsswitch.conf'},
+      ]
+
+      self.assertTarFileContent(package_dir, expected_content)
+      self.assertTarFileContent(package_dir_file, expected_content)
+
 if __name__ == "__main__":
   unittest.main()

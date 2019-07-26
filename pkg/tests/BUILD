@@ -12,9 +12,28 @@ genrule(
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
 )
 
+pkg_tar(
+    name = "test_tar_package_dir",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    package_dir = "/package"
+)
+
+pkg_tar(
+    name = "test_tar_package_dir_file",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    package_dir_file = "testdata/test_tar_package_dir_file.txt"
+)
+
 filegroup(
     name = "archive_testdata",
-    srcs = glob(["testdata/**"]),
+    srcs = glob(["testdata/**"]) + [
+        ":test_tar_package_dir",
+        ":test_tar_package_dir_file"
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -56,6 +75,16 @@ py_test(
     ],
     deps = [
         "@rules_pkg//:make_rpm_lib",
+    ],
+)
+
+py_test(
+    name = "helpers_test",
+    srcs = ["helpers_test.py"],
+    python_version = "PY2",
+    srcs_version = "PY2AND3",
+    deps = [
+        "//:archive",
     ],
 )
 

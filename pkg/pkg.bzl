@@ -35,16 +35,28 @@ def _quote(filename, protect = "="):
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
+    # Files needed by rule implementation at runtime
+    files = []
+
     # Compute the relative path
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
 
+    # Package dir can be specified by a file or inlined.
+    if ctx.attr.package_dir_file:
+        if ctx.attr.package_dir:
+            fail("Both package_dir and package_dir_file attributes were specified")
+        package_dir_arg = "--directory=@" + ctx.file.package_dir_file.path
+        files.append(ctx.file.package_dir_file)
+    else:
+        package_dir_arg = "--directory=" + ctx.attr.package_dir or "/"
+
     # Start building the arguments.
     args = [
         "--output=" + ctx.outputs.out.path,
-        "--directory=" + ctx.attr.package_dir,
+        package_dir_arg,
         "--mode=" + ctx.attr.mode,
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
@@ -112,11 +124,12 @@ def _pkg_tar_impl(ctx):
         for k in ctx.attr.symlinks
     ]
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
+    files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
 
     ctx.actions.run(
         mnemonic = "PackageTar",
-        inputs = file_inputs + ctx.files.deps + [arg_file],
+        inputs = file_inputs + ctx.files.deps + files,
         executable = ctx.executable.build_tar,
         arguments = ["--flagfile", arg_file.path],
         outputs = [ctx.outputs.out],
@@ -245,7 +258,8 @@ _real_pkg_tar = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(),
-        "package_dir": attr.string(default = "/"),
+        "package_dir": attr.string(),
+        "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
         "srcs": attr.label_list(allow_files = True),
         "files": attr.label_keyed_string_dict(allow_files = True),
