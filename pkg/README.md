@@ -94,7 +94,7 @@ Here, the Debian package is built from three `pkg_tar` targets:
 <a name="future"></a>
 ## Future work
 
- - Support more format, especially `pkg_zip`.
+ - Support more formats.
  - Maybe a bit more integration with the `docker_build` rule.
 
 <a name="pkg_tar"></a>
@@ -327,6 +327,81 @@ Creates a tar file from a list of inputs.
            ...
           },
           </code>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="pkg_zip"></a>
+## pkg_zip
+
+```python
+pkg_zip(name, extension, package_dir, srcs, timestamp)
+```
+
+Creates a zip file from a list of inputs.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <code>Name, required</code>
+        <p>A unique name for this rule.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>extension</code></td>
+      <td>
+        <code>String, default to 'zip'</code>
+        <p>
+            The extension for the resulting zipfile. The output
+            file will be '<i>name</i>.<i>extension</i>'.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>package_dir</code></td>
+      <td>
+        <code>String, default to '/'</code>
+        <p>Target directory inside zip.</p>
+        <p>
+          The prefix of all paths in the zip.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>srcs</code></td>
+      <td>
+        <code>List of files, optional</code>
+        <p>File to add to the layer.</p>
+        <p>
+          A list of files that should be included in the archive.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>srcs</code></td>
+      <td>
+        <code>Integer, default to 315532800</code>
+        <p>
+          The time to use for every file in the zip, expressed as seconds since
+          Unix Epoch, RFC 3339.
+        </p>
+        <p>
+          Due to limitations in the format of zip files, values bevfore
+          Jan 1, 1980 will be rounded up and the precision in the zip file is
+          limited to a granularity of 2 seconds.
         </p>
       </td>
     </tr>
