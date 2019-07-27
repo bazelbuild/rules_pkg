@@ -379,3 +379,57 @@ def pkg_deb(name, package, **kwargs):
         changes = out_changes,
         **kwargs
     )
+
+def _pkg_zip_impl(ctx):
+    args = ctx.actions.args()
+
+    for f in ctx.files.srcs:
+        args.add("-f", "%s=%s" % (_quote(f.path), dest_path(f, strip_prefix = None)))
+
+    args.add("-o", ctx.outputs.out.path)
+    args.add("-d", ctx.attr.package_dir)
+    args.add("-t", ctx.attr.timestamp)
+    args.use_param_file("%s")
+
+    ctx.actions.run(
+        mnemonic = "PackageZip",
+        inputs = ctx.files.srcs,
+        executable = ctx.executable.build_zip,
+        arguments = [args],
+        outputs = [ctx.outputs.out],
+        env = {
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "UTF-8",
+            "PYTHONIOENCODING": "UTF-8",
+            "PYTHONUTF8": "1",
+        },
+        use_default_shell_env = True,
+    )
+    return OutputGroupInfo(out=[ctx.outputs.out]);
+
+pkg_zip_impl = rule(
+    implementation = _pkg_zip_impl,
+    attrs = {
+        "extension": attr.string(default = "zip"),
+        "srcs": attr.label_list(allow_files = True),
+        "package_dir": attr.string(default = "/"),
+        "timestamp": attr.int(default = 315532800),
+        "out": attr.output(),
+        # Implicit dependencies.
+        "build_zip": attr.label(
+            default = Label("@rules_pkg//:build_zip"),
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+        ),
+    },
+)
+
+def pkg_zip(name, **kwargs):
+    extension = kwargs.get("extension") or "zip"
+
+    pkg_zip_impl(
+        name = name,
+        out = name + "." + extension,
+        **kwargs
+    )
