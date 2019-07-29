@@ -204,9 +204,9 @@ def CreateDeb(output,
   if postrm:
     extrafiles['postrm'] = (postrm, 0o755)
   if config:
-    extrafiles['config'] = (config, 0o755)
+    extrafiles['config'] = (config, 0o644)
   if templates:
-    extrafiles['templates'] = (templates, 0o755)
+    extrafiles['templates'] = (templates, 0o644)
   if conffiles:
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
   control = CreateDebControl(extrafiles=extrafiles, **kwargs)
