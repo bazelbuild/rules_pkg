@@ -183,7 +183,7 @@ Creates a tar file from a list of inputs.
       <td>
         <code>String, default to 0555</code>
         <p>
-          Set the mode of files added by the <code>files</code> attribute.
+          Set the mode of files added by the <code>srcs</code> attribute.
         </p>
       </td>
     </tr>
@@ -192,7 +192,7 @@ Creates a tar file from a list of inputs.
       <td>
         <code>int, seconds since Jan 1, 1970, default to -1 (ignored)</code>
         <p>
-          Set the mod time of files added by the <code>files</code> attribute.
+          Set the modification time of files added by the <code>srcs</code> attribute.
         </p>
       </td>
     </tr>
@@ -201,7 +201,7 @@ Creates a tar file from a list of inputs.
       <td>
         <code>bool, default True</code>
         <p>
-          Set the mod time of files added by the <code>files</code> attribute
+          Set the modification time of files added by the <code>srcs</code> attribute
           to a 2000-01-01.
         </p>
       </td>
@@ -212,7 +212,7 @@ Creates a tar file from a list of inputs.
         <code>Dictionary, default to '{}'</code>
         <p>
           A string dictionary to change default mode of specific files from
-          <code>files</code>. Each key should be a path to a file before
+          <code>srcs</code>. Each key should be a path to a file before
           appending the prefix <code>package_dir</code> and the corresponding
           value the octal permission of to apply to the file.
         </p>
@@ -232,7 +232,7 @@ Creates a tar file from a list of inputs.
         <code>String, default to '0.0'</code>
         <p>
           <code>UID.GID</code> to set the default numeric owner for all files
-          provided in <code>files</code>.
+          provided in <code>srcs</code>.
         </p>
       </td>
     </tr>
@@ -242,7 +242,7 @@ Creates a tar file from a list of inputs.
         <code>Dictionary, default to '{}'</code>
         <p>
           A string dictionary to change default owner of specific files from
-          <code>files</code>. Each key should be a path to a file before
+          <code>srcs</code>. Each key should be a path to a file before
           appending the prefix <code>package_dir</code> and the corresponding
           value the <code>UID.GID</code> numeric string for the owner of the
           file. When determining owner ids, this attribute is looked first then
@@ -264,7 +264,7 @@ Creates a tar file from a list of inputs.
         <code>String, optional</code>
         <p>
           <code>username.groupname</code> to set the default owner for all files
-          provided in <code>files</code> (by default there is no owner names).
+          provided in <code>srcs</code> (by default there is no owner names).
         </p>
       </td>
     </tr>
@@ -274,7 +274,7 @@ Creates a tar file from a list of inputs.
         <code>Dictionary, default to '{}'</code>
         <p>
           A string dictionary to change default owner of specific files from
-          <code>files</code>. Each key should be a path to a file before
+          <code>srcs</code>. Each key should be a path to a file before
           appending the prefix <code>package_dir</code> and the corresponding
           value the <code>username.groupname</code> string for the owner of the
           file. When determining ownernames, this attribute is looked first then
