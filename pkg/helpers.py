@@ -14,7 +14,7 @@
 import os
 import sys
 
-def SplitNameValuePairAtSeparator(arg, c):
+def SplitNameValuePairAtSeparator(arg, sep):
   """Split a string at the first unquoted occurrence of a character.
 
   Split the string arg at the first unquoted occurrence of the character c.
@@ -24,7 +24,7 @@ def SplitNameValuePairAtSeparator(arg, c):
 
   Args:
     arg: the string to be split
-    c: the character at which to split
+    sep: the character at which to split
 
   Returns:
     The unquoted string before the separator and the string after the
@@ -33,7 +33,7 @@ def SplitNameValuePairAtSeparator(arg, c):
   head = ''
   i = 0
   while i < len(arg):
-    if arg[i] == c:
+    if arg[i] == sep:
       return (head, arg[i + 1:])
     elif arg[i] == '\\':
       i += 1
@@ -45,7 +45,7 @@ def SplitNameValuePairAtSeparator(arg, c):
     else:
       head += arg[i]
     i += 1
-  # if we leave the loop, the character c was not found unquoted
+  # if we leave the loop, the character sep was not found unquoted
   return (head, '')
 
 def GetFlagValue(flagvalue, strip=True):
