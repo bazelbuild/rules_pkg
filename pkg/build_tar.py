@@ -23,7 +23,7 @@ import tempfile
 from rules_pkg import archive
 from absl import flags
 
-from helpers import GetFlagValue
+from helpers import GetFlagValue, SplitNameValuePairAtSeparator
 
 flags.DEFINE_string('output', None, 'The output file, mandatory')
 flags.mark_flag_as_required('output')
@@ -262,42 +262,6 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
-
-def unquote_and_split(arg, c):
-  """Split a string at the first unquoted occurrence of a character.
-
-  Split the string arg at the first unquoted occurrence of the character c.
-  Here, in the first part of arg, the backslash is considered the
-  quoting character indicating that the next character is to be
-  added literally to the first part, even if it is the split character.
-
-  Args:
-    arg: the string to be split
-    c: the character at which to split
-
-  Returns:
-    The unquoted string before the separator and the string after the
-    separator.
-  """
-  head = ''
-  i = 0
-  while i < len(arg):
-    if arg[i] == c:
-      return (head, arg[i + 1:])
-    elif arg[i] == '\\':
-      i += 1
-      if i == len(arg):
-        # dangling quotation symbol
-        return (head, '')
-      else:
-        head += arg[i]
-    else:
-      head += arg[i]
-    i += 1
-  # if we leave the loop, the character c was not found unquoted
-  return (head, '')
-
-
 def main(unused_argv):
   # Parse modes arguments
   default_mode = None
@@ -308,7 +272,7 @@ def main(unused_argv):
   mode_map = {}
   if FLAGS.modes:
     for filemode in FLAGS.modes:
-      (f, mode) = unquote_and_split(filemode, '=')
+      (f, mode) = SplitNameValuePairAtSeparator(filemode, '=')
       if f[0] == '/':
         f = f[1:]
       mode_map[f] = int(mode, 8)
@@ -319,7 +283,7 @@ def main(unused_argv):
   names_map = {}
   if FLAGS.owner_names:
     for file_owner in FLAGS.owner_names:
-      (f, owner) = unquote_and_split(file_owner, '=')
+      (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
         f = f[1:]
@@ -330,7 +294,7 @@ def main(unused_argv):
   ids_map = {}
   if FLAGS.owners:
     for file_owner in FLAGS.owners:
-      (f, owner) = unquote_and_split(file_owner, '=')
+      (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
         f = f[1:]
@@ -368,7 +332,7 @@ def main(unused_argv):
           output.add_deb(deb)
 
     for f in FLAGS.file:
-      (inf, tof) = unquote_and_split(f, '=')
+      (inf, tof) = SplitNameValuePairAtSeparator(f, '=')
       output.add_file(inf, tof, **file_attributes(tof))
     for f in FLAGS.empty_file:
       output.add_empty_file(f, **file_attributes(f))
@@ -381,7 +345,7 @@ def main(unused_argv):
     for deb in FLAGS.deb:
       output.add_deb(deb)
     for link in FLAGS.link:
-      l = unquote_and_split(link, ':')
+      l = SplitNameValuePairAtSeparator(link, ':')
       output.add_link(l[0], l[1])
 
 
