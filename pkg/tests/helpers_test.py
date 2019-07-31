@@ -17,14 +17,14 @@ import tempfile
 import helpers
 
 
-class HelpersTestCase(unittest.TestCase):
-    def test_getFlagValue_nonStripped(self):
+class GetFlagValueTestCase(unittest.TestCase):
+    def testNonStripped(self):
         self.assertEqual(helpers.GetFlagValue('value ', strip=False), 'value ')
 
-    def test_getFlagValue_Stripped(self):
+    def testStripped(self):
         self.assertEqual(helpers.GetFlagValue('value ', strip=True), 'value')
 
-    def test_getFlagValue_nonStripped_fromFile(self):
+    def testNonStripped_fromFile(self):
         with tempfile.NamedTemporaryFile() as f:
             f.write('value ')
             f.flush()
@@ -32,7 +32,7 @@ class HelpersTestCase(unittest.TestCase):
                 '@{}'.format(f.name),
                 strip=False), 'value ')
 
-    def test_getFlagValue_Stripped_fromFile(self):
+    def testStripped_fromFile(self):
         with tempfile.NamedTemporaryFile() as f:
             f.write('value ')
             f.flush()
@@ -40,6 +40,57 @@ class HelpersTestCase(unittest.TestCase):
                 '@{}'.format(f.name),
                 strip=True), 'value')
 
+class SplitNameValuePairAtSeparatorTestCase(unittest.TestCase):
+    def testNoSep(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('abc', '=')
+
+        self.assertEqual(key, 'abc')
+        self.assertEqual(val, '')
+
+    def testNoSepWithEscape(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('a\\=bc', '=')
+
+        self.assertEqual(key, 'a=bc')
+        self.assertEqual(val, '')
+
+    def testNoSepWithDanglingEscape(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('abc\\', '=')
+
+        self.assertEqual(key, 'abc')
+        self.assertEqual(val, '')
+
+    def testHappyCase(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('abc=xyz', '=')
+
+        self.assertEqual(key, 'abc')
+        self.assertEqual(val, 'xyz')
+
+    def testHappyCaseWithEscapes(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('a\\=\\=b\\=c=xyz', '=')
+
+        self.assertEqual(key, 'a==b=c')
+        self.assertEqual(val, 'xyz')
+
+    def testStopsAtFirstSep(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('a=b=c', '=')
+
+        self.assertEqual(key, 'a')
+        self.assertEqual(val, 'b=c')
+
+    def testDoesntUnescapeVal(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('abc=x\\=yz\\', '=')
+
+        self.assertEqual(key, 'abc')
+
+        # the val doesn't get unescaped at all
+        self.assertEqual(val, 'x\\=yz\\')
+
+    def testUnescapesNonsepCharsToo(self):
+        key, val = helpers.SplitNameValuePairAtSeparator('na\\xffme=value', '=')
+
+        # this behaviour is surprising
+        self.assertEqual(key, 'naxffme')
+        self.assertEqual(val, 'value')
 
 if __name__ == "__main__":
     unittest.main()

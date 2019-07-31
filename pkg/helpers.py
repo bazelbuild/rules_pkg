@@ -14,6 +14,39 @@
 import os
 import sys
 
+def SplitNameValuePairAtSeparator(arg, sep):
+  """Split a string at the first unquoted occurrence of a character.
+
+  Split the string arg at the first unquoted occurrence of the character c.
+  Here, in the first part of arg, the backslash is considered the
+  quoting character indicating that the next character is to be
+  added literally to the first part, even if it is the split character.
+
+  Args:
+    arg: the string to be split
+    sep: the character at which to split
+
+  Returns:
+    The unquoted string before the separator and the string after the
+    separator.
+  """
+  head = ''
+  i = 0
+  while i < len(arg):
+    if arg[i] == sep:
+      return (head, arg[i + 1:])
+    elif arg[i] == '\\':
+      i += 1
+      if i == len(arg):
+        # dangling quotation symbol
+        return (head, '')
+      else:
+        head += arg[i]
+    else:
+      head += arg[i]
+    i += 1
+  # if we leave the loop, the character sep was not found unquoted
+  return (head, '')
 
 def GetFlagValue(flagvalue, strip=True):
   """Converts a raw flag string to a useable value.
