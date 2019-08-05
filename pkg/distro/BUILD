@@ -18,39 +18,32 @@ pkg_tar(
     package_dir = ".",
 )
 
-py_library(
-    name = "util",
+# TODO(aiuto): Package print_rel_notes as a rule so this is easier to write.
+genrule(
+    name = "relnotes",
     srcs = [
-        "__init__.py",
-        "release_tools.py",
-        ":release_version.py",
+        ":rules_pkg-%s.tar.gz" % version,
     ],
-    srcs_version = "PY3",
-    deps = [
-        "@bazel_tools//tools/python/runfiles",
+    outs = ["relnotes.txt"],
+    cmd = " ".join([
+        "$(location :print_rel_notes)",
+        "rules_pkg",
+        version,
+        "$(location :rules_pkg-%s.tar.gz)" % version,
+        ">$@",
+    ]),
+    tools = [
+        ":print_rel_notes",
     ],
 )
 
-py_binary(
-    name = "print_rel_notes",
-    srcs = [
-        "print_rel_notes.py",
-    ],
-    data = [
-        ":rules_pkg-%s.tar.gz" % version,
-    ],
-    python_version = "PY3",
-    deps = [
-        ":util",
-        "@bazel_tools//tools/python/runfiles",
-    ],
-)
 
 py_test(
     name = "packaging_test",
     size = "large",
     srcs = [
         "packaging_test.py",
+        ":release_version.py",
     ],
     data = [
         ":rules_pkg-%s.tar.gz" % version,
@@ -72,4 +65,24 @@ genrule(
     name = "version_as_py",
     outs = ["release_version.py"],
     cmd = "echo RELEASE_VERSION = \\'%s\\' >$@" % version
+)
+
+py_library(
+    name = "util",
+    srcs = [
+        "__init__.py",
+        "release_tools.py",
+    ],
+    srcs_version = "PY3",
+)
+
+py_binary(
+    name = "print_rel_notes",
+    srcs = [
+        "print_rel_notes.py",
+    ],
+    python_version = "PY3",
+    deps = [
+        ":util",
+    ],
 )

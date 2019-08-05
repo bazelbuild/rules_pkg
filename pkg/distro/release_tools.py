@@ -15,59 +15,35 @@
 
 import hashlib
 import os
+from string import Template
 import textwrap
 
-from bazel_tools.tools.python.runfiles import runfiles
+
+def package_basename(repo, version):
+  return '%s-%s.tar.gz' % (repo, version)
 
 
-def package_basename(version):
-  return 'rules_pkg-%s.tar.gz' % version
-
-
-def get_package_info(version):
-  tar_path = runfiles.Create().Rlocation(
-      os.path.join('rules_pkg', 'distro', package_basename(version)))
-  with open(tar_path, 'rb') as pkg_content:
+def get_package_sha256(tarball_path):
+  with open(tarball_path, 'rb') as pkg_content:
     tar_sha256 = hashlib.sha256(pkg_content.read()).hexdigest()
-  return tar_path, tar_sha256
+  return tar_sha256
 
 
-def workspace_content(url, sha256):
+def workspace_content(url, repo, sha256):
   # Set up a fresh Bazel workspace
-  return textwrap.dedent(
+  workspace_stanza_template = Template(textwrap.dedent(
       """
       load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
       http_archive(
-          name = "rules_pkg",
-          url = "%s",
-          sha256 = "%s",
+          name = "${repo}",
+          url = "${url}",
+          sha256 = "${sha256}",
       )
-
-      load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-      rules_pkg_dependencies()
-      """ % (url, sha256)).strip()
-
-
-"""
-    # We do a little dance of renaming *.tmpl to *, mostly so that we do not
-    # have a BUILD file in testdata, which would create a package boundary.
-    def CopyTestFile(source_name, dest_name):
-      source_path = self.data_files.Rlocation(
-          os.path.join('rules_pkg', 'distro', 'testdata', source_name))
-      with open(source_path) as inp:
-        with open(os.path.join(tempdir, dest_name), 'w') as out:
-          content = inp.read()
-          out.write(content)
-
-    CopyTestFile('BUILD.tmpl', 'BUILD')
-
-    os.chdir(tempdir)
-    build_result = subprocess.check_output(['bazel', 'build', ':dummy_tar'])
-    if _VERBOSE:
-      print('=== Build Result ===')
-      print(build_result)
-
-    content = subprocess.check_output(
-        ['/bin/tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
-    self.assertEqual('./\n./BUILD\n', content)
-"""
+      load("@${repo}//:deps.bzl", "${repo}_dependencies")
+      ${repo}_dependencies()
+      """).strip())
+  return workspace_stanza_template.substitute({
+      'url': url,
+      'sha256': sha256,
+      'repo': repo,
+  })

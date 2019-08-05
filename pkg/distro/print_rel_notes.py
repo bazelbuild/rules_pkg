@@ -11,44 +11,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Print release notes for the package.
+"""Print release notes for a package.
 
 """
 
 import sys
+from string import Template
 import textwrap
 
-from bazel_tools.tools.python.runfiles import runfiles
 from distro import release_tools
-from distro import release_version
 
 
-def print_notes(version):
-  file_name = release_tools.package_basename(version)
-  _, sha256 = release_tools.get_package_info(version)
+def print_notes(repo, version, tarball_path, org='bazelbuild'):
+  file_name = release_tools.package_basename(repo, version)
+  sha256 = release_tools.get_package_sha256(tarball_path)
 
-  url = 'https://github.com/bazelbuild/rules_pkg/releases/download/%s/%s' % (
-      version, file_name)
-  print(textwrap.dedent(
+  url = 'https://github.com/%s/%s/releases/download/%s/%s' % (
+      org, repo, version, file_name)
+  workspace_stanza = release_tools.workspace_content(url, repo, sha256)
+  relnotes_template = Template(textwrap.dedent(
       """
+      ------------------------ snip ----------------------------
+      **New Features**
+
+      **Incompatible Changes**
 
       **WORKSPACE setup**
 
       ```
-      """).strip())
-  print(release_tools.workspace_content(url, sha256))
-  print(textwrap.dedent(
-      """
+      ${workspace_stanza}
       ```
 
       **Using the rules**
 
-      See [the source](https://github.com/bazelbuild/rules_pkg/tree/master/pkg).
+      See [the source](https://github.com/${org}/${repo}/tree/master).
+      ------------------------ snip ----------------------------
+
       """).strip())
+  print(relnotes_template.substitute({
+      'org': org,
+      'repo': repo,
+      'workspace_stanza': workspace_stanza,
+  }))
 
 
-def main(_):
-  print_notes(release_version.RELEASE_VERSION)
+def main(args):
+  print_notes(repo=args[1], version=args[2], tarball_path=args[3])
 
 
 if __name__ == '__main__':
