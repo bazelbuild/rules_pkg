@@ -19,7 +19,7 @@ import subprocess
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from distro import release_tools
+from releasing import release_tools
 from distro import release_version
 
 _VERBOSE = True

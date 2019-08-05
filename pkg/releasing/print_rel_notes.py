@@ -19,7 +19,7 @@ import sys
 from string import Template
 import textwrap
 
-from distro import release_tools
+from releasing import release_tools
 
 
 def print_notes(repo, version, tarball_path, org='bazelbuild'):

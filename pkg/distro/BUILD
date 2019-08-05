@@ -3,13 +3,16 @@ package(
 )
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "version")
+load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
         "@rules_pkg//:standard_package",
+        "@rules_pkg//releasing:standard_package",
     ],
+    strip_prefix = ".",
     extension = "tar.gz",
     # It is all source code, so make it read-only.
     mode = "0444",
@@ -18,25 +21,12 @@ pkg_tar(
     package_dir = ".",
 )
 
-# TODO(aiuto): Package print_rel_notes as a rule so this is easier to write.
-genrule(
+print_rel_notes(
     name = "relnotes",
-    srcs = [
-        ":rules_pkg-%s.tar.gz" % version,
-    ],
+    repo = "rules_pkg",
+    version = version,
     outs = ["relnotes.txt"],
-    cmd = " ".join([
-        "$(location :print_rel_notes)",
-        "rules_pkg",
-        version,
-        "$(location :rules_pkg-%s.tar.gz)" % version,
-        ">$@",
-    ]),
-    tools = [
-        ":print_rel_notes",
-    ],
 )
-
 
 py_test(
     name = "packaging_test",
@@ -56,7 +46,7 @@ py_test(
         "noci",
     ],
     deps = [
-        ":util",
+        "@rules_pkg//releasing:release_utils",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -65,24 +55,4 @@ genrule(
     name = "version_as_py",
     outs = ["release_version.py"],
     cmd = "echo RELEASE_VERSION = \\'%s\\' >$@" % version
-)
-
-py_library(
-    name = "util",
-    srcs = [
-        "__init__.py",
-        "release_tools.py",
-    ],
-    srcs_version = "PY3",
-)
-
-py_binary(
-    name = "print_rel_notes",
-    srcs = [
-        "print_rel_notes.py",
-    ],
-    python_version = "PY3",
-    deps = [
-        ":util",
-    ],
 )
