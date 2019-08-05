@@ -29,8 +29,15 @@ def get_package_sha256(tarball_path):
   return tar_sha256
 
 
-def workspace_content(url, repo, sha256):
-  # Set up a fresh Bazel workspace
+def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
+                      toolchains_method=None):
+  # Create the WORKSPACE stanza needed for this rule set.
+  if not deps_method:
+    deps_method = repo + '_dependencies'
+  to_load = ['"%s"' % deps_method]
+  if toolchains_method:
+    to_load.append('"%s"' % toolchains_method)
+
   workspace_stanza_template = Template(textwrap.dedent(
       """
       load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -39,11 +46,17 @@ def workspace_content(url, repo, sha256):
           url = "${url}",
           sha256 = "${sha256}",
       )
-      load("@${repo}//:deps.bzl", "${repo}_dependencies")
-      ${repo}_dependencies()
+      load("@${repo}//${setup_file}", ${to_load})
+      ${deps_method}()
       """).strip())
-  return workspace_stanza_template.substitute({
+  ret = workspace_stanza_template.substitute({
       'url': url,
       'sha256': sha256,
       'repo': repo,
+      'setup_file': setup_file or ':deps.bzl',
+      'deps_method': deps_method,
+      'to_load': ', '.join(to_load),
   })
+  if toolchains_method:
+    ret += '\n%s()' % toolchains_method
+  return ret
