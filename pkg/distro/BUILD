@@ -3,13 +3,16 @@ package(
 )
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "version")
+load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
         "@rules_pkg//:standard_package",
+        "@rules_pkg//releasing:standard_package",
     ],
+    strip_prefix = ".",
     extension = "tar.gz",
     # It is all source code, so make it read-only.
     mode = "0444",
@@ -18,32 +21,11 @@ pkg_tar(
     package_dir = ".",
 )
 
-py_library(
-    name = "util",
-    srcs = [
-        "__init__.py",
-        "release_tools.py",
-        ":release_version.py",
-    ],
-    srcs_version = "PY3",
-    deps = [
-        "@bazel_tools//tools/python/runfiles",
-    ],
-)
-
-py_binary(
-    name = "print_rel_notes",
-    srcs = [
-        "print_rel_notes.py",
-    ],
-    data = [
-        ":rules_pkg-%s.tar.gz" % version,
-    ],
-    python_version = "PY3",
-    deps = [
-        ":util",
-        "@bazel_tools//tools/python/runfiles",
-    ],
+print_rel_notes(
+    name = "relnotes",
+    repo = "rules_pkg",
+    version = version,
+    outs = ["relnotes.txt"],
 )
 
 py_test(
@@ -51,6 +33,7 @@ py_test(
     size = "large",
     srcs = [
         "packaging_test.py",
+        ":release_version.py",
     ],
     data = [
         ":rules_pkg-%s.tar.gz" % version,
@@ -63,7 +46,7 @@ py_test(
         "noci",
     ],
     deps = [
-        ":util",
+        "@rules_pkg//releasing:release_utils",
         "@bazel_tools//tools/python/runfiles",
     ],
 )

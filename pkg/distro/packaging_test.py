@@ -19,7 +19,7 @@ import subprocess
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from distro import release_tools
+from releasing import release_tools
 from distro import release_version
 
 _VERBOSE = True
@@ -30,20 +30,23 @@ class PackagingTest(unittest.TestCase):
 
   def setUp(self):
     self.data_files = runfiles.Create()
+    self.repo = 'rules_pkg'
+    self.version = release_version.RELEASE_VERSION
 
   def testBuild(self):
-    # Set up a fresh Bazel workspace
+    # Set up a fresh Bazel workspace using the currently build repo.
     tempdir = os.path.join(os.environ['TEST_TMPDIR'], 'build')
     if not os.path.exists(tempdir):
       os.makedirs(tempdir)
     with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
-      version = release_version.RELEASE_VERSION
-      file_name = release_tools.package_basename(version)
-      local_path, sha256 = release_tools.get_package_info(version)
+      file_name = release_tools.package_basename(self.repo, self.version)
+      local_path = runfiles.Create().Rlocation(
+          os.path.join('rules_pkg', 'distro', file_name))
+      sha256 = release_tools.get_package_sha256(local_path)
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
         release_tools.workspace_content(
-            'file://%s' % local_path, sha256)
+            'file://%s' % local_path, self.repo, sha256)
       ))
       workspace.write(workspace_content)
       if _VERBOSE:
