@@ -9,8 +9,8 @@ load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
-        "@rules_pkg//:standard_package",
-        "@rules_pkg//releasing:standard_package",
+        "//:standard_package",
+        "//releasing:standard_package",
     ],
     strip_prefix = ".",
     extension = "tar.gz",
