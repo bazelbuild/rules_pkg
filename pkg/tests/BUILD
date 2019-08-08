@@ -2,6 +2,7 @@
 licenses(["notice"])  # Apache 2.0
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 genrule(
     name = "generate_files",
@@ -110,6 +111,15 @@ pkg_deb(
     templates = ":testdata/templates",
     urgency = "low",
     version = "test",
+)
+
+pkg_rpm(
+    name = "test-rpm",
+    version = "1",
+    release = "0",
+    data = [":archive_testdata"],
+    spec_file = "test_rpm.spec",
+    debug = 1,
 )
 
 pkg_deb(

@@ -82,7 +82,4 @@ py_library(
     srcs = ["make_rpm.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = [
-        "@abseil_py//absl/flags",
-    ],
 )

@@ -22,6 +22,9 @@ def _pkg_rpm_impl(ctx):
 
     files = []
     args = ["--name=" + ctx.label.name]
+    if ctx.attr.debug:
+        args += ["--debug"]
+
     if ctx.attr.rpmbuild_path:
         args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
 
@@ -75,9 +78,6 @@ def _pkg_rpm_impl(ctx):
 
     for f in ctx.files.data:
         args += [f.path]
-
-    if ctx.attr.debug:
-        args += ["--debug"]
 
     # Call the generator script.
     # TODO(katre): Generate a source RPM.
