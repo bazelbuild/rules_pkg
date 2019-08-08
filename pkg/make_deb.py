@@ -13,6 +13,7 @@
 # limitations under the License.
 """A simple cross-platform helper to create a debian package."""
 
+import argparse
 import gzip
 import hashlib
 from io import BytesIO
@@ -22,8 +23,6 @@ import sys
 import tarfile
 import textwrap
 import time
-
-from absl import flags
 
 
 # list of debian fields : (name, mandatory, wrap[, default])
@@ -51,55 +50,28 @@ DEBIAN_FIELDS = [
     ('Urgency', False, False, 'medium'),
 ]
 
-flags.DEFINE_string('output', None, 'The output file, mandatory')
-flags.mark_flag_as_required('output')
-
-flags.DEFINE_string('changes', None, 'The changes output file, mandatory.')
-flags.mark_flag_as_required('changes')
-
-flags.DEFINE_string('data', None,
-                    'Path to the data tarball, mandatory')
-flags.mark_flag_as_required('data')
-
-flags.DEFINE_string('preinst', None,
-                    'The preinst script (prefix with @ to provide a path).')
-flags.DEFINE_string('postinst', None,
-                    'The postinst script (prefix with @ to provide a path).')
-flags.DEFINE_string('prerm', None,
-                    'The prerm script (prefix with @ to provide a path).')
-flags.DEFINE_string('postrm', None,
-                    'The postrm script (prefix with @ to provide a path).')
-flags.DEFINE_string('config', None,
-                    'The config script (prefix with @ to provide a path).')
-flags.DEFINE_string('templates', None,
-                    'The templates file (prefix with @ to provide a path).')
-
 # size of chunks for copying package content to final .deb file
 # This is a wild guess, but I am not convinced of the value of doing much work
 # to tune it.
 _COPY_CHUNK_SIZE = 1024 * 32
 
-# see
-# https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
-flags.DEFINE_multi_string(
-    'conffile', None,
-    'List of conffiles (prefix item with @ to provide a path)')
 
-
-def MakeGflags():
+def AddControlFlags(parser):
   """Creates a flag for each of the control file fields."""
   for field in DEBIAN_FIELDS:
-    fieldname = field[0].replace('-', '_').lower()
+    flag_name = '--' + field[0].replace('-', '_').lower()
     msg = 'The value for the %s content header entry.' % field[0]
+    required = field[1]
     if len(field) > 3:
+      default = field[3]
       if isinstance(field[3], list):
-        flags.DEFINE_multi_string(fieldname, field[3], msg)
+        parser.add_argument(flag_name, action='append', default=default,
+                            required=required, help=msg)
       else:
-        flags.DEFINE_string(fieldname, field[3], msg)
+        parser.add_argument(flag_name, default=default, required=required,
+                            help=msg)
     else:
-      flags.DEFINE_string(fieldname, None, msg)
-    if field[1]:
-      flags.mark_flag_as_required(fieldname)
+      parser.add_argument(flag_name, required=required, help=msg)
 
 
 def ConvertToFileLike(content, content_len, converter):
@@ -316,44 +288,78 @@ def GetFlagValues(flagvalues):
     return None
 
 
-def main(unused_argv):
+def main():
+  parser = argparse.ArgumentParser(
+      description='Helper for building deb packages',
+      fromfile_prefix_chars='')
+
+  parser.add_argument('--output', required=True,
+                      help='The output file, mandatory')
+  parser.add_argument('--changes', required=True,
+                      help='The changes output file, mandatory.')
+  parser.add_argument('--data', required=True, 
+                      help='Path to the data tarball, mandatory')
+  parser.add_argument(
+      '--preinst',
+      help='The preinst script (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--postinst',
+      help='The postinst script (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--prerm',
+      help='The prerm script (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--postrm',
+      help='The postrm script (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--config',
+      help='The config script (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--templates',
+      help='The templates file (prefix with @ to provide a path).')
+  # see
+  # https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
+  parser.add_argument(
+      '--conffile', action='append',
+      help='List of conffiles (prefix item with @ to provide a path)')
+  AddControlFlags(parser)
+  options = parser.parse_args()
+
   CreateDeb(
-      FLAGS.output,
-      FLAGS.data,
-      preinst=GetFlagValue(FLAGS.preinst, False),
-      postinst=GetFlagValue(FLAGS.postinst, False),
-      prerm=GetFlagValue(FLAGS.prerm, False),
-      postrm=GetFlagValue(FLAGS.postrm, False),
-      config=GetFlagValue(FLAGS.config, False),
-      templates=GetFlagValue(FLAGS.templates, False),
-      conffiles=GetFlagValues(FLAGS.conffile),
-      package=FLAGS.package,
-      version=GetFlagValue(FLAGS.version),
-      description=GetFlagValue(FLAGS.description),
-      maintainer=GetFlagValue(FLAGS.maintainer),
-      section=FLAGS.section,
-      architecture=FLAGS.architecture,
-      depends=GetFlagValues(FLAGS.depends),
-      suggests=FLAGS.suggests,
-      enhances=FLAGS.enhances,
-      preDepends=FLAGS.pre_depends,
-      recommends=FLAGS.recommends,
-      homepage=GetFlagValue(FLAGS.homepage),
-      builtUsing=GetFlagValue(FLAGS.built_using),
-      priority=FLAGS.priority,
-      conflicts=FLAGS.conflicts,
-      installedSize=GetFlagValue(FLAGS.installed_size))
+      options.output,
+      options.data,
+      preinst=GetFlagValue(options.preinst, False),
+      postinst=GetFlagValue(options.postinst, False),
+      prerm=GetFlagValue(options.prerm, False),
+      postrm=GetFlagValue(options.postrm, False),
+      config=GetFlagValue(options.config, False),
+      templates=GetFlagValue(options.templates, False),
+      conffiles=GetFlagValues(options.conffile),
+      package=options.package,
+      version=GetFlagValue(options.version),
+      description=GetFlagValue(options.description),
+      maintainer=GetFlagValue(options.maintainer),
+      section=options.section,
+      architecture=options.architecture,
+      depends=GetFlagValues(options.depends),
+      suggests=options.suggests,
+      enhances=options.enhances,
+      preDepends=options.pre_depends,
+      recommends=options.recommends,
+      homepage=GetFlagValue(options.homepage),
+      builtUsing=GetFlagValue(options.built_using),
+      priority=options.priority,
+      conflicts=options.conflicts,
+      installedSize=GetFlagValue(options.installed_size))
   CreateChanges(
-      output=FLAGS.changes,
-      deb_file=FLAGS.output,
-      architecture=FLAGS.architecture,
-      short_description=GetFlagValue(FLAGS.description).split('\n')[0],
-      maintainer=GetFlagValue(FLAGS.maintainer), package=FLAGS.package,
-      version=GetFlagValue(FLAGS.version), section=FLAGS.section,
-      priority=FLAGS.priority, distribution=FLAGS.distribution,
-      urgency=FLAGS.urgency)
+      output=options.changes,
+      deb_file=options.output,
+      architecture=options.architecture,
+      short_description=GetFlagValue(options.description).split('\n')[0],
+      maintainer=GetFlagValue(options.maintainer), package=options.package,
+      version=GetFlagValue(options.version), section=options.section,
+      priority=options.priority, distribution=options.distribution,
+      urgency=options.urgency)
 
 if __name__ == '__main__':
-  MakeGflags()
-  FLAGS = flags.FLAGS
-  main(FLAGS(sys.argv))
+  main()
