@@ -131,7 +131,7 @@ def _pkg_tar_impl(ctx):
         mnemonic = "PackageTar",
         inputs = file_inputs + ctx.files.deps + files,
         executable = ctx.executable.build_tar,
-        arguments = ["--flagfile", arg_file.path],
+        arguments = ["@" + arg_file.path],
         outputs = [ctx.outputs.out],
         env = {
             "LANG": "en_US.UTF-8",
@@ -141,7 +141,7 @@ def _pkg_tar_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out=[ctx.outputs.out]);
+    return OutputGroupInfo(out = [ctx.outputs.out])
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""

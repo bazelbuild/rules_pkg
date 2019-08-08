@@ -13,6 +13,7 @@
 # limitations under the License.
 """This tool build tar files from a list of inputs."""
 
+import argparse
 import json
 import os
 import os.path
@@ -21,75 +22,8 @@ import tarfile
 import tempfile
 
 from rules_pkg import archive
-from absl import flags
 
 from helpers import GetFlagValue, SplitNameValuePairAtSeparator
-
-flags.DEFINE_string('output', None, 'The output file, mandatory')
-flags.mark_flag_as_required('output')
-
-flags.DEFINE_multi_string('file', [], 'A file to add to the layer')
-
-flags.DEFINE_string('manifest', None,
-                    'JSON manifest of contents to add to the layer')
-
-flags.DEFINE_string('mode', None,
-                    'Force the mode on the added files (in octal).')
-
-flags.DEFINE_string(
-    'mtime', None, 'Set mtime on tar file entries. May be an integer or the'
-    ' value "portable", to get the value 2000-01-01, which is'
-    ' is usable with non *nix OSes')
-
-flags.DEFINE_multi_string('empty_file', [], 'An empty file to add to the layer')
-
-flags.DEFINE_multi_string('empty_dir', [], 'An empty dir to add to the layer')
-
-flags.DEFINE_multi_string('empty_root_dir', [],
-                          'An empty dir to add to the layer')
-
-flags.DEFINE_multi_string('tar', [], 'A tar file to add to the layer')
-
-flags.DEFINE_multi_string('deb', [], 'A debian package to add to the layer')
-
-flags.DEFINE_multi_string(
-    'link', [],
-    'Add a symlink a inside the layer ponting to b if a:b is specified')
-flags.register_validator(
-    'link',
-    lambda l: all(value.find(':') > 0 for value in l),
-    message='--link value should contains a : separator')
-
-flags.DEFINE_string('directory', None,
-                    'Directory in which to store the file inside the layer')
-
-flags.DEFINE_string('compression', None,
-                     'Compression (`gz` or `bz2`), default is none.')
-
-flags.DEFINE_multi_string(
-    'modes', None,
-    'Specific mode to apply to specific file (from the file argument),'
-    ' e.g., path/to/file=0455.')
-
-flags.DEFINE_multi_string(
-    'owners', None, 'Specify the numeric owners of individual files, '
-    'e.g. path/to/file=0.0.')
-
-flags.DEFINE_string(
-    'owner', '0.0', 'Specify the numeric default owner of all files,'
-    ' e.g., 0.0')
-
-flags.DEFINE_string('owner_name', None,
-                    'Specify the owner name of all files, e.g. root.root.')
-
-flags.DEFINE_multi_string(
-    'owner_names', None, 'Specify the owner names of individual files, e.g. '
-    'path/to/file=root.root.')
-
-flags.DEFINE_string('root_directory', './',
-                    'Default root directory is named "."')
-
-FLAGS = flags.FLAGS
 
 
 class TarFile(object):
@@ -262,38 +196,100 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
-def main(unused_argv):
+def main():
+  parser = argparse.ArgumentParser(
+      description='Helper for building tar packages',
+      fromfile_prefix_chars='@')
+  parser.add_argument('--output', required=True,
+                      help='The output file, mandatory.')
+  parser.add_argument('--file', action='append',
+                      help='A file to add to the layer.')
+  parser.add_argument('--manifest',
+                      help='JSON manifest of contents to add to the layer.')
+  parser.add_argument('--mode',
+                      help='Force the mode on the added files (in octal).')
+  parser.add_argument(
+      '--mtime',
+      help='Set mtime on tar file entries. May be an integer or the'
+           ' value "portable", to get the value 2000-01-01, which is'
+           ' is usable with non *nix OSes.')
+  parser.add_argument('--empty_file', action='append',
+                      help='An empty file to add to the layer.')
+  parser.add_argument('--empty_dir', action='append',
+                      help='An empty dir to add to the layer.')
+  parser.add_argument('--empty_root_dir', action='append',
+                      help='An empty dir to add to the layer.')
+  parser.add_argument('--tar', action='append',
+                      help='A tar file to add to the layer')
+  parser.add_argument('--deb', action='append',
+                      help='A debian package to add to the layer')
+  parser.add_argument(
+    '--link', action='append',
+    help='Add a symlink a inside the layer ponting to b if a:b is specified')
+  # TODO(aiuto): Add back in the validation
+  # flags.register_validator(
+  #   'link',
+  #   lambda l: all(value.find(':') > 0 for value in l),
+  #   message='--link value should contains a : separator')
+  parser.add_argument(
+      '--directory',
+      help='Directory in which to store the file inside the layer')
+  parser.add_argument('--compression',
+                      help='Compression (`gz` or `bz2`), default is none.')
+  parser.add_argument(
+    '--modes', action='append',
+    help='Specific mode to apply to specific file (from the file argument),'
+         ' e.g., path/to/file=0455.')
+  parser.add_argument(
+    '--owners', action='append',
+    help='Specify the numeric owners of individual files, '
+         'e.g. path/to/file=0.0.')
+  parser.add_argument(
+    '--owner', default='0.0',
+    help='Specify the numeric default owner of all files,'
+         ' e.g., 0.0')
+  parser.add_argument(
+      '--owner_name',
+      help='Specify the owner name of all files, e.g. root.root.')
+  parser.add_argument(
+    '--owner_names', action='append',
+    help='Specify the owner names of individual files, e.g. '
+         'path/to/file=root.root.')
+  parser.add_argument('--root_directory', default='./',
+                      help='Default root directory is named "."')
+  options = parser.parse_args()
+
   # Parse modes arguments
   default_mode = None
-  if FLAGS.mode:
+  if options.mode:
     # Convert from octal
-    default_mode = int(FLAGS.mode, 8)
+    default_mode = int(options.mode, 8)
 
   mode_map = {}
-  if FLAGS.modes:
-    for filemode in FLAGS.modes:
+  if options.modes:
+    for filemode in options.modes:
       (f, mode) = SplitNameValuePairAtSeparator(filemode, '=')
       if f[0] == '/':
         f = f[1:]
       mode_map[f] = int(mode, 8)
 
   default_ownername = ('', '')
-  if FLAGS.owner_name:
-    default_ownername = FLAGS.owner_name.split('.', 1)
+  if options.owner_name:
+    default_ownername = options.owner_name.split('.', 1)
   names_map = {}
-  if FLAGS.owner_names:
-    for file_owner in FLAGS.owner_names:
+  if options.owner_names:
+    for file_owner in options.owner_names:
       (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
         f = f[1:]
       names_map[f] = (user, group)
 
-  default_ids = FLAGS.owner.split('.', 1)
+  default_ids = options.owner.split('.', 1)
   default_ids = (int(default_ids[0]), int(default_ids[1]))
   ids_map = {}
-  if FLAGS.owners:
-    for file_owner in FLAGS.owners:
+  if options.owners:
+    for file_owner in options.owners:
       (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
@@ -301,8 +297,9 @@ def main(unused_argv):
       ids_map[f] = (int(user), int(group))
 
   # Add objects to the tar file
-  with TarFile(FLAGS.output, GetFlagValue(FLAGS.directory), FLAGS.compression,
-               FLAGS.root_directory, FLAGS.mtime) as output:
+  with TarFile(
+      options.output, GetFlagValue(options.directory),
+      options.compression, options.root_directory, options.mtime) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
@@ -313,8 +310,8 @@ def main(unused_argv):
           'names': names_map.get(filename, default_ownername),
       }
 
-    if FLAGS.manifest:
-      with open(FLAGS.manifest, 'r') as manifest_fp:
+    if options.manifest:
+      with open(options.manifest, 'r') as manifest_fp:
         manifest = json.load(manifest_fp)
         for f in manifest.get('files', []):
           output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
@@ -331,23 +328,23 @@ def main(unused_argv):
         for deb in manifest.get('debs', []):
           output.add_deb(deb)
 
-    for f in FLAGS.file:
+    for f in options.file or []:
       (inf, tof) = SplitNameValuePairAtSeparator(f, '=')
       output.add_file(inf, tof, **file_attributes(tof))
-    for f in FLAGS.empty_file:
+    for f in options.empty_file or []:
       output.add_empty_file(f, **file_attributes(f))
-    for f in FLAGS.empty_dir:
+    for f in options.empty_dir or []:
       output.add_empty_dir(f, **file_attributes(f))
-    for f in FLAGS.empty_root_dir:
+    for f in options.empty_root_dir or []:
       output.add_empty_root_dir(f, **file_attributes(f))
-    for tar in FLAGS.tar:
+    for tar in options.tar or []:
       output.add_tar(tar)
-    for deb in FLAGS.deb:
+    for deb in options.deb or []:
       output.add_deb(deb)
-    for link in FLAGS.link:
+    for link in options.link or []:
       l = SplitNameValuePairAtSeparator(link, ':')
       output.add_link(l[0], l[1])
 
 
 if __name__ == '__main__':
-  main(FLAGS(sys.argv))
+  main()

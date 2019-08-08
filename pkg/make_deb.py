@@ -290,8 +290,7 @@ def GetFlagValues(flagvalues):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Helper for building deb packages',
-      fromfile_prefix_chars='')
+      description='Helper for building deb packages')
 
   parser.add_argument('--output', required=True,
                       help='The output file, mandatory')
