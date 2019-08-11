@@ -20,7 +20,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ZIP_EPOCH = 315532800
 
-def get_argument_parser():
+def _get_argument_parser():
   parser = argparse.ArgumentParser(
     description = 'create a zip file',
     fromfile_prefix_chars = '@',
@@ -58,38 +58,43 @@ def get_argument_parser():
 
   return parser
 
-def remove_leading_slash(path):
+def _remove_leading_slash(path):
   if path[0] == '/':
     return path[1:]
   return path
 
-def remove_trailing_slash(path):
+def _remove_trailing_slash(path):
   if path.endswith('/'):
     return path[:-1]
   return path
 
-def combine_paths(package_dir, dst_path):
-  dst_path = remove_leading_slash(dst_path)
+def _combine_paths(package_dir, dst_path):
+  dst_path = _remove_leading_slash(dst_path)
 
   dst_path = package_dir + '/' + dst_path
 
   # remove leading /'s: the zip format spec says paths should never have a
   # leading slash, but Python will happily do this. The built-in zip tool
   # in Windows will complain that such a zip file is invalid.
-  dst_path = remove_leading_slash(dst_path)
+  dst_path = _remove_leading_slash(dst_path)
 
   return dst_path
 
+def parse_date(ts):
+  ts = datetime.utcfromtimestamp(ts)
+  return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
+
 def main(args):
-  package_dir = remove_trailing_slash(args.directory)
-  ts = datetime.utcfromtimestamp(max(ZIP_EPOCH, args.timestamp))
-  ts = (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
+  package_dir = _remove_trailing_slash(args.directory)
+
+  unix_ts = max(ZIP_EPOCH, args.timestamp)
+  ts = parse_date(unix_ts)
 
   with ZipFile(args.output, 'w') as zip:
     for f in args.files or []:
       (src_path, dst_path) = SplitNameValuePairAtSeparator(f, '=')
 
-      dst_path = combine_paths(package_dir, dst_path)
+      dst_path = _combine_paths(package_dir, dst_path)
 
       entry_info = ZipInfo(
         filename = dst_path,
@@ -105,6 +110,6 @@ def main(args):
         zip.writestr(entry_info, data)
 
 if __name__ == '__main__':
-  parser = get_argument_parser()
+  parser = _get_argument_parser()
   args = parser.parse_args()
   main(args)
