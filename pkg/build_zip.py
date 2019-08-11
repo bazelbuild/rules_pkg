@@ -13,49 +13,47 @@
 # limitations under the License.
 """This tool builds zip files from a list of inputs."""
 
+import argparse
 from datetime import datetime
 from helpers import SplitNameValuePairAtSeparator
-from optparse import OptionParser
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ZIP_EPOCH = 315532800
 
-def get_options_parser():
-  parser = OptionParser()
+def get_argument_parser():
+  parser = argparse.ArgumentParser(
+    description = 'create a zip file',
+    fromfile_prefix_chars = '@',
+  )
 
-  parser.add_option(
+  parser.add_argument(
     '-o',
     '--output',
-    type = 'string',
-    dest = 'output',
-    help = 'the output zip file path',
+    type = str,
+    help = 'The output zip file path.',
   )
 
-  parser.add_option(
-    '-f',
-    '--file',
-    type = 'string',
-    action = 'append',
-    dest = 'files',
-    help = 'a file to add to the zip, in the form of {src_path}={dst_path}',
-  )
-
-  parser.add_option(
+  parser.add_argument(
     '-d',
     '--directory',
-    type = 'string',
-    dest = 'directory',
+    type = str,
     default = '/',
-    help = 'an absolute path to use as a prefix for all files in the zip',
+    help = 'An absolute path to use as a prefix for all files in the zip.',
   )
 
-  parser.add_option(
+  parser.add_argument(
     '-t',
     '--timestamp',
-    type = 'int',
-    dest = 'timestamp',
+    type = int,
     default = ZIP_EPOCH,
-    help = 'the unix time to use for files added into the zip. values prior to Jan 1, 1980 are ignored.'
+    help = 'The unix time to use for files added into the zip. values prior to Jan 1, 1980 are ignored.'
+  )
+
+  parser.add_argument(
+    'files',
+    type = str,
+    nargs = '*',
+    help = 'Files to be added to the zip, in the form of {src_path}={dst_path}.',
   )
 
   return parser
@@ -82,13 +80,13 @@ def combine_paths(package_dir, dst_path):
 
   return dst_path
 
-def main(options):
-  package_dir = remove_trailing_slash(options.directory)
-  ts = datetime.utcfromtimestamp(max(ZIP_EPOCH, options.timestamp))
+def main(args):
+  package_dir = remove_trailing_slash(args.directory)
+  ts = datetime.utcfromtimestamp(max(ZIP_EPOCH, args.timestamp))
   ts = (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
 
-  with ZipFile(options.output, 'w') as zip:
-    for f in options.files or []:
+  with ZipFile(args.output, 'w') as zip:
+    for f in args.files or []:
       (src_path, dst_path) = SplitNameValuePairAtSeparator(f, '=')
 
       dst_path = combine_paths(package_dir, dst_path)
@@ -107,6 +105,6 @@ def main(options):
         zip.writestr(entry_info, data)
 
 if __name__ == '__main__':
-  parser = get_options_parser()
-  (options, unused_args) = parser.parse_args()
-  main(options)
+  parser = get_argument_parser()
+  args = parser.parse_args()
+  main(args)
