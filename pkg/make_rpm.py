@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
 import contextlib
 import fileinput
 import os
@@ -26,24 +27,7 @@ import subprocess
 import sys
 import tempfile
 
-from absl import flags
-
 from helpers import GetFlagValue
-
-flags.DEFINE_string('rpmbuild', '', 'Path to rpmbuild executable')
-flags.DEFINE_string('name', '', 'The name of the software being packaged.')
-flags.DEFINE_string('version', '',
-                    'The version of the software being packaged.')
-flags.DEFINE_string('release', '',
-                    'The release of the software being packaged.')
-flags.DEFINE_string('arch', '',
-                    'The CPU architecture of the software being packaged.')
-
-flags.DEFINE_string('spec_file', '',
-                    'The file containing the RPM specification.')
-flags.DEFINE_string('out_file', '',
-                    'The destination to save the resulting RPM file to.')
-flags.DEFINE_boolean('debug', False, 'Print debug messages.')
 
 
 # Setup to safely create a temporary directory and clean it up when done.
@@ -171,15 +155,15 @@ class RpmBuilder(object):
   TEMP_DIR = 'TMP'
   DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
 
-  def __init__(self, name, version, release, arch, debug, rpmbuild_path):
+  def __init__(self, name, version, release, arch, rpmbuild_path, debug=False):
     self.name = name
     self.version = GetFlagValue(version)
     self.release = GetFlagValue(release)
     self.arch = arch
-    self.debug = debug
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
+    self.debug = debug
 
   def AddFiles(self, paths, root=''):
     """Add a set of files to the current RPM.
@@ -225,6 +209,7 @@ class RpmBuilder(object):
   def CallRpmBuild(self, dirname):
     """Call rpmbuild with the correct arguments."""
 
+    buildroot = os.path.join(dirname, RpmBuilder.BUILD_DIR)
     args = [
         self.rpmbuild_path,
         '--define',
@@ -232,10 +217,10 @@ class RpmBuilder(object):
         '--define',
         '_tmppath %s/TMP' % dirname,
         '--bb',
-        '--buildroot',
-        os.path.join(dirname, 'BUILDROOT'),
+        '--buildroot=%s' % buildroot,
         self.spec_file,
     ]
+    os.environ['RPM_BUILD_ROOT'] = buildroot
     p = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
@@ -280,17 +265,40 @@ class RpmBuilder(object):
     return status
 
 
-def main(argv=()):
+def main(argv):
+  parser = argparse.ArgumentParser(
+      description='Helper for building rpm packages',
+      fromfile_prefix_chars='@')
+
+  parser.add_argument('--name', required=True,
+                      help='The name of the software being packaged.')
+  parser.add_argument('--version', required=True,
+                      help='The version of the software being packaged.')
+  parser.add_argument('--release', required=True,
+                      help='The release of the software being packaged.')
+  parser.add_argument(
+      '--arch',
+      help='The CPU architecture of the software being packaged.')
+  parser.add_argument('--spec_file', required=True,
+                      help='The file containing the RPM specification.')
+  parser.add_argument('--out_file', required=True,
+                      help='The destination to save the resulting RPM file to.')
+  parser.add_argument('--rpmbuild', help='Path to rpmbuild executable.')
+  parser.add_argument('--debug', action='store_true', default=False,
+                      help='Print debug messages.')
+  parser.add_argument('files', nargs='*')
+
+  options = parser.parse_args(argv or ())
+
   try:
-    builder = RpmBuilder(FLAGS.name, FLAGS.version, FLAGS.release, FLAGS.arch,
-                         FLAGS.debug, FLAGS.rpmbuild)
-    builder.AddFiles(argv[1:])
-    return builder.Build(FLAGS.spec_file, FLAGS.out_file)
+    builder = RpmBuilder(options.name, options.version, options.release,
+                         options.arch, options.rpmbuild, debug=options.debug)
+    builder.AddFiles(options.files)
+    return builder.Build(options.spec_file, options.out_file)
   except NoRpmbuildFoundError:
     print('ERROR: rpmbuild is required but is not present in PATH')
     return 1
 
 
 if __name__ == '__main__':
-  FLAGS = flags.FLAGS
-  main(FLAGS(sys.argv))
+  main(sys.argv[1:])
