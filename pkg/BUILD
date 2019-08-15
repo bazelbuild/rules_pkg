@@ -38,7 +38,6 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
-        "@abseil_py//absl/flags",
     ],
 )
 
@@ -50,7 +49,6 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
-        "@abseil_py//absl/flags",
     ],
 )
 
@@ -63,7 +61,6 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
-        "@abseil_py//absl/flags",
     ],
 )
 
