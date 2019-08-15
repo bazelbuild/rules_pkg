@@ -265,7 +265,7 @@ class RpmBuilder(object):
     return status
 
 
-def main(argv=()):
+def main(argv):
   parser = argparse.ArgumentParser(
       description='Helper for building rpm packages',
       fromfile_prefix_chars='@')
@@ -288,7 +288,7 @@ def main(argv=()):
                       help='Print debug messages.')
   parser.add_argument('files', nargs='*')
 
-  options = parser.parse_args()
+  options = parser.parse_args(argv or ())
 
   try:
     builder = RpmBuilder(options.name, options.version, options.release,
@@ -301,4 +301,4 @@ def main(argv=()):
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])
