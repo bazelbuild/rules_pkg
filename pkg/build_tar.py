@@ -225,7 +225,7 @@ def main():
                       help='A debian package to add to the layer')
   parser.add_argument(
     '--link', action='append',
-    help='Add a symlink a inside the layer ponting to b if a:b is specified')
+    help='Add a symlink a inside the layer pointing to b if a:b is specified')
   # TODO(aiuto): Add back in the validation
   # flags.register_validator(
   #   'link',
