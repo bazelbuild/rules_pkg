@@ -280,6 +280,7 @@ class TarFileWriter(object):
     components = name.rsplit('/', 1)
     if len(components) > 1:
       d = components[0]
+      dirmode = (mode | 0o755) if mode else 0o755
       self.add_file(d,
                     tarfile.DIRTYPE,
                     uid=uid,
@@ -287,7 +288,7 @@ class TarFileWriter(object):
                     uname=uname,
                     gname=gname,
                     mtime=mtime,
-                    mode=0o755)
+                    mode=dirmode)
     tarinfo = tarfile.TarInfo(name)
     tarinfo.mtime = mtime
     tarinfo.uid = uid
