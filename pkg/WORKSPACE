@@ -1,4 +1,32 @@
 workspace(name = "rules_pkg")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# NOTE: http_archive tests before https://github.com/bazelbuild/bazel-skylib/pull/184
+# The local_respository is used to test with that PR.
+
+#http_archive(
+#    name = "my_bazel_skylib",
+#    urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/0.8.0/bazel-skylib.0.8.0.tar.gz"],
+#    sha256 = "2ef429f5d7ce7111263289644d233707dba35e39696377ebab8b0bc701f7818e",
+#)
+local_repository(name = "my_bazel_skylib", path="../../bazel-skylib")
+
+
+# Stardoc needs bazel_skylib as a dependency and named that. So we must load it.
+# A federation user would not see this. It would just happen.
+http_archive(
+    name = "bazel_skylib",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/0.8.0/bazel-skylib.0.8.0.tar.gz"],
+    sha256 = "2ef429f5d7ce7111263289644d233707dba35e39696377ebab8b0bc701f7818e",
+)
+
+http_archive(
+    name = "io_bazel_skydoc",
+    url = "https://github.com/bazelbuild/skydoc/archive/0.3.0.tar.gz",
+    sha256 = "c2d66a0cc7e25d857e480409a8004fdf09072a1bd564d6824441ab2f96448eea",
+    strip_prefix = "skydoc-0.3.0",
+)
+
 load("//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
