@@ -159,7 +159,7 @@ class TarFile(object):
     root = None
     if self.directory and self.directory != '/':
       root = self.directory
-    self.tarfile.add_tar(tar, numeric=True, root=root)
+    self.tarfile.add_tar(tar, root=root)
 
   def add_link(self, symlink, destination):
     """Add a symbolic link pointing to `destination`.
