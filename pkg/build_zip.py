@@ -21,72 +21,40 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 ZIP_EPOCH = 315532800
 
 def _get_argument_parser():
-  parser = argparse.ArgumentParser(
-    description = 'create a zip file',
-    fromfile_prefix_chars = '@',
-  )
+  parser = argparse.ArgumentParser(description = 'create a zip file',
+                                   fromfile_prefix_chars = '@')
+
+  parser.add_argument('-o', '--output', type = str,
+                      help='The output zip file path.')
 
   parser.add_argument(
-    '-o',
-    '--output',
-    type = str,
-    help = 'The output zip file path.',
-  )
+      '-d', '--directory', type=str, default = '/',
+      help='An absolute path to use as a prefix for all files in the zip.')
 
   parser.add_argument(
-    '-d',
-    '--directory',
-    type = str,
-    default = '/',
-    help = 'An absolute path to use as a prefix for all files in the zip.',
-  )
+    '-t', '--timestamp', type=int, default=ZIP_EPOCH,
+    help='The unix time to use for files added into the zip. values prior to'
+          ' Jan 1, 1980 are ignored.')
 
   parser.add_argument(
-    '-t',
-    '--timestamp',
-    type = int,
-    default = ZIP_EPOCH,
-    help = 'The unix time to use for files added into the zip. values prior to Jan 1, 1980 are ignored.'
-  )
-
-  parser.add_argument(
-    'files',
-    type = str,
-    nargs = '*',
-    help = 'Files to be added to the zip, in the form of {src_path}={dst_path}.',
-  )
+    'files', type=str, nargs='*',
+    help = 'Files to be added to the zip, in the form of {srcpath}={dstpath}.')
 
   return parser
 
-def _remove_leading_slash(path):
-  if path[0] == '/':
-    return path[1:]
-  return path
+def _combine_paths(left, right):
+  result = left.rstrip('/') + '/' + right.lstrip('/')
 
-def _remove_trailing_slash(path):
-  if path.endswith('/'):
-    return path[:-1]
-  return path
-
-def _combine_paths(package_dir, dst_path):
-  dst_path = _remove_leading_slash(dst_path)
-
-  dst_path = package_dir + '/' + dst_path
-
-  # remove leading /'s: the zip format spec says paths should never have a
-  # leading slash, but Python will happily do this. The built-in zip tool
-  # in Windows will complain that such a zip file is invalid.
-  dst_path = _remove_leading_slash(dst_path)
-
-  return dst_path
+  # important: remove leading /'s: the zip format spec says paths should never
+  # have a leading slash, but Python will happily do this. The built-in zip
+  # tool in Windows will complain that such a zip file is invalid.
+  return result.lstrip('/')
 
 def parse_date(ts):
   ts = datetime.utcfromtimestamp(ts)
   return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
 
 def main(args):
-  package_dir = _remove_trailing_slash(args.directory)
-
   unix_ts = max(ZIP_EPOCH, args.timestamp)
   ts = parse_date(unix_ts)
 
@@ -94,12 +62,9 @@ def main(args):
     for f in args.files or []:
       (src_path, dst_path) = SplitNameValuePairAtSeparator(f, '=')
 
-      dst_path = _combine_paths(package_dir, dst_path)
+      dst_path = _combine_paths(args.directory, dst_path)
 
-      entry_info = ZipInfo(
-        filename = dst_path,
-        date_time = ts,
-      )
+      entry_info = ZipInfo(filename=dst_path, date_time=ts)
 
       entry_info.compress_type = ZIP_DEFLATED
 

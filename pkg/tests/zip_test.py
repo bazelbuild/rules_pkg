@@ -37,8 +37,7 @@ class ZipContentsCase(ZipTest):
     """Use zipfile to check the contents of some generated zip files."""
 
     def assertZipFileContent(self, zipfile, content):
-        """Assert that zipfile contains exactly the entries described by
-           content.
+        """Assert that zipfile contains the entries described by content.
 
         Args:
             zipfile: the test-package-relative path to a zip file to test.
@@ -87,13 +86,11 @@ class ZipContentsCase(ZipTest):
         )
 
 
-# These could be replaced with diff_test() rules (from skylib)
 class ZipEquivalency(ZipTest):
     """Check that some generated zip files are equivalent to each-other."""
 
     def assertFilesEqual(self, actual, expected):
-        """Given the names of some generated zips, assert that their contents
-           are equal."""
+        """Assert that two zip files contain the same bytes."""
 
         zipsAreEqual = filecmp.cmp(
             self.get_test_zip(actual),
