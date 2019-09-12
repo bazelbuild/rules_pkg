@@ -41,6 +41,12 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "build_zip",
+    srcs = ["build_zip.py"],
+    visibility = ["//visibility:public"],
+    deps = [":archive"],
+)
 
 py_binary(
     name = "make_deb",
