@@ -4,6 +4,7 @@
   <h2>Rules</h2>
   <ul>
     <li><a href="#pkg_tar">pkg_tar</a></li>
+    <li><a href="#pkg_zip">pkg_zip</a></li>
     <li><a href="#pkg_deb">pkg_deb</a></li>
     <li><a href="#pkg_rpm">pkg_rpm</a></li>
   </ul>
@@ -391,7 +392,7 @@ Creates a zip file from a list of inputs.
       </td>
     </tr>
     <tr>
-      <td><code>srcs</code></td>
+      <td><code>timestamp</code></td>
       <td>
         <code>Integer, default to 315532800</code>
         <p>
@@ -508,7 +509,6 @@ for more details on this.
         </p>
       </td>
     </tr>
-
     <tr>
       <td><code>conffiles</code>, <code>conffiles_file</code></td>
       <td>
