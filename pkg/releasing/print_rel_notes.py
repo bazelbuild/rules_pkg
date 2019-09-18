@@ -22,13 +22,13 @@ import textwrap
 from releasing import release_tools
 
 
-def print_notes(repo, version, tarball_path, org='bazelbuild'):
+def print_notes(repo, version, tarball_path, has_deps_file, org='bazelbuild'):
   file_name = release_tools.package_basename(repo, version)
   sha256 = release_tools.get_package_sha256(tarball_path)
 
   url = 'https://github.com/%s/%s/releases/download/%s/%s' % (
       org, repo, version, file_name)
-  workspace_stanza = release_tools.workspace_content(url, repo, sha256)
+  workspace_stanza = release_tools.workspace_content(url, repo, sha256, has_deps_file)
   relnotes_template = Template(textwrap.dedent(
       """
       ------------------------ snip ----------------------------
@@ -56,7 +56,9 @@ def print_notes(repo, version, tarball_path, org='bazelbuild'):
 
 
 def main(args):
-  print_notes(repo=args[1], version=args[2], tarball_path=args[3])
+  # has_deps_file defaults to True
+  has_deps_file = len(args) > 4 and args[4] != "False"
+  print_notes(repo=args[1], version=args[2], tarball_path=args[3], has_deps_file=has_deps_file)
 
 
 if __name__ == '__main__':

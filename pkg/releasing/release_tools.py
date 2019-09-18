@@ -18,6 +18,22 @@ import os
 from string import Template
 import textwrap
 
+WORKSPACE_STANZA = (
+"""
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "${repo}",
+    url = "${url}",
+    sha256 = "${sha256}",
+)
+%s
+""")
+
+DEPS_STANZA = (
+"""
+load("@${repo}//:deps.bzl", "${repo}_dependencies")
+${repo}_dependencies()
+""")
 
 def package_basename(repo, version):
   return '%s-%s.tar.gz' % (repo, version)
@@ -29,19 +45,10 @@ def get_package_sha256(tarball_path):
   return tar_sha256
 
 
-def workspace_content(url, repo, sha256):
+def workspace_content(url, repo, sha256, has_deps_file=True):
   # Set up a fresh Bazel workspace
-  workspace_stanza_template = Template(textwrap.dedent(
-      """
-      load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-      http_archive(
-          name = "${repo}",
-          url = "${url}",
-          sha256 = "${sha256}",
-      )
-      load("@${repo}//:deps.bzl", "${repo}_dependencies")
-      ${repo}_dependencies()
-      """).strip())
+  deps = DEPS_STANZA if has_deps_file else ""
+  workspace_stanza_template = Template((WORKSPACE_STANZA % deps).strip())
   return workspace_stanza_template.substitute({
       'url': url,
       'sha256': sha256,
