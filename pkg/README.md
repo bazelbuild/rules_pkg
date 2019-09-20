@@ -391,7 +391,7 @@ Creates a zip file from a list of inputs.
       </td>
     </tr>
     <tr>
-      <td><code>srcs</code></td>
+      <td><code>timestamp</code></td>
       <td>
         <code>Integer, default to 315532800</code>
         <p>
@@ -399,7 +399,7 @@ Creates a zip file from a list of inputs.
           Unix Epoch, RFC 3339.
         </p>
         <p>
-          Due to limitations in the format of zip files, values bevfore
+          Due to limitations in the format of zip files, values before
           Jan 1, 1980 will be rounded up and the precision in the zip file is
           limited to a granularity of 2 seconds.
         </p>
