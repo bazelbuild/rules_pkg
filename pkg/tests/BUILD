@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 licenses(["notice"])  # Apache 2.0
 
-load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 genrule(
@@ -27,6 +27,82 @@ pkg_tar(
         ":etc/nsswitch.conf",
     ],
     package_dir_file = "testdata/test_tar_package_dir_file.txt"
+)
+
+pkg_zip(
+    name = "test_zip_empty",
+    srcs = [],
+)
+
+# The contents of this file should equal test_zip_empty
+pkg_zip(
+    name = "test_zip_empty_different_extension",
+    srcs = [],
+    extension = "otherkindofzip",
+)
+
+pkg_zip(
+    name = "test_zip_basic",
+    srcs = [
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ],
+)
+
+pkg_zip(
+    name = "test_zip_timestamp",
+    srcs = [
+        "testdata/hello.txt",
+    ],
+    timestamp = 1234567890,
+)
+
+# This should be equal to test_zip_basic because timestamps are rounded
+# up to Jan 1 1980.
+pkg_zip(
+    name = "test_zip_basic_timestamp_before_epoch",
+    srcs = [
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ],
+    timestamp = 0,
+)
+
+# All of these should produce the same zip file.
+[pkg_zip(
+    name = "test_zip_package_dir" + str(idx),
+    srcs = [
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ],
+    package_dir = package_dir,
+) for (idx, package_dir) in enumerate([
+    "abc/def",
+    "/abc/def",
+    "/abc/def/",
+])]
+
+py_test(
+    name = "zip_test",
+    srcs = [
+        "zip_test.py",
+    ],
+    data = [
+        "test_zip_empty.zip",
+        "test_zip_basic.zip",
+        "test_zip_package_dir0.zip",
+        "test_zip_timestamp.zip",
+
+        # these could be replaced with diff_test() rules (from skylib)
+        "test_zip_basic_timestamp_before_epoch.zip",
+        "test_zip_empty_different_extension.otherkindofzip",
+        "test_zip_package_dir1.zip",
+        "test_zip_package_dir2.zip",
+    ],
+    deps = [
+        "@rules_pkg//:build_zip",
+        "@bazel_tools//tools/python/runfiles",
+    ],
 )
 
 filegroup(
