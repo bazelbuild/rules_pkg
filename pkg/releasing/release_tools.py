@@ -16,6 +16,7 @@
 import hashlib
 import os
 from string import Template
+import sys
 import textwrap
 
 
@@ -50,6 +51,14 @@ def get_package_sha256(tarball_path):
 def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
                       toolchains_method=None):
   # Create the WORKSPACE stanza needed for this rule set.
+  if setup_file and not (deps_method or toolchains_method):
+      print(
+            "setup_file can only be set if at least one of (deps_method, toolchains_method) is set.",
+            flush=True,
+            file=sys.stderr,
+      )
+      sys.exit(1)
+
   methods = []
   if deps_method:
     methods.append(deps_method)
