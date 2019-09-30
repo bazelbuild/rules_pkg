@@ -48,13 +48,14 @@ def print_notes(org, repo, version, tarball_path, setup_file=None,
 
       **Using the rules**
 
-      See [the source](https://github.com/${org}/${repo}/tree/master).
+      See [the source](https://github.com/${org}/${repo}/tree/${version}).
       ------------------------ snip ----------------------------
 
       """).strip())
   print(relnotes_template.substitute({
       'org': org,
       'repo': repo,
+      'version': version,
       'workspace_stanza': workspace_stanza,
   }))
 
