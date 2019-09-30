@@ -16,7 +16,26 @@
 import hashlib
 import os
 from string import Template
+import sys
 import textwrap
+
+
+WORKSPACE_STANZA_TEMPLATE = Template(textwrap.dedent(
+    """
+    load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+    http_archive(
+        name = "${repo}",
+        url = "${url}",
+        sha256 = "${sha256}",
+    )
+    """).strip())
+
+
+DEPS_STANZA_TEMPLATE = Template(textwrap.dedent(
+    """
+    load("@${repo}//${setup_file}", ${to_load})
+    """).strip())
+
 
 
 def package_basename(repo, version):
@@ -32,31 +51,34 @@ def get_package_sha256(tarball_path):
 def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
                       toolchains_method=None):
   # Create the WORKSPACE stanza needed for this rule set.
-  if not deps_method:
-    deps_method = repo + '_dependencies'
-  to_load = ['"%s"' % deps_method]
-  if toolchains_method:
-    to_load.append('"%s"' % toolchains_method)
-
-  workspace_stanza_template = Template(textwrap.dedent(
-      """
-      load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-      http_archive(
-          name = "${repo}",
-          url = "${url}",
-          sha256 = "${sha256}",
+  if setup_file and not (deps_method or toolchains_method):
+      print(
+            "setup_file can only be set if at least one of (deps_method, toolchains_method) is set.",
+            flush=True,
+            file=sys.stderr,
       )
-      load("@${repo}//${setup_file}", ${to_load})
-      ${deps_method}()
-      """).strip())
-  ret = workspace_stanza_template.substitute({
+      sys.exit(1)
+
+  methods = []
+  if deps_method:
+    methods.append(deps_method)
+  if toolchains_method:
+    methods.append(toolchains_method)
+
+  ret = WORKSPACE_STANZA_TEMPLATE.substitute({
       'url': url,
       'sha256': sha256,
       'repo': repo,
-      'setup_file': setup_file or ':deps.bzl',
-      'deps_method': deps_method,
-      'to_load': ', '.join(to_load),
   })
-  if toolchains_method:
-    ret += '\n%s()' % toolchains_method
+  if methods:
+    deps = DEPS_STANZA_TEMPLATE.substitute({
+        'repo': repo,
+        'setup_file': setup_file or ':deps.bzl',
+        'to_load': ', '.join('"%s"' % m for m in methods),
+    })
+    ret += "\n%s" % deps
+
+  for m in methods:
+    ret += '\n%s()' % m
+
   return ret
