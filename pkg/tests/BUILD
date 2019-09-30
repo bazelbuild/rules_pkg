@@ -18,7 +18,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir = "/package"
+    package_dir = "/package",
 )
 
 pkg_tar(
@@ -26,7 +26,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir_file = "testdata/test_tar_package_dir_file.txt"
+    package_dir_file = "testdata/test_tar_package_dir_file.txt",
 )
 
 pkg_zip(
@@ -53,6 +53,14 @@ pkg_zip(
     name = "test_zip_timestamp",
     srcs = [
         "testdata/hello.txt",
+    ],
+    timestamp = 1234567890,
+)
+
+pkg_zip(
+    name = "test_zip_permissions",
+    srcs = [
+        "testdata/executable.sh",
     ],
     timestamp = 1234567890,
 )
@@ -92,6 +100,7 @@ py_test(
         "test_zip_basic.zip",
         "test_zip_package_dir0.zip",
         "test_zip_timestamp.zip",
+        "test_zip_permissions.zip",
 
         # these could be replaced with diff_test() rules (from skylib)
         "test_zip_basic_timestamp_before_epoch.zip",
@@ -100,8 +109,8 @@ py_test(
         "test_zip_package_dir2.zip",
     ],
     deps = [
-        "@rules_pkg//:build_zip",
         "@bazel_tools//tools/python/runfiles",
+        "@rules_pkg//:build_zip",
     ],
 )
 
@@ -109,7 +118,7 @@ filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
         ":test_tar_package_dir",
-        ":test_tar_package_dir_file"
+        ":test_tar_package_dir_file",
     ],
     visibility = ["//visibility:private"],
 )
@@ -129,8 +138,8 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:archive",
         "@bazel_tools//tools/python/runfiles",
+        "@rules_pkg//:archive",
     ],
 )
 
@@ -151,8 +160,8 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:make_rpm_lib",
         "@rules_pkg//:archive",
+        "@rules_pkg//:make_rpm_lib",
     ],
 )
 
@@ -191,11 +200,11 @@ pkg_deb(
 
 pkg_rpm(
     name = "test-rpm",
-    version = "1",
-    release = "0",
     data = [":archive_testdata"],
-    spec_file = "test_rpm.spec",
     debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )
 
 pkg_deb(

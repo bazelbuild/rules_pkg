@@ -16,6 +16,7 @@
 import argparse
 from datetime import datetime
 from helpers import SplitNameValuePairAtSeparator
+import os
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ZIP_EPOCH = 315532800
@@ -65,6 +66,12 @@ def main(args):
       dst_path = _combine_paths(args.directory, dst_path)
 
       entry_info = ZipInfo(filename=dst_path, date_time=ts)
+      st = os.stat(src_path)
+
+      # preserve unix attributes such as execute permissions
+      # the same way as python's zipfile module does.
+      # https://github.com/python/cpython/blob/c9a413ede47171a224c72dd34122005170caaad4/Lib/zipfile.py#L526
+      entry_info.external_attr = (st.st_mode & 0xFFFF) << 16
 
       entry_info.compress_type = ZIP_DEFLATED
 

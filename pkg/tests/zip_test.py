@@ -21,6 +21,7 @@ from zipfile import ZipFile
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
+EXECUTABLE_CRC = 342626072
 
 class ZipTest(unittest.TestCase):
     def get_test_zip(self, zipfile):
@@ -54,6 +55,8 @@ class ZipContentsCase(ZipTest):
 
                 ts = parse_date(expected.get("timestamp", ZIP_EPOCH))
                 self.assertEqual(info.date_time, ts)
+                if "attr" in expected:
+                    self.assertEqual(info.external_attr, expected["attr"])
 
 
     def testEmpty(self):
@@ -74,6 +77,18 @@ class ZipContentsCase(ZipTest):
             [
                 {"filename": "hello.txt", "crc": HELLO_CRC, "timestamp": 1234567890},
             ],
+        )
+
+    def testPermissions(self):
+        self.assertZipFileContent(
+            "test_zip_permissions.zip",
+            [
+                { 
+                    "filename": "executable.sh",
+                    "crc": EXECUTABLE_CRC,
+                    "timestamp": 1234567890,
+                    "attr": 2179792896 }
+            ]
         )
 
     def testPackageDir(self):
