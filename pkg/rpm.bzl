@@ -57,6 +57,26 @@ def _pkg_rpm_impl(ctx):
     for data_file in ctx.files.data:
         key = "{%s}" % data_file.basename
         substitutions[key] = data_file.path
+
+    # Supplement basename substitutions with label substitutions
+    # (ex: `{$(location :foo)}`).
+    for data in ctx.attr.data:
+        files = data.files.to_list()
+        if len(files) ==  1:
+            key = "{$(location %s)}" % data.label
+            substitutions[key] = files[0].path
+
+            if ctx.label.package == data.label.package:
+                key = "{$(location :%s)}" % data.label.name
+                substitutions[key] = files[0].path
+        else:
+            key = "{$(locations %s)}" % data.label
+            substitutions[key] = " ".join([f.path for f in files])
+
+            if ctx.label.package == data.label.package:
+                key = "{$(locations :%s)}" % data.label.name
+                substitutions[key] = " ".join([f.path for f in files])
+
     ctx.actions.expand_template(
         template = ctx.file.spec_file,
         output = spec_file,
