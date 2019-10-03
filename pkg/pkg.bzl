@@ -72,6 +72,7 @@ def _pkg_tar_impl(ctx):
         runfiles_depsets = []
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
+            print(default_runfiles)
             if default_runfiles != None:
                 runfiles_depsets.append(default_runfiles.files)
 
