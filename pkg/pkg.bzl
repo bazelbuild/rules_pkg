@@ -33,6 +33,9 @@ def _quote(filename, protect = "="):
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
+    if ctx.attr.is_python_target and ctx.attr.python_deployed_runtime_path == None:
+        fail("pkg_tar: ERROR if you are packaging a python target you must\
+            reference which interpreter should be used at runtime.")
     # Files needed by rule implementation at runtime
     files = []
 
@@ -40,7 +43,10 @@ def _pkg_tar_impl(ctx):
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
 
     # Find a list of path remappings to apply.
-    remap_paths = ctx.attr.remap_paths
+    remap_paths = dict(ctx.attr.remap_paths)
+
+    # Make symlinks mutable so that we can add possible python links
+    symlinks = dict(ctx.attr.symlinks)
 
     # Package dir can be specified by a file or inlined.
     if ctx.attr.package_dir_file:
@@ -72,19 +78,29 @@ def _pkg_tar_impl(ctx):
         runfiles_depsets = []
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
-            print(default_runfiles)
-            if default_runfiles != None:
-                runfiles_depsets.append(default_runfiles.files)
-
+            if default_runfiles == None:
+                continue
+            elif ctx.attr.runfile_tree:
+                for runfile in default_runfiles.files:
+                    runfile_tree_path = "{}/{}.runfiles".format(
+                        f.label.package,
+                        f.label.name)
+                    remap_paths[runfile.path] = runfile_tree_path + "/__main__/" + runfile.path
+                    if runfile in ctx.attr.python_runtime.files:
+                        full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
+                        symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
+            runfiles_depsets.append(default_runfiles.files)
         # deduplicates files in srcs attribute and their runfiles
         file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
     else:
         file_inputs = ctx.files.srcs[:]
 
+
     args += [
         "--file=%s=%s" % (_quote(f.path), _remap(remap_paths, dest_path(f, data_path)))
         for f in file_inputs
     ]
+
     for target, f_dest_path in ctx.attr.files.items():
         target_files = target.files.to_list()
         if len(target_files) != 1:
@@ -119,8 +135,8 @@ def _pkg_tar_impl(ctx):
             args += ["--compression=gz"]
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
-        "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
-        for k in ctx.attr.symlinks
+        "--link=%s:%s" % (_quote(k, protect = ":"), symlinks[k])
+        for k in symlinks
     ]
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
@@ -286,6 +302,12 @@ pkg_tar_impl = rule(
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
 
+        # custom atrributes
+        "runfile_tree": attr.bool(default = False),
+        "is_python_target" : attr.bool(default = False),
+        "python_deployed_runtime_path" : attr.string(),
+        "python_runtime" : attr.label(),
+
         # Outputs
         "out": attr.output(),
 
@@ -315,6 +337,14 @@ def pkg_tar(**kwargs):
         out = kwargs["name"] + "." + extension,
         **kwargs
     )
+
+
+def pkg_py_runfiles(**kwargs):
+    kwargs["is_python_target"] = True
+    kwargs["runfile_tree"] = True
+    if kwargs.get("python_deployed_runtime_path") == None:
+        fail("pky_py_runtime: Invalid Python Runtime")
+    pkg_tar(**kwargs)
 
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
