@@ -55,8 +55,7 @@ class ZipContentsCase(ZipTest):
 
                 ts = parse_date(expected.get("timestamp", ZIP_EPOCH))
                 self.assertEqual(info.date_time, ts)
-                if "attr" in expected:
-                    self.assertEqual(info.external_attr, expected["attr"])
+                self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
 
 
     def testEmpty(self):
@@ -87,7 +86,8 @@ class ZipContentsCase(ZipTest):
                     "filename": "executable.sh",
                     "crc": EXECUTABLE_CRC,
                     "timestamp": 1234567890,
-                    "attr": 2179792896 }
+                    "attr": 0o644,
+                }
             ]
         )
 

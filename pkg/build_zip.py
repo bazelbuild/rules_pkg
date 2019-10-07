@@ -38,6 +38,10 @@ def _get_argument_parser():
           ' Jan 1, 1980 are ignored.')
 
   parser.add_argument(
+    '-m', '--mode',
+    help='The file system mode to use for files added into the zip.')
+
+  parser.add_argument(
     'files', type=str, nargs='*',
     help = 'Files to be added to the zip, in the form of {srcpath}={dstpath}.')
 
@@ -58,6 +62,10 @@ def parse_date(ts):
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
   ts = parse_date(unix_ts)
+  default_mode = None
+  if args.mode:
+    default_mode = int(args.mode, 8)
+  
 
   with ZipFile(args.output, 'w') as zip:
     for f in args.files or []:
@@ -66,12 +74,9 @@ def main(args):
       dst_path = _combine_paths(args.directory, dst_path)
 
       entry_info = ZipInfo(filename=dst_path, date_time=ts)
-      st = os.stat(src_path)
 
-      # preserve unix attributes such as execute permissions
-      # the same way as python's zipfile module does.
-      # https://github.com/python/cpython/blob/c9a413ede47171a224c72dd34122005170caaad4/Lib/zipfile.py#L526
-      entry_info.external_attr = (st.st_mode & 0xFFFF) << 16
+      if default_mode:
+        entry_info.external_attr = default_mode << 16
 
       entry_info.compress_type = ZIP_DEFLATED
 

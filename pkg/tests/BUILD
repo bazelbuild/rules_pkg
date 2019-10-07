@@ -62,6 +62,7 @@ pkg_zip(
     srcs = [
         "testdata/executable.sh",
     ],
+    mode = "644",
     timestamp = 1234567890,
 )
 
