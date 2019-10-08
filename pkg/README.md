@@ -638,8 +638,19 @@ for more details on this.
     <tr>
       <td><code>architecture</code></td>
       <td>
-        <code>String, default to 'all'</code>
-        <p>The architecture that this package target.</p>
+        <code>String, default to 'noarch'</code>
+        <p>The target's CPU architecture. Primarily used in the NVR. See <a href="https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch01s03.html">RPM Terminology</a></p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>target_platform</code></td>
+      <td>
+        <code>String, default to ''</code>
+        <p>
+            Allows you to set the target's platform CPU architecture, vendor and OS. RPM will error with <code>package [your_package_name] is intended for a different operating system</code>
+            if your host CPU and OS differs from your target's CPU and OS.
+            See <a href="https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/ch-rpmbuild.html#id757256">building for other platforms.</a>
+        </p>
       </td>
     </tr>
     <tr>
