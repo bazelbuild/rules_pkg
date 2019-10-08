@@ -20,6 +20,7 @@ from __future__ import print_function
 import contextlib
 import os
 import unittest
+import re
 
 import make_rpm
 
@@ -156,13 +157,14 @@ class MakeRpmTest(unittest.TestCase):
           '#!/bin/sh',
           'mkdir -p RPMS',
           'touch RPMS/test.rpm',
+          'echo "$@" > RPMS/test.rpm',
           'echo "Wrote: $PWD/RPMS/test.rpm"',
       )
       os.chmod(dummy, 0o777)
 
       with PrependPath([outer]):
         # Create the builder and exercise it.
-        builder = make_rpm.RpmBuilder('test', '1.0', '0', 'x86', None)
+        builder = make_rpm.RpmBuilder('test', '1.0', '0', 'x86_64-linux', None)
 
         # Create spec_file, test files.
         WriteFile('test.spec', 'Name: test', 'Version: 0.1',
@@ -173,6 +175,13 @@ class MakeRpmTest(unittest.TestCase):
 
         # Make sure files exist.
         self.assertTrue(FileExists('test.rpm'))
+
+        found_arg = False
+        with open("test.rpm", "r") as arg_file:
+            args = re.split("\s", arg_file.readline())
+            found_arg = "--target=x86_64-linux" in args
+
+        self.assertTrue(found_arg, "Unable to find arg --target=x86_64-linux in %s" % args)
 
 
 if __name__ == '__main__':

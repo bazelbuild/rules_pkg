@@ -281,7 +281,7 @@ def main(argv):
   parser.add_argument('--release', required=True,
                       help='The release of the software being packaged.')
   parser.add_argument('--target_platform',
-                      help="The target's platform which the software is meant to run on.")
+                      help="The target's platform which the software is meant to run on. Format should be cpu-vendor-os")
   parser.add_argument('--spec_file', required=True,
                       help='The file containing the RPM specification.')
   parser.add_argument('--out_file', required=True,
