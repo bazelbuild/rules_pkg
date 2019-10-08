@@ -46,8 +46,8 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.release:
         args += ["--release=" + ctx.attr.release]
 
-    if ctx.attr.architecture:
-        args += ["--arch=" + ctx.attr.architecture]
+    if ctx.attr.target_platform:
+        args += ["--target_platform=" + ctx.attr.target_platform]
 
     if not ctx.attr.spec_file:
         fail("spec_file was not specified")
@@ -142,7 +142,8 @@ pkg_rpm = rule(
             mandatory = True,
             allow_single_file = spec_filetype,
         ),
-        "architecture": attr.string(default = "all"),
+        "architecture": attr.string(default = "noarch"),
+        "target_platform": attr.string(),
         "version_file": attr.label(
             allow_single_file = True,
         ),

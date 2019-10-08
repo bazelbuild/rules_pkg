@@ -155,11 +155,11 @@ class RpmBuilder(object):
   TEMP_DIR = 'TMP'
   DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
 
-  def __init__(self, name, version, release, arch, rpmbuild_path, debug=False):
+  def __init__(self, name, version, release, target_platform, rpmbuild_path, debug=False):
     self.name = name
     self.version = GetFlagValue(version)
     self.release = GetFlagValue(release)
-    self.arch = arch
+    self.target_platform = target_platform
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
@@ -220,6 +220,10 @@ class RpmBuilder(object):
         '--buildroot=%s' % buildroot,
         self.spec_file,
     ]
+
+    if self.target_platform:
+        args.append("--target=%s" % self.target_platform)
+
     os.environ['RPM_BUILD_ROOT'] = buildroot
     p = subprocess.Popen(
         args,
@@ -276,9 +280,8 @@ def main(argv):
                       help='The version of the software being packaged.')
   parser.add_argument('--release', required=True,
                       help='The release of the software being packaged.')
-  parser.add_argument(
-      '--arch',
-      help='The CPU architecture of the software being packaged.')
+  parser.add_argument('--target_platform',
+                      help="The target's platform which the software is meant to run on.")
   parser.add_argument('--spec_file', required=True,
                       help='The file containing the RPM specification.')
   parser.add_argument('--out_file', required=True,
@@ -292,7 +295,7 @@ def main(argv):
 
   try:
     builder = RpmBuilder(options.name, options.version, options.release,
-                         options.arch, options.rpmbuild, debug=options.debug)
+                         options.target_platform, options.rpmbuild, debug=options.debug)
     builder.AddFiles(options.files)
     return builder.Build(options.spec_file, options.out_file)
   except NoRpmbuildFoundError:
