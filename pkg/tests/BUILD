@@ -3,6 +3,7 @@ licenses(["notice"])  # Apache 2.0
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
+load(":genpkg_test.bzl", "genpkg_analysis_tests", "genpkg_unit_tests")
 
 genrule(
     name = "generate_files",
@@ -377,3 +378,16 @@ test_suite(
     name = "all_windows_tests",
     tests = [":windows_tests"],
 )
+
+# Used within genpkg_analysis_tests
+filegroup(
+    name = "loremipsum_txt",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+genpkg_analysis_tests()
+
+genpkg_unit_tests()

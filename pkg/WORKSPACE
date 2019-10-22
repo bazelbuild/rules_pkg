@@ -2,3 +2,11 @@ workspace(name = "rules_pkg")
 
 load("//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bazel_skylib_workspace()
+
+local_repository(
+    name = "test_external_repo",
+    path = "tests/external_repo"
+)
