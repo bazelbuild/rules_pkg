@@ -153,7 +153,8 @@ class RpmBuilder(object):
   SOURCE_DIR = 'SOURCES'
   BUILD_DIR = 'BUILD'
   TEMP_DIR = 'TMP'
-  DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
+  LIB_DIR = 'LIBS'
+  DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR, LIB_DIR]
 
   def __init__(self, name, version, release, arch, rpmbuild_path, debug=False):
     self.name = name
@@ -181,7 +182,7 @@ class RpmBuilder(object):
       else:
         self.files.append(full_path)
 
-  def SetupWorkdir(self, spec_file, original_dir):
+  def SetupWorkdir(self, spec_file, original_dir, override_lib_file):
     """Create the needed structure in the workdir."""
 
     # Create directory structure.
@@ -206,7 +207,13 @@ class RpmBuilder(object):
       replacements['Release:'] = self.release
     CopyAndRewrite(spec_origin, self.spec_file, replacements)
 
-  def CallRpmBuild(self, dirname):
+    # Copy the override library
+    if override_lib_file:
+        shutil.copy(os.path.join(original_dir, override_lib_file),
+                    os.path.join(RpmBuilder.LIB_DIR,
+                                 os.path.basename(override_lib_file)))
+
+  def CallRpmBuild(self, dirname, override_lib_file=None):
     """Call rpmbuild with the correct arguments."""
 
     buildroot = os.path.join(dirname, RpmBuilder.BUILD_DIR)
@@ -221,11 +228,19 @@ class RpmBuilder(object):
         self.spec_file,
     ]
     os.environ['RPM_BUILD_ROOT'] = buildroot
+    env = {
+        'LANG': 'C',
+    }
+    if override_lib_file:
+        env['LD_PRELOAD'] = os.path.join(dirname,
+                                         RpmBuilder.LIB_DIR,
+                                         os.path.basename(override_lib_file))
+
     p = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        env={'LANG': 'C'})
+        env=env)
     output = p.communicate()[0].decode()
 
     if p.returncode == 0:
@@ -249,7 +264,7 @@ class RpmBuilder(object):
     else:
       print('No RPM file created.')
 
-  def Build(self, spec_file, out_file):
+  def Build(self, spec_file, out_file, override_lib_file=None):
     """Build the RPM described by the spec_file."""
     if self.debug:
       print('Building RPM for %s at %s' % (self.name, out_file))
@@ -258,8 +273,8 @@ class RpmBuilder(object):
     spec_file = os.path.join(original_dir, spec_file)
     out_file = os.path.join(original_dir, out_file)
     with Tempdir() as dirname:
-      self.SetupWorkdir(spec_file, original_dir)
-      status = self.CallRpmBuild(dirname)
+      self.SetupWorkdir(spec_file, original_dir, override_lib_file)
+      status = self.CallRpmBuild(dirname, override_lib_file)
       self.SaveResult(out_file)
 
     return status
@@ -284,6 +299,8 @@ def main(argv):
   parser.add_argument('--out_file', required=True,
                       help='The destination to save the resulting RPM file to.')
   parser.add_argument('--rpmbuild', help='Path to rpmbuild executable.')
+  parser.add_argument('--override_lib_file',
+                      help='Library to reference in LD_PRELOAD when calling rpmbuild')
   parser.add_argument('--debug', action='store_true', default=False,
                       help='Print debug messages.')
   parser.add_argument('files', nargs='*')

@@ -76,6 +76,10 @@ def _pkg_rpm_impl(ctx):
         args += [ctx.file.changelog.path]
     files += ctx.files.data
 
+    if ctx.attr.override_lib_file:
+        files += [ctx.file.override_lib_file]
+        args += ["--override_lib_file=" + ctx.file.override_lib_file.path]
+
     for f in ctx.files.data:
         args += [f.path]
 
@@ -156,6 +160,7 @@ pkg_rpm = rule(
         ),
         "release_file": attr.label(allow_single_file = True),
         "release": attr.string(),
+        "override_lib_file" : attr.label(allow_single_file=True, cfg="host"),
         "debug": attr.bool(default = False),
 
         # Implicit dependencies.
@@ -206,5 +211,8 @@ Args:
     release and release_file.
   changelog: A changelog file to include. This will not be written to the spec
     file, which should only list changes to the packaging, not the software itself.
+  override_lib_file: The .so library containing overrides for system library functions
+    invoked by rpmbuild. For example, you can override gethostname() and time() to
+    produce deterministic "Build Host" and "Build Time" values in the RPM.
   data: List all files to be included in the package here.
 """
