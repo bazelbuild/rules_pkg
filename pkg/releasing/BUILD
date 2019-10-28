@@ -21,7 +21,6 @@ filegroup(
         "BUILD",
         "*.bzl",
         "*.py",
-        "*.md",
     ]),
     visibility = ["@//distro:__pkg__"],
 )
