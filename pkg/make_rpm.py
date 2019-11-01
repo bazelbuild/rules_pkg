@@ -164,7 +164,7 @@ class RpmBuilder(object):
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
-    self.source_date_epoch = source_date_epoch
+    self.source_date_epoch = GetFlagValue(source_date_epoch)
     self.debug = debug
 
   def AddFiles(self, paths, root=''):
