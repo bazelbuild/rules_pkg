@@ -226,7 +226,7 @@ class RpmBuilder(object):
     env = {
         'LANG': 'C',
     }
-    if self.source_date_epoch is not None:
+    if self.source_date_epoch:
         env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
 
     p = subprocess.Popen(
