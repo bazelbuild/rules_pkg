@@ -81,11 +81,16 @@ def _pkg_tar_impl(ctx):
             if default_runfiles == None:
                 continue
             elif ctx.attr.runfile_tree:
+
                 for runfile in default_runfiles.files:
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
-                    remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
+
+                    # Make sure to not include the generated executable in the runfiles
+                    if f.files_to_run.executable.short_path != runfile.short_path:
+                        remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
+
                     if runfile in ctx.attr.python_runtime.files:
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
                         symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
