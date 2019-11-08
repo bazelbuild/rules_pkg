@@ -85,7 +85,7 @@ def _pkg_tar_impl(ctx):
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
-                    remap_paths[runfile.path] = runfile_tree_path + "/__main__/" + runfile.path
+                    remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
                     if runfile in ctx.attr.python_runtime.files:
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
                         symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
@@ -94,7 +94,6 @@ def _pkg_tar_impl(ctx):
         file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
     else:
         file_inputs = ctx.files.srcs[:]
-
 
     args += [
         "--file=%s=%s" % (_quote(f.path), _remap(remap_paths, dest_path(f, data_path)))
