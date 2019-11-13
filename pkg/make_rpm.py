@@ -156,7 +156,7 @@ class RpmBuilder(object):
   DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
 
   def __init__(self, name, version, release, arch, rpmbuild_path,
-               source_date_epoch, debug=False):
+               source_date_epoch=None, debug=False):
     self.name = name
     self.version = GetFlagValue(version)
     self.release = GetFlagValue(release)
@@ -222,9 +222,9 @@ class RpmBuilder(object):
         '--buildroot=%s' % buildroot,
         self.spec_file,
     ]
-    os.environ['RPM_BUILD_ROOT'] = buildroot
     env = {
         'LANG': 'C',
+        'RPM_BUILD_ROOT': buildroot,
     }
     if self.source_date_epoch:
         env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
