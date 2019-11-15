@@ -251,8 +251,10 @@ def _pkg_deb_impl(ctx):
     args += ["--suggests=" + d for d in ctx.attr.suggests]
     args += ["--enhances=" + d for d in ctx.attr.enhances]
     args += ["--conflicts=" + d for d in ctx.attr.conflicts]
+    args += ["--breaks=" + d for d in ctx.attr.breaks]
     args += ["--pre_depends=" + d for d in ctx.attr.predepends]
     args += ["--recommends=" + d for d in ctx.attr.recommends]
+    args += ["--replaces=" + d for d in ctx.attr.replaces]
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
@@ -379,9 +381,11 @@ pkg_deb_impl = rule(
         "depends_file": attr.label(allow_single_file = True),
         "suggests": attr.string_list(default = []),
         "enhances": attr.string_list(default = []),
+        "breaks": attr.string_list(default = []),
         "conflicts": attr.string_list(default = []),
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
+        "replaces": attr.string_list(default = []),
 
         # Outputs.
         "out": attr.output(mandatory = True),
