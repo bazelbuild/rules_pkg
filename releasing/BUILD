@@ -17,7 +17,11 @@ package(
 
 filegroup(
     name = "standard_package",
-    srcs = glob(["BUILD", "*.bzl", "*.py", "*.md"]),
+    srcs = glob([
+        "BUILD",
+        "*.bzl",
+        "*.py",
+    ]),
     visibility = ["@//distro:__pkg__"],
 )
 
@@ -36,6 +40,14 @@ py_binary(
         "print_rel_notes.py",
     ],
     python_version = "PY3",
+    deps = [
+        ":release_utils",
+    ],
+)
+
+py_test(
+    name = "release_tools_test",
+    srcs = ["release_tools_test.py"],
     deps = [
         ":release_utils",
     ],

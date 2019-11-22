@@ -82,7 +82,7 @@ def _pkg_tar_impl(ctx):
                 continue
             elif ctx.attr.runfile_tree:
 
-                for runfile in default_runfiles.files:
+                for runfile in default_runfiles.files.to_list():
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
@@ -91,7 +91,7 @@ def _pkg_tar_impl(ctx):
                     if f.files_to_run.executable.short_path != runfile.short_path:
                         remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
 
-                    if runfile in ctx.attr.python_runtime.files:
+                    if runfile in ctx.attr.python_runtime.files.to_list():
                         full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
                         symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
             runfiles_depsets.append(default_runfiles.files)
@@ -251,8 +251,10 @@ def _pkg_deb_impl(ctx):
     args += ["--suggests=" + d for d in ctx.attr.suggests]
     args += ["--enhances=" + d for d in ctx.attr.enhances]
     args += ["--conflicts=" + d for d in ctx.attr.conflicts]
+    args += ["--breaks=" + d for d in ctx.attr.breaks]
     args += ["--pre_depends=" + d for d in ctx.attr.predepends]
     args += ["--recommends=" + d for d in ctx.attr.recommends]
+    args += ["--replaces=" + d for d in ctx.attr.replaces]
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
@@ -379,9 +381,11 @@ pkg_deb_impl = rule(
         "depends_file": attr.label(allow_single_file = True),
         "suggests": attr.string_list(default = []),
         "enhances": attr.string_list(default = []),
+        "breaks": attr.string_list(default = []),
         "conflicts": attr.string_list(default = []),
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
+        "replaces": attr.string_list(default = []),
 
         # Outputs.
         "out": attr.output(mandatory = True),
