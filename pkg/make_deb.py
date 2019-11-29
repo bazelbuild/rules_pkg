@@ -24,6 +24,11 @@ import tarfile
 import textwrap
 import time
 
+if sys.version_info < (3, 7):
+  from collections import OrderedDict
+else:
+  OrderedDict = dict
+
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
@@ -166,7 +171,7 @@ def CreateDeb(output,
               conffiles=None,
               **kwargs):
   """Create a full debian package."""
-  extrafiles = {}
+  extrafiles = OrderedDict()
   if preinst:
     extrafiles['preinst'] = (preinst, 0o755)
   if postinst:
@@ -296,7 +301,7 @@ def main():
                       help='The output file, mandatory')
   parser.add_argument('--changes', required=True,
                       help='The changes output file, mandatory.')
-  parser.add_argument('--data', required=True, 
+  parser.add_argument('--data', required=True,
                       help='Path to the data tarball, mandatory')
   parser.add_argument(
       '--preinst',
