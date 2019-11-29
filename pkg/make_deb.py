@@ -140,13 +140,13 @@ def CreateDebControl(extrafiles=None, **kwargs):
   tar = BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
-      tarinfo = tarfile.TarInfo('control')
+      tarinfo = tarfile.TarInfo('./control')
       control_file_data = controlfile.encode('utf-8')
       tarinfo.size = len(control_file_data)
       f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
-          tarinfo = tarfile.TarInfo(name)
+          tarinfo = tarfile.TarInfo('./' + name)
           tarinfo.size = len(data)
           tarinfo.mode = mode
           f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
@@ -296,7 +296,7 @@ def main():
                       help='The output file, mandatory')
   parser.add_argument('--changes', required=True,
                       help='The changes output file, mandatory.')
-  parser.add_argument('--data', required=True, 
+  parser.add_argument('--data', required=True,
                       help='Path to the data tarball, mandatory')
   parser.add_argument(
       '--preinst',
