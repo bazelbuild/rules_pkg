@@ -2,7 +2,7 @@
 
 Bazel rules for packaging and fetching (for Debian and other distribution channels).
 
-There is currently no distinct discussion group for these rules. Use bazel-dev@googlegroups.com.
+Use rules-pkg-discuss@googlegroups.com for discussion.
 
 
 Travis CI
