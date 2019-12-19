@@ -14,6 +14,7 @@
 """This tool builds zip files from a list of inputs."""
 
 import argparse
+import os
 from datetime import datetime
 from helpers import SplitNameValuePairAtSeparator
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
@@ -67,6 +68,9 @@ def main(args):
       entry_info = ZipInfo(filename=dst_path, date_time=ts)
 
       entry_info.compress_type = ZIP_DEFLATED
+
+      # copy the mode attributes from src
+      entry_info.external_attr = (os.stat(src_path).st_mode & 0xFFFF) << 16
 
       # the zipfile library doesn't support adding a file by path with write()
       # and specifying a ZipInfo at the same time.
