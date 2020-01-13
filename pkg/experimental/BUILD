@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "rules_pkg")
-
-load("//:deps.bzl", "rules_pkg_dependencies")
-
-rules_pkg_dependencies()
-
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
-bazel_skylib_workspace()
+exports_files(
+    glob(["*.bzl"]),
+    visibility = ["//visibility:public"],
+)
