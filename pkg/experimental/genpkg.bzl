@@ -343,6 +343,7 @@ pkgfilegroup = rule(
     special requirements.  Consult `pkg_mkdirs` for more details.
     """,
     implementation = _pkgfilegroup_impl,
+    # @unsorted-dict-items
     attrs = {
         "srcs": attr.label_list(
             doc = """Files/Labels to include in this target filegroup""",
@@ -537,6 +538,7 @@ pkg_mkdirs = rule(
     distribution's documentation for more details.
     """,
     implementation = _pkg_mkdirs_impl,
+    # @unsorted-dict-items
     attrs = {
         "dirs": attr.string_list(
             doc = """Directory names to make within the package""",
