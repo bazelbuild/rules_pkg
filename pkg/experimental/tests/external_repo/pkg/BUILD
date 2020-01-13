@@ -12,17 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "rules_pkg")
+load("@rules_pkg//experimental:genpkg.bzl", "make_strip_prefix", "pkgfilegroup")
+load("test.bzl", "test_referencing_remote_file")
 
-load("//:deps.bzl", "rules_pkg_dependencies")
+package(default_visibility = ["//visibility:public"])
 
-rules_pkg_dependencies()
+exports_files(
+    glob(["**"]),
+    visibility = ["//visibility:public"],
+)
 
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+sh_binary(
+    name = "script",
+    srcs = ["dir/extproj.sh"],
+    visibility = ["//visibility:public"],
+)
 
-bazel_skylib_workspace()
+pkgfilegroup(
+    name = "extproj_script_pfg",
+    srcs = ["dir/extproj.sh"],
+    prefix = "usr/bin",
+    strip_prefix = make_strip_prefix(from_pkg = ""),
+)
 
-local_repository(
-    name = "experimental_test_external_repo",
-    path = "experimental/tests/external_repo",
+test_referencing_remote_file(
+    name = "pfg_local_file_in_extrepo",
 )
