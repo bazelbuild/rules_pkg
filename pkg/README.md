@@ -103,7 +103,7 @@ Here, the Debian package is built from three `pkg_tar` targets:
 
 ```python
 pkg_tar(name, extension, strip_prefix, package_dir, srcs,
-mode, modes, deps, symlinks)
+mode, modes, deps, symlinks, include_runfiles)
 ```
 
 Creates a tar file from a list of inputs.
@@ -331,6 +331,15 @@ Creates a tar file from a list of inputs.
         </p>
       </td>
     </tr>
+    <tr>
+      <td><code>include_runfiles</code></td>
+      <td>
+        <code>bool, default False</code>
+        <p>
+          Adds runfiles of any of the <code>srcs</code>
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -338,7 +347,7 @@ Creates a tar file from a list of inputs.
 ## pkg_zip
 
 ```python
-pkg_zip(name, extension, package_dir, srcs, timestamp)
+pkg_zip(name, extension, strip_prefix, package_dir, srcs, timestamp, remap_paths, include_runfiles)
 ```
 
 Creates a zip file from a list of inputs.
@@ -368,6 +377,24 @@ Creates a zip file from a list of inputs.
         <p>
             The extension for the resulting zipfile. The output
             file will be '<i>name</i>.<i>extension</i>'.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>strip_prefix</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Root path of the files.</p>
+        <p>
+          The directory structure from the files is preserved inside the
+          tarball but a prefix path determined by <code>strip_prefix</code>
+          is removed from the directory structure. This path can
+          be absolute from the workspace root if starting with a <code>/</code> or
+          relative to the rule's directory. A relative path may start with "./"
+          (or be ".") but cannot use ".." to go up level(s). By default, the
+          <code>strip_prefix</code> attribute is unused and all files are supposed to have no
+          prefix. A <code>strip_prefix</code> of "" (the empty string) means the
+          same as the default.
         </p>
       </td>
     </tr>
@@ -403,6 +430,30 @@ Creates a zip file from a list of inputs.
           Due to limitations in the format of zip files, values before
           Jan 1, 1980 will be rounded up and the precision in the zip file is
           limited to a granularity of 2 seconds.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>remap_paths</code></td>
+      <td>
+        <code>Dictionary, optional</code>
+        <p>Source path prefixes to remap in the tarfile.</p>
+        <p>
+          <code>
+          remap_paths = {
+           "original/path/prefix": "replaced/path",
+           ...
+          },
+          </code>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>include_runfiles</code></td>
+      <td>
+        <code>bool, default False</code>
+        <p>
+          Adds runfiles of any of the <code>srcs</code>
         </p>
       </td>
     </tr>

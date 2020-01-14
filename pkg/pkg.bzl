@@ -30,17 +30,39 @@ def _quote(filename, protect = "="):
     """Quote the filename, by escaping = by \\= and \\ by \\\\"""
     return filename.replace("\\", "\\\\").replace(protect, "\\" + protect)
 
-def _pkg_tar_impl(ctx):
-    """Implementation of the pkg_tar rule."""
-
-    # Files needed by rule implementation at runtime
-    files = []
-
+def prepare_files(ctx):
     # Compute the relative path
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
+
+    # Add runfiles if requested
+    file_inputs = []
+    if ctx.attr.include_runfiles:
+        runfiles_depsets = []
+        for f in ctx.attr.srcs:
+            default_runfiles = f[DefaultInfo].default_runfiles
+            if default_runfiles != None:
+                runfiles_depsets.append(default_runfiles.files)
+
+        # deduplicates files in srcs attribute and their runfiles
+        file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
+    else:
+        file_inputs = ctx.files.srcs[:]
+
+    file_paths = [
+        [_quote(f.path), _remap(remap_paths, dest_path(f, data_path))]
+        for f in file_inputs
+    ]
+
+    return file_inputs, file_paths
+
+def _pkg_tar_impl(ctx):
+    """Implementation of the pkg_tar rule."""
+
+    # Files needed by rule implementation at runtime
+    files = []
 
     # Package dir can be specified by a file or inlined.
     if ctx.attr.package_dir_file:
@@ -66,24 +88,13 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.portable_mtime:
         args.append("--mtime=portable")
 
-    # Add runfiles if requested
-    file_inputs = []
-    if ctx.attr.include_runfiles:
-        runfiles_depsets = []
-        for f in ctx.attr.srcs:
-            default_runfiles = f[DefaultInfo].default_runfiles
-            if default_runfiles != None:
-                runfiles_depsets.append(default_runfiles.files)
 
-        # deduplicates files in srcs attribute and their runfiles
-        file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
-    else:
-        file_inputs = ctx.files.srcs[:]
-
+    file_inputs, file_paths = prepare_files(ctx)
     args += [
-        "--file=%s=%s" % (_quote(f.path), _remap(remap_paths, dest_path(f, data_path)))
-        for f in file_inputs
+        "--file=%s=%s" % (f[0], f[1])
+        for f in file_paths
     ]
+
     for target, f_dest_path in ctx.attr.files.items():
         target_files = target.files.to_list()
         if len(target_files) != 1:
@@ -382,27 +393,26 @@ def pkg_deb(name, package, **kwargs):
         **kwargs
     )
 
-def _format_zip_file_arg(f):
-    return "%s=%s" % (_quote(f.path), dest_path(f, strip_prefix = None))
-
 def _pkg_zip_impl(ctx):
+    file_inputs, file_paths = prepare_files(ctx)
+
     args = ctx.actions.args()
+
+    [
+        args.add("%s=%s" % (f[0], f[1]))
+        for f in file_paths
+    ]
 
     args.add("-o", ctx.outputs.out.path)
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
-
-    args.add_all(
-        ctx.files.srcs,
-        map_each = _format_zip_file_arg,
-    )
 
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
     ctx.actions.run(
         mnemonic = "PackageZip",
-        inputs = ctx.files.srcs,
+        inputs = file_inputs,
         executable = ctx.executable.build_zip,
         arguments = [args],
         outputs = [ctx.outputs.out],
@@ -424,6 +434,11 @@ pkg_zip_impl = rule(
         "package_dir": attr.string(default = "/"),
         "timestamp": attr.int(default = 315532800),
         "out": attr.output(),
+
+        "include_runfiles": attr.bool(),
+        "strip_prefix": attr.string(),
+        "remap_paths": attr.string_dict(),
+
         # Implicit dependencies.
         "build_zip": attr.label(
             default = Label("@rules_pkg//:build_zip"),
