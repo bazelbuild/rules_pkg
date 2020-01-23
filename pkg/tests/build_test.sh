@@ -159,7 +159,13 @@ function test_tar() {
 ./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-etc.tar)"
   check_eq "./
 ./etc/
-./etc/nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
+./etc/nsswitch.conf
+./external/
+./external/bazel_tools/
+./external/bazel_tools/tools/
+./external/bazel_tools/tools/python/
+./external/bazel_tools/tools/python/runfiles/
+./external/bazel_tools/tools/python/runfiles/runfiles.py" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
   check_eq "./
 ./not-etc/
 ./not-etc/mapped-filename.conf" "$(get_tar_listing test-tar-files_dict.tar)"

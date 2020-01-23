@@ -287,6 +287,7 @@ pkg_tar(
     name = "test-tar-strip_prefix-dot",
     srcs = [
         ":etc/nsswitch.conf",
+        "@bazel_tools//tools/python/runfiles",
     ],
     strip_prefix = ".",
 )
