@@ -204,6 +204,19 @@ pkg_deb(
     output_changes = True,
 )
 
+pkg_deb(
+    name = "test-deb-with-provides",
+    package = "toto-with-provides",
+    breaks = ["oldbrokenpkg"],
+    provides = ["oldpkg"],
+    templates = ":testdata/templates",
+    data = ":test-tar-gz.tar.gz",
+    maintainer = "soméone@somewhere.com",
+    version = "test",
+    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
+    output_changes = True,
+)
+
 pkg_rpm(
     name = "test-rpm",
     version = "1",

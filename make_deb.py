@@ -41,6 +41,7 @@ DEBIAN_FIELDS = [
     ('Suggests', False, True, []),
     ('Enhances', False, True, []),
     ('Conflicts', False, True, []),
+    ('Provides', False, True, []),
     ('Breaks', False, True, []),
     ('Pre-Depends', False, True, []),
     ('Installed-Size', False, False),
@@ -357,6 +358,7 @@ def main():
       priority=options.priority,
       conflicts=options.conflicts,
       breaks=options.breaks,
+      provides=options.provides,
       installedSize=GetFlagValue(options.installed_size))
   if options.output_changes:
     CreateChanges(
