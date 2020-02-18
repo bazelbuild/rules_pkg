@@ -167,7 +167,7 @@ def _pkg_deb_impl(ctx):
     files = [ctx.file.data]
     args = [
         "--output=" + ctx.outputs.deb.path,
-        "--changes=" + ctx.outputs.changes.path,
+        "--changes=" + (ctx.outputs.changes.path if ctx.outputs.changes else ""),
         "--data=" + ctx.file.data.path,
         "--package=" + ctx.attr.package,
         "--architecture=" + ctx.attr.architecture,
@@ -246,6 +246,8 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.homepage:
         args += ["--homepage=" + ctx.attr.homepage]
 
+
+
     args += ["--distribution=" + ctx.attr.distribution]
     args += ["--urgency=" + ctx.attr.urgency]
     args += ["--suggests=" + d for d in ctx.attr.suggests]
@@ -256,12 +258,17 @@ def _pkg_deb_impl(ctx):
     args += ["--recommends=" + d for d in ctx.attr.recommends]
     args += ["--replaces=" + d for d in ctx.attr.replaces]
 
+    outputs = [ctx.outputs.deb]
+    if ctx.attr.output_changes:
+        args += ["--output_changes"]
+        outputs += [ctx.outputs.changes]
+
     ctx.actions.run(
         mnemonic = "MakeDeb",
         executable = ctx.executable.make_deb,
         arguments = args,
         inputs = files,
-        outputs = [ctx.outputs.deb, ctx.outputs.changes],
+        outputs = outputs,
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -277,7 +284,7 @@ def _pkg_deb_impl(ctx):
     output_groups = {"out": [ctx.outputs.out]}
     if hasattr(ctx.outputs, "deb"):
         output_groups["deb"] = [ctx.outputs.deb]
-    if hasattr(ctx.outputs, "changes"):
+    if ctx.attr.output_changes and hasattr(ctx.outputs, "changes"):
         output_groups["changes"] = [ctx.outputs.changes]
     return OutputGroupInfo(**output_groups)
 
@@ -386,11 +393,12 @@ pkg_deb_impl = rule(
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
         "replaces": attr.string_list(default = []),
+        "output_changes" : attr.bool(default = False),
 
         # Outputs.
         "out": attr.output(mandatory = True),
         "deb": attr.output(mandatory = True),
-        "changes": attr.output(mandatory = True),
+        "changes": attr.output(mandatory = False),
 
         # Implicit dependencies.
         "make_deb": attr.label(
@@ -407,7 +415,10 @@ def pkg_deb(name, package, **kwargs):
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
     out_deb = "%s_%s_%s.deb" % (package, version, architecture)
-    out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+    should_output_changes = kwargs.get("output_changes") == True
+    out_changes = None
+    if should_output_changes:
+        out_changes = "%s_%s_%s.changes" % (package, version, architecture)
     pkg_deb_impl(
         name = name,
         package = package,
@@ -449,7 +460,7 @@ def _pkg_zip_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out=[ctx.outputs.out]);
+    return OutputGroupInfo(out=[ctx.outputs.out])
 
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,

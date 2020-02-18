@@ -298,7 +298,7 @@ def main():
                       help='The output file, mandatory')
   parser.add_argument('--changes', required=True,
                       help='The changes output file, mandatory.')
-  parser.add_argument('--data', required=True, 
+  parser.add_argument('--data', required=True,
                       help='Path to the data tarball, mandatory')
   parser.add_argument(
       '--preinst',
@@ -318,6 +318,10 @@ def main():
   parser.add_argument(
       '--templates',
       help='The templates file (prefix with @ to provide a path).')
+  parser.add_argument(
+      "--output_changes", action='store_true',
+      help="Specifies if a .changes file should be generated.",
+  )
   # see
   # https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
   parser.add_argument(
@@ -354,15 +358,16 @@ def main():
       conflicts=options.conflicts,
       breaks=options.breaks,
       installedSize=GetFlagValue(options.installed_size))
-  CreateChanges(
-      output=options.changes,
-      deb_file=options.output,
-      architecture=options.architecture,
-      short_description=GetFlagValue(options.description).split('\n')[0],
-      maintainer=GetFlagValue(options.maintainer), package=options.package,
-      version=GetFlagValue(options.version), section=options.section,
-      priority=options.priority, distribution=options.distribution,
-      urgency=options.urgency)
+  if options.output_changes:
+    CreateChanges(
+        output=options.changes,
+        deb_file=options.output,
+        architecture=options.architecture,
+        short_description=GetFlagValue(options.description).split('\n')[0],
+        maintainer=GetFlagValue(options.maintainer), package=options.package,
+        version=GetFlagValue(options.version), section=options.section,
+        priority=options.priority, distribution=options.distribution,
+        urgency=options.urgency)
 
 if __name__ == '__main__':
   main()
