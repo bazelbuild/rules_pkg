@@ -334,6 +334,16 @@ pkg_tar(
 )
 
 pkg_tar(
+    name = "test-tar-runfiles",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    include_runfiles = True,
+    runfile_tree = True,
+    mode = "0o777",
+)
+
+pkg_tar(
     name = "test-tar-empty_dirs",
     empty_dirs = [
         "/tmp",

@@ -33,9 +33,6 @@ def _quote(filename, protect = "="):
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
-    if ctx.attr.is_python_target and ctx.attr.python_deployed_runtime_path == None:
-        fail("pkg_tar: ERROR if you are packaging a python target you must\
-            reference which interpreter should be used at runtime.")
     # Files needed by rule implementation at runtime
     files = []
 
@@ -72,16 +69,46 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.portable_mtime:
         args.append("--mtime=portable")
 
-    # Add runfiles if requested
+    if ctx.attr.py_venv and not ctx.attr.include_runfiles:
+        fail("If pkg_tar py_venv is provided include_runfiles must be True")
+
+    venv_workspace_name = None
+    venv_runfile_python_path = None
+    external_venv_runfile_python_path = None
+    if ctx.attr.py_venv:
+        venv_workspace_name = ctx.attr.py_venv.label.workspace_name
+        venv_runfile_python_path = "{}/{}/bin/python".format(venv_workspace_name, venv_workspace_name)
+        external_venv_runfile_python_path = "external/{}".format(venv_runfile_python_path)
+        has_correct_environment = False
+        for f in ctx.attr.srcs:
+            default_runfiles = f[DefaultInfo].default_runfiles
+            runfile_tree_root = "{}/{}.runfiles".format(f.label.package, f.label.name)
+
+            if external_venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
+                has_correct_environment = True
+                full_runfile_interpreter_path = "{}/{}/{}".format(
+                    ctx.attr.package_dir,
+                    runfile_tree_root,
+                    venv_runfile_python_path
+                )
+                symlinks[full_runfile_interpreter_path] = "{}/bin/python".format(
+                    ctx.attr.py_venv_deploy_path)
+
+        if not has_correct_environment:
+            fail("If you specify the py_venv parameter, this python target" +
+                " must be built with the correct config from .bazelrc. This doesn't seem" +
+                " to be the case because {} is not in any srcs' runfiles".format(venv_runfile_python_path))
+
     file_inputs = []
+    # Add runfiles if requested
+    workspace_name = (ctx.workspace_name if ctx.workspace_name else "__main__" )
+    runfiles_depsets = []
     if ctx.attr.include_runfiles:
-        runfiles_depsets = []
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles == None:
                 continue
-            elif ctx.attr.runfile_tree:
-
+            elif ctx.attr.include_runfile_tree:
                 for runfile in default_runfiles.files.to_list():
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
@@ -89,11 +116,8 @@ def _pkg_tar_impl(ctx):
 
                     # Make sure to not include the generated executable in the runfiles
                     if f.files_to_run.executable.short_path != runfile.short_path:
-                        remap_paths[runfile.short_path] = runfile_tree_path + "/__main__/" + runfile.short_path
+                        remap_paths[runfile.short_path] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
 
-                    if runfile in ctx.attr.python_runtime.files.to_list():
-                        full_runfile_interpreter_path = "{}/{}".format(ctx.attr.package_dir, remap_paths[runfile.path])
-                        symlinks[full_runfile_interpreter_path] = ctx.attr.python_deployed_runtime_path
             runfiles_depsets.append(default_runfiles.files)
         # deduplicates files in srcs attribute and their runfiles
         file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
@@ -314,11 +338,10 @@ pkg_tar_impl = rule(
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
 
-        # custom atrributes
-        "runfile_tree": attr.bool(default = False),
-        "is_python_target" : attr.bool(default = False),
-        "python_deployed_runtime_path" : attr.string(),
-        "python_runtime" : attr.label(),
+        # Custom atrributes
+        "include_runfile_tree": attr.bool(default = False),
+        "py_venv": attr.label(allow_files = True),
+        "py_venv_deploy_path": attr.string(default=""),
 
         # Outputs
         "out": attr.output(),
@@ -349,14 +372,6 @@ def pkg_tar(**kwargs):
         out = kwargs["name"] + "." + extension,
         **kwargs
     )
-
-
-def pkg_py_runfiles(**kwargs):
-    kwargs["is_python_target"] = True
-    kwargs["runfile_tree"] = True
-    if kwargs.get("python_deployed_runtime_path") == None:
-        fail("pky_py_runtime: Invalid Python Runtime")
-    pkg_tar(**kwargs)
 
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
