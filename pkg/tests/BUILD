@@ -378,3 +378,12 @@ test_suite(
     name = "all_windows_tests",
     tests = [":windows_tests"],
 )
+
+# Used within experimental/tests/ for external repo genpkg tests
+filegroup(
+    name = "loremipsum_txt",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    visibility = ["//visibility:public"],
+)
