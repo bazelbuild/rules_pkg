@@ -220,18 +220,18 @@ function check_deb() {
     echo "Unable to test deb control files listing, too old dpkg-deb!" >&2
     return 0
   fi
-  local ctrl_listing="conffiles
-config
-control
-templates"
+  local ctrl_listing="./conffiles
+./config
+./control
+./templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look
   # at root causes later. I am not sure if this is WAI or not.
   check_eq "$ctrl_listing" "$(get_deb_ctl_listing ${package})"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} conffiles)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} config)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} control)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} templates)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./conffiles)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./config)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./control)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./templates)"
   local conffiles="/etc/nsswitch.conf
 /etc/other"
   check_eq "$conffiles" "$(get_deb_ctl_file ${package} conffiles)"
