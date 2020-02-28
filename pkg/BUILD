@@ -89,12 +89,3 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
 )
-
-# Used within experimental/tests/ for external repo genpkg tests
-filegroup(
-    name = "loremipsum_txt",
-    srcs = [
-        "testdata/loremipsum.txt",
-    ],
-    visibility = ["//visibility:public"],
-)
