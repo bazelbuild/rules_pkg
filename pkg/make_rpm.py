@@ -155,7 +155,8 @@ class RpmBuilder(object):
   TEMP_DIR = 'TMP'
   DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
 
-  def __init__(self, name, version, release, arch, rpmbuild_path, debug=False):
+  def __init__(self, name, version, release, arch, rpmbuild_path,
+               source_date_epoch=None, debug=False):
     self.name = name
     self.version = GetFlagValue(version)
     self.release = GetFlagValue(release)
@@ -163,6 +164,7 @@ class RpmBuilder(object):
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
+    self.source_date_epoch = GetFlagValue(source_date_epoch)
     self.debug = debug
 
   def AddFiles(self, paths, root=''):
@@ -220,12 +222,18 @@ class RpmBuilder(object):
         '--buildroot=%s' % buildroot,
         self.spec_file,
     ]
-    os.environ['RPM_BUILD_ROOT'] = buildroot
+    env = {
+        'LANG': 'C',
+        'RPM_BUILD_ROOT': buildroot,
+    }
+    if self.source_date_epoch:
+        env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
+
     p = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        env={'LANG': 'C'})
+        env=env)
     output = p.communicate()[0].decode()
 
     if p.returncode == 0:
@@ -284,6 +292,9 @@ def main(argv):
   parser.add_argument('--out_file', required=True,
                       help='The destination to save the resulting RPM file to.')
   parser.add_argument('--rpmbuild', help='Path to rpmbuild executable.')
+  parser.add_argument('--source_date_epoch',
+                      help='Value for the SOURCE_DATE_EPOCH rpmbuild '
+                           'environment variable')
   parser.add_argument('--debug', action='store_true', default=False,
                       help='Print debug messages.')
   parser.add_argument('files', nargs='*')
@@ -292,7 +303,8 @@ def main(argv):
 
   try:
     builder = RpmBuilder(options.name, options.version, options.release,
-                         options.arch, options.rpmbuild, debug=options.debug)
+                         options.arch, options.rpmbuild, options.source_date_epoch,
+                         debug=options.debug)
     builder.AddFiles(options.files)
     return builder.Build(options.spec_file, options.out_file)
   except NoRpmbuildFoundError:

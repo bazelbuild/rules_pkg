@@ -46,6 +46,15 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.release:
         args += ["--release=" + ctx.attr.release]
 
+    # SOURCE_DATE_EPOCH can be specified by a file or inlined.
+    if ctx.attr.source_date_epoch_file:
+        if ctx.attr.source_date_epoch:
+            fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
+        args += ["--source_date_epoch=@" + ctx.file.source_date_epoch_file.path]
+        files += [ctx.file.source_date_epoch_file]
+    elif ctx.attr.source_date_epoch:
+        args += ["--source_date_epoch=" + ctx.attr.source_date_epoch]
+
     if ctx.attr.architecture:
         args += ["--arch=" + ctx.attr.architecture]
 
@@ -156,6 +165,8 @@ pkg_rpm = rule(
         ),
         "release_file": attr.label(allow_single_file = True),
         "release": attr.string(),
+        "source_date_epoch_file": attr.label(allow_single_file = True),
+        "source_date_epoch": attr.int(),
         "debug": attr.bool(default = False),
 
         # Implicit dependencies.
@@ -206,5 +217,8 @@ Args:
     release and release_file.
   changelog: A changelog file to include. This will not be written to the spec
     file, which should only list changes to the packaging, not the software itself.
+  source_date_epoch: Value to export as SOURCE_DATE_EPOCH to facilitate reproducible
+    timestamps.
+  source_date_epoch_file: File containing the SOURCE_DATE_EPOCH value
   data: List all files to be included in the package here.
 """
