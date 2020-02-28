@@ -18,6 +18,7 @@ load(":path.bzl", "compute_data_path", "dest_path")
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
+_DEFAULT_MTIME = -1
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -59,7 +60,7 @@ def _pkg_tar_impl(ctx):
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
     ]
-    if ctx.attr.mtime != -1:  # Note: Must match default in rule def.
+    if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
         args.append("--mtime=%d" % ctx.attr.mtime)
@@ -272,7 +273,7 @@ pkg_tar_impl = rule(
         "files": attr.label_keyed_string_dict(allow_files = True),
         "mode": attr.string(default = "0555"),
         "modes": attr.string_dict(),
-        "mtime": attr.int(default = -1),
+        "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
         "owner": attr.string(default = "0.0"),
         "ownername": attr.string(default = "."),
