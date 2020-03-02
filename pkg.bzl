@@ -95,9 +95,10 @@ def _pkg_tar_impl(ctx):
                     ctx.attr.py_venv_deploy_path)
 
         if not has_correct_environment:
-            fail("If you specify the py_venv parameter, this python target" +
+            print("If you specify the py_venv parameter, this python target" +
                 " must be built with the correct config from .bazelrc. This doesn't seem" +
                 " to be the case because {} is not in any srcs' runfiles".format(venv_runfile_python_path))
+            pass
 
     file_inputs = []
     # Add runfiles if requested
