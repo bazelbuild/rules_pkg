@@ -27,6 +27,7 @@ print_rel_notes(
     outs = ["relnotes.txt"],
     repo = "rules_pkg",
     version = version,
+    deps_method = "rules_pkg_dependencies",
 )
 
 py_test(
