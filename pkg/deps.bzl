@@ -14,6 +14,7 @@
 
 # Workspace dependencies for rules_pkg/pkg
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
@@ -29,6 +30,13 @@ def rules_pkg_dependencies():
         ],
         sha256 = "97e70364e9249702246c0e9444bccdc4b847bed1eb03c5a3ece4f83dfe6abc44",
     )
+    maybe(
+        git_repository,
+        name = "rules_python",
+        remote = "https://github.com/bazelbuild/rules_python.git",
+        commit = "4b84ad270387a7c439ebdccfd530e2339601ef27",  # (2019-08-02 or later)
+    )
+
 
 def rules_pkg_register_toolchains():
     pass
