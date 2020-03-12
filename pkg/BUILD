@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
 licenses(["notice"])  # Apache 2.0
 
 exports_files(

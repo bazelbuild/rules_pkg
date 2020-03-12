@@ -5,6 +5,7 @@ package(
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_pkg//:version.bzl", "version")
 load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
+load("@rules_python//python:defs.bzl", "py_test")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
@@ -27,6 +28,7 @@ print_rel_notes(
     outs = ["relnotes.txt"],
     repo = "rules_pkg",
     version = version,
+    deps_method = "rules_pkg_dependencies",
 )
 
 py_test(

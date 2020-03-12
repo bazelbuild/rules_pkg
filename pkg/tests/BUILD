@@ -3,6 +3,7 @@ licenses(["notice"])  # Apache 2.0
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
+load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
     name = "generate_files",
