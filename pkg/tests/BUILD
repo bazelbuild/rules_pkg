@@ -167,9 +167,9 @@ py_test(
     ],
 )
 
-genrules(
+genrule(
     name = "test-deb-preinst",
-    outs = ["test-deb.preinst",
+    outs = ["test-deb.preinst"],
     cmd = "echo -n \"#!/usr/bin/env bash\n# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\necho fnord\" > \"$@\"",
 )
 

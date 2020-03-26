@@ -228,6 +228,7 @@ function check_deb() {
   local ctrl_listing="./conffiles
 ./config
 ./control
+./preinst
 ./templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look
