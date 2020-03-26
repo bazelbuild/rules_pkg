@@ -149,9 +149,10 @@ def CreateDebControl(extrafiles=None, **kwargs):
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
           tarinfo = tarfile.TarInfo('./' + name)
-          tarinfo.size = len(data)
+          data_encoded = data.encode('utf-8')
+          tarinfo.size = len(data_encoded)
           tarinfo.mode = mode
-          f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
+          f.addfile(tarinfo, fileobj=BytesIO(data_encoded))
   control = tar.getvalue()
   tar.close()
   return control
