@@ -30,6 +30,16 @@ def _quote(filename, protect = "="):
     """Quote the filename, by escaping = by \\= and \\ by \\\\"""
     return filename.replace("\\", "\\\\").replace(protect, "\\" + protect)
 
+def _strip_prefix(path, strip_prefix):
+    if strip_prefix == None or strip_prefix == "":
+        return path
+    lsp = len(strip_prefix)
+    if strip_prefix[0] == "/" and strip_prefix[1:] == path[:lsp-1]:
+        return path[lsp-1:]
+    if strip_prefix == path[0:lsp]:
+        return path[lsp:]
+    return path
+
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
@@ -82,7 +92,7 @@ def _pkg_tar_impl(ctx):
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             runfile_tree_root = "{}/{}.runfiles".format(f.label.package, f.label.name)
-
+            runfile_tree_root = _strip_prefix(runfile_tree_root, ctx.attr.strip_prefix)
 
             if external_venv_runfile_python_path in [x.path for x in default_runfiles.files.to_list()]:
                 has_correct_environment = True
@@ -114,18 +124,10 @@ def _pkg_tar_impl(ctx):
                     runfile_tree_path = "{}/{}.runfiles".format(
                         f.label.package,
                         f.label.name)
-
-                    strip_prefix = ctx.attr.strip_prefix
-                    if strip_prefix != None and strip_prefix != "":
-                        lsp = len(strip_prefix)
-                        if strip_prefix[0] == "/" and strip_prefix[1:] == runfile_tree_path[:lsp-1]:
-                            runfile_tree_path = runfile_tree_path[lsp-1:]
-                        if strip_prefix == runfile_tree_path[0:lsp]:
-                            runfile_tree_path = runfile_tree_path[lsp:]
-
+                    runfile_tree_path = _strip_prefix(runfile_tree_path, ctx.attr.strip_prefix)
                     # Make sure to not include the generated executable in the runfiles
                     if f.files_to_run.executable.short_path != runfile.short_path:
-                        remap_paths[runfile.short_path] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
+                        remap_paths[_strip_prefix(runfile.short_path, ctx.attr.strip_prefix)] = runfile_tree_path + "/" + workspace_name + "/" + runfile.short_path
 
             runfiles_depsets.append(default_runfiles.files)
         # deduplicates files in srcs attribute and their runfiles
