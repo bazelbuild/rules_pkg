@@ -229,6 +229,7 @@ pkg_deb(
     breaks = ["oldbrokenpkg"],
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test_py2",
 )
