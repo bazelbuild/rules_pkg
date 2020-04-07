@@ -216,6 +216,11 @@ function check_deb() {
   get_deb_ctl_file ${package} config >$TEST_log
   expect_log "# test config file"
 
+  get_deb_ctl_file ${package} preinst >$TEST_log
+  expect_log "#!/usr/bin/env bash"
+  expect_log "# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é"
+  expect_log "echo fnord"
+
   if ! dpkg_deb_supports_ctrl_tarfile ${package} ; then
     echo "Unable to test deb control files listing, too old dpkg-deb!" >&2
     return 0
@@ -223,6 +228,7 @@ function check_deb() {
   local ctrl_listing="./conffiles
 ./config
 ./control
+./preinst
 ./templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look

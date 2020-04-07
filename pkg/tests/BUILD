@@ -167,6 +167,12 @@ py_test(
     ],
 )
 
+genrule(
+    name = "test-deb-preinst",
+    outs = ["test-deb.preinst"],
+    cmd = "echo -n \"#!/usr/bin/env bash\n# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\necho fnord\" > \"$@\"",
+)
+
 pkg_deb(
     name = "test-deb",
     built_using = "some_test_data (0.1.2)",
@@ -188,6 +194,7 @@ pkg_deb(
     breaks = ["oldbrokenpkg"],
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test",
 )
