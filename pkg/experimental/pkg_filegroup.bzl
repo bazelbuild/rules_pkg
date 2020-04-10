@@ -42,7 +42,7 @@ PackageFileInfo = provider(
         "srcs": "Source file list",
         "dests": "Destination file list",
         "attrs": "File attributes to be set on all 'dests' in this provider",
-        "section": "'Section' property, see pkg_filegroup docs for details",
+        "section": "'Section' property, see `pkg_filegroup` docs for details",
     },
 )
 
@@ -54,7 +54,19 @@ PackageDirInfo = provider(
     fields = {
         "dirs": "Directories to be created within the package",
         "attrs": "File attributes to be set on all 'dirs' in this provider",
-        "section": "'Section' property, see pkg_filegroup docs for details",
+        "section": "'Section' property, see `pkg_mkdirs` docs for details",
+    },
+)
+
+PackageSymlinkInfo = provider(
+    doc = """Groups a collection of symbolic links to be created within a package.
+
+    Also owns attributes, but they are typically uninteresting.
+    """,
+    fields = {
+        "link_map": "Link map.  Keys are link names, values are target (source) files",
+        "attrs": "File attributes to be set on all of the links created",
+        "section": "'Section' property, see `pkg_mklinks` docs for details",
     },
 )
 
@@ -415,6 +427,7 @@ pkg_filegroup = rule(
             sub-types.
             """,
             default = "",
+            # TODO(nacl): use "values" here
         ),
         "strip_prefix": attr.string(
             doc = """What prefix of a file's path to discard prior to installation.
@@ -578,6 +591,83 @@ pkg_mkdirs = rule(
             The default is `dir`.
             """,
             default = "dir",
+            # TODO(nacl): use "values" here
+        ),
+    },
+)
+
+def _pkg_mklinks_impl(ctx):
+    _validate_attr(ctx.attr.attrs)
+    return [
+        PackageSymlinkInfo(
+            link_map = ctx.attr.links,
+            attrs = ctx.attr.attrs,
+            section = ctx.attr.section,
+        ),
+    ]
+
+pkg_mklinks = rule(
+    doc = """pkg_filegroup-like-rule for symlink management.
+
+    This rule results in the creation of one or more symbolic links a package.
+    The link may point to a location outside of it.
+
+    """,
+    implementation = _pkg_mklinks_impl,
+    attrs = {
+        "links": attr.string_dict(
+            doc = """Link mappings to create.
+
+            The keys of this dict are the link names, the values are the source
+            files.
+
+            Note that relative paths are important here: the package builder MAY
+            adjust the "link name" of the pair (i.e. make paths absolute), but
+            it MUST NOT attempt to do anything with the "source" part.
+
+            """,
+            mandatory = True,
+        ),
+        "attrs": attr.string_list_dict(
+            doc = """Attributes to set for the output targets.
+
+            Must be a dict of:
+
+            ```
+            "unix" : [
+                "Four-digit octal permissions string (e.g. "0755") or "-" (don't change from what's provided),
+                "User Id, or "-" (use current user)",
+                "Group Id, or "-" (use current group)",
+            ]
+            ```
+
+            The permissions value defaults to "0777".  The user/group values
+            default to "-".
+            """,
+            default = {"unix": ["0777", "-", "-"]},
+        ),
+        "section": attr.string(
+            doc = """Symlink section mapping.
+
+            Legal values for this attribute are:
+            - "" (i.e. an empty string)
+            - "doc"
+            - "config"
+            - "config(missingok)"
+            - "config(noreplace)"
+            - "config(missingok, noreplace)"
+
+            See the "section" attribute of `pkg_filegroup` for more information.
+            """,
+            default = "",
+            values = [
+                "",
+                "doc",
+                "config",
+                "config(missingok)",
+                "config(noreplace)",
+                "config(missingok, noreplace)",
+            ],
         ),
     },
 )
