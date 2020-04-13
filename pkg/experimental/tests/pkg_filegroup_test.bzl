@@ -12,38 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for file mapping routines in pkg/experimental/genpkg.bzl"""
+"""Tests for file mapping routines in pkg/experimental/pkg_filegroup.bzl"""
 
 # NOTE: When making this module unexperimental, you can clean it up via calling something like this:
 #
-#   sed 's|experimental[_/]\?||' experimental/tests/genpkg_test.bzl
+#   sed 's|experimental[_/]\?||' experimental/tests/pkg_filegroup_test.bzl
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load(
-    "@rules_pkg//experimental:genpkg.bzl",
+    "@rules_pkg//experimental:pkg_filegroup.bzl",
     "PackageDirInfo",
     "PackageFileInfo",
     "make_strip_prefix",
+    "pkg_filegroup",
     "pkg_mkdirs",
     "pkg_rename_single",
-    "pkgfilegroup",
 )
 
-def _genpkg_contents_test_impl(ctx):
+def _pkg_filegroup_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
 
     expected_dests = sets.make(ctx.attr.expected_dests)
     actual_dests = sets.make(target_under_test[PackageFileInfo].dests)
 
-    asserts.new_set_equals(env, expected_dests, actual_dests, "pkgfilegroup dests do not match expectations")
+    asserts.new_set_equals(env, expected_dests, actual_dests, "pkg_filegroup dests do not match expectations")
 
     return analysistest.end(env)
 
-genpkg_contents_test = analysistest.make(
-    _genpkg_contents_test_impl,
+pkg_filegroup_contents_test = analysistest.make(
+    _pkg_filegroup_contents_test_impl,
     attrs = {
         # Other attributes can be tested here, but the most important one is the
         # destinations.
@@ -80,29 +79,29 @@ def generic_bad_section_test(**kwargs):
         **kwargs
     )
 
-def _test_genpkg_contents():
+def _test_pkg_filegroup_contents():
     # Test stripping when no arguments are provided (same as files_only=True)
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_no_strip_prefix_g",
         srcs = ["testdata/hello.txt"],
         tags = ["manual"],
     )
 
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_no_strip_prefix",
         target_under_test = ":pfg_no_strip_prefix_g",
         expected_dests = ["hello.txt"],
     )
 
     # And now, files_only = True
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_files_only_g",
         srcs = ["testdata/hello.txt"],
         strip_prefix = make_strip_prefix(files_only = True),
         tags = ["manual"],
     )
 
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_files_only",
         target_under_test = ":pfg_files_only_g",
         expected_dests = ["hello.txt"],
@@ -110,7 +109,7 @@ def _test_genpkg_contents():
 
     # Used in the following tests
     #
-    # Note that since the pkgfilegroup rule is never actually used in anything
+    # Note that since the pkg_filegroup rule is never actually used in anything
     # other than this test, nonexistent_script can be included with no ill effects. :P
     native.sh_binary(
         name = "test_script",
@@ -119,7 +118,7 @@ def _test_genpkg_contents():
     )
 
     # Test stripping from the package root
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_from_pkg_g",
         srcs = [
             "testdata/hello.txt",
@@ -129,7 +128,7 @@ def _test_genpkg_contents():
         tags = ["manual"],
     )
 
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_strip_testdata_from_pkg",
         target_under_test = ":pfg_from_pkg_g",
         expected_dests = [
@@ -148,14 +147,14 @@ def _test_genpkg_contents():
     # of the package.  Local and generated files should have the same prefix in
     # all cases.
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_from_root_g",
         srcs = [":test_script"],
         strip_prefix = make_strip_prefix(from_root = "experimental/tests/"),
         tags = ["manual"],
     )
 
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_strip_prefix_from_root",
         target_under_test = ":pfg_from_root_g",
         expected_dests = [
@@ -166,7 +165,7 @@ def _test_genpkg_contents():
         ],
     )
 
-def _test_genpkg_exclusions():
+def _test_pkg_filegroup_exclusions():
     # Normal filegroup, used in all of the below tests
     native.filegroup(
         name = "test_base_fg",
@@ -177,106 +176,106 @@ def _test_genpkg_exclusions():
     )
 
     # Tests to exclude from the case where stripping is done up to filenames
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_label_strip_all_g",
         srcs = ["test_base_fg"],
         excludes = ["//experimental/tests:testdata/config"],
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_label_strip_all",
         target_under_test = ":pfg_exclude_by_label_strip_all_g",
         expected_dests = ["hello.txt"],
     )
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_filename_strip_all_g",
         srcs = ["test_base_fg"],
         excludes = ["testdata/config"],
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_filename_strip_all",
         target_under_test = ":pfg_exclude_by_filename_strip_all_g",
         expected_dests = ["hello.txt"],
     )
 
     # Tests to exclude from the case where stripping is done from the package root
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_label_strip_from_pkg_g",
         srcs = ["test_base_fg"],
         excludes = ["//experimental/tests:testdata/config"],
         strip_prefix = make_strip_prefix(from_pkg = "testdata"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_label_strip_from_pkg",
         target_under_test = ":pfg_exclude_by_label_strip_from_pkg_g",
         expected_dests = ["hello.txt"],
     )
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_filename_strip_from_pkg_g",
         srcs = ["test_base_fg"],
         excludes = ["testdata/config"],
         strip_prefix = make_strip_prefix(from_pkg = "testdata"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_filename_strip_from_pkg",
         target_under_test = ":pfg_exclude_by_filename_strip_from_pkg_g",
         expected_dests = ["hello.txt"],
     )
 
     # Tests to exclude from the case where stripping is done from the root
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_label_strip_from_root_g",
         srcs = ["test_base_fg"],
         excludes = ["//experimental/tests:testdata/config"],
         strip_prefix = make_strip_prefix(from_root = "experimental/tests"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_label_strip_from_root",
         target_under_test = ":pfg_exclude_by_label_strip_from_root_g",
         expected_dests = ["testdata/hello.txt"],
     )
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_exclude_by_filename_strip_from_root_g",
         srcs = ["test_base_fg"],
         excludes = ["testdata/config"],
         strip_prefix = make_strip_prefix(from_root = "experimental/tests"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_exclude_by_filename_strip_from_root",
         target_under_test = ":pfg_exclude_by_filename_strip_from_root_g",
         expected_dests = ["testdata/hello.txt"],
     )
 
 # Tests involving external repositories
-def _test_genpkg_extrepo():
+def _test_pkg_filegroup_extrepo():
     # From external repo root, basenames only
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_extrepo_strip_all_g",
         srcs = ["@experimental_test_external_repo//pkg:script"],
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_extrepo_strip_all",
         target_under_test = ":pfg_extrepo_strip_all_g",
         expected_dests = ["extproj.sh", "script"],
     )
 
     # From external repo root, relative to the "pkg" package
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_extrepo_strip_from_pkg_g",
         srcs = ["@experimental_test_external_repo//pkg:script"],
         strip_prefix = make_strip_prefix(from_pkg = "dir"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_extrepo_strip_from_pkg",
         target_under_test = ":pfg_extrepo_strip_from_pkg_g",
         expected_dests = [
@@ -286,13 +285,13 @@ def _test_genpkg_extrepo():
     )
 
     # From external repo root, relative to the "pkg" directory
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_extrepo_strip_from_root_g",
         srcs = ["@experimental_test_external_repo//pkg:script"],
         strip_prefix = make_strip_prefix(from_root = "pkg"),
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_extrepo_strip_from_root",
         target_under_test = ":pfg_extrepo_strip_from_root_g",
         expected_dests = ["dir/extproj.sh", "script"],
@@ -303,47 +302,47 @@ def _test_genpkg_extrepo():
         srcs = ["@experimental_test_external_repo//pkg:dir/extproj.sh"],
     )
 
-    # Test the case when a have a pkgfilegroup that targets a local filegroup
+    # Test the case when a have a pkg_filegroup that targets a local filegroup
     # that has files in an external repo.
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_extrepo_filegroup_strip_from_pkg_g",
         srcs = [":extrepo_test_fg"],
         # Files within filegroups should be considered relative to their
         # destination paths.
         strip_prefix = make_strip_prefix(from_pkg = ""),
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_extrepo_filegroup_strip_from_pkg",
         target_under_test = ":pfg_extrepo_filegroup_strip_from_pkg_g",
         expected_dests = ["dir/extproj.sh"],
     )
 
     # Ditto, except strip from the workspace root instead
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_extrepo_filegroup_strip_from_root_g",
         srcs = [":extrepo_test_fg"],
         # Files within filegroups should be considered relative to their
         # destination paths.
         strip_prefix = make_strip_prefix(from_root = "pkg"),
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_extrepo_filegroup_strip_from_root",
         target_under_test = ":pfg_extrepo_filegroup_strip_from_root_g",
         expected_dests = ["dir/extproj.sh"],
     )
 
-    # Reference a pkgfilegroup in @experimental_test_external_repo
-    genpkg_contents_test(
-        name = "pfg_pkgfilegroup_in_extrepo",
+    # Reference a pkg_filegroup in @experimental_test_external_repo
+    pkg_filegroup_contents_test(
+        name = "pfg_pkg_filegroup_in_extrepo",
         target_under_test = "@experimental_test_external_repo//pkg:extproj_script_pfg",
         expected_dests = ["usr/bin/dir/extproj.sh"],
     )
 
-def _test_genpkg_rename():
+def _test_pkg_filegroup_rename():
     # NOTE: unless rules contain "macro", they are not using the macro
     # "pfg_rename_single".  This is perhaps old (perhaps bad) naming convention.
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_rename_single_g",
         srcs = [
             # Should come out relative to prefix and renames
@@ -357,7 +356,7 @@ def _test_genpkg_rename():
         },
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_rename_single",
         target_under_test = ":pfg_rename_single_g",
         expected_dests = [
@@ -366,7 +365,7 @@ def _test_genpkg_rename():
         ],
     )
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_rename_multiple_g",
         srcs = [
             "testdata/hello.txt",
@@ -379,7 +378,7 @@ def _test_genpkg_rename():
         },
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_rename_multiple",
         target_under_test = ":pfg_rename_multiple_g",
         expected_dests = [
@@ -390,7 +389,7 @@ def _test_genpkg_rename():
 
     # Used in the following tests
     #
-    # Note that since the pkgfilegroup rule is never actually used in anything
+    # Note that since the pkg_filegroup rule is never actually used in anything
     # other than this test, nonexistent_script can be included with no ill
     # effects. :P
     native.sh_binary(
@@ -400,9 +399,9 @@ def _test_genpkg_rename():
     )
 
     # test_script_rename produces multiple outputs.  Thus, this test should
-    # fail, as pkgfilegroup can't figure out what should actually be mapped to
+    # fail, as pkg_filegroup can't figure out what should actually be mapped to
     # the output destination.
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_rename_rule_with_multiple_outputs_g",
         srcs = ["test_script_rename"],
         renames = {
@@ -417,7 +416,7 @@ def _test_genpkg_rename():
 
     # Fail because we tried to install a file that wasn't mentioned in the deps
     # list
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_rename_single_missing_value_g",
         srcs = ["testdata/hello.txt"],
         prefix = "usr",
@@ -432,7 +431,7 @@ def _test_genpkg_rename():
     )
 
     # Ditto, except for exclusions
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_rename_single_excluded_value_g",
         srcs = [
             "testdata/hello.txt",
@@ -460,27 +459,27 @@ def _test_genpkg_rename():
         prefix = "usr",
         tags = ["manual"],
     )
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_rename_single_macro",
         target_under_test = ":pfg_rename_single_macro_g",
         expected_dests = ["usr/share/goodbye.txt"],
     )
 
-def _test_genpkg_section():
-    pkgfilegroup(
+def _test_pkg_filegroup_section():
+    pkg_filegroup(
         name = "pfg_good_section",
         srcs = ["testdata/hello.txt"],
         section = "doc",
         tags = ["manual"],
     )
 
-    genpkg_contents_test(
+    pkg_filegroup_contents_test(
         name = "pfg_doc_section_test",
         target_under_test = ":pfg_good_section",
         expected_dests = ["hello.txt"],
     )
 
-    pkgfilegroup(
+    pkg_filegroup(
         name = "pfg_bad_section",
         srcs = ["testdata/hello.txt"],
         section = "bad_section",
@@ -533,7 +532,7 @@ pkg_mkdirs_contents_test = analysistest.make(
     },
 )
 
-def _test_genpkg_mkdirs():
+def _test_pkg_mkdirs():
     # Reasonable base case
     pkg_mkdirs(
         name = "pfg_pkg_mkdirs_base_g",
@@ -602,17 +601,17 @@ def _strip_prefix_test_impl(ctx):
 
 strip_prefix_test = unittest.make(_strip_prefix_test_impl)
 
-def genpkg_analysis_tests():
-    """Declare genpkg.bzl analysis tests"""
-    _test_genpkg_contents()
-    _test_genpkg_exclusions()
-    _test_genpkg_extrepo()
-    _test_genpkg_rename()
-    _test_genpkg_section()
-    _test_genpkg_mkdirs()
+def pkg_filegroup_analysis_tests():
+    """Declare pkg_filegroup.bzl analysis tests"""
+    _test_pkg_filegroup_contents()
+    _test_pkg_filegroup_exclusions()
+    _test_pkg_filegroup_extrepo()
+    _test_pkg_filegroup_rename()
+    _test_pkg_filegroup_section()
+    _test_pkg_mkdirs()
 
     native.test_suite(
-        name = "genpkg_analysis_tests",
+        name = "pkg_filegroup_analysis_tests",
         # We should find a way to get rid of this test list; it would be nice if
         # it could be derived from something else...
         tests = [
@@ -635,7 +634,7 @@ def genpkg_analysis_tests():
             ":pfg_extrepo_strip_from_root",
             ":pfg_extrepo_filegroup_strip_from_pkg",
             ":pfg_extrepo_filegroup_strip_from_root",
-            ":pfg_pkgfilegroup_in_extrepo",
+            ":pfg_pkg_filegroup_in_extrepo",
             # This one fits into the same category, but can't be aliased, apparently.
             #
             # The main purpose behind it is to verify cases wherein we build a
@@ -659,8 +658,8 @@ def genpkg_analysis_tests():
         ],
     )
 
-def genpkg_unit_tests():
+def pkg_filegroup_unit_tests():
     unittest.suite(
-        "genpkg_unit_tests",
+        "pkg_filegroup_unit_tests",
         strip_prefix_test,
     )
