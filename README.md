@@ -23,7 +23,7 @@ Travis CI
 
 ## Helper tools
 
-* [update_deb_packages](https://github.com/bazelbuild/rules_pkg/tree/master/tools/deb_packages#deb_packages) - update the hash and path of files mentioned in `deb_packages` rules
+* [update_deb_packages](https://github.com/bazelbuild/rules_pkg/tree/master/deb_packages/tools#update_deb_packages) - update the hash and path of files mentioned in `deb_packages` rules
 
 
 ## Background
