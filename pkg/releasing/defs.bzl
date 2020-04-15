@@ -4,7 +4,7 @@ def print_rel_notes(name, repo, version, outs=None, setup_file="",
                     deps_method="", toolchains_method=""):
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
     cmd = [
-        "$(location @rules_pkg//releasing:print_rel_notes)",
+        "$(location @//releasing:print_rel_notes)",
         "--repo=%s" % repo,
         "--version=%s" % version,
         "--tarball=$(location %s)" % tarball_name,
@@ -24,6 +24,6 @@ def print_rel_notes(name, repo, version, outs=None, setup_file="",
         outs = outs or ["relnotes.txt"],
         cmd = " ".join(cmd),
         tools = [
-            "@rules_pkg//releasing:print_rel_notes",
+            "@//releasing:print_rel_notes",
         ],
     )

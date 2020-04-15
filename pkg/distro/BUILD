@@ -2,9 +2,9 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@rules_pkg//:version.bzl", "version")
-load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
+load("@//:pkg.bzl", "pkg_tar")
+load("@//:version.bzl", "version")
+load("@//releasing:defs.bzl", "print_rel_notes")
 load("@rules_python//python:defs.bzl", "py_test")
 
 # Build the artifact to put on the github release page.
@@ -50,7 +50,7 @@ py_test(
     ],
     deps = [
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//releasing:release_utils",
+        "@//releasing:release_utils",
     ],
 )
 
