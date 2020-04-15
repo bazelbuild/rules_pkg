@@ -13,6 +13,22 @@
 # limitations under the License.
 
 exports_files(
-    glob(["*.bzl"]),
+    glob([
+        "*.bzl",
+        "template.spec.in",
+    ]),
     visibility = ["//visibility:public"],
+)
+
+# Used by gen_rpm in genrpm.bzl.
+py_binary(
+    name = "make_rpm",
+    srcs = ["make_rpm.py"],
+    python_version = "PY2",
+    srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@rules_pkg//:archive",
+        "@rules_pkg//:make_rpm_lib",
+    ],
 )

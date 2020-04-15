@@ -27,6 +27,8 @@ py_library(
     # I do not want to say '@rules_pkg'. That forces my name on everyone who uses
     # me. '@' seems to be the outer workspace.
     visibility = [
+        "@//experimental:__pkg__",
+        "@rules_pkg//experimental:__pkg__",
         "@//tests:__pkg__",
         "@rules_pkg//tests:__pkg__"
     ],
