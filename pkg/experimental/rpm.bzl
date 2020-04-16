@@ -15,9 +15,9 @@
 # NOTE: This is different from make_rpm.py in pkg/, and is specific to the
 # `pkg_rpm` rule in this directory.
 
-"""Provides rules for creating RPM packages via pkgfilegroup and friends."""
+"""Provides rules for creating RPM packages via pkg_filegroup and friends."""
 
-load("@rules_pkg//experimental:genpkg.bzl", "PackageDirInfo", "PackageFileInfo")
+load("@rules_pkg//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -388,16 +388,16 @@ def _pkg_rpm_outputs(name, rpm_name, version, release):
     return outputs
 
 # Define the rule.
-pkg_rpm = rule(
-    doc = """Creates an RPM format package via `pkgfilegroup` and friends.
+gen_rpm = rule(
+    doc = """Creates an RPM format package via `pkg_filegroup` and friends.
 
-    The uses the outputs of the rules in `genpkg.bzl` to construct arbitrary RPM
+    The uses the outputs of the rules in `pkg_filegroup.bzl` to construct arbitrary RPM
     packages.  Attributes of this rule provide preamble information and
     scriptlets, which are then used to compose a valid RPM spec file.
 
     The meat is in the `data` attribute, which is handled like so:
 
-    - `pkgfilegroup`s provide mappings of targets to output files:
+    - `pkg_filegroup`s provide mappings of targets to output files:
 
       - They are copied to their destination after their destination directory
         is created.
@@ -535,7 +535,7 @@ pkg_rpm = rule(
         "data": attr.label_list(
             doc = """Mappings to include in this RPM.
 
-            These are typically brought into life as `pkgfilegroup`s.
+            These are typically brought into life as `pkg_filegroup`s.
             """,
             mandatory = True,
             providers = [

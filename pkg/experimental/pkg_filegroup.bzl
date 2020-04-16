@@ -18,7 +18,7 @@ This module declares Provider interfaces and rules for specifying the contents
 of packages in a package-type-agnostic way.  The main rules supported here are
 the following:
 
-- `pkgfilegroup` describes destinations for rule outputs
+- `pkg_filegroup` describes destinations for rule outputs
 - `pkg_mkdirs` describes directory structures
 
 Rules that actually make use of the outputs of the above rules are not specified
@@ -42,7 +42,7 @@ PackageFileInfo = provider(
         "srcs": "Source file list",
         "dests": "Destination file list",
         "attrs": "File attributes to be set on all 'dests' in this provider",
-        "section": "'Section' property, see pkgfilegroup docs for details",
+        "section": "'Section' property, see pkg_filegroup docs for details",
     },
 )
 
@@ -54,7 +54,7 @@ PackageDirInfo = provider(
     fields = {
         "dirs": "Directories to be created within the package",
         "attrs": "File attributes to be set on all 'dirs' in this provider",
-        "section": "'Section' property, see pkgfilegroup docs for details",
+        "section": "'Section' property, see pkg_filegroup docs for details",
     },
 )
 
@@ -65,19 +65,19 @@ PackageDirInfo = provider(
 def make_strip_prefix(files_only = None, from_pkg = None, from_root = None):
     """Compute a strip_prefix value for a desired path stripping behavior.
 
-    This function computes a value that can be used for the `pkgfilegroup`
+    This function computes a value that can be used for the `pkg_filegroup`
     rule's `strip_prefix` attribute to select a desired path prefix stripping
     behavior.  Exactly one of `files_only`, `from_pkg`, and `from_root` must be
     set.
 
-    This routine is used to instruct `pkgfilegroup` to remove (strip) path
+    This routine is used to instruct `pkg_filegroup` to remove (strip) path
     components from the file as it exists in the current repository.  After this
     is done, what's left of the path will be concatenated with the prefix as
-    provided to `pkgfilegroup`.
+    provided to `pkg_filegroup`.
 
     For arguments that accept paths (`from_pkg`, `from_root`), provided path
     components will only be stripped from files to be included in a
-    `pkgfilegroup` if the `pkgfilegroup` paths contain all of the path
+    `pkg_filegroup` if the `pkg_filegroup` paths contain all of the path
     components provided.  For example, if you have a root-relative file at:
 
     ```
@@ -91,7 +91,7 @@ def make_strip_prefix(files_only = None, from_pkg = None, from_root = None):
     $PREFIX/foo/srcs/prog
     ```
 
-    where $PREFIX is the `prefix` defined in the `pkgfilegroup`.  If
+    where $PREFIX is the `prefix` defined in the `pkg_filegroup`.  If
     `from_root="foo/srcs"`, then:
 
     ```
@@ -113,7 +113,7 @@ def make_strip_prefix(files_only = None, from_pkg = None, from_root = None):
         path stripping.
 
     Returns:
-      A path specification used by the `pkgfilegroup` implementation that
+      A path specification used by the `pkg_filegroup` implementation that
       instructs it to do path stripping as documented here.
     """
 
@@ -234,7 +234,7 @@ def _path_relative_to_repo_root(file):
 # Rule/Macro implementations
 ####
 
-def _pkgfilegroup_impl(ctx):
+def _pkg_filegroup_impl(ctx):
     # The input sources are already known.  Let's calculate the destinations...
 
     # Exclude excludes
@@ -270,7 +270,7 @@ def _pkgfilegroup_impl(ctx):
     # If the lengths of these are not the same, then it impossible to correlate
     # them in the actual package helpers, and in the map below.
     if len(srcs) != len(dests):
-        fail("INTERNAL ERROR: pkgfilegroup length mismatch")
+        fail("INTERNAL ERROR: pkg_filegroup length mismatch")
 
     # Dictionary for convenience purposes.
     #
@@ -327,7 +327,7 @@ def _pkgfilegroup_impl(ctx):
         ),
     ]
 
-pkgfilegroup = rule(
+pkg_filegroup = rule(
     doc = """General-purpose package target-to-destination mapping rule.
 
     This rule provides a specification for the locations and attributes of
@@ -336,13 +336,13 @@ pkgfilegroup = rule(
     `gen_rpm`.
 
     Instead of providing the actual rules that generate your desired outputs to
-    packaging rules, you instead pass in the associated `pkgfilegroup`.
+    packaging rules, you instead pass in the associated `pkg_filegroup`.
 
-    Consumers of `pkgfilegroup`s will, where possible, create the necessary
+    Consumers of `pkg_filegroup`s will, where possible, create the necessary
     directory structure for your files so you do not have to unless you have
     special requirements.  Consult `pkg_mkdirs` for more details.
     """,
-    implementation = _pkgfilegroup_impl,
+    implementation = _pkg_filegroup_impl,
     # @unsorted-dict-items
     attrs = {
         "srcs": attr.label_list(
@@ -379,7 +379,7 @@ pkgfilegroup = rule(
             default = "",
         ),
         "section": attr.string(
-            doc = """Type of file this pkgfilegroup gathers for installation.
+            doc = """Type of file this pkg_filegroup gathers for installation.
             Legal values for section are:
             - "" (i.e. an empty string)
             - "doc"
@@ -433,7 +433,7 @@ pkgfilegroup = rule(
             default = make_strip_prefix(files_only = True),
         ),
         "excludes": attr.label_list(
-            doc = """List of files or labels to exclude from the inputs to this pkgfilegroup.
+            doc = """List of files or labels to exclude from the inputs to this pkg_filegroup.
 
             Mostly useful for removing files from generated outputs or
             preexisting `filegroup`s.
@@ -445,13 +445,13 @@ pkgfilegroup = rule(
             doc = """Destination override map
 
             This attribute allows the user to override destinations of files in
-            `pkgfilegroup`s relative to the `prefix` attribute.  Keys to the
+            `pkg_filegroup`s relative to the `prefix` attribute.  Keys to the
             dict are source files/labels, values are destinations relative to
             the `prefix`, ignoring whatever value was provided for
             `strip_prefix`.
 
             This is the most effective way to rename files using
-            `pkgfilegroup`s.  For single files, consider using
+            `pkg_filegroup`s.  For single files, consider using
             `pkg_rename_single`.
 
             The following keys are rejected:
@@ -469,12 +469,12 @@ pkgfilegroup = rule(
 )
 
 def pkg_rename_single(name = None, src = None, dest = None, **kwargs):
-    """Macro that eases the renaming of files in `pkgfilegroup`s
+    """Macro that eases the renaming of files in `pkg_filegroup`s
 
     Effectively calls:
 
     ```
-    pkgfilegroup(
+    pkg_filegroup(
         name = name,
         deps = [src],
         renames = {src : dest},
@@ -485,16 +485,16 @@ def pkg_rename_single(name = None, src = None, dest = None, **kwargs):
     All of `name`, `src`, and `dest` must be provided.
 
     Args:
-      name: (String) Name of the underlying `pkgfilegroup`.
+      name: (String) Name of the underlying `pkg_filegroup`.
 
       src: (String/Label) Source file/label to copy from.  Must refer to exactly one
-        file/output (see `renames` in `pkgfilegroup`).
+        file/output (see `renames` in `pkg_filegroup`).
 
       dest: (String) Destination within packages.
 
-      **kwargs: Additional args to be passed `pkgfilegroup`.  Useful ones
+      **kwargs: Additional args to be passed `pkg_filegroup`.  Useful ones
         include `attrs` and `section`; see the relevant documentation in
-        `pkgfilegroup`.
+        `pkg_filegroup`.
     """
     if None in [name, src, dest]:
         fail("All of 'name', 'src', and 'dest' must be provided")
@@ -505,7 +505,7 @@ def pkg_rename_single(name = None, src = None, dest = None, **kwargs):
     rule_args["srcs"] = [src]
     rule_args["renames"] = {src: dest}
 
-    pkgfilegroup(**rule_args)
+    pkg_filegroup(**rule_args)
 
 def _pkg_mkdirs_impl(ctx):
     _validate_attr(ctx.attr.attrs)
@@ -521,7 +521,7 @@ def _pkg_mkdirs_impl(ctx):
     ]
 
 pkg_mkdirs = rule(
-    doc = """pkgfilegroup-like rule for the creation and ownership of directories.
+    doc = """pkg_filegroup-like rule for the creation and ownership of directories.
 
     Use this if:
 
