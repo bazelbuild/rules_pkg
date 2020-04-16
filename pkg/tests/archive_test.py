@@ -227,6 +227,20 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
     self.assertTarFileContent(self.tempfile, content)
 
+  def testPreserveInputTarMtimes(self):
+    input_tar_path = os.path.join(testenv.TESTDATA_PATH, "tar_test.tar")
+    with archive.TarFileWriter(self.tempfile) as f:
+      f.add_tar(input_tar_path)
+
+    with tarfile.open(input_tar_path, "r:") as input_tar:
+      input_mtimes = {}
+      for input_file in input_tar:
+        input_mtimes[input_file.name] = input_file.mtime
+
+    with tarfile.open(self.tempfile, "r:") as output_tar:
+      for output_file in output_tar:
+        self.assertEqual(input_mtimes[output_file.name], output_file.mtime)
+
   def testAddingDirectoriesForFile(self):
     with archive.TarFileWriter(self.tempfile) as f:
       f.add_file("d/f")
