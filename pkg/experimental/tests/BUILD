@@ -1,5 +1,5 @@
-load(":genpkg_test.bzl", "genpkg_analysis_tests", "genpkg_unit_tests")
+load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
 
-genpkg_analysis_tests()
+pkg_filegroup_analysis_tests()
 
-genpkg_unit_tests()
+pkg_filegroup_unit_tests()

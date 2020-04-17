@@ -23,6 +23,8 @@ py_library(
     ],
     srcs_version = "PY2AND3",
     visibility = [
+        "@//experimental:__pkg__",
+        "@rules_pkg//experimental:__pkg__",
         "@//tests:__pkg__",
     ],
 )
