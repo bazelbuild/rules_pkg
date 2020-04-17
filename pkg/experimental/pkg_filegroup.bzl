@@ -22,7 +22,7 @@ the following:
 - `pkg_mkdirs` describes directory structures
 
 Rules that actually make use of the outputs of the above rules are not specified
-here.  See `genrpm.bzl` for an example that builds out RPM packages.
+here.  See `rpm.bzl` for an example that builds out RPM packages.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
@@ -333,7 +333,7 @@ pkg_filegroup = rule(
     This rule provides a specification for the locations and attributes of
     targets when they are packaged. No outputs are created other than Providers
     that are intended to be consumed by other packaging rules, such as
-    `gen_rpm`.
+    `pkg_rpm`.
 
     Instead of providing the actual rules that generate your desired outputs to
     packaging rules, you instead pass in the associated `pkg_filegroup`.
