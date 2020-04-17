@@ -121,7 +121,7 @@ py_test(
         "archive_test.py",
     ],
     data = [":archive_testdata"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     tags = [
         # archive.py requires xzcat, which is not available by default on Mac
@@ -145,7 +145,7 @@ py_test(
 py_test(
     name = "make_rpm_test",
     srcs = ["make_rpm_test.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     # rpmbuild is not available in windows
     tags = [
@@ -160,7 +160,7 @@ py_test(
 py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
         "@rules_pkg//:archive",
