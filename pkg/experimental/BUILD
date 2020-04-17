@@ -28,7 +28,7 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@rules_pkg//:archive",
-        "@rules_pkg//:make_rpm_lib",
+        "@//:archive",
+        "@//:make_rpm_lib",
     ],
 )
