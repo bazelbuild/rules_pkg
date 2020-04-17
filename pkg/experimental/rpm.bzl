@@ -388,7 +388,7 @@ def _pkg_rpm_outputs(name, rpm_name, version, release):
     return outputs
 
 # Define the rule.
-gen_rpm = rule(
+pkg_rpm = rule(
     doc = """Creates an RPM format package via `pkg_filegroup` and friends.
 
     The uses the outputs of the rules in `pkg_filegroup.bzl` to construct arbitrary RPM
