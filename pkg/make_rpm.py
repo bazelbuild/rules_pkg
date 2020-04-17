@@ -152,6 +152,7 @@ class RpmBuilder(object):
 
   SOURCE_DIR = 'SOURCES'
   BUILD_DIR = 'BUILD'
+  BUILDROOT_DIR = 'BUILDROOT'
   TEMP_DIR = 'TMP'
   DIRS = [SOURCE_DIR, BUILD_DIR, TEMP_DIR]
 
@@ -211,7 +212,7 @@ class RpmBuilder(object):
   def CallRpmBuild(self, dirname):
     """Call rpmbuild with the correct arguments."""
 
-    buildroot = os.path.join(dirname, RpmBuilder.BUILD_DIR)
+    buildroot = os.path.join(dirname, RpmBuilder.BUILDROOT_DIR)
     args = [
         self.rpmbuild_path,
         '--define',
