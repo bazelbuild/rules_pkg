@@ -241,7 +241,8 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesTrueByDefault(self):
     with archive.TarFileWriter(self.tempfile) as f:
-      input_tar_path = os.path.join(testenv.TESTDATA_PATH, "tar_test.tar")
+      input_tar_path = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
       for file_name in f.members:
@@ -251,7 +252,9 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesFalse(self):
     with archive.TarFileWriter(self.tempfile, preserve_tar_mtimes=False) as f:
-      f.add_tar(os.path.join(testenv.TESTDATA_PATH, "tar_test.tar"))
+      input_tar_path = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      f.add_tar(input_tar_path)
       for output_file in f.tar:
         self.assertEqual(output_file.mtime, 0)
 
