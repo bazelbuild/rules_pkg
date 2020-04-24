@@ -227,6 +227,37 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
     self.assertTarFileContent(self.tempfile, content)
 
+  def testDefaultMtimeNotProvided(self):
+    with archive.TarFileWriter(self.tempfile) as f:
+      self.assertEqual(f.default_mtime, 0)
+
+  def testDefaultMtimeProvided(self):
+    with archive.TarFileWriter(self.tempfile, default_mtime=1234) as f:
+      self.assertEqual(f.default_mtime, 1234)
+
+  def testPortableMtime(self):
+    with archive.TarFileWriter(self.tempfile, default_mtime="portable") as f:
+      self.assertEqual(f.default_mtime, 946684800)
+
+  def testPreserveTarMtimesTrueByDefault(self):
+    with archive.TarFileWriter(self.tempfile) as f:
+      input_tar_path = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      f.add_tar(input_tar_path)
+      input_tar = tarfile.open(input_tar_path, "r")
+      for file_name in f.members:
+        input_file = input_tar.getmember(file_name)
+        output_file = f.tar.getmember(file_name)
+        self.assertEqual(input_file.mtime, output_file.mtime)
+
+  def testPreserveTarMtimesFalse(self):
+    with archive.TarFileWriter(self.tempfile, preserve_tar_mtimes=False) as f:
+      input_tar_path = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      f.add_tar(input_tar_path)
+      for output_file in f.tar:
+        self.assertEqual(output_file.mtime, 0)
+
   def testAddingDirectoriesForFile(self):
     with archive.TarFileWriter(self.tempfile) as f:
       f.add_file("d/f")

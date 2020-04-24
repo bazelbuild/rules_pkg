@@ -20,7 +20,7 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-# Used by gen_rpm in genrpm.bzl.
+# Used by pkg_rpm in rpm.bzl.
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
