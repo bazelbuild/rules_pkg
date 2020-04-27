@@ -300,6 +300,8 @@ pkg_tar_impl = rule(
 )
 
 def pkg_tar(**kwargs):
+    """Creates a .tar file. See pkg_tar_impl."""
+
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.
     if "srcs" not in kwargs:
@@ -436,6 +438,7 @@ pkg_zip_impl = rule(
 )
 
 def pkg_zip(name, **kwargs):
+    """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.get("extension") or "zip"
 
     pkg_zip_impl(
