@@ -1,0 +1,13 @@
+tasks:
+  ubuntu1604:
+    name: distribution
+    working_directory: pkg
+    platform: ubuntu1604
+    build_targets:
+    - "distro:*"
+  ubuntu1804:
+    name: distribution
+    working_directory: pkg
+    platform: ubuntu1804
+    build_targets:
+    - "distro:*"

@@ -1,0 +1,13 @@
+tasks:
+  ubuntu1604:
+    name: tests
+    working_directory: pkg
+    platform: ubuntu1604
+    test_targets:
+    - "..."
+  ubuntu1804:
+    name: tests
+    working_directory: pkg
+    platform: ubuntu1804
+    test_targets:
+    - "..."
