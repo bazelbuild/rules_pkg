@@ -22,6 +22,9 @@ py_library(
         "helpers.py"
     ],
     srcs_version = "PY2AND3",
+    # This build rule is not intended for public use, but needs to
+    # be publicly visible because existing projects rely on it.
+    # Use at your own risk.
     visibility = ["//visibility:public"],
 )
 
