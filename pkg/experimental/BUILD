@@ -32,3 +32,15 @@ py_binary(
         "@//:make_rpm_lib",
     ],
 )
+
+filegroup(
+    name = "standard_package",
+    srcs = glob([
+        "*.bzl",
+        "*.py",
+    ]) + [
+        "BUILD",
+        "template.spec.in",
+    ],
+    visibility = ["@//:__pkg__"],
+)
