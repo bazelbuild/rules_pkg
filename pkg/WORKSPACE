@@ -14,6 +14,7 @@
 
 workspace(name = "rules_pkg")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
@@ -21,6 +22,17 @@ rules_pkg_dependencies()
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+http_archive(
+    name = "bazel_stardoc",
+    url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.zip",
+    sha256 = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a",
+    strip_prefix = "stardoc-0.4.0",
+)
+
+load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+stardoc_repositories()
 
 local_repository(
     name = "experimental_test_external_repo",

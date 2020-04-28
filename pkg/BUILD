@@ -22,10 +22,10 @@ py_library(
         "helpers.py"
     ],
     srcs_version = "PY2AND3",
-    visibility = [
-        "@//experimental:__pkg__",
-        "@//tests:__pkg__",
-    ],
+    # This build rule is not intended for public use, but needs to
+    # be publicly visible because existing projects rely on it.
+    # Use at your own risk.
+    visibility = ["//visibility:public"],
 )
 
 py_binary(
