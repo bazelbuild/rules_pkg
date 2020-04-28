@@ -90,19 +90,17 @@ echo postun
         # The second one would be %{FILESIZES}, but the size in the RPM changes
         # a little, probably due to rpm's internal "magic".
         # TODO(nacl): investigate this
-        #
-        # Documentation on this:
-        # - Query format syntax:
-        rpm_queryformat = \
-            "[%{FILENAMES}" + \
-            "," + \
-            ",%{FILEDIGESTS}" + \
-            ",%{FILEUSERNAME}" + \
-            ",%{FILEGROUPNAME}" + \
-            ",%{FILEMODES:octal}" + \
-            ",%{FILEFLAGS:fflags}" + \
-            ",%{FILELINKTOS}" + \
-            "\\n]"
+        rpm_queryformat = (
+            "[%{FILENAMES}"
+            ","
+            ",%{FILEDIGESTS}"
+            ",%{FILEUSERNAME}"
+            ",%{FILEGROUPNAME}"
+            ",%{FILEMODES:octal}"
+            ",%{FILEFLAGS:fflags}"
+            ",%{FILELINKTOS}"
+            "\n]"
+        )
 
         rpm_queryformat_fieldnames = [
             "path",
