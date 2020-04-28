@@ -10,7 +10,14 @@ exports_files(
 
 filegroup(
     name = "standard_package",
-    srcs = glob(["BUILD", "*.bzl", "*.py", "*.md"]),
+    srcs = glob([
+        "*.bzl",
+        "*.py",
+        "*.md",
+    ]) + [
+        "BUILD",
+        "//experimental:standard_package",
+    ],
     visibility = ["@//distro:__pkg__"],
 )
 
