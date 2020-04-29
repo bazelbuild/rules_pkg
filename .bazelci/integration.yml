@@ -1,0 +1,13 @@
+common: &common
+  name: distribution
+  working_directory: pkg
+  build_targets:
+  - "distro:*"
+
+tasks:
+  ubuntu1604:
+    platform: ubuntu1604
+    <<: *common
+  ubuntu1804:
+    platform: ubuntu1804
+    <<: *common
