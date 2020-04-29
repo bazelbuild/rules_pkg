@@ -1,11 +1,12 @@
+common: &common
+  working_directory: pkg
+  test_targets:
+  - "..."
+  
 tasks:
   ubuntu1604:
-    working_directory: pkg
     platform: ubuntu1604
-    test_targets:
-    - "..."
+    <<: *common
   ubuntu1804:
-    working_directory: pkg
     platform: ubuntu1804
-    test_targets:
-    - "..."
+    <<: *common
