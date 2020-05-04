@@ -10,3 +10,8 @@ tasks:
   ubuntu1804:
     platform: ubuntu1804
     <<: *common
+  macos
+    test_targets:
+    - "..."
+    - "-//tests:build_test_deb"
+    - "-//tests:make_rpm_test"

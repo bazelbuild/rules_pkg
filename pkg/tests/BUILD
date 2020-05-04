@@ -336,15 +336,35 @@ pkg_tar(
 )
 
 sh_test(
-    name = "build_test",
+    name = "build_test_deb",
     size = "medium",
     srcs = [
-        "build_test.sh",
+        "build_test_deb.sh",
     ],
     data = [
         "testenv.sh",
         ":test-deb.deb",
         ":test-deb-py2.deb",
+    ],
+    tags = [
+        # dpkg tools are only available on debian
+        "no_macos",
+        "no_windows",
+    ],
+    deps = [
+        "@rules_pkg//third_party/test/shell:bashunit",
+    ],
+)
+
+sh_test(
+    name = "build_test_tar",
+    size = "medium",
+    srcs = [
+        "build_test_tar.sh",
+    ],
+    data = [
+        "testenv.sh",
+        ":archive_testdata",
         ":test-tar-.tar",
         ":test-tar-bz2.tar.bz2",
         ":test-tar-empty_dirs.tar",
@@ -365,7 +385,7 @@ sh_test(
     ],
     tags = [
         # archive.py requires xzcat, which is not available by default on Mac
-        "noci",
+        "no_macos",
         # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
         "no_windows",
     ],
