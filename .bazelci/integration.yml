@@ -1,6 +1,6 @@
 common: &common
   name: distribution
-  working_directory: pkg
+  working_directory: /workdir/pkg
   build_targets:
   - "distro:*"
 
