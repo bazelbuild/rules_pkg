@@ -345,6 +345,7 @@ sh_test(
         "testenv.sh",
         ":test-deb.deb",
         ":test-deb-py2.deb",
+        ":titi_test_all.changes",
     ],
     tags = [
         # dpkg tools are only available on debian

@@ -11,7 +11,7 @@ tasks:
     platform: ubuntu1804
     <<: *common
   macos:
+    <<: *common
     test_targets:
-    - "..."
     - "-//tests:build_test_deb"
     - "-//tests:make_rpm_test"
