@@ -10,7 +10,7 @@ tasks:
   ubuntu1804:
     platform: ubuntu1804
     <<: *common
-  macos
+  macos:
     test_targets:
     - "..."
     - "-//tests:build_test_deb"
