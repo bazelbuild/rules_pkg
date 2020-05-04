@@ -1,5 +1,5 @@
 common: &common
-  working_directory: pkg
+  working_directory: /workdir/pkg
   test_targets:
   - "..."
 

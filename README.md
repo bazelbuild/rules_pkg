@@ -5,8 +5,8 @@ channels).
 
 Use rules-pkg-discuss@googlegroups.com for discussion.
 
-Travis CI :---:
-[![Build Status](https://travis-ci.org/bazelbuild/rules_pkg.svg?branch=master)](https://travis-ci.org/bazelbuild/rules_pkg)
+CI:
+[![Build status](https://badge.buildkite.com/e12f23186aa579f1e20fcb612a22cd799239c3134bc38e1aff.svg)](https://buildkite.com/bazel/rules-pkg)
 
 ## Basic rules
 
