@@ -185,9 +185,9 @@ class TarFile(object):
       DebError: if the format of the deb archive is incorrect.
     """
     with archive.SimpleArFile(deb) as arfile:
-      current = arfile.next()
+      current = next(arfile)
       while current and not current.filename.startswith('data.'):
-        current = arfile.next()
+        current = next(arfile)
       if not current:
         raise self.DebError(deb + ' does not contains a data file!')
       tmpfile = tempfile.mkstemp(suffix=os.path.splitext(current.filename)[-1])
