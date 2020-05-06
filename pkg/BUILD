@@ -38,8 +38,8 @@ py_library(
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
-    python_version = "PY2",
-    srcs_version = "PY2AND3",
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
@@ -49,6 +49,8 @@ py_binary(
 py_binary(
     name = "build_zip",
     srcs = ["build_zip.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [":archive"],
 )
