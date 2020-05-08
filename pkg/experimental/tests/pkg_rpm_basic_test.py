@@ -87,12 +87,9 @@ echo postun
             manifest_reader = csv.DictReader(fh)
             manifest_specs = {r['path']: r for r in manifest_reader}
 
-        # The second one would be %{FILESIZES}, but the size in the RPM changes
-        # a little, probably due to rpm's internal "magic".
-        # TODO(nacl): investigate this
         rpm_queryformat = (
             "[%{FILENAMES}"
-            ","
+            ",%{FILESIZES}"
             ",%{FILEDIGESTS}"
             ",%{FILEUSERNAME}"
             ",%{FILEGROUPNAME}"

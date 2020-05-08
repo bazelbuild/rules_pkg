@@ -69,19 +69,33 @@ genrule(
     echo "path,size,digest,user,group,mode,fflags,symlink" > $@
     for f in $(locations :ars); do
         # Destination path
-        echo -n /test/$$(basename $$f), >> $@
-        # Size (not provided)
-        echo -n , >> $@
-        # Hash
-        md5sum $$f | cut -d' ' -f1 | tr '\\n' , >> $@
-        # User,Group,Mode,Fflags (fflags not provided)
-        echo -n "root,root,100755," >> $@
-        # Symlink destination (not provided)
-        echo , >> $@
+        (
+            echo -n /test/$$(basename $$f),
+            # Size
+            stat -L $$f --printf "%s,"
+            # Hash
+            md5sum $$f | cut -d' ' -f1 | tr '\\n' ,
+            # User,Group,Mode,Fflags (fflags not provided)
+            echo -n "root,root,100755,"
+            # Symlink destination (not provided)
+            echo ,
+        ) >> $@
 
     done
     # Directory (has no hash)
-    echo /var/log/foo,,,root,root,40755,, >> $@
+
+    # On UNIX, directories seem to be stored based on how they're named and
+    # what's in them.  Size also seems to be filesystem-dependent.  To "guess"
+    # what the directory size actually is, we can build up a similar structure
+    # and proceed from there.
+
+    mkdir foo/
+    (
+        echo -n /var/log/foo,
+        stat -L foo --printf "%s,"
+        # No hash (beginning), fflags (end), or symlink destination (end)
+        echo -n ,root,root,40755,,
+    ) >> $@
     """,
 )
 
