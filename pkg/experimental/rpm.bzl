@@ -606,8 +606,8 @@ pkg_rpm = rule(
 
         # Implicit dependencies.
         "_make_rpm": attr.label(
-            default = Label("@rules_pkg//experimental:make_rpm"),
-            cfg = "host",
+            default = Label("@rules_pkg//:make_rpm"),
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
