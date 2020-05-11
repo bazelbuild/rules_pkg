@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs")
+load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mklinks", "pkg_mkdirs")
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
@@ -51,24 +51,26 @@ pkg_mkdirs(
     dirs = ["/var/log/foo"],
 )
 
+pkg_mklinks(
+    name = "test_links",
+    links = {"/usr/bin/link-name": "/usr/bin/link-target"},
+    attrs = {"unix": ["0777", "root", "root"]},
+)
+
 pkg_rpm(
     name = "test_rpm",
-    testonly = True,
-    architecture = "noarch",
-    data = [
-        "var_log_foo",
-        ":ars_pfg",
-    ],
-    description = """pkg_rpm test rpm description""",
+    data = [":ars_pfg", ":var_log_foo", ":test_links"],
+    version = "1.1.1",
+    release = "2222",
     license = "Apache 2.0",
+    architecture = "noarch",
+    description = """pkg_rpm test rpm description""",
     post_scriptlet = """echo post""",
     postun_scriptlet = """echo postun""",
     pre_scriptlet = """echo pre""",
     preun_scriptlet = """echo preun""",
-    release = "2222",
     spec_template = "template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
-    version = "1.1.1",
 )
 
 # Emit a CSV file providing a manifest providing the expected RPM contents
@@ -97,7 +99,14 @@ genrule(
     (
         echo -n /var/log/foo,
         # No hash (beginning), fflags (end), or symlink destination (end)
-        echo -n ,root,root,40755,,
+        echo ,root,root,40755,,
+    ) >> $@
+
+    # Symlink (has no hash)
+    (
+        echo -n /usr/bin/link-name,
+        # No hash (beginning), or fflags (second-to-last)
+        echo ,root,root,120777,,/usr/bin/link-target
     ) >> $@
     """,
 )
