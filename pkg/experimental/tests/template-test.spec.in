@@ -14,6 +14,9 @@
 %define _source_filedigest_algorithm 1
 %define _binary_filedigest_algorithm 1
 
+# Do not try to use magic to determine file types
+%define __spec_install_post %{nil}
+
 ################################################################################
 
 # Hey!

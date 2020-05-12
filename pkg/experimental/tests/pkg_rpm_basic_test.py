@@ -87,9 +87,16 @@ echo postun
             manifest_reader = csv.DictReader(fh)
             manifest_specs = {r['path']: r for r in manifest_reader}
 
+        # It is not necessary to check for file sizes, as the hashes are
+        # sufficient for determining whether or not files are the same.
+        #
+        # This also simplifies behavior where RPM's size calculations have
+        # sometimes changed, e.g.:
+        #
+        # https://github.com/rpm-software-management/rpm/commit/2cf7096ba534b065feb038306c792784458ac9c7
+
         rpm_queryformat = (
             "[%{FILENAMES}"
-            ",%{FILESIZES}"
             ",%{FILEDIGESTS}"
             ",%{FILEUSERNAME}"
             ",%{FILEGROUPNAME}"
@@ -101,7 +108,6 @@ echo postun
 
         rpm_queryformat_fieldnames = [
             "path",
-            "size",
             "digest",
             "user",
             "group",
