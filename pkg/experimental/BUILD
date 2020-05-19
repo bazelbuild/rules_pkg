@@ -24,7 +24,7 @@ exports_files(
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
