@@ -26,7 +26,7 @@ class GetFlagValueTestCase(unittest.TestCase):
 
     def testNonStripped_fromFile(self):
         with tempfile.NamedTemporaryFile() as f:
-            f.write('value ')
+            f.write(b'value ')
             f.flush()
             self.assertEqual(helpers.GetFlagValue(
                 '@{}'.format(f.name),
@@ -34,7 +34,7 @@ class GetFlagValueTestCase(unittest.TestCase):
 
     def testStripped_fromFile(self):
         with tempfile.NamedTemporaryFile() as f:
-            f.write('value ')
+            f.write(b'value ')
             f.flush()
             self.assertEqual(helpers.GetFlagValue(
                 '@{}'.format(f.name),
