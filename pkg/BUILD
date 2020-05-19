@@ -21,6 +21,8 @@ filegroup(
     visibility = ["@//distro:__pkg__"],
 )
 
+exports_files(["WORKSPACE"], visibility = ["@//distro:__pkg__"])
+
 py_library(
     name = "archive",
     srcs = [

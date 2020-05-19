@@ -23,6 +23,10 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
 
+### INTERNAL ONLY
+#
+# Include dependencies which are only needed for development here.
+
 http_archive(
     name = "bazel_stardoc",
     url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.zip",
