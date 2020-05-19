@@ -23,7 +23,7 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
 
-### INTERNAL ONLY
+### INTERNAL ONLY - lines after this are not included in the release packaging.
 #
 # Include dependencies which are only needed for development here.
 
