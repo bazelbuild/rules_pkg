@@ -13,6 +13,7 @@ load("@rules_python//python:defs.bzl", "py_test")
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
+        ":small_workspace",
         "//:standard_package",
         "//releasing:standard_package",
     ],
@@ -23,6 +24,13 @@ pkg_tar(
     owner = "0.0",
     package_dir = ".",
     strip_prefix = ".",
+)
+
+genrule(
+    name = "small_workspace",
+    srcs = ["//:WORKSPACE"],
+    outs = ["WORKSPACE"],
+    cmd = "sed -e '/### INTERNAL ONLY/,$$d' $(location //:WORKSPACE) >$@",
 )
 
 print_rel_notes(

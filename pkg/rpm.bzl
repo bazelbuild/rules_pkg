@@ -52,8 +52,8 @@ def _pkg_rpm_impl(ctx):
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
         args += ["--source_date_epoch=@" + ctx.file.source_date_epoch_file.path]
         files += [ctx.file.source_date_epoch_file]
-    elif ctx.attr.source_date_epoch:
-        args += ["--source_date_epoch=" + ctx.attr.source_date_epoch]
+    elif ctx.attr.source_date_epoch != None:
+        args += ["--source_date_epoch=" + str(ctx.attr.source_date_epoch)]
 
     if ctx.attr.architecture:
         args += ["--arch=" + ctx.attr.architecture]
