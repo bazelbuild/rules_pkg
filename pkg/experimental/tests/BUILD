@@ -103,7 +103,6 @@ py_test(
     deps = ["@rules_python//python/runfiles"],
     data = [":pkg_rpm_basic_test_data"],
     tags = [
-        "no_macos",   # rpmbuild(8) needs to be specially insatlled
         "no_windows", # Windows doesn't have rpmbuild(8)
     ],
 )
