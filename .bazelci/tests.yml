@@ -19,5 +19,8 @@ tasks:
     working_directory: ../pkg
     test_targets:
     - "..."
+    # This uses dpkg-deb(1), which is not available by default in macOS
     - "-//tests:build_test_deb"
+    # rpmbuild(8) is not available by default on macOS
     - "-//tests:make_rpm_test"
+    - "-//experimental/tests:pkg_rpm_basic_test"
