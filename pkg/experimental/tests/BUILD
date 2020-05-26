@@ -89,8 +89,8 @@ genrule(
     """,
 )
 
-# One cannot simply pass the output of pkg_rpm as runfiles content.
-# This seems to be the easiest way around this problem.
+# One cannot simply pass the output of pkg_rpm as runfiles content (#161).  This
+# seems to be the easiest way around this problem.
 sh_library(
     name = "pkg_rpm_basic_test_data",
     data = [":test_rpm", ":test_rpm_manifest"],
@@ -102,4 +102,8 @@ py_test(
     srcs = ["pkg_rpm_basic_test.py"],
     deps = ["@rules_python//python/runfiles"],
     data = [":pkg_rpm_basic_test_data"],
+    tags = [
+        "no_macos",   # rpmbuild(8) needs to be specially insatlled
+        "no_windows", # Windows doesn't have rpmbuild(8)
+    ],
 )

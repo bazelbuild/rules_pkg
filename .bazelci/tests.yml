@@ -4,6 +4,9 @@ common: &common
   - "..."
 
 tasks:
+  centos7:
+    platform: centos7
+    <<: *common
   ubuntu1604:
     platform: ubuntu1604
     <<: *common
