@@ -124,8 +124,6 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY2AND3",
     tags = [
-        # archive.py requires xzcat, which is not available by default on Mac
-        "noci",
         # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
         "no_windows",
     ],
