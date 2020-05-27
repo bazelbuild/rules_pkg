@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
@@ -19,7 +19,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir = "/package"
+    package_dir = "/package",
 )
 
 pkg_tar(
@@ -27,7 +27,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir_file = "testdata/test_tar_package_dir_file.txt"
+    package_dir_file = "testdata/test_tar_package_dir_file.txt",
 )
 
 pkg_zip(
@@ -101,8 +101,8 @@ py_test(
         "test_zip_package_dir2.zip",
     ],
     deps = [
-        "@rules_pkg//:build_zip",
         "@bazel_tools//tools/python/runfiles",
+        "@rules_pkg//:build_zip",
     ],
 )
 
@@ -110,7 +110,7 @@ filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
         ":test_tar_package_dir",
-        ":test_tar_package_dir_file"
+        ":test_tar_package_dir_file",
     ],
     visibility = ["//visibility:private"],
 )
@@ -128,8 +128,8 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:archive",
         "@bazel_tools//tools/python/runfiles",
+        "@rules_pkg//:archive",
     ],
 )
 
@@ -150,8 +150,8 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:make_rpm_lib",
         "@rules_pkg//:archive",
+        "@rules_pkg//:make_rpm_lib",
     ],
 )
 
@@ -173,6 +173,7 @@ genrule(
 
 pkg_deb(
     name = "test-deb",
+    breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
     conffiles = [
         "/etc/nsswitch.conf",
@@ -189,25 +190,25 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     make_deb = "@rules_pkg//:make_deb",
     package = "titi",
-    breaks = ["oldbrokenpkg"],
+    preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
-    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test",
 )
 
 pkg_rpm(
     name = "test-rpm",
-    version = "1",
-    release = "0",
     data = [":archive_testdata"],
-    spec_file = "test_rpm.spec",
     debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )
 
 pkg_deb(
     name = "test-deb-py2",
+    breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
     conffiles = [
         "/etc/nsswitch.conf",
@@ -224,10 +225,9 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     make_deb = "@rules_pkg//:make_deb_py2",
     package = "titi",
-    breaks = ["oldbrokenpkg"],
+    preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
-    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test_py2",
 )
