@@ -30,34 +30,45 @@ filegroup(
 
 pkg_filegroup(
     name = "ars_pfg",
-    prefix = "/test",
     srcs = [
         ":ars",
     ],
-    attrs = {"unix": ["0755", "root", "root"]},
+    attrs = {"unix": [
+        "0755",
+        "root",
+        "root",
+    ]},
+    prefix = "/test",
 )
 
 pkg_mkdirs(
     name = "var_log_foo",
+    attrs = {"unix": [
+        "0755",
+        "root",
+        "root",
+    ]},
     dirs = ["/var/log/foo"],
-    attrs = {"unix": ["0755", "root", "root"]},
 )
 
 pkg_rpm(
     name = "test_rpm",
-    data = [":ars_pfg", "var_log_foo"],
-    version = "1.1.1",
-    release = "2222",
-    license = "Apache 2.0",
-    architecture = "noarch",
-    summary = "pkg_rpm test rpm summary",
-    description = """pkg_rpm test rpm description""",
-    pre_scriptlet = """echo pre""",
-    post_scriptlet = """echo post""",
-    preun_scriptlet = """echo preun""",
-    postun_scriptlet = """echo postun""",
     testonly = True,
+    architecture = "noarch",
+    data = [
+        "var_log_foo",
+        ":ars_pfg",
+    ],
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    post_scriptlet = """echo post""",
+    postun_scriptlet = """echo postun""",
+    pre_scriptlet = """echo pre""",
+    preun_scriptlet = """echo preun""",
+    release = "2222",
     spec_template = "template-test.spec.in",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
 )
 
 # Emit a CSV file providing a manifest providing the expected RPM contents
@@ -95,16 +106,20 @@ genrule(
 # seems to be the easiest way around this problem.
 sh_library(
     name = "pkg_rpm_basic_test_data",
-    data = [":test_rpm", ":test_rpm_manifest"],
     testonly = True,
+    data = [
+        ":test_rpm",
+        ":test_rpm_manifest",
+    ],
 )
 
 py_test(
     name = "pkg_rpm_basic_test",
     srcs = ["pkg_rpm_basic_test.py"],
-    deps = ["@rules_python//python/runfiles"],
     data = [":pkg_rpm_basic_test_data"],
+    python_version = "PY3",
     tags = [
-        "no_windows", # Windows doesn't have rpmbuild(8)
+        "no_windows",  # Windows doesn't have rpmbuild(8)
     ],
+    deps = ["@rules_python//python/runfiles"],
 )
