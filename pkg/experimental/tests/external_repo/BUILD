@@ -13,3 +13,6 @@
 # limitations under the License.
 
 # Intenionally empty; defines package boundaries
+
+licenses(["notice"])
+

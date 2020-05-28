@@ -17,6 +17,8 @@ load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs"
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
+licenses(["notice"])
+
 pkg_filegroup_analysis_tests()
 
 pkg_filegroup_unit_tests()

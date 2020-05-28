@@ -1,3 +1,4 @@
+licenses(["notice"])
 
 sh_library(
     name = "bashunit",
