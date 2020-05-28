@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 licenses(["notice"])
 
-load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
-load("@rules_pkg//:rpm.bzl", "pkg_rpm")
+load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
+load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
@@ -101,8 +101,8 @@ py_test(
         "test_zip_package_dir2.zip",
     ],
     deps = [
+        "//:build_zip",
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//:build_zip",
     ],
 )
 
@@ -128,15 +128,15 @@ py_test(
         "no_windows",
     ],
     deps = [
+        "//:archive",
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//:archive",
     ],
 )
 
 py_test(
     name = "path_test",
     srcs = ["path_test.py"],
-    data = ["@rules_pkg//:path.bzl"],
+    data = ["//:path.bzl"],
     srcs_version = "PY2AND3",
 )
 
@@ -150,8 +150,8 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:archive",
-        "@rules_pkg//:make_rpm_lib",
+        "//:archive",
+        "//:make_rpm_lib",
     ],
 )
 
@@ -161,7 +161,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
-        "@rules_pkg//:archive",
+        "//:archive",
     ],
 )
 
@@ -188,7 +188,7 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    make_deb = "@rules_pkg//:make_deb",
+    make_deb = "//:make_deb",
     package = "titi",
     preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
@@ -223,7 +223,7 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    make_deb = "@rules_pkg//:make_deb_py2",
+    make_deb = "//:make_deb_py2",
     package = "titi",
     preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
@@ -238,7 +238,7 @@ pkg_deb(
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-    build_tar = "@rules_pkg//:build_tar",
+    build_tar = "//:build_tar",
     extension = "tar%s" % ext,
     mode = "0644",
     modes = {"usr/titi": "0755"},
@@ -258,7 +258,7 @@ pkg_deb(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "@rules_pkg//:build_tar",
+    build_tar = "//:build_tar",
     deps = [":test-tar-%s" % ext],
 ) for ext in [
     "",
@@ -389,7 +389,7 @@ sh_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//third_party/test/shell:bashunit",
+        "//third_party/test/shell:bashunit",
     ],
 )
 

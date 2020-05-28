@@ -26,7 +26,7 @@ filegroup(
         "*.bzl",
         "*.py",
     ]),
-    visibility = ["@//distro:__pkg__"],
+    visibility = ["//distro:__pkg__"],
 )
 
 py_library(

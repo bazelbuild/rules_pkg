@@ -173,7 +173,7 @@ pkg_rpm = rule(
         "rpmbuild_path": attr.string(),
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
