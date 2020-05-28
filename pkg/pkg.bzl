@@ -292,7 +292,7 @@ pkg_tar_impl = rule(
         # Implicit dependencies.
         "build_tar": attr.label(
             default = Label("@rules_pkg//:build_tar"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
@@ -363,7 +363,7 @@ pkg_deb_impl = rule(
         # Implicit dependencies.
         "make_deb": attr.label(
             default = Label("@rules_pkg//:make_deb"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
@@ -430,7 +430,7 @@ pkg_zip_impl = rule(
         # Implicit dependencies.
         "build_zip": attr.label(
             default = Label("@rules_pkg//:build_zip"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
