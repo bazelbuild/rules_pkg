@@ -353,7 +353,7 @@ sh_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//third_party/test/shell:bashunit",
+        "@rules_pkg//third_party/bazel/src/test/shell:bashunit",
     ],
 )
 
@@ -391,7 +391,7 @@ sh_test(
         "no_windows",
     ],
     deps = [
-        "//third_party/test/shell:bashunit",
+        "//third_party/bazel/src/test/shell:bashunit",
     ],
 )
 
