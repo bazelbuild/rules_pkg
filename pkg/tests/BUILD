@@ -100,6 +100,7 @@ py_test(
         "test_zip_package_dir1.zip",
         "test_zip_package_dir2.zip",
     ],
+    python_version = "PY3",
     deps = [
         "//:build_zip",
         "@bazel_tools//tools/python/runfiles",
@@ -137,6 +138,7 @@ py_test(
     name = "path_test",
     srcs = ["path_test.py"],
     data = ["//:path.bzl"],
+    python_version = "PY3",
     srcs_version = "PY2AND3",
 )
 
