@@ -20,7 +20,7 @@ Test implementation copied from pkg/experimental/tests/pkg_filegroup_test.bzl
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "PackageFileInfo", "make_strip_prefix", "pkg_filegroup")
+load("@//experimental:pkg_filegroup.bzl", "PackageFileInfo", "make_strip_prefix", "pkg_filegroup")
 
 #### BEGIN copied code
 
@@ -54,7 +54,7 @@ def test_referencing_remote_file(name):
     pkg_filegroup(
         name = "{}_g".format(name),
         prefix = "usr/share",
-        srcs = ["@rules_pkg//tests:loremipsum_txt"],
+        srcs = ["@//tests:loremipsum_txt"],
         # The prefix in rules_pkg.  Why yes, this is knotty
         strip_prefix = make_strip_prefix(from_root = "tests"),
     )

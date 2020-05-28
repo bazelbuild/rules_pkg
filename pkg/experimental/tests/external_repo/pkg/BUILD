@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "make_strip_prefix", "pkg_filegroup")
+load("@//experimental:pkg_filegroup.bzl", "make_strip_prefix", "pkg_filegroup")
 load("test.bzl", "test_referencing_remote_file")
 
 package(default_visibility = ["//visibility:public"])
