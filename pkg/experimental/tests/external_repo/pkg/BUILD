@@ -15,6 +15,8 @@
 load("@//experimental:pkg_filegroup.bzl", "make_strip_prefix", "pkg_filegroup")
 load("test.bzl", "test_referencing_remote_file")
 
+licenses(["notice"])
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files(

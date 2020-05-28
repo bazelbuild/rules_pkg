@@ -1,13 +1,15 @@
-package(
-    default_visibility = ["//visibility:private"],
-)
-
 load("//:pkg.bzl", "pkg_tar")
 load("//:version.bzl", "version")
 load("//releasing:defs.bzl", "print_rel_notes")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@rules_python//python:defs.bzl", "py_test")
+
+licenses(["notice"])
+
+package(
+    default_visibility = ["//visibility:private"],
+)
 
 # Build the artifact to put on the github release page.
 pkg_tar(
