@@ -21,7 +21,7 @@ import sys
 import tarfile
 import tempfile
 
-from rules_pkg import archive
+import archive
 
 from helpers import GetFlagValue, SplitNameValuePairAtSeparator
 

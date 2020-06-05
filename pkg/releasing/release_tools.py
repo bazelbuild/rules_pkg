@@ -48,8 +48,14 @@ def get_package_sha256(tarball_path):
   return tar_sha256
 
 
-def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
-                      toolchains_method=None):
+def workspace_content(
+    url,
+    repo,
+    sha256,
+    rename_repo=None,
+    setup_file=None,
+    deps_method=None,
+    toolchains_method=None):
   # Create the WORKSPACE stanza needed for this rule set.
   if setup_file and not (deps_method or toolchains_method):
       print(
@@ -67,6 +73,7 @@ def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
 
   # If the github repo has a '-' in the name, that breaks bazel unless we remove
   # it or change it to an '_'
+  repo = rename_repo or repo
   repo = repo.replace('-', '_')
   # Correct the common mistake of not putting a ':' in your setup file name
   if setup_file and ':' not in setup_file:

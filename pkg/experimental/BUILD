@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+licenses(["notice"])
+
 exports_files(
     glob([
         "*.bzl",
@@ -24,12 +26,12 @@ exports_files(
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        "@rules_pkg//:archive",
-        "@rules_pkg//:make_rpm_lib",
+        "//:archive",
+        "//:make_rpm_lib",
     ],
 )
 
@@ -42,5 +44,5 @@ filegroup(
         "BUILD",
         "template.spec.in",
     ],
-    visibility = ["@//:__pkg__"],
+    visibility = ["//:__pkg__"],
 )
