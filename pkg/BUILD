@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files(
     glob(["*.bzl"]),
@@ -18,7 +18,12 @@ filegroup(
         "BUILD",
         "//experimental:standard_package",
     ],
-    visibility = ["@//distro:__pkg__"],
+    visibility = ["//distro:__pkg__"],
+)
+
+exports_files(
+    ["WORKSPACE"],
+    visibility = ["//distro:__pkg__"],
 )
 
 py_library(
@@ -26,7 +31,7 @@ py_library(
     srcs = [
         "__init__.py",
         "archive.py",
-        "helpers.py"
+        "helpers.py",
     ],
     srcs_version = "PY2AND3",
     # This build rule is not intended for public use, but needs to
@@ -81,7 +86,7 @@ py_binary(
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [

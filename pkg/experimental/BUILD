@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+licenses(["notice"])
+
 exports_files(
     glob([
         "*.bzl",
@@ -28,5 +30,5 @@ filegroup(
         "BUILD",
         "template.spec.in",
     ],
-    visibility = ["@//:__pkg__"],
+    visibility = ["//:__pkg__"],
 )

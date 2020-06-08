@@ -20,7 +20,7 @@
 [ -z "$TEST_WORKSPACE" ] && { echo "TEST_WORKSPACE not set!" >&2; exit 1; }
 
 # Load the unit-testing framework
-source "${TEST_SRCDIR}/${TEST_WORKSPACE}/third_party/test/shell/unittest.bash" || \
+source "${TEST_SRCDIR}/${TEST_WORKSPACE}/third_party/bazel/src/test/shell/unittest.bash" || \
   { echo "Failed to source unittest.bash" >&2; exit 1; }
 
 readonly TEST_DATA_DIR="${TEST_SRCDIR}/${TEST_WORKSPACE}/tests"

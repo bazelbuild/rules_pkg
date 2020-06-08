@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
+licenses(["notice"])
+
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -24,7 +26,7 @@ filegroup(
         "*.bzl",
         "*.py",
     ]),
-    visibility = ["@//distro:__pkg__"],
+    visibility = ["//distro:__pkg__"],
 )
 
 py_library(

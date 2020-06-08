@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
-load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
-load("@rules_pkg//:rpm.bzl", "pkg_rpm")
+load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
+load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
@@ -19,7 +19,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir = "/package"
+    package_dir = "/package",
 )
 
 pkg_tar(
@@ -27,7 +27,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir_file = "testdata/test_tar_package_dir_file.txt"
+    package_dir_file = "testdata/test_tar_package_dir_file.txt",
 )
 
 pkg_zip(
@@ -100,8 +100,9 @@ py_test(
         "test_zip_package_dir1.zip",
         "test_zip_package_dir2.zip",
     ],
+    python_version = "PY3",
     deps = [
-        "@rules_pkg//:build_zip",
+        "//:build_zip",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -110,7 +111,7 @@ filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
         ":test_tar_package_dir",
-        ":test_tar_package_dir_file"
+        ":test_tar_package_dir_file",
     ],
     visibility = ["//visibility:private"],
 )
@@ -121,16 +122,14 @@ py_test(
         "archive_test.py",
     ],
     data = [":archive_testdata"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     tags = [
-        # archive.py requires xzcat, which is not available by default on Mac
-        "noci",
         # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:archive",
+        "//:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -138,32 +137,33 @@ py_test(
 py_test(
     name = "path_test",
     srcs = ["path_test.py"],
-    data = ["@rules_pkg//:path.bzl"],
+    data = ["//:path.bzl"],
+    python_version = "PY3",
     srcs_version = "PY2AND3",
 )
 
 py_test(
     name = "make_rpm_test",
     srcs = ["make_rpm_test.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     # rpmbuild is not available in windows
     tags = [
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//:make_rpm_lib",
-        "@rules_pkg//:archive",
+        "//:archive",
+        "//:make_rpm_lib",
     ],
 )
 
 py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
-    python_version = "PY2",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
-        "@rules_pkg//:archive",
+        "//:archive",
     ],
 )
 
@@ -175,6 +175,7 @@ genrule(
 
 pkg_deb(
     name = "test-deb",
+    breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
     conffiles = [
         "/etc/nsswitch.conf",
@@ -189,27 +190,27 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    make_deb = "@rules_pkg//:make_deb",
+    make_deb = "//:make_deb",
     package = "titi",
-    breaks = ["oldbrokenpkg"],
+    preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
-    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test",
 )
 
 pkg_rpm(
     name = "test-rpm",
-    version = "1",
-    release = "0",
     data = [":archive_testdata"],
-    spec_file = "test_rpm.spec",
     debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )
 
 pkg_deb(
     name = "test-deb-py2",
+    breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
     conffiles = [
         "/etc/nsswitch.conf",
@@ -224,12 +225,11 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    make_deb = "@rules_pkg//:make_deb_py2",
+    make_deb = "//:make_deb_py2",
     package = "titi",
-    breaks = ["oldbrokenpkg"],
+    preinst = ":test-deb-preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
-    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test_py2",
 )
@@ -240,7 +240,7 @@ pkg_deb(
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-    build_tar = "@rules_pkg//:build_tar",
+    build_tar = "//:build_tar",
     extension = "tar%s" % ext,
     mode = "0644",
     modes = {"usr/titi": "0755"},
@@ -260,7 +260,7 @@ pkg_deb(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "@rules_pkg//:build_tar",
+    build_tar = "//:build_tar",
     deps = [":test-tar-%s" % ext],
 ) for ext in [
     "",
@@ -353,7 +353,7 @@ sh_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//third_party/test/shell:bashunit",
+        "@rules_pkg//third_party/bazel/src/test/shell:bashunit",
     ],
 )
 
@@ -391,7 +391,7 @@ sh_test(
         "no_windows",
     ],
     deps = [
-        "@rules_pkg//third_party/test/shell:bashunit",
+        "//third_party/bazel/src/test/shell:bashunit",
     ],
 )
 

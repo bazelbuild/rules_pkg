@@ -17,7 +17,7 @@
 
 """Provides rules for creating RPM packages via pkg_filegroup and friends."""
 
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo")
+load("//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -601,12 +601,12 @@ pkg_rpm = rule(
             In most cases, you should not need to override this attribute.
             """,
             allow_single_file = spec_filetype,
-            default = "@rules_pkg//experimental:template.spec.in",
+            default = "//experimental:template.spec.in",
         ),
 
         # Implicit dependencies.
         "_make_rpm": attr.label(
-            default = Label("@rules_pkg//:make_rpm"),
+            default = Label("//:make_rpm"),
             cfg = "exec",
             executable = True,
             allow_files = True,

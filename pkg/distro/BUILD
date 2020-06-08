@@ -1,18 +1,21 @@
+load("//:pkg.bzl", "pkg_tar")
+load("//:version.bzl", "version")
+load("//releasing:defs.bzl", "print_rel_notes")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_python//python:defs.bzl", "py_test")
+
+licenses(["notice"])
+
 package(
     default_visibility = ["//visibility:private"],
 )
-
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
-load("@rules_pkg//:version.bzl", "version")
-load("@rules_python//python:defs.bzl", "py_test")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
+        ":small_workspace",
         "//:standard_package",
         "//releasing:standard_package",
     ],
@@ -23,6 +26,13 @@ pkg_tar(
     owner = "0.0",
     package_dir = ".",
     strip_prefix = ".",
+)
+
+genrule(
+    name = "small_workspace",
+    srcs = ["//:WORKSPACE"],
+    outs = ["WORKSPACE"],
+    cmd = "sed -e '/### INTERNAL ONLY/,$$d' $(location //:WORKSPACE) >$@",
 )
 
 print_rel_notes(
@@ -52,7 +62,7 @@ py_test(
     ],
     deps = [
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//releasing:release_utils",
+        "//releasing:release_utils",
     ],
 )
 
@@ -65,10 +75,10 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
-        "@//:path.bzl",
-        "@//:pkg.bzl",
-        "@//:rpm.bzl",
-        "@//:version.bzl",
+        "//:path.bzl",
+        "//:pkg.bzl",
+        "//:rpm.bzl",
+        "//:version.bzl",
     ],
     visibility = ["//visibility:private"],
 )
@@ -76,7 +86,7 @@ bzl_library(
 stardoc(
     name = "docs_deb",
     out = "pkg_deb.md",
-    input = "@//:pkg.bzl",
+    input = "//:pkg.bzl",
     symbol_names = [
         "pkg_deb",
         "pkg_deb_impl",
@@ -87,7 +97,7 @@ stardoc(
 stardoc(
     name = "docs_tar",
     out = "pkg_tar.md",
-    input = "@//:pkg.bzl",
+    input = "//:pkg.bzl",
     symbol_names = [
         "pkg_tar",
         "pkg_tar_impl",
@@ -98,7 +108,7 @@ stardoc(
 stardoc(
     name = "docs_zip",
     out = "pkg_zip.md",
-    input = "@//:pkg.bzl",
+    input = "//:pkg.bzl",
     symbol_names = [
         "pkg_zip",
         "pkg_zip_impl",
@@ -109,6 +119,6 @@ stardoc(
 stardoc(
     name = "docs_rpm",
     out = "pkg_rpm.md",
-    input = "@//:rpm.bzl",
+    input = "//:rpm.bzl",
     deps = [":rules_pkg_lib"],
 )

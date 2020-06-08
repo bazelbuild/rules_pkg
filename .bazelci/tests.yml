@@ -2,8 +2,13 @@ common: &common
   working_directory: /workdir/pkg
   test_targets:
   - "..."
+  # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
+  - "-//experimental/tests:pkg_rpm_basic_test"
 
 tasks:
+  centos7:
+    platform: centos7
+    <<: *common
   ubuntu1604:
     platform: ubuntu1604
     <<: *common
@@ -14,5 +19,8 @@ tasks:
     working_directory: ../pkg
     test_targets:
     - "..."
+    # This uses dpkg-deb(1), which is not available by default in macOS
     - "-//tests:build_test_deb"
+    # rpmbuild(8) is not available by default on macOS
     - "-//tests:make_rpm_test"
+    - "-//experimental/tests:pkg_rpm_basic_test"
