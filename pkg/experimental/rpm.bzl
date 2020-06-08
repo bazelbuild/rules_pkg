@@ -198,6 +198,9 @@ def _pkg_rpm_impl(ctx):
     # on the side of correctness here.
     dest_check_map = {}
     for d in ctx.attr.data:
+        # TODO(nacl, #191): This loop should be consolidated with the install
+        # script-generating loop below, as they're iterating on the same data.
+
         # d is a Target
 
         # FIXME: if/when we start to consider other providers here, we may want
