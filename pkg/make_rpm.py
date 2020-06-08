@@ -95,11 +95,14 @@ def CopyAndRewrite(input_file, output_file, replacements=None, template_replacem
 
   Args:
     input_file: The file to copy.
+
     output_file: The file to write to.
+
     replacements: A dictionary of replacements.
       Keys are prefixes scan for, values are the replacements to write after
       the prefix.
-    template_replacements: EXPERIMENTAL: A dictionary of in-place replacements.
+
+    template_replacements: A dictionary of in-place replacements.
       Keys are variable names, values are replacements.  Used with
       string.Template.
   """
@@ -185,7 +188,6 @@ class RpmBuilder(object):
     self.source_date_epoch = GetFlagValue(source_date_epoch)
     self.debug = debug
 
-    # The below are experimental
     self.pre_scriptlet = SlurpFile(pre_scriptlet_path) if pre_scriptlet_path is not None else ''
     self.post_scriptlet = SlurpFile(post_scriptlet_path) if post_scriptlet_path is not None else ''
     self.preun_scriptlet = SlurpFile(preun_scriptlet_path) if preun_scriptlet_path is not None else ''
@@ -231,7 +233,7 @@ class RpmBuilder(object):
 
     # Copy the spec file, updating with the correct version.
 
-    # Used by experimental/rpm.bzl: scriptlet template replacements
+    # Replace scriptlets if they're provided.
     tpl_replacements = {
       'PRE_SCRIPTLET': "%pre\n" + self.pre_scriptlet,
       'POST_SCRIPTLET': "%post\n" + self.post_scriptlet,
@@ -239,7 +241,6 @@ class RpmBuilder(object):
       'POSTUN_SCRIPTLET': "%postun\n" + self.postun_scriptlet,
     }
 
-    # FIXME: hmmm... should these be mutually exclusive somehow?
     spec_origin = os.path.join(original_dir, spec_file)
     self.spec_file = os.path.basename(spec_file)
     replacements = {}
@@ -251,8 +252,7 @@ class RpmBuilder(object):
                    replacements=replacements,
                    template_replacements=tpl_replacements)
 
-    # Used by experimental/rpm.bzl: preamble replacement, %description,
-    # %install, %files -f substitution
+    # preamble replacement, %description, %install, %files -f substitution
     self.preamble_file = None
     if preamble_file:
       # Copy in the various other files needed to build the RPM
@@ -292,7 +292,7 @@ class RpmBuilder(object):
     # Further, the use of disabling yapf and friends is to allow argument names
     # to be associated with their values neatly.
     args = [
-      self.rpmbuild_path,  # noqa: E121
+        self.rpmbuild_path,  # noqa: E121
     ]
     if self.debug:
       args.append('-vv')
@@ -305,7 +305,7 @@ class RpmBuilder(object):
         '--buildroot=%s' % buildroot,
     ]  # yapf: disable
 
-    # Used by experimental/rpm.bzl: macro-based substitution
+    # Macro-based RPM parameter substitution, if necessary inputs provided.
     if self.preamble_file:
       args += ['--define', 'build_rpm_options %s' % self.preamble_file]
     if self.description_file:
@@ -315,7 +315,6 @@ class RpmBuilder(object):
     if self.file_list_file:
       # %files -f is taken relative to the package root
       args += ['--define', 'build_rpm_files %s' % os.path.basename(self.file_list_file)]
-    # End code used specifically by experimental/rpm.bzl
 
     args.append(self.spec_file)
 
@@ -358,7 +357,6 @@ class RpmBuilder(object):
       print('No RPM file created.')
 
   def Build(self, spec_file, out_file,
-            # Experimental options:
             preamble_file=None,
             description_file=None,
             install_script_file=None,
@@ -409,25 +407,24 @@ def main(argv):
   parser.add_argument('--debug', action='store_true', default=False,
                       help='Print debug messages.')
 
-  ex_grp = parser.add_argument_group('EXPERIMENTAL',
-                                     'Experimental options (used by pkg/experimental/rpm.bzl')
-  ex_grp.add_argument('--install_script',
+  # Options currently used experimental/rpm.bzl:
+  parser.add_argument('--install_script',
                       help='Installer script')
-  ex_grp.add_argument('--file_list',
+  parser.add_argument('--file_list',
                       help='File containing a list of files to include with rpm spec %files -f')
-  ex_grp.add_argument('--preamble',
+  parser.add_argument('--preamble',
                       help='File containing the RPM Preamble')
-  ex_grp.add_argument('--description',
+  parser.add_argument('--description',
                       help='File containing the RPM %description text')
-  ex_grp.add_argument('--pre_scriptlet',
+  parser.add_argument('--pre_scriptlet',
                       help='File containing the RPM %pre scriptlet, if to be substituted')
-  ex_grp.add_argument('--post_scriptlet',
+  parser.add_argument('--post_scriptlet',
                       help='File containing the RPM %post scriptlet, if to be substituted')
-  ex_grp.add_argument('--preun_scriptlet',
+  parser.add_argument('--preun_scriptlet',
                       help='File containing the RPM %preun scriptlet, if to be substituted')
-  ex_grp.add_argument('--postun_scriptlet',
+  parser.add_argument('--postun_scriptlet',
                       help='File containing the RPM %postun scriptlet, if to be substituted')
-  ex_grp.add_argument('files', nargs='*')
+  parser.add_argument('files', nargs='*')
 
   options = parser.parse_args(argv or ())
 
@@ -437,16 +434,12 @@ def main(argv):
                          options.arch, options.rpmbuild,
                          source_date_epoch=options.source_date_epoch,
                          debug=options.debug,
-                         # Additional scriptlet path arguments set when being
-                         # used by experimental/rpm.bzl
                          pre_scriptlet_path=options.pre_scriptlet,
                          post_scriptlet_path=options.post_scriptlet,
                          preun_scriptlet_path=options.preun_scriptlet,
                          postun_scriptlet_path=options.postun_scriptlet)
     builder.AddFiles(options.files)
     return builder.Build(options.spec_file, options.out_file,
-                         # Additional arguments set when being used by
-                         # experimental/rpm.bzl
                          preamble_file=options.preamble,
                          description_file=options.description,
                          install_script_file=options.install_script,
