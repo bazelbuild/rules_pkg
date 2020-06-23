@@ -310,7 +310,10 @@ class TarFileWriter(object):
       self._addfile(tarinfo, io.BytesIO(content_bytes))
     elif file_content:
       with open(file_content, 'rb') as f:
-        tarinfo.size = os.fstat(f.fileno()).st_size
+        fileinfo = os.fstat(f.fileno())
+        tarinfo.size = fileinfo.st_size
+        if self.preserve_mtime:
+          tarinfo.mtime = fileinfo.st_mtime
         self._addfile(tarinfo, f)
     else:
       if kind == tarfile.DIRTYPE:
