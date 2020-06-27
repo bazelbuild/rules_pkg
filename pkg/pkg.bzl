@@ -14,6 +14,7 @@
 """Rules for manipulation of various packaging."""
 
 load(":path.bzl", "compute_data_path", "dest_path")
+load(":providers.bzl", "PackageArtifactInfo", "PackageNamingInfo")
 
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
@@ -37,8 +38,20 @@ def _pkg_tar_impl(ctx):
     # Files needed by rule implementation at runtime
     files = []
 
+    output_name = ctx.label.name + "." + ctx.attr.extension
+    if ctx.attr.package_file_name:
+        naming_info = ctx.attr.naming_info[PackageNamingInfo]
+        if naming_info:
+            # This is obviously wrong.  We need a templater that takes a dict.
+            output_name = ctx.attr.package_file_name.replace(
+                "${cpu}", naming_info.values['cpu']).replace(
+                "${opt}", naming_info.values['opt'])
+        print("======= Writing: %s", output_name)
+    output_file = ctx.actions.declare_file(output_name)
+    # print("======= Writing: %s", output_file.path)
+
     # Compute the relative path
-    data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
+    data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -54,7 +67,7 @@ def _pkg_tar_impl(ctx):
 
     # Start building the arguments.
     args = [
-        "--output=" + ctx.outputs.out.path,
+        "--output=" + output_file.path,
         package_dir_arg,
         "--mode=" + ctx.attr.mode,
         "--owner=" + ctx.attr.owner,
@@ -131,7 +144,7 @@ def _pkg_tar_impl(ctx):
         inputs = file_inputs + ctx.files.deps + files,
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],
-        outputs = [ctx.outputs.out],
+        outputs = [output_file],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -140,7 +153,19 @@ def _pkg_tar_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out = [ctx.outputs.out])
+    return [
+        # WHY a seperate OutputGroup?
+        # OutputGroupInfo(out = [output_file]),
+        DefaultInfo(
+            files = depset([output_file]),
+            # This is sort of ugly that the object itself must be runfiles.
+            runfiles = ctx.runfiles(files = [output_file]),
+        ),
+        PackageArtifactInfo(
+            label = ctx.label.name,
+            file_name = output_name,
+        )
+    ]
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
@@ -285,9 +310,13 @@ pkg_tar_impl = rule(
         "include_runfiles": attr.bool(),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
+        "package_file_name": attr.string(),
+        "naming_info": attr.label(
+            providers = [PackageNamingInfo],
+        ),
 
         # Outputs
-        "out": attr.output(),
+        "out": attr.output(mandatory=False),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -314,7 +343,7 @@ def pkg_tar(**kwargs):
                 kwargs["srcs"] = kwargs.pop("files")
     extension = kwargs.get("extension") or "tar"
     pkg_tar_impl(
-        out = kwargs["name"] + "." + extension,
+        # out = kwargs["name"] + "." + extension,
         **kwargs
     )
 

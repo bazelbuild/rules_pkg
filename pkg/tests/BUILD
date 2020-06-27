@@ -5,6 +5,10 @@ load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
+load(":my_package_name.bzl", "my_package_naming")
+
+my_package_naming(name = "naming_info")
+
 genrule(
     name = "generate_files",
     outs = [
@@ -12,6 +16,15 @@ genrule(
         "usr/titi",
     ],
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
+)
+
+pkg_tar(
+    name = "test_naming",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "test_naming-${cpu}-${opt}.tar",
+    naming_info = ":naming_info",
 )
 
 pkg_tar(
@@ -182,7 +195,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-gz",
     depends = [
         "dep1",
         "dep2",
@@ -217,7 +230,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-gz",
     depends = [
         "dep1",
         "dep2",
@@ -242,6 +255,7 @@ pkg_deb(
     ],
     build_tar = "//:build_tar",
     extension = "tar%s" % ext,
+    # extension = ext[1:],
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
@@ -366,22 +380,22 @@ sh_test(
     data = [
         "testenv.sh",
         ":archive_testdata",
-        ":test-tar-.tar",
-        ":test-tar-bz2.tar.bz2",
-        ":test-tar-empty_dirs.tar",
-        ":test-tar-empty_files.tar",
-        ":test-tar-files_dict.tar",
-        ":test-tar-gz.tar.gz",
-        ":test-tar-inclusion-.tar",
-        ":test-tar-inclusion-bz2.tar",
-        ":test-tar-inclusion-gz.tar",
-        ":test-tar-inclusion-xz.tar",
-        ":test-tar-mtime.tar",
-        ":test-tar-strip_prefix-dot.tar",
-        ":test-tar-strip_prefix-empty.tar",
-        ":test-tar-strip_prefix-etc.tar",
-        ":test-tar-strip_prefix-none.tar",
-        ":test-tar-xz.tar.xz",
+        ":test-tar-",
+        ":test-tar-bz2",
+        ":test-tar-empty_dirs",
+        ":test-tar-empty_files",
+        ":test-tar-files_dict",
+        ":test-tar-gz",
+        ":test-tar-inclusion-",
+        ":test-tar-inclusion-bz2",
+        ":test-tar-inclusion-gz",
+        ":test-tar-inclusion-xz",
+        ":test-tar-mtime",
+        ":test-tar-strip_prefix-dot",
+        ":test-tar-strip_prefix-empty",
+        ":test-tar-strip_prefix-etc",
+        ":test-tar-strip_prefix-none",
+        ":test-tar-xz",
         ":titi_test_all.changes",
     ],
     tags = [

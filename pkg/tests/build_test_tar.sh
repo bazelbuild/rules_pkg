@@ -102,6 +102,10 @@ function test_tar() {
 ./usr/bin/
 ./usr/bin/java -> /path/to/bin/java"
   for i in "" ".gz" ".bz2" ".xz"; do
+    # !!!!!
+    # !!!!! TODO:  This needs work.  Unless you have the PackageNamingInfo,
+    # !!!!!        you would not know this true filename.
+    # !!!!!
     assert_content "test-tar-${i:1}.tar$i"
     # Test merging tar files
     # We pass a second argument to not test for user and group
