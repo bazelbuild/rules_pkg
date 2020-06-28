@@ -19,7 +19,7 @@ genrule(
 )
 
 pkg_tar(
-    name = "test_naming",
+    name = "test_tar_naming",
     srcs = [
         ":BUILD",
     ],
@@ -275,7 +275,10 @@ pkg_deb(
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
     build_tar = "//:build_tar",
-    deps = [":test-tar-%s" % ext],
+    deps = [
+        ":test-tar-%s" % ext,
+        # ":test_tar_naming",
+    ],
 ) for ext in [
     "",
     "gz",

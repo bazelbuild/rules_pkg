@@ -96,7 +96,7 @@ function assert_content() {
 function test_tar() {
   local listing="./
 ./etc/
-./etc/nsswitch.conf
+XXXXXXXXXXXXX  ./etc/nsswitch.conf
 ./usr/
 ./usr/titi
 ./usr/bin/
