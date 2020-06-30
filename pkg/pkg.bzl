@@ -111,12 +111,15 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.empty_dirs:
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
     if ctx.attr.extension:
+        compression = None
         dotPos = ctx.attr.extension.find(".")
         if dotPos > 0:
-            dotPos += 1
-            args += ["--compression=%s" % ctx.attr.extension[dotPos:]]
-        elif ctx.attr.extension == "tgz":
-            args += ["--compression=gz"]
+            compression = ctx.attr.extension[dotPos+1:]
+        else:
+            compression = ctx.attr.extension
+        if compression == "tgz":
+            compression = "gz"
+        args += ["--compression=%s" % compression]
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
