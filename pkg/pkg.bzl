@@ -16,7 +16,8 @@
 load(":path.bzl", "compute_data_path", "dest_path")
 
 # Filetype to restrict inputs
-tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
+tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2", ".bz2",
+                ".xz"]
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
 
@@ -112,14 +113,15 @@ def _pkg_tar_impl(ctx):
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
     if ctx.attr.extension:
         compression = None
-        dotPos = ctx.attr.extension.find(".")
-        if dotPos > 0:
+        dotPos = ctx.attr.extension.rfind(".")
+        if dotPos >= 0:
             compression = ctx.attr.extension[dotPos+1:]
         else:
             compression = ctx.attr.extension
         if compression == "tgz":
             compression = "gz"
-        args += ["--compression=%s" % compression]
+        if compression != "tar":
+            args += ["--compression=%s" % compression]
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
@@ -315,7 +317,7 @@ def pkg_tar(**kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
-    extension = kwargs.get("extension") or "tar"
+    extension = (kwargs.get("extension") or "tar").replace('.', '')
     pkg_tar_impl(
         out = kwargs["name"] + "." + extension,
         **kwargs

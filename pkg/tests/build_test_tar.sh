@@ -101,8 +101,9 @@ function test_tar() {
 ./usr/titi
 ./usr/bin/
 ./usr/bin/java -> /path/to/bin/java"
-  for i in "" ".gz" ".bz2" ".xz"; do
-    assert_content "test-tar-${i:1}.tar$i"
+  assert_content "test-tar-.tar"
+  for i in ".tgz" ".bz2" ".xz"; do
+    assert_content "test-tar-${i:1}$i"
     # Test merging tar files
     # We pass a second argument to not test for user and group
     # names because tar merging ask for numeric owners.

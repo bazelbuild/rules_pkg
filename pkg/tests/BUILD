@@ -182,7 +182,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-tgz.tgz",
     depends = [
         "dep1",
         "dep2",
@@ -217,7 +217,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-tgz.tgz",
     depends = [
         "dep1",
         "dep2",
@@ -235,13 +235,13 @@ pkg_deb(
 )
 
 [pkg_tar(
-    name = "test-tar-%s" % ext[1:],
+    name = "test-tar-%s" % ext.replace('.', ''),
     srcs = [
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
     build_tar = "//:build_tar",
-    extension = "tar%s" % ext,
+    extension = ext,
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
@@ -252,10 +252,17 @@ pkg_deb(
     strip_prefix = ".",
     symlinks = {"usr/bin/java": "/path/to/bin/java"},
 ) for ext in [
+    # Some extensions have a . in them to test that we end up creating
+    # name.ext instead of name..ext.  The targets below all assume the correct
+    # naming pattern, as well as build_tar_test 
     "",
-    ".gz",
-    ".bz2",
+    ".tgz",
+    "bz2",
     ".xz",  # This will breaks if xzcat is not installed
+
+    # Some more files to make sure name patterns are complete
+    "tar",
+    "tar.gz",
 ]]
 
 [pkg_tar(
@@ -264,7 +271,7 @@ pkg_deb(
     deps = [":test-tar-%s" % ext],
 ) for ext in [
     "",
-    "gz",
+    "tgz",
     "bz2",
     "xz",
 ]]
@@ -367,21 +374,21 @@ sh_test(
         "testenv.sh",
         ":archive_testdata",
         ":test-tar-.tar",
-        ":test-tar-bz2.tar.bz2",
+        ":test-tar-bz2.bz2",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
-        ":test-tar-gz.tar.gz",
+        ":test-tar-tgz.tgz",
         ":test-tar-inclusion-.tar",
         ":test-tar-inclusion-bz2.tar",
-        ":test-tar-inclusion-gz.tar",
+        ":test-tar-inclusion-tgz.tar",
         ":test-tar-inclusion-xz.tar",
         ":test-tar-mtime.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
-        ":test-tar-xz.tar.xz",
+        ":test-tar-xz.xz",
         ":titi_test_all.changes",
     ],
     tags = [
