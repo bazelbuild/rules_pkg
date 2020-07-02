@@ -131,61 +131,8 @@ class PkgTarTest(unittest.TestCase):
     self.assertTarFileContent('test-tar-mtime.tar', content)
 
 
-if __name__ == '__main__':
-  unittest.main()
-
-
 """
-
-
-# Linux and macos report 1999-12-31 19:00 in different ways
-readonly TAR_OUTPUT_FIXERS=$(mktemp)
-trap '/bin/rm $TAR_OUTPUT_FIXERS' 0 1 2 3 15
-(
-  echo 's# Dec 31  1999 # 1999-12-31 19:00 #'
-  echo 's# Jan  1  2000 # 1999-12-31 19:00 #'
-  echo 's#  *0 tata   titi # tata/titi #'
-  echo 's#  *0 titi   tata # titi/tata #'
-  echo 's#  *0 0      0 # 0/0     #'
-  echo 's#  *0 24     42 # 24/42     #'
-  echo 's#  *0 42     24 # 42/24     #'
-) >"$TAR_OUTPUT_FIXERS"
-
-function get_tar_listing() {
-  local input=$1
-  local test_data="${TEST_DATA_DIR}/${input}"
-  # We strip unused prefixes rather than dropping "v" flag for tar, because we
-  # want to preserve symlink information.
-  tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS" | sed -e 's/^.*:00 //'
-}
-
-function get_tar_verbose_listing() {
-  local input=$1
-  local test_data="${TEST_DATA_DIR}/${input}"
-  TZ="UTC" tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS"
-}
-
-function get_tar_owner() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS" | grep "00 $file\$" | cut -d " " -f 2
-}
-
-function get_numeric_tar_owner() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar --numeric-owner -tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS" | grep "00 $file\$" | cut -d " " -f 2
-}
-
-function get_tar_permission() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS" | fgrep "00 $file" | cut -d " " -f 1
-}
-
+TBD:
 function assert_content() {
   local listing="./
 ./etc/
@@ -225,3 +172,7 @@ function test_tar() {
     assert_content "test-tar-inclusion-${i:1}.tar" "true"
   done;
 """
+
+
+if __name__ == '__main__':
+  unittest.main()
