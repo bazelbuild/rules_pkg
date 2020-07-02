@@ -43,12 +43,6 @@ function get_tar_listing() {
   tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS" | sed -e 's/^.*:00 //'
 }
 
-function get_tar_verbose_listing() {
-  local input=$1
-  local test_data="${TEST_DATA_DIR}/${input}"
-  TZ="UTC" tar tvf "${test_data}" | sed -f "$TAR_OUTPUT_FIXERS"
-}
-
 function get_tar_owner() {
   local input=$1
   local file=$2
@@ -108,42 +102,6 @@ function test_tar() {
     # names because tar merging ask for numeric owners.
     assert_content "test-tar-inclusion-${i:1}.tar" "true"
   done;
-
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-empty.tar)"
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-none.tar)"
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-etc.tar)"
-  check_eq "./
-./etc/
-./etc/nsswitch.conf
-./external/
-./external/bazel_tools/
-./external/bazel_tools/tools/
-./external/bazel_tools/tools/python/
-./external/bazel_tools/tools/python/runfiles/
-./external/bazel_tools/tools/python/runfiles/runfiles.py" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
-  check_eq "./
-./not-etc/
-./not-etc/mapped-filename.conf" "$(get_tar_listing test-tar-files_dict.tar)"
-
-# TODO(aiuto): Make these tests less brittle w.r.t. tar variations, so that
-# we can run them on something besides Linux.
-if [[ "$OS" == 'Linux' ]] ; then
-  check_eq "drwxr-xr-x 0/0               0 2000-01-01 00:00 ./
--rwxrwxrwx 0/0               0 2000-01-01 00:00 ./a
--rwxrwxrwx 0/0               0 2000-01-01 00:00 ./b" \
-      "$(get_tar_verbose_listing test-tar-empty_files.tar)"
-  check_eq "drwxr-xr-x 0/0               0 2000-01-01 00:00 ./
-drwxrwxrwx 0/0               0 2000-01-01 00:00 ./tmp/
-drwxrwxrwx 0/0               0 2000-01-01 00:00 ./pmt/" \
-      "$(get_tar_verbose_listing test-tar-empty_dirs.tar)"
-  check_eq \
-    "drwxr-xr-x 0/0               0 1999-12-31 23:59 ./
--r-xr-xr-x 0/0               2 1999-12-31 23:59 ./nsswitch.conf" \
-    "$(get_tar_verbose_listing test-tar-mtime.tar)"
-fi
 }
 
 

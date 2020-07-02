@@ -365,7 +365,34 @@ sh_test(
     ],
     data = [
         "testenv.sh",
-        ":archive_testdata",
+        ":test-tar-.tar",
+        ":test-tar-bz2.tar.bz2",
+        ":test-tar-gz.tar.gz",
+        ":test-tar-inclusion-.tar",
+        ":test-tar-inclusion-bz2.tar",
+        ":test-tar-inclusion-gz.tar",
+        ":test-tar-inclusion-xz.tar",
+        ":test-tar-xz.tar.xz",
+        ":titi_test_all.changes",
+    ],
+    tags = [
+        # archive.py requires xzcat, which is not available by default on Mac
+        "no_macos",
+        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
+        "no_windows",
+    ],
+    deps = [
+        "//third_party/bazel/src/test/shell:bashunit",
+    ],
+)
+
+py_test(
+    name = "pkg_tar_test",
+    size = "medium",
+    srcs = [
+        "pkg_tar_test.py",
+    ],
+    data = [
         ":test-tar-.tar",
         ":test-tar-bz2.tar.bz2",
         ":test-tar-empty_dirs.tar",
@@ -384,15 +411,7 @@ sh_test(
         ":test-tar-xz.tar.xz",
         ":titi_test_all.changes",
     ],
-    tags = [
-        # archive.py requires xzcat, which is not available by default on Mac
-        "no_macos",
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
-    deps = [
-        "//third_party/bazel/src/test/shell:bashunit",
-    ],
+    python_version = "PY3",
 )
 
 test_suite(
