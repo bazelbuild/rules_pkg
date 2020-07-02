@@ -130,41 +130,43 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-mtime.tar', content)
 
+  def test_basic(self):
+    # Check the set of 'test-tar-basic-*' smoke test.
+    content = [
+        {'name': '.'},
+        {'name': './etc',
+         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
+        {'name': './etc/nsswitch.conf',
+         'mode': 0o644,
+         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'
+         },
+        {'name': './usr',
+         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/titi',
+         'mode': 0o755,
+         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/bin'},
+        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
+    ]
+    for ext in ('', '.gz', '.bz2', '.xz'):
+      with self.subTest(ext=ext):
+        self.assertTarFileContent('test-tar-basic-%s.tar%s' % (ext[1:], ext),
+                                  content)
 
-"""
-TBD:
-function assert_content() {
-  local listing="./
-./etc/
-./etc/nsswitch.conf
-./usr/
-./usr/titi
-./usr/bin/
-./usr/bin/java -> /path/to/bin/java"
-  check_eq "$listing" "$(get_tar_listing $1)"
-  check_eq "-rwxr-xr-x" "$(get_tar_permission $1 ./usr/titi)"
-  check_eq "-rw-r--r--" "$(get_tar_permission $1 ./etc/nsswitch.conf)"
-  check_eq "24/42" "$(get_numeric_tar_owner $1 ./etc/)"
-  check_eq "24/42" "$(get_numeric_tar_owner $1 ./etc/nsswitch.conf)"
-  check_eq "42/24" "$(get_numeric_tar_owner $1 ./usr/)"
-  check_eq "42/24" "$(get_numeric_tar_owner $1 ./usr/titi)"
-  if [ -z "${2-}" ]; then
-    check_eq "tata/titi" "$(get_tar_owner $1 ./etc/)"
-    check_eq "tata/titi" "$(get_tar_owner $1 ./etc/nsswitch.conf)"
-    check_eq "titi/tata" "$(get_tar_owner $1 ./usr/)"
-    check_eq "titi/tata" "$(get_tar_owner $1 ./usr/titi)"
-  fi
-}
-
-function test_tar() {
-  for i in "" ".gz" ".bz2" ".xz"; do
-    assert_content "test-tar-${i:1}.tar$i"
-    # Test merging tar files
-    # We pass a second argument to not test for user and group
-    # names because tar merging ask for numeric owners.
-    assert_content "test-tar-inclusion-${i:1}.tar" "true"
-  done;
-"""
+  def test_file_inclusion(self):
+    content = [
+        {'name': '.'},
+        {'name': './etc', 'uid': 24, 'gid': 42},
+        {'name': './etc/nsswitch.conf', 'mode': 0o644, 'uid': 24, 'gid': 42},
+        {'name': './usr', 'uid': 42, 'gid': 24},
+        {'name': './usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
+        {'name': './usr/bin'},
+        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
+    ]
+    for ext in ('', '.gz', '.bz2', '.xz'):
+      with self.subTest(ext=ext):
+        self.assertTarFileContent('test-tar-inclusion-%s.tar' % ext[1:],
+                                  content)
 
 
 if __name__ == '__main__':
