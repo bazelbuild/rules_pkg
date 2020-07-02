@@ -157,13 +157,6 @@ function assert_content() {
 }
 
 function test_tar() {
-  local listing="./
-./etc/
-./etc/nsswitch.conf
-./usr/
-./usr/titi
-./usr/bin/
-./usr/bin/java -> /path/to/bin/java"
   for i in "" ".gz" ".bz2" ".xz"; do
     assert_content "test-tar-${i:1}.tar$i"
     # Test merging tar files
