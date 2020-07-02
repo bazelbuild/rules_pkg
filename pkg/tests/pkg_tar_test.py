@@ -124,6 +124,7 @@ class PkgTarTest(unittest.TestCase):
     self.assertTarFileContent('test-tar-empty_dirs.tar', content)
 
   def test_mtime(self):
+    # Note strange mtime. It is specified in the BUILD file.
     content = [
         {'name': '.', 'mtime': 946684740},
         {'name': './nsswitch.conf', 'mtime': 946684740},
