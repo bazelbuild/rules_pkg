@@ -304,7 +304,7 @@ pkg_tar_impl = rule(
     },
 )
 
-def pkg_tar(**kwargs):
+def pkg_tar(name, **kwargs):
     """Creates a .tar file. See pkg_tar_impl."""
 
     # Compatibility with older versions of pkg_tar that define files as
@@ -317,9 +317,13 @@ def pkg_tar(**kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
-    extension = (kwargs.get("extension") or "tar").replace('.', '')
+    archive_name = kwargs.get("archive_name") or name
+    extension = (kwargs.get("extension") or "tar")
+    if extension[0] == '.':
+      extension = extension[1:]
     pkg_tar_impl(
-        out = kwargs["name"] + "." + extension,
+        name = name,
+        out = archive_name + "." + extension,
         **kwargs
     )
 
@@ -377,14 +381,16 @@ pkg_deb_impl = rule(
 
 def pkg_deb(name, package, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
+    archive_name = kwargs.get("archive_name") or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
     out_deb = "%s_%s_%s.deb" % (package, version, architecture)
     out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+
     pkg_deb_impl(
         name = name,
         package = package,
-        out = name + ".deb",
+        out = archive_name + ".deb",
         deb = out_deb,
         changes = out_changes,
         **kwargs
@@ -445,9 +451,10 @@ pkg_zip_impl = rule(
 def pkg_zip(name, **kwargs):
     """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.get("extension") or "zip"
+    archive_name = kwargs.get("archive_name") or name
 
     pkg_zip_impl(
         name = name,
-        out = name + "." + extension,
+        out = archive_name + "." + extension,
         **kwargs
     )
