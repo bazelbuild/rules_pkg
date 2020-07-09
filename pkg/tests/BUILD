@@ -114,7 +114,6 @@ py_test(
     deps = [
         "//:build_zip",
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//:build_zip",
     ],
 )
 
@@ -142,7 +141,6 @@ py_test(
     deps = [
         "//:archive",
         "@bazel_tools//tools/python/runfiles",
-        "@rules_pkg//:archive",
     ],
 )
 
