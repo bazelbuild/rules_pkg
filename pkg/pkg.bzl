@@ -399,6 +399,7 @@ def _pkg_zip_impl(ctx):
     args.add("-o", ctx.outputs.out.path)
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
+    args.add("-m", ctx.attr.mode)
 
     args.add_all(
         ctx.files.srcs,
@@ -422,7 +423,7 @@ def _pkg_zip_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out=[ctx.outputs.out]);
+    return OutputGroupInfo(out = [ctx.outputs.out])
 
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
@@ -431,6 +432,7 @@ pkg_zip_impl = rule(
         "srcs": attr.label_list(allow_files = True),
         "package_dir": attr.string(default = "/"),
         "timestamp": attr.int(default = 315532800),
+        "mode": attr.string(default = "0555"),
         "out": attr.output(),
         # Implicit dependencies.
         "build_zip": attr.label(

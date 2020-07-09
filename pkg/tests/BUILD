@@ -58,6 +58,15 @@ pkg_zip(
     timestamp = 1234567890,
 )
 
+pkg_zip(
+    name = "test_zip_permissions",
+    srcs = [
+        "testdata/executable.sh",
+    ],
+    mode = "644",
+    timestamp = 1234567890,
+)
+
 # This should be equal to test_zip_basic because timestamps are rounded
 # up to Jan 1 1980.
 pkg_zip(
@@ -93,6 +102,7 @@ py_test(
         "test_zip_basic.zip",
         "test_zip_package_dir0.zip",
         "test_zip_timestamp.zip",
+        "test_zip_permissions.zip",
 
         # these could be replaced with diff_test() rules (from skylib)
         "test_zip_basic_timestamp_before_epoch.zip",
