@@ -19,10 +19,11 @@ and debian package.
 ## WORKSPACE setup
 
 ```
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_pkg",
-    url = "https://github.com/bazelbuild/rules_pkg/releases/0.1.0/rules_pkg-0.1.0.tar.gz",
-    sha256 = "752146e2813f4c135ec9f71b592bf98f96f026049e6d65248534dbeccb2448e1"
+    url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.5/rules_pkg-0.2.5.tar.gz",
+    sha256 = "352c090cc3d3f9a6b4e676cf42a6047c16824959b438895a76c2989c6d7c246a",
 )
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
@@ -413,7 +414,7 @@ Creates a zip file from a list of inputs.
 ### pkg_deb
 
 ```python
-pkg_deb(name, data, package, architecture, maintainer, preinst, postinst, prerm, postrm, version, version_file, description, description_file, built_using, built_using_file, priority, section, homepage, depends, suggests, enhances, conflicts, predepends, recommends)
+pkg_deb(name, data, package, architecture, maintainer, preinst, postinst, prerm, postrm, version, version_file, description, description_file, built_using, built_using_file, priority, section, homepage, depends, suggests, enhances, breaks, conflicts, predepends, recommends, replaces)
 ```
 
 Create a debian package. See <a
@@ -582,8 +583,9 @@ for more details on this.
     </tr>
     <tr>
       <td>
-        <code>depends</code>, <code>suggests</code>, <code>enhances</code>,
-        <code>conflicts</code>, <code>predepends</code> and <code>recommends</code>.
+        <code>breaks</code>, <code>depends</code>, <code>suggests</code>,
+        <code>enhances</code>, <code>conflicts</code>, <code>predepends</code>,
+        <code>recommends</code> and <code>replaces</code>.
       </td>
       <td>
         <code>String list, optional</code>

@@ -18,6 +18,7 @@ load(":path.bzl", "compute_data_path", "dest_path")
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
+_DEFAULT_MTIME = -1
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -59,7 +60,7 @@ def _pkg_tar_impl(ctx):
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
     ]
-    if ctx.attr.mtime != -1:  # Note: Must match default in rule def.
+    if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
         args.append("--mtime=%d" % ctx.attr.mtime)
@@ -230,8 +231,10 @@ def _pkg_deb_impl(ctx):
     args += ["--suggests=" + d for d in ctx.attr.suggests]
     args += ["--enhances=" + d for d in ctx.attr.enhances]
     args += ["--conflicts=" + d for d in ctx.attr.conflicts]
+    args += ["--breaks=" + d for d in ctx.attr.breaks]
     args += ["--pre_depends=" + d for d in ctx.attr.predepends]
     args += ["--recommends=" + d for d in ctx.attr.recommends]
+    args += ["--replaces=" + d for d in ctx.attr.replaces]
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
@@ -270,7 +273,7 @@ pkg_tar_impl = rule(
         "files": attr.label_keyed_string_dict(allow_files = True),
         "mode": attr.string(default = "0555"),
         "modes": attr.string_dict(),
-        "mtime": attr.int(default = -1),
+        "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
         "owner": attr.string(default = "0.0"),
         "ownername": attr.string(default = "."),
@@ -288,15 +291,17 @@ pkg_tar_impl = rule(
 
         # Implicit dependencies.
         "build_tar": attr.label(
-            default = Label("@rules_pkg//:build_tar"),
-            cfg = "host",
+            default = Label("//:build_tar"),
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
     },
 )
 
-def pkg_tar(**kwargs):
+def pkg_tar(name, **kwargs):
+    """Creates a .tar file. See pkg_tar_impl."""
+
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.
     if "srcs" not in kwargs:
@@ -307,9 +312,12 @@ def pkg_tar(**kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
+    archive_name = kwargs.get("archive_name") or name
     extension = kwargs.get("extension") or "tar"
+
     pkg_tar_impl(
-        out = kwargs["name"] + "." + extension,
+        name = name,
+        out = archive_name + "." + extension,
         **kwargs
     )
 
@@ -344,9 +352,11 @@ pkg_deb_impl = rule(
         "depends_file": attr.label(allow_single_file = True),
         "suggests": attr.string_list(default = []),
         "enhances": attr.string_list(default = []),
+        "breaks": attr.string_list(default = []),
         "conflicts": attr.string_list(default = []),
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
+        "replaces": attr.string_list(default = []),
 
         # Outputs.
         "out": attr.output(mandatory = True),
@@ -355,8 +365,8 @@ pkg_deb_impl = rule(
 
         # Implicit dependencies.
         "make_deb": attr.label(
-            default = Label("@rules_pkg//:make_deb"),
-            cfg = "host",
+            default = Label("//:make_deb"),
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
@@ -365,14 +375,16 @@ pkg_deb_impl = rule(
 
 def pkg_deb(name, package, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
+    archive_name = kwargs.get("archive_name") or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
     out_deb = "%s_%s_%s.deb" % (package, version, architecture)
     out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+
     pkg_deb_impl(
         name = name,
         package = package,
-        out = name + ".deb",
+        out = archive_name + ".deb",
         deb = out_deb,
         changes = out_changes,
         **kwargs
@@ -424,8 +436,8 @@ pkg_zip_impl = rule(
         "out": attr.output(),
         # Implicit dependencies.
         "build_zip": attr.label(
-            default = Label("@rules_pkg//:build_zip"),
-            cfg = "host",
+            default = Label("//:build_zip"),
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
@@ -433,10 +445,12 @@ pkg_zip_impl = rule(
 )
 
 def pkg_zip(name, **kwargs):
+    """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.get("extension") or "zip"
+    archive_name = kwargs.get("archive_name") or name
 
     pkg_zip_impl(
         name = name,
-        out = name + "." + extension,
+        out = archive_name + "." + extension,
         **kwargs
     )

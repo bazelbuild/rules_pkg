@@ -24,6 +24,11 @@ import tarfile
 import textwrap
 import time
 
+if sys.version_info < (3, 7):
+  from collections import OrderedDict
+else:
+  OrderedDict = dict
+
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
@@ -37,9 +42,11 @@ DEBIAN_FIELDS = [
     ('Architecture', False, False, 'all'),
     ('Depends', False, True, []),
     ('Recommends', False, True, []),
+    ('Replaces', False, True, []),
     ('Suggests', False, True, []),
     ('Enhances', False, True, []),
     ('Conflicts', False, True, []),
+    ('Breaks', False, True, []),
     ('Pre-Depends', False, True, []),
     ('Installed-Size', False, False),
     ('Maintainer', True, False),
@@ -140,16 +147,17 @@ def CreateDebControl(extrafiles=None, **kwargs):
   tar = BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
-      tarinfo = tarfile.TarInfo('control')
+      tarinfo = tarfile.TarInfo('./control')
       control_file_data = controlfile.encode('utf-8')
       tarinfo.size = len(control_file_data)
       f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
-          tarinfo = tarfile.TarInfo(name)
-          tarinfo.size = len(data)
+          tarinfo = tarfile.TarInfo('./' + name)
+          data_encoded = data.encode('utf-8')
+          tarinfo.size = len(data_encoded)
           tarinfo.mode = mode
-          f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
+          f.addfile(tarinfo, fileobj=BytesIO(data_encoded))
   control = tar.getvalue()
   tar.close()
   return control
@@ -166,7 +174,7 @@ def CreateDeb(output,
               conffiles=None,
               **kwargs):
   """Create a full debian package."""
-  extrafiles = {}
+  extrafiles = OrderedDict()
   if preinst:
     extrafiles['preinst'] = (preinst, 0o755)
   if postinst:
@@ -296,7 +304,7 @@ def main():
                       help='The output file, mandatory')
   parser.add_argument('--changes', required=True,
                       help='The changes output file, mandatory.')
-  parser.add_argument('--data', required=True, 
+  parser.add_argument('--data', required=True,
                       help='Path to the data tarball, mandatory')
   parser.add_argument(
       '--preinst',
@@ -345,10 +353,12 @@ def main():
       enhances=options.enhances,
       preDepends=options.pre_depends,
       recommends=options.recommends,
+      replaces=options.replaces,
       homepage=GetFlagValue(options.homepage),
       builtUsing=GetFlagValue(options.built_using),
       priority=options.priority,
       conflicts=options.conflicts,
+      breaks=options.breaks,
       installedSize=GetFlagValue(options.installed_size))
   CreateChanges(
       output=options.changes,

@@ -18,6 +18,7 @@ This is a package description.
 %build
 
 %install
+cp -r ./tests %{buildroot}/
 
 %files
 /tests/testdata/a.ar

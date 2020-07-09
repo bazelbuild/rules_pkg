@@ -48,8 +48,14 @@ def get_package_sha256(tarball_path):
   return tar_sha256
 
 
-def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
-                      toolchains_method=None):
+def workspace_content(
+    url,
+    repo,
+    sha256,
+    rename_repo=None,
+    setup_file=None,
+    deps_method=None,
+    toolchains_method=None):
   # Create the WORKSPACE stanza needed for this rule set.
   if setup_file and not (deps_method or toolchains_method):
       print(
@@ -65,6 +71,13 @@ def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
   if toolchains_method:
     methods.append(toolchains_method)
 
+  # If the github repo has a '-' in the name, that breaks bazel unless we remove
+  # it or change it to an '_'
+  repo = rename_repo or repo
+  repo = repo.replace('-', '_')
+  # Correct the common mistake of not putting a ':' in your setup file name
+  if setup_file and ':' not in setup_file:
+    setup_file = ':' + setup_file
   ret = WORKSPACE_STANZA_TEMPLATE.substitute({
       'url': url,
       'sha256': sha256,
@@ -76,9 +89,9 @@ def workspace_content(url, repo, sha256, setup_file=None, deps_method=None,
         'setup_file': setup_file or ':deps.bzl',
         'to_load': ', '.join('"%s"' % m for m in methods),
     })
-    ret += "\n%s" % deps
+    ret += "\n%s\n" % deps
 
   for m in methods:
-    ret += '\n%s()' % m
+    ret += '%s()\n' % m
 
   return ret

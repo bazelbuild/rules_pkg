@@ -30,7 +30,8 @@ class PackagingTest(unittest.TestCase):
 
   def setUp(self):
     self.data_files = runfiles.Create()
-    self.repo = 'rules_pkg'
+    self.source_repo = 'rules_pkg'
+    self.dest_repo = 'not_named_rules_pkg'
     self.version = release_version.RELEASE_VERSION
 
   def testBuild(self):
@@ -39,14 +40,17 @@ class PackagingTest(unittest.TestCase):
     if not os.path.exists(tempdir):
       os.makedirs(tempdir)
     with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
-      file_name = release_tools.package_basename(self.repo, self.version)
+      file_name = release_tools.package_basename(self.source_repo, self.version)
       local_path = runfiles.Create().Rlocation(
           os.path.join('rules_pkg', 'distro', file_name))
       sha256 = release_tools.get_package_sha256(local_path)
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
         release_tools.workspace_content(
-            'file://%s' % local_path, self.repo, sha256)
+            'file://%s' % local_path, self.source_repo, sha256,
+            rename_repo=self.dest_repo,
+            deps_method='rules_pkg_dependencies'
+        )
       ))
       workspace.write(workspace_content)
       if _VERBOSE:
@@ -71,8 +75,9 @@ class PackagingTest(unittest.TestCase):
       print('=== Build Result ===')
       print(build_result)
 
+    # TODO(aiuto): Find tar in a disciplined way
     content = subprocess.check_output(
-        ['/bin/tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
+        ['tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
     self.assertEqual(b'./\n./BUILD\n', content)
 
 

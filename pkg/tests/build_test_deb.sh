@@ -15,45 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Unit tests for pkg_deb and pkg_tar
+# Unit tests for pkg_deb
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 source ${DIR}/testenv.sh || { echo "testenv.sh not found!" >&2; exit 1; }
-
-function get_tar_listing() {
-  local input=$1
-  local test_data="${TEST_DATA_DIR}/${input}"
-  # We strip unused prefixes rather than dropping "v" flag for tar, because we
-  # want to preserve symlink information.
-  tar tvf "${test_data}" | sed -e 's/^.*:00 //'
-}
-
-function get_tar_verbose_listing() {
-  local input=$1
-  local test_data="${TEST_DATA_DIR}/${input}"
-  TZ="UTC" tar tvf "${test_data}"
-}
-
-function get_tar_owner() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar tvf "${test_data}" | grep "00 $file\$" | cut -d " " -f 2
-}
-
-function get_numeric_tar_owner() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar --numeric-owner -tvf "${test_data}" | grep "00 $file\$" | cut -d " " -f 2
-}
-
-function get_tar_permission() {
-  local input=$1
-  local file=$2
-  local test_data="${TEST_DATA_DIR}/${input}"
-  tar tvf "${test_data}" | fgrep "00 $file" | cut -d " " -f 1
-}
 
 function get_deb_listing() {
   local input=$1
@@ -135,48 +100,6 @@ function assert_content() {
   fi
 }
 
-function test_tar() {
-  local listing="./
-./etc/
-./etc/nsswitch.conf
-./usr/
-./usr/titi
-./usr/bin/
-./usr/bin/java -> /path/to/bin/java"
-  for i in "" ".gz" ".bz2" ".xz"; do
-    assert_content "test-tar-${i:1}.tar$i"
-    # Test merging tar files
-    # We pass a second argument to not test for user and group
-    # names because tar merging ask for numeric owners.
-    assert_content "test-tar-inclusion-${i:1}.tar" "true"
-  done;
-
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-empty.tar)"
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-none.tar)"
-  check_eq "./
-./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-etc.tar)"
-  check_eq "./
-./etc/
-./etc/nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
-  check_eq "./
-./not-etc/
-./not-etc/mapped-filename.conf" "$(get_tar_listing test-tar-files_dict.tar)"
-  check_eq "drwxr-xr-x 0/0               0 2000-01-01 00:00 ./
--rwxrwxrwx 0/0               0 2000-01-01 00:00 ./a
--rwxrwxrwx 0/0               0 2000-01-01 00:00 ./b" \
-      "$(get_tar_verbose_listing test-tar-empty_files.tar)"
-  check_eq "drwxr-xr-x 0/0               0 2000-01-01 00:00 ./
-drwxrwxrwx 0/0               0 2000-01-01 00:00 ./tmp/
-drwxrwxrwx 0/0               0 2000-01-01 00:00 ./pmt/" \
-      "$(get_tar_verbose_listing test-tar-empty_dirs.tar)"
-  check_eq \
-    "drwxr-xr-x 0/0               0 1999-12-31 23:59 ./
--r-xr-xr-x 0/0               2 1999-12-31 23:59 ./nsswitch.conf" \
-    "$(get_tar_verbose_listing test-tar-mtime.tar)"
-}
-
 function check_deb() {
   package="$1"
 
@@ -196,6 +119,8 @@ function check_deb() {
   expect_log "soméone@somewhere.com"
   expect_log "Depends: dep1, dep2"
   expect_log "Built-Using: some_test_data"
+  expect_log "Replaces: oldpkg"
+  expect_log "Breaks: oldbrokenpkg"
 
   get_changes titi_test_all.changes >$TEST_log
   expect_log "Urgency: low"
@@ -208,22 +133,28 @@ function check_deb() {
   get_deb_ctl_file ${package} config >$TEST_log
   expect_log "# test config file"
 
+  get_deb_ctl_file ${package} preinst >$TEST_log
+  expect_log "#!/usr/bin/env bash"
+  expect_log "# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é"
+  expect_log "echo fnord"
+
   if ! dpkg_deb_supports_ctrl_tarfile ${package} ; then
     echo "Unable to test deb control files listing, too old dpkg-deb!" >&2
     return 0
   fi
-  local ctrl_listing="conffiles
-config
-control
-templates"
+  local ctrl_listing="./conffiles
+./config
+./control
+./preinst
+./templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look
   # at root causes later. I am not sure if this is WAI or not.
   check_eq "$ctrl_listing" "$(get_deb_ctl_listing ${package})"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} conffiles)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} config)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} control)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} templates)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./conffiles)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./config)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./control)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./templates)"
   local conffiles="/etc/nsswitch.conf
 /etc/other"
   check_eq "$conffiles" "$(get_deb_ctl_file ${package} conffiles)"
