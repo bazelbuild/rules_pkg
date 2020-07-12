@@ -20,6 +20,7 @@ the following:
 
 - `pkg_filegroup` describes destinations for rule outputs
 - `pkg_mkdirs` describes directory structures
+- `pkg_mklinks` describes symbolic links
 
 Rules that actually make use of the outputs of the above rules are not specified
 here.  See `rpm.bzl` for an example that builds out RPM packages.
@@ -387,6 +388,14 @@ pkg_filegroup = rule(
             example, RPM macros like `%{_libdir}` may work correctly in paths
             for RPM packages, not, say, Debian packages.
 
+            If any part of the directory structure of the computed destination
+            of a file provided to `pkg_filegroup` or any similar rule does not
+            already exist within a package, the package builder will create it
+            for you with a reasonable set of default permissions (typically
+            `0755 root.root`).
+
+            It is possible to establish directory structures with arbitrary
+            permissions using `pkg_mkdirs`.
             """,
             default = "",
         ),
@@ -534,7 +543,7 @@ def _pkg_mkdirs_impl(ctx):
     ]
 
 pkg_mkdirs = rule(
-    doc = """pkg_filegroup-like rule for the creation and ownership of directories.
+    doc = """`pkg_filegroup`-like rule for the creation and ownership of directories.
 
     Use this if:
 
@@ -554,7 +563,14 @@ pkg_mkdirs = rule(
     # @unsorted-dict-items
     attrs = {
         "dirs": attr.string_list(
-            doc = """Directory names to make within the package""",
+            doc = """Directory names to make within the package
+
+            If any part of the requested directory structure does not already
+            exist within a package, the package builder will create it for you
+            with a reasonable set of default permissions (typically `0755
+            root.root`).
+
+            """,
             mandatory = True,
         ),
         "attrs": attr.string_list_dict(
@@ -607,23 +623,28 @@ def _pkg_mklinks_impl(ctx):
     ]
 
 pkg_mklinks = rule(
-    doc = """pkg_filegroup-like-rule for symlink management.
+    doc = """`pkg_filegroup`-like-rule for symlink management.
 
-    This rule results in the creation of one or more symbolic links a package.
+    This rule results in the creation of one or more symbolic links in a
+    package.
+
+    Symbolic links specified by this rule may be dangling, or refer to a
+    file/directory outside of the current created package.
+
     The link may point to a location outside of it.
 
     """,
     implementation = _pkg_mklinks_impl,
     attrs = {
         "links": attr.string_dict(
-            doc = """Link mappings to create.
+            doc = """Link mappings to create within the target archive.
 
-            The keys of this dict are the link names, the values are the source
-            files.
+            The keys of this dict are paths of the created links, the values are
+            the link destinations ("targets" in `ln(1)` parlance).
 
-            Note that relative paths are important here: the package builder MAY
-            adjust the "link name" of the pair (i.e. make paths absolute), but
-            it MUST NOT attempt to do anything with the "source" part.
+            If the directory structure mentioned in the "link" part of the
+            package does not yet exist within the package when it is built, it
+            will be created by the package builder.
 
             """,
             mandatory = True,
