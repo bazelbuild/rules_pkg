@@ -299,7 +299,7 @@ pkg_tar_impl = rule(
     },
 )
 
-def pkg_tar(**kwargs):
+def pkg_tar(name, **kwargs):
     """Creates a .tar file. See pkg_tar_impl."""
 
     # Compatibility with older versions of pkg_tar that define files as
@@ -312,9 +312,12 @@ def pkg_tar(**kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
+    archive_name = kwargs.get("archive_name") or name
     extension = kwargs.get("extension") or "tar"
+
     pkg_tar_impl(
-        out = kwargs["name"] + "." + extension,
+        name = name,
+        out = archive_name + "." + extension,
         **kwargs
     )
 
@@ -372,14 +375,16 @@ pkg_deb_impl = rule(
 
 def pkg_deb(name, package, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
+    archive_name = kwargs.get("archive_name") or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
     out_deb = "%s_%s_%s.deb" % (package, version, architecture)
     out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+
     pkg_deb_impl(
         name = name,
         package = package,
-        out = name + ".deb",
+        out = archive_name + ".deb",
         deb = out_deb,
         changes = out_changes,
         **kwargs
@@ -394,6 +399,7 @@ def _pkg_zip_impl(ctx):
     args.add("-o", ctx.outputs.out.path)
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
+    args.add("-m", ctx.attr.mode)
 
     args.add_all(
         ctx.files.srcs,
@@ -417,7 +423,7 @@ def _pkg_zip_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out=[ctx.outputs.out]);
+    return OutputGroupInfo(out = [ctx.outputs.out])
 
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
@@ -426,6 +432,7 @@ pkg_zip_impl = rule(
         "srcs": attr.label_list(allow_files = True),
         "package_dir": attr.string(default = "/"),
         "timestamp": attr.int(default = 315532800),
+        "mode": attr.string(default = "0555"),
         "out": attr.output(),
         # Implicit dependencies.
         "build_zip": attr.label(
@@ -440,9 +447,10 @@ pkg_zip_impl = rule(
 def pkg_zip(name, **kwargs):
     """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.get("extension") or "zip"
+    archive_name = kwargs.get("archive_name") or name
 
     pkg_zip_impl(
         name = name,
-        out = name + "." + extension,
+        out = archive_name + "." + extension,
         **kwargs
     )
