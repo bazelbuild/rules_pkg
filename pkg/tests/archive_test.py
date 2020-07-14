@@ -227,6 +227,19 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
     self.assertTarFileContent(self.tempfile, content)
 
+  def testMergeTarRelocatedBigNames(self):
+    content = [
+        {"name": ".", "mode": 0o755},
+        {"name": "./foo", "mode": 0o755},
+        {"name": "./foo/ninety-eight-characters-seems-to-be-the-maximum-limit-for-merged-tarballs-in-the-rules_pkg-for-bzl", "data": b"1"},
+        {"name": "./foo/ninety-eight-characters-seems-to-be-the-maximum-limit-for-merged-tarballs-in-the-rules_pkg-for-bzl-", "data": b"1"},
+        ]
+    with archive.TarFileWriter(self.tempfile) as f:
+      datafile = self.data_files.Rlocation(
+          os.path.join("rules_pkg", "tests", "testdata", "big-names.tar"))
+      f.add_tar(datafile, root="/foo")
+    self.assertTarFileContent(self.tempfile, content)
+
   def testDefaultMtimeNotProvided(self):
     with archive.TarFileWriter(self.tempfile) as f:
       self.assertEqual(f.default_mtime, 0)
