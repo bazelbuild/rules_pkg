@@ -192,7 +192,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-basic-gz.tar.gz",
     depends = [
         "dep1",
         "dep2",
@@ -227,7 +227,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-basic-gz.tar.gz",
     depends = [
         "dep1",
         "dep2",
@@ -245,12 +245,11 @@ pkg_deb(
 )
 
 [pkg_tar(
-    name = "test-tar-%s" % ext[1:],
+    name = "test-tar-basic-%s" % ext[1:],
     srcs = [
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-    build_tar = "//:build_tar",
     extension = "tar%s" % ext,
     mode = "0644",
     modes = {"usr/titi": "0755"},
@@ -271,7 +270,7 @@ pkg_deb(
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
     build_tar = "//:build_tar",
-    deps = [":test-tar-%s" % ext],
+    deps = [":test-tar-basic-%s" % ext],
 ) for ext in [
     "",
     "gz",
@@ -345,6 +344,33 @@ pkg_tar(
     portable_mtime = False,
 )
 
+py_test(
+    name = "pkg_tar_test",
+    size = "medium",
+    srcs = [
+        "pkg_tar_test.py",
+    ],
+    data = [
+        ":test-tar-basic-.tar",
+        ":test-tar-basic-bz2.tar.bz2",
+        ":test-tar-basic-gz.tar.gz",
+        ":test-tar-basic-xz.tar.xz",
+        ":test-tar-empty_dirs.tar",
+        ":test-tar-empty_files.tar",
+        ":test-tar-files_dict.tar",
+        ":test-tar-inclusion-.tar",
+        ":test-tar-inclusion-bz2.tar",
+        ":test-tar-inclusion-gz.tar",
+        ":test-tar-inclusion-xz.tar",
+        ":test-tar-mtime.tar",
+        ":test-tar-strip_prefix-dot.tar",
+        ":test-tar-strip_prefix-empty.tar",
+        ":test-tar-strip_prefix-etc.tar",
+        ":test-tar-strip_prefix-none.tar",
+    ],
+    python_version = "PY3",
+)
+
 sh_test(
     name = "build_test_deb",
     size = "medium",
@@ -364,44 +390,6 @@ sh_test(
     ],
     deps = [
         "@rules_pkg//third_party/bazel/src/test/shell:bashunit",
-    ],
-)
-
-sh_test(
-    name = "build_test_tar",
-    size = "medium",
-    srcs = [
-        "build_test_tar.sh",
-    ],
-    data = [
-        "testenv.sh",
-        ":archive_testdata",
-        ":test-tar-.tar",
-        ":test-tar-bz2.tar.bz2",
-        ":test-tar-empty_dirs.tar",
-        ":test-tar-empty_files.tar",
-        ":test-tar-files_dict.tar",
-        ":test-tar-gz.tar.gz",
-        ":test-tar-inclusion-.tar",
-        ":test-tar-inclusion-bz2.tar",
-        ":test-tar-inclusion-gz.tar",
-        ":test-tar-inclusion-xz.tar",
-        ":test-tar-mtime.tar",
-        ":test-tar-strip_prefix-dot.tar",
-        ":test-tar-strip_prefix-empty.tar",
-        ":test-tar-strip_prefix-etc.tar",
-        ":test-tar-strip_prefix-none.tar",
-        ":test-tar-xz.tar.xz",
-        ":titi_test_all.changes",
-    ],
-    tags = [
-        # archive.py requires xzcat, which is not available by default on Mac
-        "no_macos",
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
-    deps = [
-        "//third_party/bazel/src/test/shell:bashunit",
     ],
 )
 
