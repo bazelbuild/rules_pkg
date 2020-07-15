@@ -1,7 +1,5 @@
 Want to contribute? Great! First, read this page (including the small print at
-the end). Also note that we do not accept contributions to the published
-toolchain artifacts (contents under https://github.com/bazelbuild/bazel-toolchains/configs/
-folder).
+the end).
 
 ### Before you contribute
 
@@ -25,8 +23,7 @@ guide you.
 ### Code reviews and other contributions.
 
 **All submissions, including submissions by project members, require review.**
-Please follow the instructions in [the contributors
-documentation](http://bazel.build/contributing.html).
+Please follow the instructions in [the patching guide](/patching.html).
 
 ### The small print
 
