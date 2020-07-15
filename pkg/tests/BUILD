@@ -392,7 +392,6 @@ sh_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-xz.tar.xz",
-        ":titi_test_all.changes",
     ],
     tags = [
         # archive.py requires xzcat, which is not available by default on Mac
