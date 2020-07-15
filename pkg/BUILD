@@ -60,6 +60,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
+        ":helpers",
     ],
 )
 
