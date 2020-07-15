@@ -162,7 +162,6 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "//:archive",
         "//:make_rpm_lib",
     ],
 )
@@ -173,7 +172,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
-        "//:archive",
+        "//:helpers",
     ],
 )
 
