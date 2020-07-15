@@ -23,7 +23,7 @@ guide you.
 ### Code reviews and other contributions.
 
 **All submissions, including submissions by project members, require review.**
-Please follow the instructions in [the patching guide](/patching.html).
+Please follow the instructions in [the patching guide](/patching.md).
 
 ### The small print
 
