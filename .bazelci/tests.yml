@@ -24,3 +24,13 @@ tasks:
     # rpmbuild(8) is not available by default on macOS
     - "-//tests:make_rpm_test"
     - "-//experimental/tests:pkg_rpm_basic_test"
+  window:
+    working_directory: ../pkg
+    test_targets:
+    # We can not build any RPM files on Windows, or do the .deb tests.
+    # Including only the tests we want is the safest choice for now.
+    - "//tests:build_test_tar"
+    - "//tests:path_test"
+    - "//tests:archive_test"
+    - "//tests:helpers_test"
+    - "//tests:zip_test"
