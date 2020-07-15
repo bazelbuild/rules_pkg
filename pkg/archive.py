@@ -344,41 +344,7 @@ class TarFileWriter(object):
     if root and root[0] not in ['/', '.']:
       # Root prefix should start with a '/', adds it if missing
       root = '/' + root
-    compression = os.path.splitext(tar)[-1][1:]
-    if compression == 'tgz':
-      compression = 'gz'
-    elif compression == 'bzip2':
-      compression = 'bz2'
-    elif compression == 'lzma':
-      compression = 'xz'
-    elif compression not in ['gz', 'bz2', 'xz']:
-      compression = ''
-    if compression == 'xz':
-      # Python 2 does not support lzma, our py3 support is terrible so let's
-      # just hack around.
-      # Note that we buffer the file in memory and it can have an important
-      # memory footprint but it's probably fine as we don't use them for really
-      # large files.
-      # TODO(dmarting): once our py3 support gets better, compile this tools
-      # with py3 for proper lzma support.
-      if subprocess.call('which xzcat', shell=True, stdout=subprocess.PIPE):
-        raise self.Error('Cannot handle .xz and .lzma compression: '
-                         'xzcat not found.')
-      p = subprocess.Popen('cat %s | xzcat' % tar,
-                           shell=True,
-                           stdout=subprocess.PIPE)
-      f = io.BytesIO(p.stdout.read())
-      p.wait()
-      intar = tarfile.open(fileobj=f, mode='r:')
-    else:
-      if compression in ['gz', 'bz2']:
-        # prevent performance issues due to accidentally-introduced seeks
-        # during intar traversal by opening in "streaming" mode. gz, bz2
-        # are supported natively by python 2.7 and 3.x
-        inmode = 'r|' + compression
-      else:
-        inmode = 'r:' + compression
-      intar = tarfile.open(name=tar, mode=inmode)
+    intar = tarfile.open(name=tar, mode='r:*')
     for tarinfo in intar:
       if name_filter is None or name_filter(tarinfo.name):
         if not self.preserve_mtime:
