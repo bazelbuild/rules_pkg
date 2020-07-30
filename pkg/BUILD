@@ -31,13 +31,25 @@ py_library(
     srcs = [
         "__init__.py",
         "archive.py",
+    ],
+    srcs_version = "PY3",
+    visibility = [
+        "//experimental:__pkg__",
+        "//tests:__pkg__",
+    ],
+)
+
+py_library(
+    name = "helpers",
+    srcs = [
+        "__init__.py",
         "helpers.py",
     ],
     srcs_version = "PY2AND3",
-    # This build rule is not intended for public use, but needs to
-    # be publicly visible because existing projects rely on it.
-    # Use at your own risk.
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//experimental:__pkg__",
+        "//tests:__pkg__",
+    ],
 )
 
 py_binary(
@@ -48,6 +60,7 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
+        ":helpers",
     ],
 )
 
@@ -57,7 +70,10 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
-    deps = [":archive"],
+    deps = [
+        ":archive",
+        ":helpers",
+    ],
 )
 
 py_binary(
@@ -66,7 +82,7 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
+        ":helpers",
     ],
 )
 
@@ -78,7 +94,7 @@ py_binary(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
+        ":helpers",
     ],
 )
 
@@ -99,5 +115,12 @@ py_library(
     name = "make_rpm_lib",
     srcs = ["make_rpm.py"],
     srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//experimental:__pkg__",
+        "//tests:__pkg__",
+    ],
+    deps = [
+        ":archive",
+        ":helpers",
+    ],
 )
