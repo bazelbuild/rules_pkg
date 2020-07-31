@@ -26,7 +26,7 @@ EXECUTABLE_CRC = 342626072
 class ZipTest(unittest.TestCase):
     def get_test_zip(self, zipfile):
         """Get the file path to a generated zip in the runfiles."""
-        data_files = os.environ.get("TEST_SRCDIR").replace('/', os.path.sep)
+        data_files = os.environ.get("PYTHON_RUNFILES").replace('/', os.path.sep)
         return os.path.join(data_files, "rules_pkg", "tests", zipfile)
 
 
