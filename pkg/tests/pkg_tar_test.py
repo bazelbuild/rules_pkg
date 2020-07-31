@@ -83,17 +83,20 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-strip_prefix-etc.tar', content)
 
+  # TODO(https://github.com/bazelbuild/rules_pkg/issues/207): The "tests"
+  # from "tests_extra" should not be stripped.
   def test_strip_prefix_dot(self):
     content = [
         {'name': '.'},
         {'name': './etc'},
         {'name': './etc/nsswitch.conf'},
-        {'name': './external'},
-        {'name': './external/bazel_tools'},
-        {'name': './external/bazel_tools/tools'},
-        {'name': './external/bazel_tools/tools/python'},
-        {'name': './external/bazel_tools/tools/python/runfiles'},
-        {'name': './external/bazel_tools/tools/python/runfiles/runfiles.py'},
+        {'name': './_extra'},
+        {'name': './_extra/a'},
+        {'name': './_extra/b'},
+        {'name': './_extra/b/c'},
+        {'name': './_extra/d'},
+        {'name': './_extra/d/e'},
+        {'name': './_extra/d/e/f'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-dot.tar', content)
 

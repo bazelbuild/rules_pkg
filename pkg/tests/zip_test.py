@@ -15,9 +15,9 @@
 import filecmp
 import os
 import unittest
-from bazel_tools.tools.python.runfiles import runfiles
-from build_zip import parse_date, ZIP_EPOCH
 from zipfile import ZipFile
+
+from build_zip import parse_date, ZIP_EPOCH
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
@@ -26,13 +26,9 @@ EXECUTABLE_CRC = 342626072
 class ZipTest(unittest.TestCase):
     def get_test_zip(self, zipfile):
         """Get the file path to a generated zip in the runfiles."""
+        data_files = os.environ.get("TEST_SRCDIR")
+        return os.path.join(data_files, "rules_pkg", "tests", zipfile)
 
-        return self.data_files.Rlocation(
-            "rules_pkg/tests/" + zipfile
-        )
-
-    def setUp(self):
-        self.data_files = runfiles.Create()
 
 class ZipContentsCase(ZipTest):
     """Use zipfile to check the contents of some generated zip files."""

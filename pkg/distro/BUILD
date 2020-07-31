@@ -61,7 +61,6 @@ py_test(
         "noci",
     ],
     deps = [
-        "@bazel_tools//tools/python/runfiles",
         "//releasing:release_utils",
     ],
 )

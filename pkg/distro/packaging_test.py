@@ -18,7 +18,6 @@ import os
 import subprocess
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
 from releasing import release_tools
 from distro import release_version
 
@@ -29,7 +28,7 @@ class PackagingTest(unittest.TestCase):
   """Test the distribution packaging."""
 
   def setUp(self):
-    self.data_files = runfiles.Create()
+    self.data_files = os.environ.get("TEST_SRCDIR")
     self.source_repo = 'rules_pkg'
     self.dest_repo = 'not_named_rules_pkg'
     self.version = release_version.RELEASE_VERSION
@@ -41,8 +40,7 @@ class PackagingTest(unittest.TestCase):
       os.makedirs(tempdir)
     with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
       file_name = release_tools.package_basename(self.source_repo, self.version)
-      local_path = runfiles.Create().Rlocation(
-          os.path.join('rules_pkg', 'distro', file_name))
+      local_path = os.path.join(self.data_files, 'rules_pkg', 'distro', file_name)
       sha256 = release_tools.get_package_sha256(local_path)
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
@@ -60,8 +58,8 @@ class PackagingTest(unittest.TestCase):
     # We do a little dance of renaming *.tmpl to *, mostly so that we do not
     # have a BUILD file in testdata, which would create a package boundary.
     def CopyTestFile(source_name, dest_name):
-      source_path = self.data_files.Rlocation(
-          os.path.join('rules_pkg', 'distro', 'testdata', source_name))
+      source_path = os.path.join(
+          self.data_files, 'rules_pkg', 'distro', 'testdata', source_name)
       with open(source_path) as inp:
         with open(os.path.join(tempdir, dest_name), 'w') as out:
           content = inp.read()

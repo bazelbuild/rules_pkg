@@ -19,14 +19,13 @@ import tarfile
 import unittest
 
 from rules_pkg import archive
-from bazel_tools.tools.python.runfiles import runfiles
 
 
 class SimpleArFileTest(unittest.TestCase):
   """Testing for SimpleArFile class."""
 
   def setUp(self):
-    self.data_files = runfiles.Create()
+    self.data_files = os.environ.get("TEST_SRCDIR")
 
   def assertArFileContent(self, arfile, content):
     """Assert that arfile contains exactly the entry described by `content`.
@@ -64,13 +63,12 @@ class SimpleArFileTest(unittest.TestCase):
 
   def testEmptyArFile(self):
     self.assertArFileContent(
-        self.data_files.Rlocation(
-            os.path.join("rules_pkg", "tests", "testdata", "empty.ar")),
+        os.path.join(self.data_files, "rules_pkg", "tests", "testdata", "empty.ar"),
         [])
 
   def assertSimpleFileContent(self, names):
-    datafile = self.data_files.Rlocation(
-        os.path.join("rules_pkg", "tests", "testdata", "_".join(names) + ".ar"))
+    datafile = os.path.join(
+        self.data_files, "rules_pkg", "tests", "testdata", "_".join(names) + ".ar")
     content = [{"filename": n,
                 "size": len(n.encode("utf-8")),
                 "data": n.encode("utf-8")}
@@ -136,7 +134,7 @@ class TarFileWriterTest(unittest.TestCase):
 
   def setUp(self):
     self.tempfile = os.path.join(os.environ["TEST_TMPDIR"], "test.tar")
-    self.data_files = runfiles.Create()
+    self.data_files = os.environ.get("TEST_SRCDIR")
 
   def tearDown(self):
     if os.path.exists(self.tempfile):
@@ -209,8 +207,10 @@ class TarFileWriterTest(unittest.TestCase):
         ]
     for ext in ["", ".gz", ".bz2", ".xz"]:
       with archive.TarFileWriter(self.tempfile) as f:
-        datafile = self.data_files.Rlocation(
-            os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar" + ext))
+        datafile = os.path.join(
+            self.data_files,
+            "rules_pkg", "tests", "testdata",
+            "tar_test.tar" + ext)
         f.add_tar(datafile, name_filter=lambda n: n != "./b")
       self.assertTarFileContent(self.tempfile, content)
 
@@ -222,8 +222,8 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./foo/ab", "data": b"ab"},
         ]
     with archive.TarFileWriter(self.tempfile) as f:
-      datafile = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      datafile = os.path.join(
+          self.data_files, "rules_pkg", "tests", "testdata", "tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
     self.assertTarFileContent(self.tempfile, content)
 
@@ -241,8 +241,8 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesTrueByDefault(self):
     with archive.TarFileWriter(self.tempfile) as f:
-      input_tar_path = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      input_tar_path = os.path.join(
+          self.data_files, "rules_pkg", "tests", "testdata", "tar_test.tar")
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
       for file_name in f.members:
@@ -252,8 +252,8 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesFalse(self):
     with archive.TarFileWriter(self.tempfile, preserve_tar_mtimes=False) as f:
-      input_tar_path = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+      input_tar_path = os.path.join(
+          self.data_files, "rules_pkg", "tests", "testdata", "tar_test.tar")
       f.add_tar(input_tar_path)
       for output_file in f.tar:
         self.assertEqual(output_file.mtime, 0)
@@ -377,10 +377,10 @@ class TarFileWriterTest(unittest.TestCase):
       Verifies that passing package_dir (string) and package_dir_file(label)
       to pkg_tar yields identical results
       """
-      package_dir = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "test_tar_package_dir.tar"))
-      package_dir_file = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "test_tar_package_dir_file.tar"))
+      package_dir = os.path.join(
+          self.data_files, "rules_pkg", "tests", "test_tar_package_dir.tar")
+      package_dir_file = os.path.join(
+          self.data_files, "rules_pkg", "tests", "test_tar_package_dir_file.tar")
 
       expected_content = [
           {'name': '.'},

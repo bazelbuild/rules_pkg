@@ -113,7 +113,6 @@ py_test(
     python_version = "PY3",
     deps = [
         "//:build_zip",
-        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
@@ -140,7 +139,6 @@ py_test(
     ],
     deps = [
         "//:archive",
-        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
@@ -300,11 +298,12 @@ pkg_tar(
     strip_prefix = "etc",
 )
 
+# Test that strip_prefix='.' removes the current workspace path from the paths
 pkg_tar(
     name = "test-tar-strip_prefix-dot",
     srcs = [
         ":etc/nsswitch.conf",
-        "@bazel_tools//tools/python/runfiles",
+        "//tests_extra:generate_files",
     ],
     strip_prefix = ".",
 )
