@@ -1,4 +1,4 @@
-# Copyright 2017-2020 The Bazel Authors. All rights reserved.
+# Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -172,10 +172,6 @@ class RpmBuilder(object):
   DIRS = [SOURCE_DIR, BUILD_DIR, RPMS_DIR, TEMP_DIR]
 
   def __init__(self, name, version, release, arch, rpmbuild_path,
-               pre_scriptlet_path=None,
-               post_scriptlet_path=None,
-               preun_scriptlet_path=None,
-               postun_scriptlet_path=None,
                source_date_epoch=None,
                debug=False):
     self.name = name
@@ -188,10 +184,18 @@ class RpmBuilder(object):
     self.source_date_epoch = GetFlagValue(source_date_epoch)
     self.debug = debug
 
-    self.pre_scriptlet = SlurpFile(pre_scriptlet_path) if pre_scriptlet_path is not None else ''
-    self.post_scriptlet = SlurpFile(post_scriptlet_path) if post_scriptlet_path is not None else ''
-    self.preun_scriptlet = SlurpFile(preun_scriptlet_path) if preun_scriptlet_path is not None else ''
-    self.postun_scriptlet = SlurpFile(postun_scriptlet_path) if postun_scriptlet_path is not None else ''
+    # The below are initialized in SetupWorkdir()
+    self.spec_file = None
+
+    self.preamble_file = None
+    self.description_file = None
+    self.install_script_file = None
+    self.file_list_path = None
+
+    self.pre_scriptlet = None
+    self.post_scriptlet = None
+    self.preun_scriptlet = None
+    self.postun_scriptlet = None
 
   def AddFiles(self, paths, root=''):
     """Add a set of files to the current RPM.
@@ -215,25 +219,45 @@ class RpmBuilder(object):
                    preamble_file=None,
                    description_file=None,
                    install_script_file=None,
-                   file_list_file=None):
+                   pre_scriptlet_path=None,
+                   post_scriptlet_path=None,
+                   preun_scriptlet_path=None,
+                   postun_scriptlet_path=None,
+                   file_list_path=None):
     """Create the needed structure in the workdir."""
 
-    # Create directory structure.
+    # Create the rpmbuild-expected directory structure.
     for name in RpmBuilder.DIRS:
       if not os.path.exists(name):
         os.makedirs(name, 0o777)
 
-    # Copy the files.
+    # Copy the to-be-packaged files into the BUILD directory
     for f in self.files:
       dst_dir = os.path.join(RpmBuilder.BUILD_DIR, os.path.dirname(f))
       if not os.path.exists(dst_dir):
         os.makedirs(dst_dir, 0o777)
       shutil.copy(os.path.join(original_dir, f), dst_dir)
 
+    # The code below is related to assembling the RPM spec template and
+    # everything else it needs to produce a valid RPM package.
+    #
+    # There two different types of substitution going on here: textual, directly
+    # into the spec file, and macro; done when we call rpmbuild(8).
+    #
+    # Plans to clean this up are tracked in #209.
 
-    # Copy the spec file, updating with the correct version.
+    # Slurp in the scriptlets...
+    self.pre_scriptlet = \
+      SlurpFile(os.path.join(original_dir, pre_scriptlet_path)) if pre_scriptlet_path is not None else ''
+    self.post_scriptlet = \
+      SlurpFile(os.path.join(original_dir, post_scriptlet_path)) if post_scriptlet_path is not None else ''
+    self.preun_scriptlet = \
+      SlurpFile(os.path.join(original_dir, preun_scriptlet_path)) if preun_scriptlet_path is not None else ''
+    self.postun_scriptlet = \
+      SlurpFile(os.path.join(original_dir, postun_scriptlet_path)) if postun_scriptlet_path is not None else ''
 
-    # Replace scriptlets if they're provided.
+    # Then prepare for textual substitution.  This is typically only the case for the
+    # experimental `pkg_rpm`.
     tpl_replacements = {
       'PRE_SCRIPTLET': "%pre\n" + self.pre_scriptlet,
       'POST_SCRIPTLET': "%post\n" + self.post_scriptlet,
@@ -241,6 +265,13 @@ class RpmBuilder(object):
       'POSTUN_SCRIPTLET': "%postun\n" + self.postun_scriptlet,
     }
 
+    # If the spec file has "Version" and "Release" tags specified in the spec
+    # file's preamble, the values are filled in immediately afterward.  These go
+    # into "replacements".  This is typically only the case for the "original"
+    # `pkg_rpm`.
+    #
+    # The "tpl_replacements" are used for direct text substitution of scriptlets
+    # into the spec file, typically only for the "experimental" `pkg_rpm`.
     spec_origin = os.path.join(original_dir, spec_file)
     self.spec_file = os.path.basename(spec_file)
     replacements = {}
@@ -252,8 +283,12 @@ class RpmBuilder(object):
                    replacements=replacements,
                    template_replacements=tpl_replacements)
 
-    # preamble replacement, %description, %install, %files -f substitution
-    self.preamble_file = None
+    # "Preamble" template substitutions.  Currently only support values for the
+    # "Version" and "Release" tags.
+    #
+    # This is only the case for `pkg_rpm` in experimental/rpm.bzl.
+    #
+    # This is substituted by rpmbuild(8) via macro expansion.
     if preamble_file:
       # Copy in the various other files needed to build the RPM
       self.preamble_file = os.path.basename(preamble_file)
@@ -266,20 +301,27 @@ class RpmBuilder(object):
                      self.preamble_file,
                      template_replacements=tpl_replacements)
 
-    self.description_file = None
+    # The below are all copied into place within the RPM spec root.  It may be
+    # possible to directly some, if not all, of these out of the Bazel build
+    # root instead. "file_list_path" may be the problematic one here,
+    # as it must be there.
+    #
+    # These are substituted by rpmbuild(8) via macro expansion.
+
+    # Used in %description
     if description_file:
       shutil.copy(os.path.join(original_dir, description_file), os.getcwd())
       self.description_file = os.path.basename(description_file)
 
-    self.install_script_file = None
+    # Used in %install
     if install_script_file:
       shutil.copy(os.path.join(original_dir, install_script_file), os.getcwd())
       self.install_script_file = os.path.basename(install_script_file)
 
-    self.file_list_file = None
-    if file_list_file:
-      shutil.copy(os.path.join(original_dir, file_list_file), RpmBuilder.BUILD_DIR)
-      self.file_list_file = os.path.join(RpmBuilder.BUILD_DIR, os.path.basename(file_list_file))
+    # Used in %files -f
+    if file_list_path:
+      shutil.copy(os.path.join(original_dir, file_list_path), RpmBuilder.BUILD_DIR)
+      self.file_list_path = os.path.join(RpmBuilder.BUILD_DIR, os.path.basename(file_list_path))
 
   def CallRpmBuild(self, dirname):
     """Call rpmbuild with the correct arguments."""
@@ -312,14 +354,14 @@ class RpmBuilder(object):
       args += ['--define', 'build_rpm_description %s' % self.description_file]
     if self.install_script_file:
       args += ['--define', 'build_rpm_install %s' % self.install_script_file]
-    if self.file_list_file:
+    if self.file_list_path:
       # %files -f is taken relative to the package root
-      args += ['--define', 'build_rpm_files %s' % os.path.basename(self.file_list_file)]
+      args += ['--define', 'build_rpm_files %s' % os.path.basename(self.file_list_path)]
 
     args.append(self.spec_file)
 
     if self.debug:
-      print('Running rpmbuild as: {}'.format(' '.join(["'" + a + "'" for a in args])))
+      print('Running rpmbuild as:', ' '.join(["'" + a + "'" for a in args]))
 
     env = {
         'LANG': 'C',
@@ -360,8 +402,12 @@ class RpmBuilder(object):
             preamble_file=None,
             description_file=None,
             install_script_file=None,
-            file_list_file=None):
-    """Build the RPM described by the spec_file."""
+            pre_scriptlet_path=None,
+            post_scriptlet_path=None,
+            preun_scriptlet_path=None,
+            postun_scriptlet_path=None,
+            file_list_path=None):
+    """Build the RPM described by the spec_file, with other metadata in keyword arguments"""
 
     if self.debug:
       print('Building RPM for %s at %s' % (self.name, out_file))
@@ -375,7 +421,11 @@ class RpmBuilder(object):
                         preamble_file=preamble_file,
                         description_file=description_file,
                         install_script_file=install_script_file,
-                        file_list_file=file_list_file)
+                        file_list_path=file_list_path,
+                        pre_scriptlet_path=pre_scriptlet_path,
+                        post_scriptlet_path=post_scriptlet_path,
+                        preun_scriptlet_path=preun_scriptlet_path,
+                        postun_scriptlet_path=postun_scriptlet_path)
       status = self.CallRpmBuild(dirname)
       self.SaveResult(out_file)
 
@@ -433,17 +483,17 @@ def main(argv):
                          options.version, options.release,
                          options.arch, options.rpmbuild,
                          source_date_epoch=options.source_date_epoch,
-                         debug=options.debug,
-                         pre_scriptlet_path=options.pre_scriptlet,
-                         post_scriptlet_path=options.post_scriptlet,
-                         preun_scriptlet_path=options.preun_scriptlet,
-                         postun_scriptlet_path=options.postun_scriptlet)
+                         debug=options.debug)
     builder.AddFiles(options.files)
     return builder.Build(options.spec_file, options.out_file,
                          preamble_file=options.preamble,
                          description_file=options.description,
                          install_script_file=options.install_script,
-                         file_list_file=options.file_list)
+                         file_list_path=options.file_list,
+                         pre_scriptlet_path=options.pre_scriptlet,
+                         post_scriptlet_path=options.post_scriptlet,
+                         preun_scriptlet_path=options.preun_scriptlet,
+                         postun_scriptlet_path=options.postun_scriptlet)
   except NoRpmbuildFoundError:
     print('ERROR: rpmbuild is required but is not present in PATH')
     return 1
