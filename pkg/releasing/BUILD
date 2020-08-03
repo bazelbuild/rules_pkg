@@ -7,8 +7,6 @@ package(
 )
 
 # WARNING: 2019-08-05. This is experimental and subject to change.
-# It is expected to be available for use concurently with the Bazel
-# 1.0 release.
 
 # Sample usage:
 # load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
@@ -52,6 +50,7 @@ py_binary(
 py_test(
     name = "release_tools_test",
     srcs = ["release_tools_test.py"],
+    python_version = "PY3",
     deps = [
         ":release_utils",
     ],

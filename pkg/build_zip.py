@@ -16,6 +16,7 @@
 import argparse
 from datetime import datetime
 from helpers import SplitNameValuePairAtSeparator
+import os
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ZIP_EPOCH = 315532800
@@ -35,6 +36,10 @@ def _get_argument_parser():
     '-t', '--timestamp', type=int, default=ZIP_EPOCH,
     help='The unix time to use for files added into the zip. values prior to'
           ' Jan 1, 1980 are ignored.')
+
+  parser.add_argument(
+    '-m', '--mode',
+    help='The file system mode to use for files added into the zip.')
 
   parser.add_argument(
     'files', type=str, nargs='*',
@@ -57,6 +62,10 @@ def parse_date(ts):
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
   ts = parse_date(unix_ts)
+  default_mode = None
+  if args.mode:
+    default_mode = int(args.mode, 8)
+  
 
   with ZipFile(args.output, 'w') as zip:
     for f in args.files or []:
@@ -65,6 +74,9 @@ def main(args):
       dst_path = _combine_paths(args.directory, dst_path)
 
       entry_info = ZipInfo(filename=dst_path, date_time=ts)
+
+      if default_mode:
+        entry_info.external_attr = default_mode << 16
 
       entry_info.compress_type = ZIP_DEFLATED
 
