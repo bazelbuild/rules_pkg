@@ -63,8 +63,8 @@ class PktDebTest(unittest.TestCase):
 
   def setUp(self):
     self.runfiles = runfiles.Create()
-    self.deb_path = self.runfiles.Rlocation(
-        os.path.join('rules_pkg', 'tests', 'titi_test_all.deb'))
+    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/titi_test_all.deb')
+        # os.path.join('rules_pkg', 'tests', 'titi_test_all.deb'))
     self.deb_file = DebInspect(self.deb_path)
 
   def assert_control_content(self, expected, match_order=False):
