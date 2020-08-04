@@ -63,8 +63,8 @@ class PktDebTest(unittest.TestCase):
 
   def setUp(self):
     self.runfiles = runfiles.Create()
+    # Note: Rlocation requires forward slashes. os.path.join() will not work.
     self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/titi_test_all.deb')
-        # os.path.join('rules_pkg', 'tests', 'titi_test_all.deb'))
     self.deb_file = DebInspect(self.deb_path)
 
   def assert_control_content(self, expected, match_order=False):
@@ -103,13 +103,18 @@ class PktDebTest(unittest.TestCase):
             info.name
             )
         self.assertTrue(i < len(expected), error_msg)
+        name_in_tar_file = getattr(info, 'name')
         if match_order:
           want = expected[i]
         else:
-          want = expected_by_name[getattr(info, 'name')]
+          want = expected_by_name[name_in_tar_file]
         for k, v in want.items():
           if k == 'data':
             value = f.extractfile(info).read()
+          elif k == 'name':
+            # The test data uses / as path sep, but the tarbal is in OS native
+            # format. This aligns the tarball name back to what we expect.
+            value = name_in_tar_file.replace(os.path.sep, '/')
           elif k == 'isdir':
             value = info.isdir()
           else:
@@ -195,7 +200,7 @@ class PktDebTest(unittest.TestCase):
 
   def test_changes(self):
      changes_path = self.runfiles.Rlocation(
-        os.path.join('rules_pkg', 'tests', 'titi_test_all.changes'))
+         'rules_pkg/tests/titi_test_all.changes')
      with open(changes_path, 'r', encoding='utf-8') as f:
        content = f.read()
        for field in (
