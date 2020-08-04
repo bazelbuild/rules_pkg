@@ -19,16 +19,15 @@ tasks:
     working_directory: ../pkg
     test_targets:
     - "..."
-    # This uses dpkg-deb(1), which is not available by default in macOS
-    - "-//tests:build_test_deb"
     # rpmbuild(8) is not available by default on macOS
     - "-//tests:make_rpm_test"
     - "-//experimental/tests:pkg_rpm_basic_test"
   windows:
     working_directory: ../pkg
-    # We can not build any RPM files or do the .deb tests.
+    # We can not build any RPM files.
     # Also, many other tests are simply broken on windows. So we start with the
     # one that works and can add to the list as we fix the broken behavior or
     # broken test.
     test_targets:
     - "//tests:zip_test"
+    - "//tests:pkg_deb_test"
