@@ -183,7 +183,7 @@ class PktDebTest(unittest.TestCase):
         preinst,
         '#!/usr/bin/env bash\n'
         '# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
-        'echo fnord')
+        'echo fnord\n')
 
   def test_templates(self):
     templates = self.deb_file.get_deb_ctl_file('templates')
