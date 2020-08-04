@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 licenses(["notice"])
 
 load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
@@ -370,25 +371,20 @@ py_test(
     python_version = "PY3",
 )
 
-sh_test(
-    name = "build_test_deb",
+py_test(
+    name = "pkg_deb_test",
     size = "medium",
     srcs = [
-        "build_test_deb.sh",
+        "pkg_deb_test.py",
     ],
+    python_version = "PY3",
     data = [
-        "testenv.sh",
-        ":test-deb.deb",
-        ":test-deb-py2.deb",
+        ":titi_test_all.deb",
         ":titi_test_all.changes",
     ],
-    tags = [
-        # dpkg tools are only available on debian
-        "no_macos",
-        "no_windows",
-    ],
     deps = [
-        "@rules_pkg//third_party/bazel/src/test/shell:bashunit",
+        "//:archive",
+        "@bazel_tools//tools/python/runfiles",
     ],
 )
 

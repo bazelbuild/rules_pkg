@@ -1,0 +1,209 @@
+# Copyright 2020 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# -*- coding: utf-8 -*-
+"""Testing for archive."""
+
+import codecs
+from io import BytesIO
+import os
+import os.path
+import tarfile
+import unittest
+
+from rules_pkg import archive
+from bazel_tools.tools.python.runfiles import runfiles
+
+PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
+
+
+class DebInspect(object):
+  """Class to open and unpack a .deb file so we can examine it."""
+
+  def __init__(self, deb_file):
+    self.deb_version = None
+    self.data = None
+    self.control = None
+    with archive.SimpleArFile(deb_file) as f:
+      info = f.next()
+      while info:
+       if info.filename == 'debian-binary':
+         self.deb_version = info.data
+       elif info.filename == 'control.tar.gz':
+         self.control = info.data
+       elif info.filename == 'data.tar.gz':
+         self.data = info.data
+       else:
+         raise Exception('Unexpected file: %s' % info.filename)
+       info = f.next()
+
+  def get_deb_ctl_file(self, file_name):
+    """Extract a control file."""
+
+    with tarfile.open(mode='r:gz', fileobj=BytesIO(self.control)) as f:
+      for info in f:
+        if info.name == './' + file_name:
+          return codecs.decode(f.extractfile(info).read(), 'utf-8')
+    raise Exception('Could not find control file: %s' % file_name)
+
+
+class PktDebTest(unittest.TestCase):
+  """Testing for pkg_deb rule."""
+
+  def setUp(self):
+    self.runfiles = runfiles.Create()
+    self.deb_path = self.runfiles.Rlocation(
+        os.path.join('rules_pkg', 'tests', 'titi_test_all.deb'))
+    self.deb_file = DebInspect(self.deb_path)
+
+  def assert_control_content(self, expected, match_order=False):
+    self.assert_tar_stream_content(
+        BytesIO(self.deb_file.control),
+        expected,
+        match_order=match_order)
+
+  def assert_data_content(self, expected, match_order=True):
+    self.assert_tar_stream_content(
+        BytesIO(self.deb_file.data),
+        expected,
+        match_order=match_order)
+
+  def assert_tar_stream_content(self, data, expected, match_order=True):
+    """Assert that tarfile contains exactly the entry described by `expected`.
+
+    Args:
+        file_name: the path to the TAR file to test.
+        expected: an array describing the expected content of the TAR file.
+            Each entry in that list should be a dictionary where each field
+            is a field to test in the corresponding TarInfo. For
+            testing the presence of a file "x", then the entry could simply
+            be `{'name': 'x'}`, the missing field will be ignored. To match
+            the content of a file entry, use the key 'data'.
+        match_order: True if files must match in order as well as properties.
+    """
+    expected_by_name = {}
+    for e in expected:
+      expected_by_name[e['name']] = e
+
+    with tarfile.open(mode='r:*', fileobj=data) as f:
+      i = 0
+      for info in f:
+        error_msg = 'Extraneous file at end of archive: %s' % (
+            info.name
+            )
+        self.assertTrue(i < len(expected), error_msg)
+        if match_order:
+          want = expected[i]
+        else:
+          want = expected_by_name[getattr(info, 'name')]
+        for k, v in want.items():
+          if k == 'data':
+            value = f.extractfile(info).read()
+          elif k == 'isdir':
+            value = info.isdir()
+          else:
+            value = getattr(info, k)
+          error_msg = ' '.join([
+              'Value `%s` for key `%s` of file' % (value, k),
+              '%s in archive does' % info.name,
+              'not match expected value `%s`' % v
+              ])
+          self.assertEqual(value, v, error_msg)
+        i += 1
+      if i < len(expected):
+        self.fail('Missing file %s in archive %s' % (expected[i], file_path))
+
+  def test_expected_files(self):
+    # Check the set of 'test-tar-basic-*' smoke test.
+    expected = [
+        {'name': '.'},
+        {'name': './etc',
+         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
+        {'name': './etc/nsswitch.conf',
+         'mode': 0o644,
+         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'
+         },
+        {'name': './usr',
+         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/titi',
+         'mode': 0o755,
+         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/bin'},
+        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
+    ]
+    self.assert_data_content(expected)
+
+  def test_description(self):
+    control = self.deb_file.get_deb_ctl_file('control')
+    for field in (
+	'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é',
+	'Package: titi',
+	'soméone@somewhere.com',
+	'Depends: dep1, dep2',
+	'Built-Using: some_test_data',
+	'Replaces: oldpkg',
+	'Breaks: oldbrokenpkg'):
+      if control.find(field) < 0:
+        self.fail('Missing control field: <%s> in <%s>' % (field, control))
+
+  def test_control_files(self):
+    expected = [
+        {'name': './conffiles', 'mode': 0o644},
+        {'name': './config', 'mode': 0o644},
+        {'name': './control', 'mode': 0o644},
+        {'name': './preinst', 'mode': 0o755},
+        {'name': './templates', 'mode': 0o644},
+    ]
+    self.assert_control_content(expected, match_order=False)
+
+  def test_conffiles(self):
+    conffiles = self.deb_file.get_deb_ctl_file('conffiles')
+    self.assertEqual(
+        conffiles,
+        '/etc/nsswitch.conf\n/etc/other\n')
+
+  def test_config(self):
+    config = self.deb_file.get_deb_ctl_file('config')
+    self.assertEqual(config, '# test config file\n')
+
+  def test_preinst(self):
+    preinst = self.deb_file.get_deb_ctl_file('preinst')
+    self.assertEqual(
+        preinst,
+        '#!/usr/bin/env bash\n'
+        '# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
+        'echo fnord')
+
+  def test_templates(self):
+    templates = self.deb_file.get_deb_ctl_file('templates')
+    for field in (
+	'Template: titi/test',
+	'Type: string'):
+      if templates.find(field) < 0:
+        self.fail('Missing template field: <%s> in <%s>' % (field, templates))
+
+  def test_changes(self):
+     changes_path = self.runfiles.Rlocation(
+        os.path.join('rules_pkg', 'tests', 'titi_test_all.changes'))
+     with open(changes_path, 'r', encoding='utf-8') as f:
+       content = f.read()
+       for field in (
+           'Urgency: low',
+           'Distribution: trusty'):
+         if content.find(field) < 0:
+           self.fail('Missing template field: <%s> in <%s>' % (field, content))
+
+
+if __name__ == '__main__':
+  unittest.main()
