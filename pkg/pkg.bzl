@@ -390,9 +390,6 @@ def pkg_deb(name, package, **kwargs):
         **kwargs
     )
 
-def _format_zip_file_arg(f):
-    return "%s=%s" % (_quote(f.path), dest_path(f, strip_prefix = None))
-
 def _pkg_zip_impl(ctx):
     args = ctx.actions.args()
 
@@ -401,10 +398,12 @@ def _pkg_zip_impl(ctx):
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
 
-    args.add_all(
-        ctx.files.srcs,
-        map_each = _format_zip_file_arg,
-    )
+    for f in ctx.files.srcs:
+        arg = "%s=%s" % (
+            _quote(f.path),
+            dest_path(f, compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix))
+        )
+        args.add(arg)
 
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
@@ -434,6 +433,7 @@ pkg_zip_impl = rule(
         "timestamp": attr.int(default = 315532800),
         "mode": attr.string(default = "0555"),
         "out": attr.output(),
+        "strip_prefix": attr.string(),
         # Implicit dependencies.
         "build_zip": attr.label(
             default = Label("//:build_zip"),
