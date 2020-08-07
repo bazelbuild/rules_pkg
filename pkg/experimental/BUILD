@@ -22,24 +22,10 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-# Used by pkg_rpm in rpm.bzl.
-py_binary(
-    name = "make_rpm",
-    srcs = ["make_rpm.py"],
-    python_version = "PY3",
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//:archive",
-        "//:make_rpm_lib",
-    ],
-)
-
 filegroup(
     name = "standard_package",
     srcs = glob([
         "*.bzl",
-        "*.py",
     ]) + [
         "BUILD",
         "template.spec.in",

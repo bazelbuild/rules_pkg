@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 licenses(["notice"])
 
 load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
@@ -162,7 +163,6 @@ py_test(
         "no_windows",
     ],
     deps = [
-        "//:archive",
         "//:make_rpm_lib",
     ],
 )
@@ -173,14 +173,8 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
-        "//:archive",
+        "//:helpers",
     ],
-)
-
-genrule(
-    name = "test-deb-preinst",
-    outs = ["test-deb.preinst"],
-    cmd = "echo -n \"#!/usr/bin/env bash\n# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\necho fnord\" > \"$@\"",
 )
 
 pkg_deb(
@@ -192,7 +186,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-basic-gz.tar.gz",
     depends = [
         "dep1",
         "dep2",
@@ -202,7 +196,7 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     make_deb = "//:make_deb",
     package = "titi",
-    preinst = ":test-deb-preinst",
+    preinst = "testdata/deb_preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
     urgency = "low",
@@ -227,7 +221,7 @@ pkg_deb(
         "/etc/other",
     ],
     config = ":testdata/config",
-    data = ":test-tar-gz.tar.gz",
+    data = ":test-tar-basic-gz.tar.gz",
     depends = [
         "dep1",
         "dep2",
@@ -237,7 +231,7 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     make_deb = "//:make_deb_py2",
     package = "titi",
-    preinst = ":test-deb-preinst",
+    preinst = "testdata/deb_preinst",
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
     urgency = "low",
@@ -245,12 +239,11 @@ pkg_deb(
 )
 
 [pkg_tar(
-    name = "test-tar-%s" % ext[1:],
+    name = "test-tar-basic-%s" % ext[1:],
     srcs = [
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-    build_tar = "//:build_tar",
     extension = "tar%s" % ext,
     mode = "0644",
     modes = {"usr/titi": "0755"},
@@ -271,7 +264,7 @@ pkg_deb(
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
     build_tar = "//:build_tar",
-    deps = [":test-tar-%s" % ext],
+    deps = [":test-tar-basic-%s" % ext],
 ) for ext in [
     "",
     "gz",
@@ -345,43 +338,20 @@ pkg_tar(
     portable_mtime = False,
 )
 
-sh_test(
-    name = "build_test_deb",
+py_test(
+    name = "pkg_tar_test",
     size = "medium",
     srcs = [
-        "build_test_deb.sh",
+        "pkg_tar_test.py",
     ],
     data = [
-        "testenv.sh",
-        ":test-deb.deb",
-        ":test-deb-py2.deb",
-        ":titi_test_all.changes",
-    ],
-    tags = [
-        # dpkg tools are only available on debian
-        "no_macos",
-        "no_windows",
-    ],
-    deps = [
-        "@rules_pkg//third_party/bazel/src/test/shell:bashunit",
-    ],
-)
-
-sh_test(
-    name = "build_test_tar",
-    size = "medium",
-    srcs = [
-        "build_test_tar.sh",
-    ],
-    data = [
-        "testenv.sh",
-        ":archive_testdata",
-        ":test-tar-.tar",
-        ":test-tar-bz2.tar.bz2",
+        ":test-tar-basic-.tar",
+        ":test-tar-basic-bz2.tar.bz2",
+        ":test-tar-basic-gz.tar.gz",
+        ":test-tar-basic-xz.tar.xz",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
-        ":test-tar-gz.tar.gz",
         ":test-tar-inclusion-.tar",
         ":test-tar-inclusion-bz2.tar",
         ":test-tar-inclusion-gz.tar",
@@ -391,17 +361,27 @@ sh_test(
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
-        ":test-tar-xz.tar.xz",
+    ],
+    python_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+py_test(
+    name = "pkg_deb_test",
+    size = "medium",
+    srcs = [
+        "pkg_deb_test.py",
+    ],
+    python_version = "PY3",
+    data = [
+        ":titi_test_all.deb",
         ":titi_test_all.changes",
     ],
-    tags = [
-        # archive.py requires xzcat, which is not available by default on Mac
-        "no_macos",
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
     deps = [
-        "//third_party/bazel/src/test/shell:bashunit",
+        "//:archive",
+        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
