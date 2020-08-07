@@ -146,7 +146,8 @@ def CreateDebControl(extrafiles=None, **kwargs):
   # Create the control.tar file
   tar = BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
-    with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
+    with tarfile.open('control.tar.gz', mode='w', fileobj=gz,
+                      format=tarfile.GNU_FORMAT) as f:
       tarinfo = tarfile.TarInfo('./control')
       control_file_data = controlfile.encode('utf-8')
       tarinfo.size = len(control_file_data)
