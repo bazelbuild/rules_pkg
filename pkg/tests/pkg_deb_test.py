@@ -18,14 +18,12 @@
 import codecs
 from io import BytesIO
 import os
-import os.path
 import tarfile
+import sys
 import unittest
 
 from rules_pkg import archive
 from bazel_tools.tools.python.runfiles import runfiles
-
-PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 
 class DebInspect(object):
@@ -92,6 +90,11 @@ class PktDebTest(unittest.TestCase):
             the content of a file entry, use the key 'data'.
         match_order: True if files must match in order as well as properties.
     """
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/213): On Windows,
+    # tarfile seems to not report the directory information. So we filter out
+    # items that are supposed to be directories.
+    if sys.platform == 'win32':
+      expected = [e for e in expected if not e.get('isdir')]
     expected_by_name = {}
     for e in expected:
       expected_by_name[e['name']] = e
@@ -110,7 +113,7 @@ class PktDebTest(unittest.TestCase):
           want = expected_by_name[name_in_tar_file]
         for k, v in want.items():
           if k == 'data':
-            value = f.extractfile(info).read()
+            value = f.extractfile(info).read().decode('utf-8')
           elif k == 'name':
             # The test data uses / as path sep, but the tarbal is in OS native
             # format. This aligns the tarball name back to what we expect.
@@ -132,19 +135,19 @@ class PktDebTest(unittest.TestCase):
   def test_expected_files(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     expected = [
-        {'name': '.'},
-        {'name': './etc',
+        {'name': '.', 'isdir': True},
+        {'name': './etc', 'isdir': True,
          'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
         {'name': './etc/nsswitch.conf',
          'mode': 0o644,
          'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'
          },
-        {'name': './usr',
+        {'name': './usr', 'isdir': True,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
         {'name': './usr/titi',
          'mode': 0o755,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
-        {'name': './usr/bin'},
+        {'name': './usr/bin', 'isdir': True},
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
     ]
     self.assert_data_content(expected)
