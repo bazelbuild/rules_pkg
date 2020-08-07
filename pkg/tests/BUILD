@@ -368,6 +368,9 @@ py_test(
         ":test-tar-strip_prefix-none.tar",
     ],
     python_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
 )
 
 sh_test(
