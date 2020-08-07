@@ -24,9 +24,11 @@ load(
     "@//experimental:pkg_filegroup.bzl",
     "PackageDirInfo",
     "PackageFileInfo",
+    "PackageSymlinkInfo",
     "make_strip_prefix",
     "pkg_filegroup",
     "pkg_mkdirs",
+    "pkg_mklinks",
     "pkg_rename_single",
 )
 
@@ -515,7 +517,7 @@ def _pkg_mkdirs_contents_test_impl(ctx):
         env,
         ctx.attr.expected_section,
         target_under_test[PackageDirInfo].section,
-        "pkg_mkdir section do not match expectations",
+        "pkg_mkdir section does not match expectations",
     )
 
     return analysistest.end(env)
@@ -523,7 +525,6 @@ def _pkg_mkdirs_contents_test_impl(ctx):
 pkg_mkdirs_contents_test = analysistest.make(
     _pkg_mkdirs_contents_test_impl,
     attrs = {
-        #"expected_srcs" : attr.label_list(),
         "expected_dirs": attr.string_list(
             mandatory = True,
         ),
@@ -587,6 +588,101 @@ def _test_pkg_mkdirs():
     )
 
 ##########
+# Test pkg_mklinks
+##########
+def _pkg_mklinks_contents_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+
+    asserts.equals(
+        env,
+        ctx.attr.expected_links,
+        target_under_test[PackageSymlinkInfo].link_map,
+        "pkg_mklinks link map does not match expectations",
+    )
+
+    # Simple equality checks for the others
+    asserts.equals(
+        env,
+        ctx.attr.expected_attrs,
+        target_under_test[PackageSymlinkInfo].attrs,
+        "pkg_mklinks attrs do not match expectations",
+    )
+    asserts.equals(
+        env,
+        ctx.attr.expected_section,
+        target_under_test[PackageSymlinkInfo].section,
+        "pkg_mklinks section does not match expectations",
+    )
+
+    return analysistest.end(env)
+
+pkg_mklinks_contents_test = analysistest.make(
+    _pkg_mklinks_contents_test_impl,
+    attrs = {
+        "expected_links": attr.string_dict(
+            mandatory = True,
+        ),
+        "expected_attrs": attr.string_list_dict(),
+        "expected_section": attr.string(),
+    },
+)
+
+def _test_pkg_mklinks():
+    pkg_mklinks(
+        name = "pfg_pkg_mklinks_base_g",
+        links = {
+            "bar": "foo",
+            "qux": "baz",
+        },
+        tags = ["manual"],
+    )
+
+    pkg_mklinks_contents_test(
+        name = "pfg_pkg_mklinks_base",
+        target_under_test = ":pfg_pkg_mklinks_base_g",
+        expected_links = {
+            "bar": "foo",
+            "qux": "baz",
+        },
+        expected_attrs = {"unix": ["0777", "-", "-"]},
+    )
+
+    pkg_mklinks(
+        name = "pfg_pkg_mklinks_same_source_g",
+        links = {
+            "bar": "foo",
+            "baz": "foo",
+        },
+        tags = ["manual"],
+    )
+
+    pkg_mklinks_contents_test(
+        name = "pfg_pkg_mklinks_same_source",
+        target_under_test = ":pfg_pkg_mklinks_same_source_g",
+        expected_links = {
+            "bar": "foo",
+            "baz": "foo",
+        },
+        expected_attrs = {"unix": ["0777", "-", "-"]},
+    )
+
+    # Negative tests below
+    pkg_mklinks(
+        name = "pfg_pkg_mklinks_bad_attrs_g",
+        links = {
+            "bar": "foo",
+            "qux": "baz",
+        },
+        attrs = {"the_dog_goes": ["bork"]},
+        tags = ["manual"],
+    )
+    generic_neg_test(
+        name = "pfg_pkg_mklinks_bad_attrs",
+        target_under_test = ":pfg_pkg_mklinks_bad_attrs_g",
+    )
+
+##########
 # Test make_strip_prefix()
 ##########
 
@@ -609,6 +705,7 @@ def pkg_filegroup_analysis_tests():
     _test_pkg_filegroup_rename()
     _test_pkg_filegroup_section()
     _test_pkg_mkdirs()
+    _test_pkg_mklinks()
 
     native.test_suite(
         name = "pkg_filegroup_analysis_tests",
@@ -655,6 +752,10 @@ def pkg_filegroup_analysis_tests():
             ":pfg_pkg_mkdirs_docdir",
             ":pfg_pkg_mkdirs_bad_attrs",
             ":pfg_pkg_mkdirs_bad_section",
+            # Tests involving pkg_mklinks
+            ":pfg_pkg_mklinks_base",
+            ":pfg_pkg_mklinks_same_source",
+            ":pfg_pkg_mklinks_bad_attrs",
         ],
     )
 

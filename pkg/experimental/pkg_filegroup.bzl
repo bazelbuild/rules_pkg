@@ -20,6 +20,7 @@ the following:
 
 - `pkg_filegroup` describes destinations for rule outputs
 - `pkg_mkdirs` describes directory structures
+- `pkg_mklinks` describes symbolic links
 
 Rules that actually make use of the outputs of the above rules are not specified
 here.  See `rpm.bzl` for an example that builds out RPM packages.
@@ -42,7 +43,7 @@ PackageFileInfo = provider(
         "srcs": "Source file list",
         "dests": "Destination file list",
         "attrs": "File attributes to be set on all 'dests' in this provider",
-        "section": "'Section' property, see pkg_filegroup docs for details",
+        "section": "'Section' property, see `pkg_filegroup` docs for details",
     },
 )
 
@@ -54,7 +55,19 @@ PackageDirInfo = provider(
     fields = {
         "dirs": "Directories to be created within the package",
         "attrs": "File attributes to be set on all 'dirs' in this provider",
-        "section": "'Section' property, see pkg_filegroup docs for details",
+        "section": "'Section' property, see `pkg_mkdirs` docs for details",
+    },
+)
+
+PackageSymlinkInfo = provider(
+    doc = """Groups a collection of symbolic links to be created within a package.
+
+    Also owns attributes, but they are typically uninteresting.
+    """,
+    fields = {
+        "link_map": "Link map.  Keys are link names, values are target (source) files",
+        "attrs": "File attributes to be set on all of the links created",
+        "section": "'Section' property, see `pkg_mklinks` docs for details",
     },
 )
 
@@ -375,6 +388,14 @@ pkg_filegroup = rule(
             example, RPM macros like `%{_libdir}` may work correctly in paths
             for RPM packages, not, say, Debian packages.
 
+            If any part of the directory structure of the computed destination
+            of a file provided to `pkg_filegroup` or any similar rule does not
+            already exist within a package, the package builder will create it
+            for you with a reasonable set of default permissions (typically
+            `0755 root.root`).
+
+            It is possible to establish directory structures with arbitrary
+            permissions using `pkg_mkdirs`.
             """,
             default = "",
         ),
@@ -415,6 +436,7 @@ pkg_filegroup = rule(
             sub-types.
             """,
             default = "",
+            # TODO(nacl): use "values" here
         ),
         "strip_prefix": attr.string(
             doc = """What prefix of a file's path to discard prior to installation.
@@ -521,7 +543,7 @@ def _pkg_mkdirs_impl(ctx):
     ]
 
 pkg_mkdirs = rule(
-    doc = """pkg_filegroup-like rule for the creation and ownership of directories.
+    doc = """`pkg_filegroup`-like rule for the creation and ownership of directories.
 
     Use this if:
 
@@ -541,7 +563,14 @@ pkg_mkdirs = rule(
     # @unsorted-dict-items
     attrs = {
         "dirs": attr.string_list(
-            doc = """Directory names to make within the package""",
+            doc = """Directory names to make within the package
+
+            If any part of the requested directory structure does not already
+            exist within a package, the package builder will create it for you
+            with a reasonable set of default permissions (typically `0755
+            root.root`).
+
+            """,
             mandatory = True,
         ),
         "attrs": attr.string_list_dict(
@@ -578,6 +607,88 @@ pkg_mkdirs = rule(
             The default is `dir`.
             """,
             default = "dir",
+            # TODO(nacl): use "values" here
+        ),
+    },
+)
+
+def _pkg_mklinks_impl(ctx):
+    _validate_attr(ctx.attr.attrs)
+    return [
+        PackageSymlinkInfo(
+            link_map = ctx.attr.links,
+            attrs = ctx.attr.attrs,
+            section = ctx.attr.section,
+        ),
+    ]
+
+pkg_mklinks = rule(
+    doc = """`pkg_filegroup`-like-rule for symlink management.
+
+    This rule results in the creation of one or more symbolic links in a
+    package.
+
+    Symbolic links specified by this rule may be dangling, or refer to a
+    file/directory outside of the current created package.
+
+    The link may point to a location outside of it.
+
+    """,
+    implementation = _pkg_mklinks_impl,
+    attrs = {
+        "links": attr.string_dict(
+            doc = """Link mappings to create within the target archive.
+
+            The keys of this dict are paths of the created links, the values are
+            the link destinations ("targets" in `ln(1)` parlance).
+
+            If the directory structure mentioned in the "link" part of the
+            package does not yet exist within the package when it is built, it
+            will be created by the package builder.
+
+            """,
+            mandatory = True,
+        ),
+        "attrs": attr.string_list_dict(
+            doc = """Attributes to set for the output targets.
+
+            Must be a dict of:
+
+            ```
+            "unix" : [
+                "Four-digit octal permissions string (e.g. "0755") or "-" (don't change from what's provided),
+                "User Id, or "-" (use current user)",
+                "Group Id, or "-" (use current group)",
+            ]
+            ```
+
+            The permissions value defaults to "0777".  The user/group values
+            default to "-".
+            """,
+            default = {"unix": ["0777", "-", "-"]},
+        ),
+        "section": attr.string(
+            doc = """Symlink section mapping.
+
+            Legal values for this attribute are:
+            - "" (i.e. an empty string)
+            - "doc"
+            - "config"
+            - "config(missingok)"
+            - "config(noreplace)"
+            - "config(missingok, noreplace)"
+
+            See the "section" attribute of `pkg_filegroup` for more information.
+            """,
+            default = "",
+            values = [
+                "",
+                "doc",
+                "config",
+                "config(missingok)",
+                "config(noreplace)",
+                "config(missingok, noreplace)",
+            ],
         ),
     },
 )
