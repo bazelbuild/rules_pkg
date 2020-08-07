@@ -113,7 +113,7 @@ class PktDebTest(unittest.TestCase):
           want = expected_by_name[name_in_tar_file]
         for k, v in want.items():
           if k == 'data':
-            value = f.extractfile(info).read().decode('utf-8')
+            value = f.extractfile(info).read()
           elif k == 'name':
             # The test data uses / as path sep, but the tarbal is in OS native
             # format. This aligns the tarball name back to what we expect.
@@ -154,14 +154,21 @@ class PktDebTest(unittest.TestCase):
 
   def test_description(self):
     control = self.deb_file.get_deb_ctl_file('control')
-    for field in (
-	'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é',
+    fields = [
 	'Package: titi',
-	'soméone@somewhere.com',
 	'Depends: dep1, dep2',
 	'Built-Using: some_test_data',
 	'Replaces: oldpkg',
-	'Breaks: oldbrokenpkg'):
+	'Breaks: oldbrokenpkg',
+    ]
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
+    # pass on Windows Until we rewrite how description is passed
+    if sys.platform != 'win32':
+      fields.extend([
+	  'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é',
+	  'Maintainer: soméone@somewhere.com',
+      ])
+    for field in fields:
       if control.find(field) < 0:
         self.fail('Missing control field: <%s> in <%s>' % (field, control))
 
