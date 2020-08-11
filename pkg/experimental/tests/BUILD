@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs")
+load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs", "pkg_mklinks")
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
@@ -51,13 +51,23 @@ pkg_mkdirs(
     dirs = ["/var/log/foo"],
 )
 
+pkg_mklinks(
+    name = "test_links",
+    attrs = {"unix": [
+        "0777",
+        "root",
+        "root",
+    ]},
+    links = {"/usr/bin/link-name": "/usr/bin/link-target"},
+)
+
 pkg_rpm(
     name = "test_rpm",
-    testonly = True,
     architecture = "noarch",
     data = [
-        "var_log_foo",
         ":ars_pfg",
+        ":test_links",
+        ":var_log_foo",
     ],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
@@ -97,7 +107,14 @@ genrule(
     (
         echo -n /var/log/foo,
         # No hash (beginning), fflags (end), or symlink destination (end)
-        echo -n ,root,root,40755,,
+        echo ,root,root,40755,,
+    ) >> $@
+
+    # Symlink (has no hash)
+    (
+        echo -n /usr/bin/link-name,
+        # No hash (beginning), or fflags (second-to-last)
+        echo ,root,root,120777,,/usr/bin/link-target
     ) >> $@
     """,
 )

@@ -17,7 +17,7 @@
 
 """Provides rules for creating RPM packages via pkg_filegroup and friends."""
 
-load("//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo")
+load("//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo", "PackageSymlinkInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -132,7 +132,7 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.pre_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".pre_scriptlet")
         files.append(scriptlet_file)
-        ctx.actions.write(scriptlet_file,  ctx.attr.pre_scriptlet)
+        ctx.actions.write(scriptlet_file, ctx.attr.pre_scriptlet)
         args.append("--pre_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.post_scriptlet_file:
@@ -144,7 +144,7 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.post_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".post_scriptlet")
         files.append(scriptlet_file)
-        ctx.actions.write(scriptlet_file,  ctx.attr.post_scriptlet)
+        ctx.actions.write(scriptlet_file, ctx.attr.post_scriptlet)
         args.append("--post_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.preun_scriptlet_file:
@@ -156,7 +156,7 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.preun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".preun_scriptlet")
         files.append(scriptlet_file)
-        ctx.actions.write(scriptlet_file,  ctx.attr.preun_scriptlet)
+        ctx.actions.write(scriptlet_file, ctx.attr.preun_scriptlet)
         args.append("--preun_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.postun_scriptlet_file:
@@ -168,7 +168,7 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.postun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".postun_scriptlet")
         files.append(scriptlet_file)
-        ctx.actions.write(scriptlet_file,  ctx.attr.postun_scriptlet)
+        ctx.actions.write(scriptlet_file, ctx.attr.postun_scriptlet)
         args.append("--postun_scriptlet=" + scriptlet_file.path)
 
     #### Expand the spec file template; prepare data files
@@ -198,6 +198,9 @@ def _pkg_rpm_impl(ctx):
     # on the side of correctness here.
     dest_check_map = {}
     for d in ctx.attr.data:
+        # TODO(nacl, #191): This loop should be consolidated with the install
+        # script-generating loop below, as they're iterating on the same data.
+
         # d is a Target
 
         # FIXME: if/when we start to consider other providers here, we may want
@@ -247,6 +250,21 @@ def _pkg_rpm_impl(ctx):
                 else:
                     dest_check_map[dest] = d.label
 
+        if PackageSymlinkInfo in d:
+            psi = d[PackageSymlinkInfo]
+            for dest in psi.link_map.keys():
+                if dest in dest_check_map:
+                    fail(
+                        "Destination '{0}' is provided by both {1} and {2}; please ensure each destination is provided by exactly one incoming rule".format(
+                            dest,
+                            dest_check_map[dest],
+                            d.label,
+                        ),
+                        "data",
+                    )
+                else:
+                    dest_check_map[dest] = d.label
+
     #### Procedurally-generated scripts/lists (%install, %files)
 
     # Build up the install script
@@ -254,12 +272,14 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.debug:
         install_script_pieces.append("set -x")
 
+    # TODO(nacl): __install, __cp
     # {0} is the source, {1} is the dest
     install_file_stanza_fmt = """
 install -d %{{buildroot}}/$(dirname {1})
 cp -r {0} %{{buildroot}}/{1}
     """
 
+    # TODO(nacl): __install
     # {0} is the directory name
     #
     # This may not be strictly necessary, given that they'll be created in the
@@ -267,6 +287,12 @@ cp -r {0} %{{buildroot}}/{1}
     install_dir_stanza_fmt = """
 install -d %{{buildroot}}/{0}
     """
+
+    # {0} is the name of the link, {1} is the target
+    install_symlink_stanza_fmt = """
+%{{__install}} -d %{{buildroot}}/$(dirname {0})
+%{{__ln_s}} {1} %{{buildroot}}/{0}
+"""
 
     # Build up the RPM files list (%files -f)
     rpm_files_list = []
@@ -303,6 +329,19 @@ install -d %{{buildroot}}/{0}
 
                 install_script_pieces.append(install_dir_stanza_fmt.format(
                     d,
+                ))
+        if PackageSymlinkInfo in elem:
+            psi = elem[PackageSymlinkInfo]
+            file_base = "%attr({}) {}".format(
+                ", ".join(psi.attrs["unix"]),
+                "%" + psi.section if psi.section else "",
+            )
+            for link_name, target in psi.link_map.items():
+                rpm_files_list.append(file_base + " /" + link_name)
+
+                install_script_pieces.append(install_symlink_stanza_fmt.format(
+                    link_name,
+                    target,
                 ))
 
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
@@ -541,6 +580,7 @@ pkg_rpm = rule(
             providers = [
                 [PackageFileInfo],
                 [PackageDirInfo],
+                [PackageSymlinkInfo],
             ],
         ),
         "debug": attr.bool(
