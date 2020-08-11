@@ -18,6 +18,8 @@ import os.path
 import tarfile
 import unittest
 
+from bazel_tools.tools.python.runfiles import runfiles
+
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 
@@ -36,7 +38,9 @@ class PkgTarTest(unittest.TestCase):
             be `{'name': 'x'}`, the missing field will be ignored. To match
             the content of a file entry, use the key 'data'.
     """
-    file_path = os.path.join(os.environ['RUNFILES_DIR'], 'rules_pkg', 'tests', file_name)
+    # NOTE: This is portable to Windows. os.path.join('rules_pkg', 'tests',
+    # filename) is not.
+    file_path = runfiles.Create().Rlocation('rules_pkg/tests/' + file_name)
     with tarfile.open(file_path, 'r:*') as f:
       i = 0
       for info in f:
