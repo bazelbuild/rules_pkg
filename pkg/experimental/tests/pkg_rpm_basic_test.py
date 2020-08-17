@@ -18,6 +18,7 @@ import unittest
 import subprocess
 import csv
 import io
+import os
 from rules_python.python.runfiles import runfiles
 
 # This provides some tests for built RPMs, mostly by taking the built RPM and
@@ -80,10 +81,10 @@ echo postun
                 "RPM Tag {} does not match expected value".format(fieldname))
 
     def test_contents(self):
-        self.manifest_file = self.runfiles.Rlocation(
-            "rules_pkg/experimental/tests/manifest.txt")
+        manifest_file = self.runfiles.Rlocation(
+            "rules_pkg/experimental/tests/manifest.csv")
         manifest_specs = {}
-        with open(self.manifest_file, "r", newline='', encoding="utf-8") as fh:
+        with open(manifest_file, "r", newline='', encoding="utf-8") as fh:
             manifest_reader = csv.DictReader(fh)
             manifest_specs = {r['path']: r for r in manifest_reader}
 
@@ -121,12 +122,102 @@ echo postun
 
         sio = io.StringIO(rpm_output.decode('utf-8'))
         rpm_output_reader = csv.DictReader(
-            sio, fieldnames=rpm_queryformat_fieldnames)
+            sio, fieldnames = rpm_queryformat_fieldnames)
         for rpm_file_info in rpm_output_reader:
             my_path = rpm_file_info['path']
             self.assertIn(my_path, manifest_specs)
             self.assertDictEqual(manifest_specs[my_path], rpm_file_info)
 
+    def test_preamble_metadata(self):
+        metadata_prefix = "rules_pkg/experimental/tests"
 
+        rpm_filename = os.path.basename(self.test_rpm_path)
+        rpm_basename = os.path.splitext(rpm_filename)[0]
+
+        # Tuples of:
+        # Metadata name, RPM Tag prefix, exclusion list (currently only support "startswith")
+        #
+        # The exclusions should probably be regexps at some point, but right
+        # now, our job is relatively easy.  They only operate on the
+        # "capability" portion of the tag.
+        test_md = [
+            ("conflicts", "CONFLICT", []),
+            # rpm packages implicitly provide themselves, something like:
+            # "test_rpm = 1.1.1-2222".  We don't bother testing this, since we
+            # don't take direct action to specify it.
+            ("provides",  "PROVIDE",  [rpm_basename]),
+            # Skip rpmlib-related requirements; they are often dependent on the
+            # version of `rpm` we are using.
+            ("requires",  "REQUIRE",  ["rpmlib"]),
+        ]
+        for (mdtype, tag, exclusions) in test_md:
+            md_file = self.runfiles.Rlocation(
+                os.path.join(metadata_prefix, mdtype + ".csv"))
+
+            with open(md_file, "r", newline='', encoding="utf-8") as fh:
+                md_reader = csv.DictReader(fh, delimiter=':')
+                # I heard you like functional programming ;)
+                #
+                # This produces a list of outputs whenever the "capability"
+                # attribute starts with any of the values in the "exclusions"
+                # list.
+                md_specs_unsorted = [line for line in md_reader
+                                     if not any(line['capability'].startswith(e)
+                                                for e in exclusions)]
+                # And this sorts it, ordering by the sorted "association list"
+                # form of the dictionary.
+                #
+                # The sorting of the key values is not necessary with versions
+                # of python3 (3.5+, I believe) that have dicts maintain
+                # insertion order.
+                md_specs = sorted(md_specs_unsorted,
+                                  key = lambda x: sorted(x.items()))
+
+
+            # This typically becomes the equivalent of:
+            #
+            #   '[%{PROVIDENEVRS};%{PROVIDEFLAGS:deptype}\n]'
+            #
+            # as passed to `rpm --queryformat`
+            rpm_queryformat = (
+                # NEVRS = Name Epoch Version Release (plural), which look something like:
+                #   rpmlib(CompressedFileNames) <= 3.0.4-1
+                # or:
+                #   bash
+                "[%{{{tag}NEVRS}}"
+                # Flags associated with the dependency type.  This used to
+                # evaluate in what "sense" the dependency was added.
+                #
+                # Values often include things like:
+                #
+                # - "interp" for scriptlet interpreter dependencies
+                # - "postun" for dependencies of the "postun" scriptlet
+                # - "manual" for values that are explicitly specified
+                ":%{{{tag}FLAGS:deptype}}"
+                "\n]"
+            ).format(tag = tag)
+
+            rpm_queryformat_fieldnames = [
+                "capability",
+                "sense",
+            ]
+
+            rpm_output = subprocess.check_output(
+                ["rpm", "-qp", "--queryformat", rpm_queryformat, self.test_rpm_path])
+
+            sio = io.StringIO(rpm_output.decode('utf-8'))
+            rpm_output_reader = csv.DictReader(
+                sio, delimiter=':', fieldnames=rpm_queryformat_fieldnames)
+
+            # Get everything in the same order as the read-in metadata file
+            rpm_outputs_filtered_unsorted = [line for line in rpm_output_reader
+                                             if not any(line['capability'].startswith(e)
+                                                        for e in exclusions)]
+
+            rpm_outputs_filtered = sorted(rpm_outputs_filtered_unsorted, key = lambda x: sorted(x.items()))
+
+            for expected, actual in zip(md_specs, rpm_outputs_filtered):
+                self.assertDictEqual(expected, actual,
+                                     msg="{} metadata discrepancy".format(mdtype))
 if __name__ == "__main__":
     unittest.main()
