@@ -198,6 +198,7 @@ pkg_deb(
     package = "titi",
     preinst = "testdata/deb_preinst",
     replaces = ["oldpkg"],
+    provides = ["hello"],
     templates = ":testdata/templates",
     urgency = "low",
     version = "test",

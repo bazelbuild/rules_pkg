@@ -235,6 +235,7 @@ def _pkg_deb_impl(ctx):
     args += ["--pre_depends=" + d for d in ctx.attr.predepends]
     args += ["--recommends=" + d for d in ctx.attr.recommends]
     args += ["--replaces=" + d for d in ctx.attr.replaces]
+    args += ["--provides=" + d for d in ctx.attr.provides]
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
@@ -357,6 +358,7 @@ pkg_deb_impl = rule(
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
         "replaces": attr.string_list(default = []),
+        "provides": attr.string_list(default = []),
 
         # Outputs.
         "out": attr.output(mandatory = True),

@@ -585,7 +585,7 @@ for more details on this.
       <td>
         <code>breaks</code>, <code>depends</code>, <code>suggests</code>,
         <code>enhances</code>, <code>conflicts</code>, <code>predepends</code>,
-        <code>recommends</code> and <code>replaces</code>.
+        <code>recommends</code>, <code>replaces</code> and <code>provides</code>.
       </td>
       <td>
         <code>String list, optional</code>
