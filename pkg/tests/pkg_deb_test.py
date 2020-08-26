@@ -160,7 +160,7 @@ class PktDebTest(unittest.TestCase):
 	'Built-Using: some_test_data',
 	'Replaces: oldpkg',
 	'Breaks: oldbrokenpkg',
-    'Provides: hello',
+	'Provides: hello',
     ]
     # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
     # pass on Windows Until we rewrite how description is passed
