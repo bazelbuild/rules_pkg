@@ -45,7 +45,7 @@ py_library(
         "__init__.py",
         "helpers.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//experimental:__pkg__",
         "//tests:__pkg__",
@@ -86,24 +86,12 @@ py_binary(
     ],
 )
 
-py_binary(
-    name = "make_deb_py2",
-    srcs = ["make_deb.py"],
-    main = "make_deb.py",
-    python_version = "PY2",
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":helpers",
-    ],
-)
-
 # Used by pkg_rpm in rpm.bzl.
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
@@ -114,7 +102,7 @@ py_binary(
 py_library(
     name = "make_rpm_lib",
     srcs = ["make_rpm.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//experimental:__pkg__",
         "//tests:__pkg__",
