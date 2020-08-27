@@ -82,7 +82,7 @@ class ZipContentsCase(ZipTest):
         self.assertZipFileContent(
             "test_zip_permissions.zip",
             [
-                { 
+                {
                     "filename": "executable.sh",
                     "crc": EXECUTABLE_CRC,
                     "timestamp": 1234567890,
@@ -97,6 +97,38 @@ class ZipContentsCase(ZipTest):
             [
                 {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
                 {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
+            ],
+        )
+
+    def testZipStripPrefixEmpty(self):
+        self.assertZipFileContent(
+            "test-zip-strip_prefix-empty.zip",
+            [
+                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+            ],
+        )
+
+    def testZipStripPrefixNone(self):
+        self.assertZipFileContent(
+            "test-zip-strip_prefix-none.zip",
+            [
+                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+            ],
+        )
+
+    def testZipStripPrefixZipcontent(self):
+        self.assertZipFileContent(
+            "test-zip-strip_prefix-zipcontent.zip",
+            [
+                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+            ],
+        )
+
+    def testZipStripPrefixDot(self):
+        self.assertZipFileContent(
+            "test-zip-strip_prefix-dot.zip",
+            [
+                {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
             ],
         )
 
