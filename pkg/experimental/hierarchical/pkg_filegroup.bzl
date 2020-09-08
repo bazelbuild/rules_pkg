@@ -36,6 +36,8 @@ associate them with a specific prefix.  They are intended to be nestable.
 
 """
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 PackageFileInfo = provider(
     fields = {
         "files": "src->dest map",
@@ -48,19 +50,19 @@ PackageContentsInfo = provider(
     fields = {
         "prefix": "filesystem prefix",
         "prefix_attrs": "attrs to provide to filesystem prefix",
-        "transitive": "Child Providers",
+        "children": "Child Providers",
     },
 )
 
 def _pkg_file_impl(ctx):
-    return [PkgFileInfo(file_dest_map = {s: "" for s in ctx.attr.srcs})]
+    return [PackageFileInfo(files = {s: paths.basename(s.basename) for s in ctx.files.srcs})]
 
 _pkg_file = rule(
     doc = "Attributes are like existing `pkg_filegroup`",
     implementation = _pkg_file_impl,
     attrs = {
         "srcs": attr.label_list(
-            "Source list",
+            doc = "Source list",
             allow_files = True,
         ),
         "attrs": attr.string_list_dict(
@@ -87,14 +89,60 @@ def pkg_file(name, **kwargs):
     _pkg_file(name = name, **kwargs)
     return ":" + name
 
+# Traverse the tree structures created via the pkg_filegroup rules.
+#
+# This is a depth-first search to find files; intermediate directories are noted
+# as they are encountered.
+def _pfg_traverse(root):
+    stack = [root[PackageContentsInfo]]
+    index_stack = [0]
+    # TODO: consider also making a "path stack"
+
+    # 1048575 is 2**20 - 1.  Hopefully you won't need more than that many files
+    # in your package.  Starlark supports neither recursion nor while loops, so
+    # we have to compromise a little. :P
+    #
+    # What?  It'll finish.  Trust me :)
+    for i in range(1048575):
+        if index_stack[-1] == 0:
+            # The stack is built of PackageContentsInfo's
+            path_list = [td.prefix for td in stack] + [""]
+
+            # path_list always has at least two elements in it: the root of the
+            # package, and the ending ''
+            print(paths.join(path_list[0], *path_list[1:]))
+
+        if index_stack[-1] < len(stack[-1].children):
+            current = stack[-1].children[index_stack[-1]]
+
+            # TODO: consider allowing multiple providers to be returned by an
+            # individual "srcs" element.
+            if PackageFileInfo in current:
+                for src, dest in current[PackageFileInfo].files.items():
+                    path_list = [se.prefix for se in stack] + [src.basename]
+                    print(paths.join(path_list[0], *path_list[1:]))
+
+                # Consume current item
+                index_stack[-1] += 1
+            else:  # PackageContentsInfo only
+                # Go deeper, after consuming the current item
+                stack.append(current[PackageContentsInfo])
+                index_stack[-1] += 1
+                index_stack.append(0)
+        else:
+            # We've either hit an empty PFG node or we've hit the last one in
+            # the files list.
+            stack.pop()
+            index_stack.pop()
+        if len(stack) == 0:
+            break
+
 def _pkg_filegroup_impl(ctx):
-    for s in ctx.attr.srcs:
-        print(s[PkgFileInfo].file_dest_map)
     return [
         PackageContentsInfo(
             prefix = ctx.attr.prefix,
             prefix_attrs = ctx.attr.prefix_attrs,
-            transitive = depset([], transitive = srcs),
+            children = ctx.attr.srcs,
         ),
     ]
 
@@ -102,7 +150,7 @@ pkg_filegroup = rule(
     doc = "Attributes are like existing `pkg_filegroup`.  Provides PackageContentsInfo",
     implementation = _pkg_filegroup_impl,
     attrs = {
-        "data": attr.label_list(
+        "srcs": attr.label_list(
             providers = [[PackageFileInfo], [PackageContentsInfo]],
         ),
         "prefix": attr.string(
@@ -110,6 +158,20 @@ pkg_filegroup = rule(
         ),
         "prefix_attrs": attr.string_list_dict(
             doc = "Attributes to apply to the directory created by 'prefix'",
+        ),
+    },
+)
+
+def _pkg_filegroup_dump(ctx):
+    for s in ctx.attr.srcs:
+        _pfg_traverse(s)
+
+pkg_filegroup_dump = rule(
+    doc = "Dummy rule that prints out the contents of one or more pkg_filegroups",
+    implementation = _pkg_filegroup_dump,
+    attrs = {
+        "srcs": attr.label_list(
+            providers = [PackageContentsInfo],
         ),
     },
 )
