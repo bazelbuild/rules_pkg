@@ -5,6 +5,7 @@ licenses(["notice"])
 load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load(":my_package_name.bzl", "my_package_naming")
 
@@ -17,6 +18,12 @@ genrule(
         "usr/titi",
     ],
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
+)
+
+copy_file(
+    name = "zipcontent_loremipsum",
+    src = "testdata/loremipsum.txt",
+    out = "zipcontent/loremipsum.txt",
 )
 
 pkg_tar(
@@ -92,6 +99,47 @@ pkg_zip(
     timestamp = 0,
 )
 
+pkg_zip(
+    name = "test-zip-strip_prefix-empty",
+    srcs = [
+        "zipcontent_loremipsum",
+    ],
+    strip_prefix = "",
+)
+
+pkg_zip(
+    name = "test-zip-strip_prefix-none",
+    srcs = [
+        "zipcontent_loremipsum",
+    ],
+)
+
+pkg_zip(
+    name = "test-zip-strip_prefix-zipcontent",
+    srcs = [
+        "zipcontent_loremipsum",
+    ],
+    strip_prefix = "zipcontent",
+)
+
+pkg_zip(
+    name = "test-zip-strip_prefix-dot",
+    srcs = [
+        "zipcontent_loremipsum",
+    ],
+    strip_prefix = ".",
+)
+
+filegroup(
+    name = "test_zip_strip_prefix",
+    srcs = [
+        "test-zip-strip_prefix-empty",
+        "test-zip-strip_prefix-none",
+        "test-zip-strip_prefix-zipcontent",
+        "test-zip-strip_prefix-dot",
+    ],
+)
+
 # All of these should produce the same zip file.
 [pkg_zip(
     name = "test_zip_package_dir" + str(idx),
@@ -117,6 +165,10 @@ py_test(
         "test_zip_package_dir0.zip",
         "test_zip_timestamp.zip",
         "test_zip_permissions.zip",
+        "test-zip-strip_prefix-empty.zip",
+        "test-zip-strip_prefix-none.zip",
+        "test-zip-strip_prefix-zipcontent.zip",
+        "test-zip-strip_prefix-dot.zip",
 
         # these could be replaced with diff_test() rules (from skylib)
         "test_zip_basic_timestamp_before_epoch.zip",
