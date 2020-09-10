@@ -39,10 +39,9 @@ def _short_path_dirname(path):
         return ""
     return sp[:last_pkg]
 
-def dest_path(f, strip_prefix):
+def dest_path(f, strip_prefix, data_path_without_prefix = ""):
     """Returns the short path of f, stripped of strip_prefix."""
     f_short_path = safe_short_path(f)
-
     if strip_prefix == None:
         # If no strip_prefix was specified, use the package of the
         # given input as the strip_prefix.
@@ -50,6 +49,15 @@ def dest_path(f, strip_prefix):
     if not strip_prefix:
         return f_short_path
     if f_short_path.startswith(strip_prefix):
+        # Check that the last directory in strip_prefix is a complete
+        # directory (so that we don't strip part of a dir name)
+        prefix_last_dir_index = strip_prefix.rfind("/")
+        prefix_last_dir = strip_prefix[prefix_last_dir_index + 1:]
+
+        # Avoid stripping prefix if final directory is incomplete
+        if prefix_last_dir not in f_short_path.split("/"):
+          strip_prefix = data_path_without_prefix
+
         return f_short_path[len(strip_prefix):]
     return f_short_path
 
