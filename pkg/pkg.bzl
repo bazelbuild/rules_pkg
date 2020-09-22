@@ -252,10 +252,9 @@ def _pkg_deb_impl(ctx):
             "PYTHONUTF8": "1",
         },
     )
-    ctx.actions.run_shell(
-        command = "ln -s %s %s" % (ctx.outputs.deb.basename, ctx.outputs.out.path),
-        inputs = [ctx.outputs.deb],
-        outputs = [ctx.outputs.out],
+    ctx.actions.symlink(
+        output = ctx.outputs.out,
+        target_file = ctx.outputs.deb,
     )
     output_groups = {"out": [ctx.outputs.out]}
     if hasattr(ctx.outputs, "deb"):
