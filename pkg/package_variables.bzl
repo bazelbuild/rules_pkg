@@ -18,5 +18,8 @@ load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
 def add_cpp_variables(ctx, values):
     cc_toolchain = find_cpp_toolchain(ctx)
+    # TODO(aiuto): Expand this to include target OS. Maybe also compilation
+    # mode, ABI and libc version, since they are sometimes used in package file
+    # names.
     values['cpu'] = cc_toolchain.cpu
     return values

@@ -9,14 +9,14 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load(":my_package_name.bzl", "my_package_naming")
 
-# Exposes the value of the -c mode to the package naming.
+# Exposes the value of the compilation mode to the package naming.
 config_setting(
     name = "debug_build",
     values = {"compilation_mode": "dbg"},
 )
 
 my_package_naming(
-    name = "naming_info",
+    name = "my_package_variables",
     label = "-alpha",
     compilation_mode = select({
         ":debug_build": "-debug",
@@ -45,7 +45,7 @@ pkg_tar(
         ":BUILD",
     ],
     package_file_name = "test_naming-{cpu}{compilation_mode}{label}.tar",
-    package_variables = ":naming_info",
+    package_variables = ":my_package_variables",
 )
 
 pkg_tar(
