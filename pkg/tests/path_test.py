@@ -120,6 +120,14 @@ class DestPathTest(unittest.TestCase):
     path = pkg_bzl.dest_path(File('baz'), None)
     self.assertEqual('baz', path)
 
+  def testPartialDirectoryMatch(self):
+    path = pkg_bzl.dest_path(File('foo/bar/baz'), 'fo')
+    self.assertEqual('foo/bar/baz', path)
+
+  def testPartialDirectoryMatchWithDataPath(self):
+    path = pkg_bzl.dest_path(File('foo/bar/baz'), 'foo/ba', 'foo')
+    self.assertEqual('/bar/baz', path)
+
 
 class ComputeDataPathTest(unittest.TestCase):
   """Testing for _data_path_out."""

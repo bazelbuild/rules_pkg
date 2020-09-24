@@ -349,6 +349,14 @@ pkg_tar(
 )
 
 pkg_tar(
+    name = "test-tar-strip_prefix-substring",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    strip_prefix = "et",
+)
+
+pkg_tar(
     name = "test-tar-files_dict",
     files = {
         ":etc/nsswitch.conf": "not-etc/mapped-filename.conf",
@@ -405,6 +413,7 @@ py_test(
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
+        ":test-tar-strip_prefix-substring.tar",
     ],
     python_version = "PY3",
     deps = [
