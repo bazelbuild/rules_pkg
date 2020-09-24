@@ -27,14 +27,6 @@ exports_files(
     visibility = ["//distro:__pkg__"],
 )
 
-
-# Exposes the value of the --stamp blaze flag so that codegen modules
-# which can use volatile build info know whether to depend on it.
-config_setting(
-    name = "is_stamped_build",
-    values = {"stamp": "1"},
-)
-
 py_library(
     name = "archive",
     srcs = [

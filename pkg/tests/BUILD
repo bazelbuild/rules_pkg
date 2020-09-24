@@ -9,7 +9,20 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load(":my_package_name.bzl", "my_package_naming")
 
-my_package_naming(name = "naming_info")
+# Exposes the value of the -c mode to the package naming.
+config_setting(
+    name = "debug_build",
+    values = {"compilation_mode": "dbg"},
+)
+
+my_package_naming(
+    name = "naming_info",
+    label = "-alpha",
+    compilation_mode = select({
+        ":debug_build": "-debug",
+        "//conditions:default": "",
+    }),
+)
 
 genrule(
     name = "generate_files",
@@ -31,8 +44,8 @@ pkg_tar(
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "test_naming-{cpu}-{opt}-{BUILD_USER}-{stamp}.tar",
-    naming_info = ":naming_info",
+    package_file_name = "test_naming-{cpu}{compilation_mode}{label}.tar",
+    package_variables = ":naming_info",
 )
 
 pkg_tar(

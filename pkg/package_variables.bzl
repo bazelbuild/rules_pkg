@@ -12,20 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Packaging related providers."""
+"""Utility methods to populate PackageVariablesInfo instances."""
 
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
-PackageArtifactInfo = provider(
-    doc = """Metadata about a package artifact.""",
-    fields = {
-        "label": "Label which produced it",
-        "file_name": "The file name of the artifact.",
-    },
-)
-
-PackageVariablesInfo = provider(
-    doc = """Variables which may be substituted into package names and content.""",
-    fields = {
-        "values": "Dict of name/value pairs",
-    },
-)
+def add_cpp_variables(ctx, values):
+    cc_toolchain = find_cpp_toolchain(ctx)
+    values['cpu'] = cc_toolchain.cpu
+    return values

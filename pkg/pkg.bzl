@@ -14,7 +14,7 @@
 """Rules for manipulation of various packaging."""
 
 load(":path.bzl", "compute_data_path", "dest_path")
-load(":providers.bzl", "PackageArtifactInfo", "PackageNamingInfo")
+load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
@@ -42,10 +42,10 @@ def _pkg_tar_impl(ctx):
 
     output_name = ctx.label.name + "." + ctx.attr.extension
     if ctx.attr.package_file_name:
-        naming_info = ctx.attr.naming_info[PackageNamingInfo]
-        if not naming_info:
-            fail('attribute package_file_name requires naming_info')
-        output_name = ctx.attr.package_file_name.format(**naming_info.values)
+        package_variables = ctx.attr.package_variables[PackageVariablesInfo]
+        if not package_variables:
+            fail('attribute package_file_name requires package_variables')
+        output_name = ctx.attr.package_file_name.format(**package_variables.values)
         output_file = ctx.actions.declare_file(output_name)
         ctx.actions.symlink(
             output = ctx.outputs.out,
@@ -53,7 +53,6 @@ def _pkg_tar_impl(ctx):
         )
     else:
         output_file = ctx.outputs.out
-    print("======= Writing: %s", output_file.path)
 
     # Compute the relative path
     data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
@@ -148,6 +147,7 @@ def _pkg_tar_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "PackageTar",
+        progress_message = "Writing: %s" % output_file.path,
         inputs = file_inputs + ctx.files.deps + files,
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],
@@ -318,8 +318,8 @@ pkg_tar_impl = rule(
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
         "package_file_name": attr.string(),
-        "naming_info": attr.label(
-            providers = [PackageNamingInfo],
+        "package_variables": attr.label(
+            providers = [PackageVariablesInfo],
         ),
 
         # Outputs

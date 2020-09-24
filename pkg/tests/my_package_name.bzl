@@ -14,24 +14,29 @@
 
 """Sample rule to show package naming."""
 
-load("//:providers.bzl", "PackageNamingInfo")
-load("//:package_naming.bzl", "default_package_naming")
+load("//:providers.bzl", "PackageVariablesInfo")
+load("//:package_variables.bzl", "add_cpp_variables")
 
 def _my_package_naming_impl(ctx):
-  values = default_package_naming(ctx)
-  values['cpu'] = 'arm48'
-  values['opt'] = 'debug'
-  return PackageNamingInfo(values = values)
+    values = {}
+    # get things from the platform and toolchain
+    add_cpp_variables(ctx, values)
+    # then add in my own custom values
+    values['label'] = ctx.attr.label
+    values['compilation_mode'] = ctx.attr.compilation_mode
+    return PackageVariablesInfo(values = values)
 
 my_package_naming = rule(
     implementation = _my_package_naming_impl,
+    # must ask for cpp fragement to use add_cpp_variables().
+    fragments = ["cpp"],
     attrs = {
-        "stamp": attr.int(
-            values = [-1, 0, 1],
-            default = -1,
-            # TODO(aiuto): Improve doc. Matches cc rules, but that it should be a convention.
-            doc = "-1: use --stamp, 0: do not stamp, 1: stamp",
+        "label": attr.string(doc = "A label that matters to me."),
+        "compilation_mode": attr.string(
+            doc = "Another label for the sake of the sample."
+        ),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")
         ),
     }
 )
-
