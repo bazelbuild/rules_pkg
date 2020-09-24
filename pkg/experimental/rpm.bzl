@@ -399,28 +399,16 @@ install -d %{{buildroot}}/{0}
     #### Output construction
 
     # Link the RPM to the expected output name.
-    ctx.actions.run(
-        executable = "ln",
-        arguments = [
-            "-s",
-            ctx.outputs.rpm.basename,
-            ctx.outputs.out.path,
-        ],
-        inputs = [ctx.outputs.rpm],
-        outputs = [ctx.outputs.out],
+    ctx.actions.symlink(
+        output = ctx.outputs.out,
+        target_file = ctx.outputs.rpm
     )
 
-    # Link the RPM to the RPM-recommended output name.
+    # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
-        ctx.actions.run(
-            executable = "ln",
-            arguments = [
-                "-s",
-                ctx.outputs.rpm.basename,
-                ctx.outputs.rpm_nvra.path,
-            ],
-            inputs = [ctx.outputs.rpm],
-            outputs = [ctx.outputs.rpm_nvra],
+        ctx.actions.symlink(
+            output = ctx.outputs.rpm_nvra,
+            target_file = ctx.outputs.rpm
         )
 
 # TODO(nacl): this relies on deprecated behavior (should use Providers
