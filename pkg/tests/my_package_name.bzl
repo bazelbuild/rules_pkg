@@ -25,5 +25,13 @@ def _my_package_naming_impl(ctx):
 
 my_package_naming = rule(
     implementation = _my_package_naming_impl,
+    attrs = {
+        "stamp": attr.int(
+            values = [-1, 0, 1],
+            default = -1,
+            # TODO(aiuto): Improve doc. Matches cc rules, but that it should be a convention.
+            doc = "-1: use --stamp, 0: do not stamp, 1: stamp",
+        ),
+    }
 )
 
