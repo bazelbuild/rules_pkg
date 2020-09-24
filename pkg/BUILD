@@ -16,6 +16,7 @@ filegroup(
         "*.md",
     ]) + [
         "BUILD",
+        "LICENSE",
         "//experimental:standard_package",
     ],
     visibility = ["//distro:__pkg__"],
