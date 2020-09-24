@@ -42,6 +42,8 @@ class PkgRpmBasicTest(unittest.TestCase):
         self.runfiles = runfiles.Create()
         self.test_rpm_path = self.runfiles.Rlocation(
             "rules_pkg/experimental/tests/test_rpm.rpm")
+        self.test_rpm_bzip2_path = self.runfiles.Rlocation(
+            "rules_pkg/experimental/tests/test_rpm-bzip2.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
@@ -219,5 +221,27 @@ echo postun
             for expected, actual in zip(md_specs, rpm_outputs_filtered):
                 self.assertDictEqual(expected, actual,
                                      msg="{} metadata discrepancy".format(mdtype))
+
+    def test_compression_none_provided(self):
+        # Test when we don't provide "binary_payload_compression" to pkg_rpm
+        my_rpm = self.test_rpm_path
+        rpm_output = subprocess.check_output(
+            ["rpm", "-qp", "--queryformat", "%{PAYLOADCOMPRESSOR}", my_rpm])
+        sio = io.StringIO(rpm_output.decode('utf-8'))
+        actual_compressor = sio.read()
+        # `bzip2` compression was, AFAICT, never the default for rpmbuild(8),
+        # and never will be, so this should be fine.
+        self.assertNotEqual(actual_compressor, 'bzip2')
+
+    def test_compression_passthrough(self):
+        # Test when we provide "binary_payload_compression" to pkg_rpm
+        my_rpm = self.test_rpm_bzip2_path
+        rpm_output = subprocess.check_output(
+            ["rpm", "-qp", "--queryformat", "%{PAYLOADCOMPRESSOR}", my_rpm])
+        sio = io.StringIO(rpm_output.decode('utf-8'))
+        actual_compressor = sio.read()
+        self.assertEqual(actual_compressor, 'bzip2')
+
+
 if __name__ == "__main__":
     unittest.main()

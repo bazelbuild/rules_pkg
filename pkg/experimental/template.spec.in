@@ -1,4 +1,11 @@
 # -*- rpm-spec -*-
+
+# Configurable compression
+# This is a variable "definedness" test
+%if "0%{?build_rpm_binary_payload}" != "0"
+  %define _binary_payload %{build_rpm_binary_payload}
+%endif
+
 # This comprises the entirety of the preamble
 %include %build_rpm_options
 

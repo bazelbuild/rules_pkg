@@ -376,6 +376,15 @@ install -d %{{buildroot}}/{0}
     files.append(rpm_files_file)
     args.append("--file_list=" + rpm_files_file.path)
 
+    additional_rpmbuild_args = []
+    if ctx.attr.binary_payload_compression:
+        additional_rpmbuild_args.extend([
+            "--define",
+            "build_rpm_binary_payload {}".format(ctx.attr.binary_payload_compression)
+        ])
+
+    args.extend(['--rpmbuild_arg=' + a for a in additional_rpmbuild_args])
+
     for f in ctx.files.data:
         args.append(f.path)
 
@@ -707,7 +716,31 @@ pkg_rpm = rule(
             allow_single_file = spec_filetype,
             default = "//experimental:template.spec.in",
         ),
+        "binary_payload_compression": attr.string(
+            doc = """Compression mode used for this RPM
 
+            Must be a form that `rpmbuild(8)` knows how to process.  Current known
+            options depend on the `rpmbuild` binary, and may include:
+
+            - "w9.gzdio" (gzip level 9)
+            - "w2.bzdio" (bzip2 level 2)
+            - "w6.lzdio" (lzma-alone level 6, its default)
+            - "w6.xzdio" (xz level 6, its default)
+            - "w7T4.xzdio" (xz level 7, with four threads)
+            - "w15.zstdio" (zstd level 15)
+            
+            This corresponds to the `%_binary_payload` macro as provided to
+            `rpmbuild`.  It is added near the preamble if provided.
+            
+            Please consult your distribution's RPM documentation for supported
+            values and defaults.  If no value is provided, your system's
+            defaults will be used.
+            
+            NOTE: Bazel is currently not aware of action threading requirements
+            for non-test actions, and using threaded compression may result in
+            overcommitting your system.
+            """
+        ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),

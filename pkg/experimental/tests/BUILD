@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs", "pkg_mklinks")
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
@@ -27,6 +28,10 @@ filegroup(
     name = "ars",
     srcs = glob(["testdata/*.ar"]),
 )
+
+############################################################################
+# pkg_filegroups for testing
+############################################################################
 
 pkg_filegroup(
     name = "ars_pfg",
@@ -61,6 +66,10 @@ pkg_mklinks(
     links = {"/usr/bin/link-name": "/usr/bin/link-target"},
 )
 
+############################################################################
+# Test RPMs
+############################################################################
+
 pkg_rpm(
     name = "test_rpm",
     architecture = "noarch",
@@ -84,6 +93,36 @@ pkg_rpm(
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
+
+# Just like the above one, except the compression is changed.
+pkg_rpm(
+    name = "test_rpm-bzip2",
+    architecture = "noarch",
+    binary_payload_compression = "w2.bzdio",
+    conflicts = ["not-a-test"],
+    data = [
+        ":ars_pfg",
+        ":test_links",
+        ":var_log_foo",
+    ],
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    post_scriptlet = """echo post""",
+    postun_scriptlet = """echo postun""",
+    pre_scriptlet = """echo pre""",
+    preun_scriptlet = """echo preun""",
+    provides = ["test"],
+    release = "2222",
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
+    spec_template = "template-test.spec.in",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+)
+
+############################################################################
+# Test RPM metadata -- used to implement tests
+############################################################################
 
 # Emit a CSV file providing a manifest providing the expected RPM contents
 genrule(
@@ -163,6 +202,10 @@ genrule(
     """,
 )
 
+############################################################################
+# Actual test implementation
+############################################################################
+
 # One cannot simply pass the output of pkg_rpm as runfiles content (#161).  This
 # seems to be the easiest way around this problem.
 sh_library(
@@ -172,6 +215,7 @@ sh_library(
         ":test_rpm",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
+        ":test_rpm-bzip2",
     ],
 )
 
@@ -184,4 +228,29 @@ py_test(
         "no_windows",  # Windows doesn't have rpmbuild(8)
     ],
     deps = ["@rules_python//python/runfiles"],
+)
+
+############################################################################
+# Smoke test
+############################################################################
+
+pkg_rpm(
+    name = "test_rpm_default_template",
+    architecture = "noarch",
+    data = [
+        ":ars_pfg",
+        ":test_links",
+        ":var_log_foo",
+    ],
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    release = "2222",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+    testonly = True,
+)
+
+build_test(
+    name = "pkg_rpm_smoke",
+    targets = [":test_rpm_default_template"],
 )
