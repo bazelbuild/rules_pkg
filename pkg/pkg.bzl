@@ -21,6 +21,7 @@ tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
 
+
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
     for prefix, replacement in remap_paths.items():
@@ -32,6 +33,7 @@ def _quote(filename, protect = "="):
     """Quote the filename, by escaping = by \\= and \\ by \\\\"""
     return filename.replace("\\", "\\\\").replace(protect, "\\" + protect)
 
+
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
@@ -41,18 +43,21 @@ def _pkg_tar_impl(ctx):
     output_name = ctx.label.name + "." + ctx.attr.extension
     if ctx.attr.package_file_name:
         naming_info = ctx.attr.naming_info[PackageNamingInfo]
-        if naming_info:
-            # This is obviously wrong.  We need a templater that takes a dict.
-            output_name = ctx.attr.package_file_name.replace(
-                "${cpu}", naming_info.values['cpu']).replace(
-                "${opt}", naming_info.values['opt'])
-        print("======= Writing: %s", output_name)
-    output_file = ctx.actions.declare_file(output_name)
-    # print("======= Writing: %s", output_file.path)
+        if not naming_info:
+            fail('attribute package_file_name requires naming_info')
+        output_name = ctx.attr.package_file_name.format(**naming_info.values)
+        output_file = ctx.actions.declare_file(output_name)
+        ctx.actions.symlink(
+            output = ctx.outputs.out,
+            target_file = output_file
+        )
+    else:
+        output_file = ctx.outputs.out
+    print("======= Writing: %s", output_file.path)
 
     # Compute the relative path
-    data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx.outputs.out, '.')
+    data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(output_file, '.')
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -345,11 +350,10 @@ def pkg_tar(name, **kwargs):
                 kwargs["srcs"] = kwargs.pop("files")
     archive_name = kwargs.get("archive_name") or name
     extension = kwargs.get("extension") or "tar"
-
     pkg_tar_impl(
         name = name,
-        # out = archive_name + "." + extension,
-        **kwargs
+        out = kwargs.get("out") or (archive_name + "." + extension),
+        **kwargs,
     )
 
 # A rule for creating a deb file, see README.md

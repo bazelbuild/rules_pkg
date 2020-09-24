@@ -31,7 +31,7 @@ pkg_tar(
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "test_naming-${cpu}-${opt}.tar",
+    package_file_name = "test_naming-{cpu}-{opt}-{BUILD_USER}.tar",
     naming_info = ":naming_info",
 )
 

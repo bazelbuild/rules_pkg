@@ -15,9 +15,13 @@
 """Sample rule to show package naming."""
 
 load("//:providers.bzl", "PackageNamingInfo")
+load("//:package_naming.bzl", "default_package_naming")
 
 def _my_package_naming_impl(ctx):
-  return PackageNamingInfo(values = {'cpu': 'arm48', 'opt': 'debug'})
+  values = default_package_naming(ctx)
+  values['cpu'] = 'arm48'
+  values['opt'] = 'debug'
+  return PackageNamingInfo(values = values)
 
 my_package_naming = rule(
     implementation = _my_package_naming_impl,
