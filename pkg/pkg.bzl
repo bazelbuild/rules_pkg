@@ -43,9 +43,10 @@ def _pkg_tar_impl(ctx):
     output_name = ctx.label.name + "." + ctx.attr.extension
     if ctx.attr.package_file_name:
         package_variables = ctx.attr.package_variables[PackageVariablesInfo]
-        if not package_variables:
+        if package_variables:
+            output_name = ctx.attr.package_file_name.format(**package_variables.values)
+        elif ctx.attr.package_file_name.find('{') >= 0:
             fail('attribute package_file_name requires package_variables')
-        output_name = ctx.attr.package_file_name.format(**package_variables.values)
         output_file = ctx.actions.declare_file(output_name)
         ctx.actions.symlink(
             output = ctx.outputs.out,
