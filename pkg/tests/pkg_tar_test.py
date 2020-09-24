@@ -87,6 +87,14 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-strip_prefix-etc.tar', content)
 
+  def test_strip_prefix_substring(self):
+    content = [
+        {'name': '.', 'isdir': True},
+        {'name': './etc', 'isdir': True},
+        {'name': './etc/nsswitch.conf'},
+    ]
+    self.assertTarFileContent('test-tar-strip_prefix-substring.tar', content)
+
   def test_strip_prefix_dot(self):
     content = [
         {'name': '.'},

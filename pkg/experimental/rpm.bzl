@@ -79,6 +79,20 @@ def _pkg_rpm_impl(ctx):
         preamble_pieces.append("License: " + ctx.attr.license)
     if ctx.attr.group:
         preamble_pieces.append("Group: " + ctx.attr.group)
+    if ctx.attr.provides:
+        preamble_pieces.extend(["Provides: " + p for p in ctx.attr.provides])
+    if ctx.attr.conflicts:
+        preamble_pieces.extend(["Conflicts: " + c for c in ctx.attr.conflicts])
+    if ctx.attr.requires:
+        preamble_pieces.extend(["Requires: " + r for r in ctx.attr.requires])
+    if ctx.attr.requires_contextual:
+        preamble_pieces.extend(
+            [
+                "Requires({}): {}".format(scriptlet, capability)
+                for scriptlet in ctx.attr.requires_contextual.keys()
+                for capability in ctx.attr.requires_contextual[scriptlet]
+            ],
+        )
 
     # TODO: BuildArch is usually not hardcoded in spec files, unless the package
     # is indeed restricted to a particular CPU architecture, or is actually
@@ -385,28 +399,16 @@ install -d %{{buildroot}}/{0}
     #### Output construction
 
     # Link the RPM to the expected output name.
-    ctx.actions.run(
-        executable = "ln",
-        arguments = [
-            "-s",
-            ctx.outputs.rpm.basename,
-            ctx.outputs.out.path,
-        ],
-        inputs = [ctx.outputs.rpm],
-        outputs = [ctx.outputs.out],
+    ctx.actions.symlink(
+        output = ctx.outputs.out,
+        target_file = ctx.outputs.rpm
     )
 
-    # Link the RPM to the RPM-recommended output name.
+    # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
-        ctx.actions.run(
-            executable = "ln",
-            arguments = [
-                "-s",
-                ctx.outputs.rpm.basename,
-                ctx.outputs.rpm_nvra.path,
-            ],
-            inputs = [ctx.outputs.rpm],
-            outputs = [ctx.outputs.rpm_nvra],
+        ctx.actions.symlink(
+            output = ctx.outputs.rpm_nvra,
+            target_file = ctx.outputs.rpm
         )
 
 # TODO(nacl): this relies on deprecated behavior (should use Providers
@@ -626,6 +628,68 @@ pkg_rpm = rule(
         "postun_scriptlet_file": attr.label(
             doc = """File containing the RPM `%postun` scriptlet""",
             allow_single_file = True,
+        ),
+        "conflicts": attr.string_list(
+            doc = """List of capabilities that conflict with this package when it is installed.
+
+            Cooresponds to the "Conflicts" preamble tag.
+
+            See also: https://rpm.org/user_doc/dependencies.html
+            """,
+        ),
+        "provides": attr.string_list(
+            doc = """List of rpm capabilities that this package provides.
+
+            Cooresponds to the "Provides" preamble tag.
+
+            See also: https://rpm.org/user_doc/dependencies.html
+            """,
+        ),
+        "requires": attr.string_list(
+            doc = """List of rpm capability expressions that this package requires.
+
+            Corresponds to the "Requires" preamble tag.
+
+            See also: https://rpm.org/user_doc/dependencies.html
+            """,
+        ),
+        "requires_contextual": attr.string_list_dict(
+            doc = """Contextualized requirement specifications
+
+            This is a map of various properties (often scriptlet types) to
+            capability name specifications, e.g.:
+
+            ```python
+            {"pre": ["GConf2"],"post": ["GConf2"], "postun": ["GConf2"]}
+            ```
+
+            Which causes the below to be added to the spec file's preamble:
+
+            ```
+            Requires(pre): GConf2
+            Requires(post): GConf2
+            Requires(postun): GConf2
+            ```
+
+            This is most useful for ensuring that required tools exist when
+            scriptlets are run, although other properties are known.  Valid keys
+            for this attribute may include, but are not limited to:
+
+            - `pre`
+            - `post`
+            - `preun`
+            - `postun`
+            - `pretrans`
+            - `posttrans`
+
+            For capabilities that are always required by packages at runtime,
+            use the `requires` attribute instead.
+
+            See also: https://rpm.org/user_doc/more_dependencies.html
+
+            NOTE: `pkg_rpm` does not check if the keys of this dictionary are
+            acceptable to `rpm(8)`.
+            """,
         ),
 
         # TODO(nacl): this should be a toolchain

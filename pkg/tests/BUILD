@@ -186,7 +186,7 @@ py_test(
     ],
     data = [":archive_testdata"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = [
         # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
         "no_windows",
@@ -202,14 +202,14 @@ py_test(
     srcs = ["path_test.py"],
     data = ["//:path.bzl"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "make_rpm_test",
     srcs = ["make_rpm_test.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     # rpmbuild is not available in windows
     tags = [
         "no_windows",
@@ -223,7 +223,7 @@ py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//:helpers",
     ],
@@ -250,6 +250,7 @@ pkg_deb(
     package = "titi",
     preinst = "testdata/deb_preinst",
     replaces = ["oldpkg"],
+    provides = ["hello"],
     templates = ":testdata/templates",
     urgency = "low",
     version = "test",
@@ -262,32 +263,6 @@ pkg_rpm(
     release = "0",
     spec_file = "test_rpm.spec",
     version = "1",
-)
-
-pkg_deb(
-    name = "test-deb-py2",
-    breaks = ["oldbrokenpkg"],
-    built_using = "some_test_data (0.1.2)",
-    conffiles = [
-        "/etc/nsswitch.conf",
-        "/etc/other",
-    ],
-    config = ":testdata/config",
-    data = ":test-tar-basic-gz.tar.gz",
-    depends = [
-        "dep1",
-        "dep2",
-    ],
-    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
-    distribution = "trusty",
-    maintainer = "soméone@somewhere.com",
-    make_deb = "//:make_deb_py2",
-    package = "titi",
-    preinst = "testdata/deb_preinst",
-    replaces = ["oldpkg"],
-    templates = ":testdata/templates",
-    urgency = "low",
-    version = "test_py2",
 )
 
 [pkg_tar(
@@ -357,6 +332,14 @@ pkg_tar(
 )
 
 pkg_tar(
+    name = "test-tar-strip_prefix-substring",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    strip_prefix = "et",
+)
+
+pkg_tar(
     name = "test-tar-files_dict",
     files = {
         ":etc/nsswitch.conf": "not-etc/mapped-filename.conf",
@@ -413,6 +396,7 @@ py_test(
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
+        ":test-tar-strip_prefix-substring.tar",
     ],
     python_version = "PY3",
     deps = [

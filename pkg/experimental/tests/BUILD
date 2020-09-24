@@ -64,6 +64,7 @@ pkg_mklinks(
 pkg_rpm(
     name = "test_rpm",
     architecture = "noarch",
+    conflicts = ["not-a-test"],
     data = [
         ":ars_pfg",
         ":test_links",
@@ -75,7 +76,10 @@ pkg_rpm(
     postun_scriptlet = """echo postun""",
     pre_scriptlet = """echo pre""",
     preun_scriptlet = """echo preun""",
+    provides = ["test"],
     release = "2222",
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
@@ -85,7 +89,7 @@ pkg_rpm(
 genrule(
     name = "test_rpm_manifest",
     srcs = [":ars"],
-    outs = ["manifest.txt"],
+    outs = ["manifest.csv"],
     # Keep the header (the first line echo'd below) in sync with
     # rpm_queryformat_fieldnames in pkg_rpm_basic_test.py
     cmd = """
@@ -119,6 +123,46 @@ genrule(
     """,
 )
 
+genrule(
+    name = "test_rpm_metadata",
+    srcs = [],
+    outs = [
+        "conflicts.csv",
+        "provides.csv",
+        "requires.csv",
+    ],
+    # In the below, we don't use the "," separator for everything, because the
+    # query tags used to get the associated dependency types
+    # (e.g. %{REQUIREFLAGS:deptype}) itself uses commas.  This makes it so the test
+    # doesn't have to rely on knowing the number of fields in each CSV file.
+    cmd = """
+    (
+        echo 'capability:sense'
+        echo 'not-a-test:manual'
+    ) > $(RULEDIR)/conflicts.csv
+    (
+        # NOTE: excludes the "self-require" (we did nothing special to make it
+        # appear)
+
+        echo 'capability:sense'
+        echo 'test:manual'
+    ) > $(RULEDIR)/provides.csv
+    (
+        # NOTE: excludes 'rpmlib' requires that may be version-dependent
+        echo 'capability:sense'
+        # Common, automatically generated
+        echo '/bin/sh:pre,interp'
+        echo '/bin/sh:post,interp'
+        echo '/bin/sh:preun,interp'
+        echo '/bin/sh:postun,interp'
+        # Hand-specified, specific dependencies
+        echo 'bash:preun'
+        # Hand-specified
+        echo 'test-lib > 1.0:manual'
+    ) > $(RULEDIR)/requires.csv
+    """,
+)
+
 # One cannot simply pass the output of pkg_rpm as runfiles content (#161).  This
 # seems to be the easiest way around this problem.
 sh_library(
@@ -127,6 +171,7 @@ sh_library(
     data = [
         ":test_rpm",
         ":test_rpm_manifest",
+        ":test_rpm_metadata",
     ],
 )
 

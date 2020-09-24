@@ -39,6 +39,7 @@ def _pkg_tar_impl(ctx):
 
     # Compute the relative path
     data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(ctx.outputs.out, '.')
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -82,7 +83,8 @@ def _pkg_tar_impl(ctx):
         file_inputs = ctx.files.srcs[:]
 
     args += [
-        "--file=%s=%s" % (_quote(f.path), _remap(remap_paths, dest_path(f, data_path)))
+        "--file=%s=%s" % (_quote(f.path), _remap(
+            remap_paths, dest_path(f, data_path, data_path_without_prefix)))
         for f in file_inputs
     ]
     for target, f_dest_path in ctx.attr.files.items():
@@ -235,6 +237,7 @@ def _pkg_deb_impl(ctx):
     args += ["--pre_depends=" + d for d in ctx.attr.predepends]
     args += ["--recommends=" + d for d in ctx.attr.recommends]
     args += ["--replaces=" + d for d in ctx.attr.replaces]
+    args += ["--provides=" + d for d in ctx.attr.provides]
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
@@ -249,10 +252,9 @@ def _pkg_deb_impl(ctx):
             "PYTHONUTF8": "1",
         },
     )
-    ctx.actions.run_shell(
-        command = "ln -s %s %s" % (ctx.outputs.deb.basename, ctx.outputs.out.path),
-        inputs = [ctx.outputs.deb],
-        outputs = [ctx.outputs.out],
+    ctx.actions.symlink(
+        output = ctx.outputs.out,
+        target_file = ctx.outputs.deb,
     )
     output_groups = {"out": [ctx.outputs.out]}
     if hasattr(ctx.outputs, "deb"):
@@ -357,6 +359,7 @@ pkg_deb_impl = rule(
         "predepends": attr.string_list(default = []),
         "recommends": attr.string_list(default = []),
         "replaces": attr.string_list(default = []),
+        "provides": attr.string_list(default = []),
 
         # Outputs.
         "out": attr.output(mandatory = True),
