@@ -8,14 +8,15 @@ _manifest = [
     ("/opt/mycomponent/etc/",                        "copy",    "unix=0644;section=config(noreplace)", "//mycomponent/etc:bar.properties"),
     ("/opt/mycomponent/etc/",                        "copy",    "unix=0644;section=config(noreplace)", "//mycomponent/etc:foobar.properties"),
     ("/opt/mycomponent/etc/",                        "copy",    "unix=0644;section=config(noreplace)", "//mycomponent/etc:idkmybffjill.properties"),
-    ("/opt/mycomponent/etc/",                        "copy",    "unix=0644;section=config(noreplace),", "//mycomponent/etc/some/subpackage:subpackage.properties")2,
+    ("/opt/mycomponent/etc/",                        "copy",    "unix=0644;section=config(noreplace),", "//mycomponent/etc/some/subpackage:subpackage.properties"),
     ("/opt/mycomponent/resources/i18n/en_us",        "copy",    "unix=0644",                           "@i18n//mycomponent/en_us"),
     ("/opt/mycomponent/resources/i18n/en_gb",        "copy",    "unix=0644",                           "@i18n//mycomponent/en_gb"),
     ("/opt/mycomponent/resources/i18n/es_es",        "copy",    "unix=0644",                           "@i18n//mycomponent/es_es"),
     ("/opt/mycomponent/resources/i18n/es_mx",        "copy",    "unix=0644",                           "@i18n//mycomponent/es_mx"),
     ("/opt/mycomponent/bin/mycomponent-service.bin", "copy",    "unix=0755",                           "//mycomponent/src:service.bin"),
     ("/opt/mycomponent/bin/mycomponent-runner",      "copy",    "unix=0755",                           "//mycomponent/src:runner"),
-    ("/usr/bin/mycomponentd",                        "symlink", "",                                    "/opt/mycomponent/bin/mycomponent-service-runner"),
+    # FIXME: attributes should be allowed to be empty
+    ("/usr/bin/mycomponentd",                        "symlink", "unix=0777",                                    "/opt/mycomponent/bin/mycomponent-service-runner"),
 
     ("/opt/mycomponent",                             "mkdir",   "unix=0755",                           ""),
     ("/opt/mycomponent/lib",                         "mkdir",   "unix=0755",                           ""),

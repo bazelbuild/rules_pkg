@@ -30,7 +30,9 @@ pkg_rpm(
     name = "nonbuilding-rpm",
     data = manifest + [
         # Other pkg_filegroups and friendes here
-    ]
+    ],
     tags = ["manual"],
+    license = "N/A",
+    summary = "don't build me!",
     # ...
 )
