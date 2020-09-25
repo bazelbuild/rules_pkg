@@ -40,11 +40,11 @@ def _pkg_tar_impl(ctx):
     # Files needed by rule implementation at runtime
     files = []
 
-    output_name = ctx.label.name + "." + ctx.attr.extension
     if ctx.attr.package_file_name:
+        output_name = ctx.attr.package_file_name
         package_variables = ctx.attr.package_variables[PackageVariablesInfo]
         if package_variables:
-            output_name = ctx.attr.package_file_name.format(**package_variables.values)
+            output_name = output_name.format(**package_variables.values)
         elif ctx.attr.package_file_name.find('{') >= 0:
             fail('attribute package_file_name requires package_variables')
         output_file = ctx.actions.declare_file(output_name)
@@ -54,6 +54,7 @@ def _pkg_tar_impl(ctx):
         )
     else:
         output_file = ctx.outputs.out
+        output_name = ctx.outputs.out.basename
 
     # Compute the relative path
     data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
