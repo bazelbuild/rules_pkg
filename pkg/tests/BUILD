@@ -320,7 +320,7 @@ pkg_rpm(
     build_tar = "//:build_tar",
     deps = [
         ":test-tar-basic-%s" % ext,
-        # ":test_tar_naming",
+        ":test_tar_naming",
     ],
 ) for ext in [
     "",
