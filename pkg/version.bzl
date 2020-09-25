@@ -13,4 +13,4 @@
 # limitations under the License.
 """The version of rules_pkg."""
 
-version = "0.2.6"
+version = "0.3.0"
