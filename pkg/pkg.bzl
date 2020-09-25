@@ -162,11 +162,8 @@ def _pkg_tar_impl(ctx):
         use_default_shell_env = True,
     )
     return [
-        # WHY a seperate OutputGroup?
-        # OutputGroupInfo(out = [output_file]),
         DefaultInfo(
             files = depset([output_file]),
-            # This is sort of ugly that the object itself must be runfiles.
             runfiles = ctx.runfiles(files = [output_file]),
         ),
         PackageArtifactInfo(
@@ -324,7 +321,7 @@ pkg_tar_impl = rule(
         ),
 
         # Outputs
-        "out": attr.output(mandatory=False),
+        "out": attr.output(),
 
         # Implicit dependencies.
         "build_tar": attr.label(
