@@ -10,6 +10,12 @@
   </ul>
 </div>
 
+
+## Release Notes
+
+Version 0.3.0 requires Bazel 3.2.0 or above.
+
+
 ## Overview
 
 These build rules are used for building various packaging such as tarball
