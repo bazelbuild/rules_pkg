@@ -11,15 +11,18 @@ load(":my_package_name.bzl", "my_package_naming")
 
 # Exposes the value of the compilation mode to the package naming.
 config_setting(
-    name = "debug_build",
-    values = {"compilation_mode": "dbg"},
+    name = "special_build",
+    values = {"define": "SPECIAL=1"},
 )
 
 my_package_naming(
     name = "my_package_variables",
     label = "-alpha",
-    compilation_mode = select({
-        ":debug_build": "-debug",
+    # There is no important reason to use a config_setting and a select. This
+    # is really just to show a technique.
+    # TBD: Move this into a cookbook of examples.
+    special_build = select({
+        ":special_build": "-IsSpecial",
         "//conditions:default": "",
     }),
 )
@@ -39,12 +42,14 @@ copy_file(
     out = "zipcontent/loremipsum.txt",
 )
 
+# Try building with various flag combinations to show the abilities
+#   bazel build :test_tar_naming -c dbg --define=SPECIAL=1
 pkg_tar(
     name = "test_tar_naming",
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "test_naming-{cpu}{compilation_mode}{label}.tar",
+    package_file_name = "test_naming-{target_cpu}-{compilation_mode}{label}{special_build}.tar",
     package_variables = ":my_package_variables",
 )
 
