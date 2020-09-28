@@ -40,6 +40,7 @@ def _pkg_tar_impl(ctx):
     # Files needed by rule implementation at runtime
     files = []
 
+    outputs = [ctx.outputs.out]
     if ctx.attr.package_file_name:
         output_name = ctx.attr.package_file_name
         if ctx.attr.package_variables:
@@ -48,6 +49,7 @@ def _pkg_tar_impl(ctx):
         elif ctx.attr.package_file_name.find('{') >= 0:
             fail("package_variables is required when using '{' in package_file_name")
         output_file = ctx.actions.declare_file(output_name)
+        outputs.append(output_file)
         ctx.actions.symlink(
             output = ctx.outputs.out,
             target_file = output_file
@@ -164,7 +166,7 @@ def _pkg_tar_impl(ctx):
     )
     return [
         DefaultInfo(
-            files = depset([output_file]),
+            files = depset(outputs),
             runfiles = ctx.runfiles(files = [output_file]),
         ),
         PackageArtifactInfo(
