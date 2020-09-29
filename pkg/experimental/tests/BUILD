@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs", "pkg_mklinks")
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
+load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
 
 licenses(["notice"])
 
@@ -213,9 +213,9 @@ sh_library(
     testonly = True,
     data = [
         ":test_rpm",
+        ":test_rpm-bzip2",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
-        ":test_rpm-bzip2",
     ],
 )
 
@@ -236,6 +236,7 @@ py_test(
 
 pkg_rpm(
     name = "test_rpm_default_template",
+    testonly = True,
     architecture = "noarch",
     data = [
         ":ars_pfg",
@@ -247,7 +248,6 @@ pkg_rpm(
     release = "2222",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
-    testonly = True,
 )
 
 build_test(

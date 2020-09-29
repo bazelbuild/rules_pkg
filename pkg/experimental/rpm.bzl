@@ -380,10 +380,10 @@ install -d %{{buildroot}}/{0}
     if ctx.attr.binary_payload_compression:
         additional_rpmbuild_args.extend([
             "--define",
-            "build_rpm_binary_payload {}".format(ctx.attr.binary_payload_compression)
+            "build_rpm_binary_payload {}".format(ctx.attr.binary_payload_compression),
         ])
 
-    args.extend(['--rpmbuild_arg=' + a for a in additional_rpmbuild_args])
+    args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
     for f in ctx.files.data:
         args.append(f.path)
@@ -410,14 +410,14 @@ install -d %{{buildroot}}/{0}
     # Link the RPM to the expected output name.
     ctx.actions.symlink(
         output = ctx.outputs.out,
-        target_file = ctx.outputs.rpm
+        target_file = ctx.outputs.rpm,
     )
 
     # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
         ctx.actions.symlink(
             output = ctx.outputs.rpm_nvra,
-            target_file = ctx.outputs.rpm
+            target_file = ctx.outputs.rpm,
         )
 
 # TODO(nacl): this relies on deprecated behavior (should use Providers
@@ -728,18 +728,18 @@ pkg_rpm = rule(
             - "w6.xzdio" (xz level 6, its default)
             - "w7T4.xzdio" (xz level 7, with four threads)
             - "w15.zstdio" (zstd level 15)
-            
+
             This corresponds to the `%_binary_payload` macro as provided to
             `rpmbuild`.  It is added near the preamble if provided.
-            
+
             Please consult your distribution's RPM documentation for supported
             values and defaults.  If no value is provided, your system's
             defaults will be used.
-            
+
             NOTE: Bazel is currently not aware of action threading requirements
             for non-test actions, and using threaded compression may result in
             overcommitting your system.
-            """
+            """,
         ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
