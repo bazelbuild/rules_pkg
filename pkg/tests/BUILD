@@ -8,6 +8,63 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load(":my_package_name.bzl", "my_package_naming")
 
+
+filegroup(
+    name = "archive_testdata",
+    srcs = glob(["testdata/**"]) + [
+        ":test_tar_package_dir",
+        ":test_tar_package_dir_file",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+py_test(
+    name = "archive_test",
+    srcs = [
+        "archive_test.py",
+    ],
+    data = [":archive_testdata"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    tags = [
+        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
+        "no_windows",
+    ],
+    deps = [
+        "//:archive",
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+
+py_test(
+    name = "path_test",
+    srcs = ["path_test.py"],
+    data = ["//:path.bzl"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
+py_test(
+    name = "helpers_test",
+    srcs = ["helpers_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//:helpers",
+    ],
+)
+
+py_test(
+    name = "make_rpm_test",
+    srcs = ["make_rpm_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//:make_rpm_lib",
+    ],
+)
+
 # Exposes the value of the compilation mode to the package naming.
 config_setting(
     name = "special_build",
@@ -197,51 +254,6 @@ py_test(
     deps = [
         "//:build_zip",
         "@bazel_tools//tools/python/runfiles",
-    ],
-)
-
-filegroup(
-    name = "archive_testdata",
-    srcs = glob(["testdata/**"]) + [
-        ":test_tar_package_dir",
-        ":test_tar_package_dir_file",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-py_test(
-    name = "archive_test",
-    srcs = [
-        "archive_test.py",
-    ],
-    data = [":archive_testdata"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    tags = [
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
-    deps = [
-        "//:archive",
-        "@bazel_tools//tools/python/runfiles",
-    ],
-)
-
-py_test(
-    name = "path_test",
-    srcs = ["path_test.py"],
-    data = ["//:path.bzl"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-)
-
-py_test(
-    name = "helpers_test",
-    srcs = ["helpers_test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    deps = [
-        "//:helpers",
     ],
 )
 
