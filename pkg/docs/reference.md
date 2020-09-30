@@ -1,4 +1,4 @@
-# Packaging for Bazel
+# rules_pkg - reference
 
 <div class="toc">
   <h2>Rules</h2>
@@ -16,7 +16,7 @@
 
 ```python
 pkg_tar(name, extension, strip_prefix, package_dir, srcs,
-mode, modes, deps, symlinks)
+        mode, modes, deps, symlinks)
 ```
 
 Creates a tar file from a list of inputs.
@@ -326,7 +326,10 @@ Creates a zip file from a list of inputs.
 ### pkg_deb
 
 ```python
-pkg_deb(name, data, package, architecture, maintainer, preinst, postinst, prerm, postrm, version, version_file, description, description_file, built_using, built_using_file, priority, section, homepage, depends, suggests, enhances, breaks, conflicts, predepends, recommends, replaces)
+pkg_deb(name, data, package, architecture, maintainer, preinst, postinst, prerm, postrm,
+        version, version_file, description, description_file, built_using, built_using_file,
+        priority, section, homepage, depends, suggests, enhances, breaks, conflicts,
+        predepends, recommends, replaces)
 ```
 
 Create a debian package. See <a
