@@ -3,7 +3,6 @@
 licenses(["notice"])
 
 load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
-load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
@@ -237,20 +236,6 @@ py_test(
 )
 
 py_test(
-    name = "make_rpm_test",
-    srcs = ["make_rpm_test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    # rpmbuild is not available in windows
-    tags = [
-        "no_windows",
-    ],
-    deps = [
-        "//:make_rpm_lib",
-    ],
-)
-
-py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
     python_version = "PY3",
@@ -285,15 +270,6 @@ pkg_deb(
     templates = ":testdata/templates",
     urgency = "low",
     version = "test",
-)
-
-pkg_rpm(
-    name = "test-rpm",
-    data = [":archive_testdata"],
-    debug = 1,
-    release = "0",
-    spec_file = "test_rpm.spec",
-    version = "1",
 )
 
 [pkg_tar(
