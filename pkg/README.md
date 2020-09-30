@@ -1,24 +1,26 @@
 # Archive building rules
 
 ## rules_pkg
--   <a href="docs/reference.md#pkg_tar">pkg_tar</a>
--   <a href="docs/reference.md#pkg_zip">pkg_zip</a>
--   <a href="#roadmap">roadmap</a>
--   [reference](//pkg/docs/reference.md")
+-   [Release Notes](#notes)
+-   [Overview](#overview)
+-   [Roadmap](#roadmap)
+-   [Reference](//pkg/docs/reference.md)
+-   [Examples](//pkg/examples/readme.md)
 
 
+<a name="notes"></a>
 ## Release Notes
 
 Version 0.3.0 or later requires Bazel 3.2.0 or later.
 
-
+<a name="overview"></a>
 ## Overview
 
 These build rules are used for building various packaging such as tarball
 and debian package.
 
 <a name="workspace-setup"></a>
-## WORKSPACE setup
+### WORKSPACE setup
 
 ```
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -32,7 +34,7 @@ rules_pkg_dependencies()
 ```
 
 <a name="basic-example"></a>
-## Basic Example
+### Basic Example
 
 This example is a simplification of the debian packaging of Bazel:
 
