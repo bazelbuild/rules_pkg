@@ -1,13 +1,82 @@
+# Copyright 2020 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 # -*- coding: utf-8 -*-
 
 licenses(["notice"])
 
 load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
-load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load(":my_package_name.bzl", "my_package_naming")
+
+
+filegroup(
+    name = "archive_testdata",
+    srcs = glob(["testdata/**"]) + [
+        ":test_tar_package_dir",
+        ":test_tar_package_dir_file",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+py_test(
+    name = "archive_test",
+    srcs = [
+        "archive_test.py",
+    ],
+    data = [":archive_testdata"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    tags = [
+        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
+        "no_windows",
+    ],
+    deps = [
+        "//:archive",
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+
+py_test(
+    name = "path_test",
+    srcs = ["path_test.py"],
+    data = ["//:path.bzl"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
+py_test(
+    name = "helpers_test",
+    srcs = ["helpers_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//:helpers",
+    ],
+)
+
+py_test(
+    name = "make_rpm_test",
+    srcs = ["make_rpm_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//:make_rpm_lib",
+    ],
+)
 
 # Exposes the value of the compilation mode to the package naming.
 config_setting(
@@ -201,65 +270,6 @@ py_test(
     ],
 )
 
-filegroup(
-    name = "archive_testdata",
-    srcs = glob(["testdata/**"]) + [
-        ":test_tar_package_dir",
-        ":test_tar_package_dir_file",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-py_test(
-    name = "archive_test",
-    srcs = [
-        "archive_test.py",
-    ],
-    data = [":archive_testdata"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    tags = [
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
-    deps = [
-        "//:archive",
-        "@bazel_tools//tools/python/runfiles",
-    ],
-)
-
-py_test(
-    name = "path_test",
-    srcs = ["path_test.py"],
-    data = ["//:path.bzl"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-)
-
-py_test(
-    name = "make_rpm_test",
-    srcs = ["make_rpm_test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    # rpmbuild is not available in windows
-    tags = [
-        "no_windows",
-    ],
-    deps = [
-        "//:make_rpm_lib",
-    ],
-)
-
-py_test(
-    name = "helpers_test",
-    srcs = ["helpers_test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    deps = [
-        "//:helpers",
-    ],
-)
-
 pkg_deb(
     name = "test-deb",
     breaks = ["oldbrokenpkg"],
@@ -285,15 +295,6 @@ pkg_deb(
     templates = ":testdata/templates",
     urgency = "low",
     version = "test",
-)
-
-pkg_rpm(
-    name = "test-rpm",
-    data = [":archive_testdata"],
-    debug = 1,
-    release = "0",
-    spec_file = "test_rpm.spec",
-    version = "1",
 )
 
 [pkg_tar(

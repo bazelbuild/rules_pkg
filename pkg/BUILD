@@ -105,8 +105,8 @@ py_library(
     srcs = ["make_rpm.py"],
     srcs_version = "PY3",
     visibility = [
-        "//experimental:__pkg__",
-        "//tests:__pkg__",
+        "//experimental:__subpackages__",
+        "//tests:__subpackages__",
     ],
     deps = [
         ":archive",
