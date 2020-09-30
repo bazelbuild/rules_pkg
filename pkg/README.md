@@ -4,8 +4,8 @@
 -   [Release Notes](#notes)
 -   [Overview](#overview)
 -   [Roadmap](#roadmap)
--   [Reference](//pkg/docs/reference.md)
--   [Examples](//pkg/examples/readme.md)
+-   [Reference](docs/reference.md)
+-   [Examples](examples/readme.md)
 
 
 <a name="notes"></a>
