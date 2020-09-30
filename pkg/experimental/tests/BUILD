@@ -13,8 +13,6 @@
 # limitations under the License.
 
 load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs", "pkg_mklinks")
-load("@rules_python//python:defs.bzl", "py_test")
 
 licenses(["notice"])
 
