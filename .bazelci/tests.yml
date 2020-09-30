@@ -30,8 +30,6 @@ tasks:
     # one that works and can add to the list as we fix the broken behavior or
     # broken test.
     test_targets:
-    - "..."
-    # rpmbuild(8) is not available by default on macOS
-    - "-//tests/rpm/..."
-    - "-//experimental/tests/rpm/..."
+    - "//tests:zip_test"
+    - "//tests:pkg_deb_test"
 
