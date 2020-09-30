@@ -11,11 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
+# -*- coding: utf-8 -*-
 
 licenses(["notice"])
 
-pkg_filegroup_analysis_tests()
+load("//:rpm.bzl", "pkg_rpm")
 
-pkg_filegroup_unit_tests()
+pkg_rpm(
+    name = "test-rpm",
+    data = ["//tests:archive_testdata"],
+    debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
+)
