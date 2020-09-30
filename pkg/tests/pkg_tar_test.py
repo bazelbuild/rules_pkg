@@ -175,6 +175,7 @@ class PkgTarTest(unittest.TestCase):
         {'name': './usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
         {'name': './usr/bin'},
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
+        {'name': './BUILD'},
     ]
     for ext in ('', '.gz', '.bz2', '.xz'):
       with self.subTest(ext=ext):

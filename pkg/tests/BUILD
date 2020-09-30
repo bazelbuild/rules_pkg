@@ -7,6 +7,26 @@ load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
+load(":my_package_name.bzl", "my_package_naming")
+
+# Exposes the value of the compilation mode to the package naming.
+config_setting(
+    name = "special_build",
+    values = {"define": "SPECIAL=1"},
+)
+
+my_package_naming(
+    name = "my_package_variables",
+    label = "-alpha",
+    # There is no important reason to use a config_setting and a select. This
+    # is really just to show a technique.
+    # TBD: Move this into a cookbook of examples.
+    special_build = select({
+        ":special_build": "-IsSpecial",
+        "//conditions:default": "",
+    }),
+)
+
 genrule(
     name = "generate_files",
     outs = [
@@ -20,6 +40,17 @@ copy_file(
     name = "zipcontent_loremipsum",
     src = "testdata/loremipsum.txt",
     out = "zipcontent/loremipsum.txt",
+)
+
+# Try building with various flag combinations to show the abilities
+#   bazel build :test_tar_naming -c dbg --define=SPECIAL=1
+pkg_tar(
+    name = "test_tar_naming",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "test_naming-{target_cpu}-{compilation_mode}{label}{special_build}.tar",
+    package_variables = ":my_package_variables",
 )
 
 pkg_tar(
@@ -271,8 +302,13 @@ pkg_rpm(
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
+<<<<<<< HEAD
     build_tar = "//:build_tar",
     extension = ext,
+=======
+    extension = "tar%s" % ext,
+    # extension = ext[1:],
+>>>>>>> main
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
@@ -299,7 +335,10 @@ pkg_rpm(
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
     build_tar = "//:build_tar",
-    deps = [":test-tar-basic-%s" % ext],
+    deps = [
+        ":test-tar-basic-%s" % ext,
+        ":test_tar_naming",
+    ],
 ) for ext in [
     "",
     "tgz",
