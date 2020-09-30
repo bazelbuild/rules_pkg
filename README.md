@@ -15,14 +15,10 @@ CI:
 *   [pkg](https://github.com/bazelbuild/rules_pkg/tree/master/pkg) - Rules for
     building packages of various types.
 
-We are currently in the process of migrating the
-[Bazel packaging rules](https://docs.bazel.build/versions/master/be/pkg.html)
-from Bazel to this repo. Tracking issue:
-https://github.com/bazelbuild/bazel/issues/8489.
-
 Bazel now uses this rule set for packaging it's distribution. It still contains
-a vestigial early version of these rules, but those will be removed in a future
-release.
+a vestigial early version of pkg_tar, but that will be removed in a future
+Bazel release.
+
 
 ### debian specific rules
 
@@ -32,7 +28,8 @@ release.
 *   [update_deb_packages](https://github.com/bazelbuild/rules_pkg/tree/master/deb_packages/tools#deb_packages) -
     update the hash and path of files mentioned in `deb_packages` rules
 
-#### Background
+WARNING: These rules are currently unmaintained and may eventually be dropped
+or moved to a different project.
 
 The `deb_package` rules originated in the
 [distroless](https://github.com/GoogleCloudPlatform/distroless) project as well
