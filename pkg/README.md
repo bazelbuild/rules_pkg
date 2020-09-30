@@ -1,12 +1,10 @@
-# Archive building rules
+# rules_pkg - Archive building rules
 
-## rules_pkg
 -   [Release Notes](#notes)
 -   [Overview](#overview)
 -   [Roadmap](#roadmap)
 -   [Reference](docs/reference.md)
 -   [Examples](examples/readme.md)
-
 
 <a name="notes"></a>
 ## Release Notes
