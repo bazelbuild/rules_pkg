@@ -15,8 +15,8 @@ CI:
 *   [pkg](https://github.com/bazelbuild/rules_pkg/tree/master/pkg) - Rules for
     building packages of various types.
 
-Bazel now uses this rule set for packaging it's distribution. It still contains
-a vestigial early version of pkg_tar, but that will be removed in a future
+Bazel now uses this rule set for packaging its distribution. It still contains
+a vestigial early version of `pkg_tar`, but that will be removed in a future
 Bazel release.
 
 
