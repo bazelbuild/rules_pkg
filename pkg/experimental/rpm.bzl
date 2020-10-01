@@ -376,6 +376,15 @@ install -d %{{buildroot}}/{0}
     files.append(rpm_files_file)
     args.append("--file_list=" + rpm_files_file.path)
 
+    additional_rpmbuild_args = []
+    if ctx.attr.binary_payload_compression:
+        additional_rpmbuild_args.extend([
+            "--define",
+            "_binary_payload {}".format(ctx.attr.binary_payload_compression),
+        ])
+
+    args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
+
     for f in ctx.files.data:
         args.append(f.path)
 
@@ -401,14 +410,14 @@ install -d %{{buildroot}}/{0}
     # Link the RPM to the expected output name.
     ctx.actions.symlink(
         output = ctx.outputs.out,
-        target_file = ctx.outputs.rpm
+        target_file = ctx.outputs.rpm,
     )
 
     # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
         ctx.actions.symlink(
             output = ctx.outputs.rpm_nvra,
-            target_file = ctx.outputs.rpm
+            target_file = ctx.outputs.rpm,
         )
 
 # TODO(nacl): this relies on deprecated behavior (should use Providers
@@ -707,7 +716,30 @@ pkg_rpm = rule(
             allow_single_file = spec_filetype,
             default = "//experimental:template.spec.in",
         ),
+        "binary_payload_compression": attr.string(
+            doc = """Compression mode used for this RPM
 
+            Must be a form that `rpmbuild(8)` knows how to process, which will
+            depend on the version of `rpmbuild` in use.  The value corresponds
+            to the `%_binary_payload` macro and is set on the `rpmbuild(8)`
+            command line if this attribute is provided.
+
+            Some examples of valid values (which may not be supported on your
+            system) can be found [here](https://git.io/JU9Wg).  On CentOS
+            systems (also likely Red Hat and Fedora), you can find some
+            supported values by looking for `%_binary_payload` in
+            `/usr/lib/rpm/macros`.  Other systems have similar files and
+            configurations.
+
+            If not provided, the compression mode will be computed using normal
+            RPM spec file processing.  Defaults may vary per distribution:
+            consult your distribution's documentation for more details.
+
+            WARNING: Bazel is currently not aware of action threading requirements
+            for non-test actions.  Using threaded compression may result in
+            overcommitting your system.
+            """,
+        ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),

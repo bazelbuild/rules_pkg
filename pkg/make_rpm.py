@@ -323,7 +323,7 @@ class RpmBuilder(object):
       shutil.copy(os.path.join(original_dir, file_list_path), RpmBuilder.BUILD_DIR)
       self.file_list_path = os.path.join(RpmBuilder.BUILD_DIR, os.path.basename(file_list_path))
 
-  def CallRpmBuild(self, dirname):
+  def CallRpmBuild(self, dirname, rpmbuild_args):
     """Call rpmbuild with the correct arguments."""
 
     buildroot = os.path.join(dirname, RpmBuilder.BUILDROOT_DIR)
@@ -358,6 +358,8 @@ class RpmBuilder(object):
       # %files -f is taken relative to the package root
       args += ['--define', 'build_rpm_files %s' % os.path.basename(self.file_list_path)]
 
+    args.extend(rpmbuild_args)
+
     args.append(self.spec_file)
 
     if self.debug:
@@ -384,6 +386,8 @@ class RpmBuilder(object):
     if p.returncode != 0 or not self.rpm_path:
       print('Error calling rpmbuild:')
       print(output)
+    elif self.debug:
+      print(output)
 
     # Return the status.
     return p.returncode
@@ -406,7 +410,8 @@ class RpmBuilder(object):
             post_scriptlet_path=None,
             preun_scriptlet_path=None,
             postun_scriptlet_path=None,
-            file_list_path=None):
+            file_list_path=None,
+            rpmbuild_args=None):
     """Build the RPM described by the spec_file, with other metadata in keyword arguments"""
 
     if self.debug:
@@ -426,7 +431,7 @@ class RpmBuilder(object):
                         post_scriptlet_path=post_scriptlet_path,
                         preun_scriptlet_path=preun_scriptlet_path,
                         postun_scriptlet_path=postun_scriptlet_path)
-      status = self.CallRpmBuild(dirname)
+      status = self.CallRpmBuild(dirname, rpmbuild_args or [])
       self.SaveResult(out_file)
 
     return status
@@ -474,6 +479,9 @@ def main(argv):
                       help='File containing the RPM %preun scriptlet, if to be substituted')
   parser.add_argument('--postun_scriptlet',
                       help='File containing the RPM %postun scriptlet, if to be substituted')
+
+  parser.add_argument('--rpmbuild_arg', dest='rpmbuild_args', action='append',
+                      help='Any additional arguments to pass to rpmbuild')
   parser.add_argument('files', nargs='*')
 
   options = parser.parse_args(argv or ())
@@ -493,7 +501,8 @@ def main(argv):
                          pre_scriptlet_path=options.pre_scriptlet,
                          post_scriptlet_path=options.post_scriptlet,
                          preun_scriptlet_path=options.preun_scriptlet,
-                         postun_scriptlet_path=options.postun_scriptlet)
+                         postun_scriptlet_path=options.postun_scriptlet,
+                         rpmbuild_args=options.rpmbuild_args)
   except NoRpmbuildFoundError:
     print('ERROR: rpmbuild is required but is not present in PATH')
     return 1

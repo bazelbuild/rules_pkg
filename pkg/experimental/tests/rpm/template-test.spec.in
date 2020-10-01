@@ -25,7 +25,6 @@
 
 ################################################################################
 
-
 # This comprises the entirety of the preamble
 %include %build_rpm_options
 
