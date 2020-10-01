@@ -28,7 +28,7 @@ filegroup(
         ":test_tar_package_dir",
         ":test_tar_package_dir_file",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//tests:__subpackages__"],
 )
 
 py_test(
