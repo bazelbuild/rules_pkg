@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
+"""Utility methods to populate PackageVariablesInfo instances."""
 
-licenses(["notice"])
-
-pkg_filegroup_analysis_tests()
-
-pkg_filegroup_unit_tests()
+def add_ctx_variables(ctx, values):
+    """Add selected variables from ctx."""
+    values['target_cpu'] = ctx.var.get("TARGET_CPU")
+    values['compilation_mode'] = ctx.var.get("COMPILATION_MODE")
+    return values

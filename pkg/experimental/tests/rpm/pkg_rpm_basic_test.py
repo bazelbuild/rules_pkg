@@ -41,9 +41,9 @@ class PkgRpmBasicTest(unittest.TestCase):
     def setUp(self):
         self.runfiles = runfiles.Create()
         self.test_rpm_path = self.runfiles.Rlocation(
-            "rules_pkg/experimental/tests/test_rpm.rpm")
+            "rules_pkg/experimental/tests/rpm/test_rpm.rpm")
         self.test_rpm_bzip2_path = self.runfiles.Rlocation(
-            "rules_pkg/experimental/tests/test_rpm-bzip2.rpm")
+            "rules_pkg/experimental/tests/rpm/test_rpm-bzip2.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
@@ -84,7 +84,7 @@ echo postun
 
     def test_contents(self):
         manifest_file = self.runfiles.Rlocation(
-            "rules_pkg/experimental/tests/manifest.csv")
+            "rules_pkg/experimental/tests/rpm/manifest.csv")
         manifest_specs = {}
         with open(manifest_file, "r", newline='', encoding="utf-8") as fh:
             manifest_reader = csv.DictReader(fh)
@@ -131,7 +131,7 @@ echo postun
             self.assertDictEqual(manifest_specs[my_path], rpm_file_info)
 
     def test_preamble_metadata(self):
-        metadata_prefix = "rules_pkg/experimental/tests"
+        metadata_prefix = "rules_pkg/experimental/tests/rpm"
 
         rpm_filename = os.path.basename(self.test_rpm_path)
         rpm_basename = os.path.splitext(rpm_filename)[0]

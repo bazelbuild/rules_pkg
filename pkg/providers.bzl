@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":pkg_filegroup_test.bzl", "pkg_filegroup_analysis_tests", "pkg_filegroup_unit_tests")
+"""Packaging related providers."""
 
-licenses(["notice"])
 
-pkg_filegroup_analysis_tests()
+PackageArtifactInfo = provider(
+    doc = """Metadata about a package artifact.""",
+    fields = {
+        "label": "Label which produced it",
+        "file_name": "The file name of the artifact.",
+    },
+)
 
-pkg_filegroup_unit_tests()
+PackageVariablesInfo = provider(
+    doc = """Variables which may be substituted into package names and content.""",
+    fields = {
+        "values": "Dict of name/value pairs",
+    },
+)

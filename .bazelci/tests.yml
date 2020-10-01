@@ -3,8 +3,8 @@ common: &common
   test_targets:
   - "..."
   # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
-  - "-//experimental/tests:pkg_rpm_basic_test"
-  - "-//experimental/tests:pkg_rpm_smoke"
+  - "-//tests/rpm/..."
+  - "-//experimental/tests/rpm/..."
 
 tasks:
   centos7:
@@ -21,9 +21,8 @@ tasks:
     test_targets:
     - "..."
     # rpmbuild(8) is not available by default on macOS
-    - "-//tests:make_rpm_test"
-    - "-//experimental/tests:pkg_rpm_basic_test"
-    - "-//experimental/tests:pkg_rpm_smoke"
+    - "-//tests/rpm/..."
+    - "-//experimental/tests/rpm/..."
   windows:
     working_directory: ../pkg
     # We can not build any RPM files.

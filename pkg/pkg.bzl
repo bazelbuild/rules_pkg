@@ -14,11 +14,13 @@
 """Rules for manipulation of various packaging."""
 
 load(":path.bzl", "compute_data_path", "dest_path")
+load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
+
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -31,15 +33,34 @@ def _quote(filename, protect = "="):
     """Quote the filename, by escaping = by \\= and \\ by \\\\"""
     return filename.replace("\\", "\\\\").replace(protect, "\\" + protect)
 
+
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
     # Files needed by rule implementation at runtime
     files = []
 
+    outputs = [ctx.outputs.out]
+    if ctx.attr.package_file_name:
+        output_name = ctx.attr.package_file_name
+        if ctx.attr.package_variables:
+            package_variables = ctx.attr.package_variables[PackageVariablesInfo]
+            output_name = output_name.format(**package_variables.values)
+        elif ctx.attr.package_file_name.find('{') >= 0:
+            fail("package_variables is required when using '{' in package_file_name")
+        output_file = ctx.actions.declare_file(output_name)
+        outputs.append(output_file)
+        ctx.actions.symlink(
+            output = ctx.outputs.out,
+            target_file = output_file
+        )
+    else:
+        output_file = ctx.outputs.out
+        output_name = ctx.outputs.out.basename
+
     # Compute the relative path
-    data_path = compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx.outputs.out, '.')
+    data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(output_file, '.')
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -55,7 +76,7 @@ def _pkg_tar_impl(ctx):
 
     # Start building the arguments.
     args = [
-        "--output=" + ctx.outputs.out.path,
+        "--output=" + output_file.path,
         package_dir_arg,
         "--mode=" + ctx.attr.mode,
         "--owner=" + ctx.attr.owner,
@@ -130,10 +151,11 @@ def _pkg_tar_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "PackageTar",
+        progress_message = "Writing: %s" % output_file.path,
         inputs = file_inputs + ctx.files.deps + files,
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],
-        outputs = [ctx.outputs.out],
+        outputs = [output_file],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -142,7 +164,16 @@ def _pkg_tar_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out = [ctx.outputs.out])
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            runfiles = ctx.runfiles(files = [output_file]),
+        ),
+        PackageArtifactInfo(
+            label = ctx.label.name,
+            file_name = output_name,
+        )
+    ]
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
@@ -287,6 +318,10 @@ pkg_tar_impl = rule(
         "include_runfiles": attr.bool(),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
+        "package_file_name": attr.string(),
+        "package_variables": attr.label(
+            providers = [PackageVariablesInfo],
+        ),
 
         # Outputs
         "out": attr.output(),
@@ -316,11 +351,10 @@ def pkg_tar(name, **kwargs):
                 kwargs["srcs"] = kwargs.pop("files")
     archive_name = kwargs.get("archive_name") or name
     extension = kwargs.get("extension") or "tar"
-
     pkg_tar_impl(
         name = name,
-        out = archive_name + "." + extension,
-        **kwargs
+        out = kwargs.get("out") or (archive_name + "." + extension),
+        **kwargs,
     )
 
 # A rule for creating a deb file, see README.md
