@@ -719,24 +719,21 @@ pkg_rpm = rule(
         "binary_payload_compression": attr.string(
             doc = """Compression mode used for this RPM
 
-            Must be a form that `rpmbuild(8)` knows how to process.  Current known
-            options depend on the `rpmbuild` binary, and may include:
+            Must be a form that `rpmbuild(8)` knows how to process, which will
+            depend on the version of `rpmbuild` in use.  The value corresponds
+            to the `%_binary_payload` macro and is set on the `rpmbuild(8)`
+            command line if this attribute is provided.
 
-            - "w0.ufdio" (no compression)
-            - "w9.gzdio" (gzip level 9)
-            - "w2.bzdio" (bzip2 level 2)
-            - "w6.lzdio" (lzma-alone level 6, its default)
-            - "w6.xzdio" (xz level 6, its default)
-            - "w7T4.xzdio" (xz level 7, with four threads)
-            - "w15.zstdio" (zstd level 15)
-            - "w19T8.zstdio" (zstd level 19 with eight threads)
+            Some examples of valid values (which may not be supported on your
+            system) can be found [here](https://git.io/JU9Wg).  On CentOS
+            systems (also likely Red Hat and Fedora), you can find some
+            supported values by looking for `%_binary_payload` in
+            `/usr/lib/rpm/macros`.  Other systems have similar files and
+            configurations.
 
-            This corresponds to the `%_binary_payload` macro as provided to
-            `rpmbuild`.  It is added near the preamble if provided.
-
-            Please consult your distribution's RPM documentation for supported
-            values and defaults.  If no value is provided, your system's
-            defaults will be used.
+            If not provided, the compression mode will be computed using normal
+            RPM spec file processing.  Defaults may vary per distribution:
+            consult your distribution's documentation for more details.
 
             WARNING: Bazel is currently not aware of action threading requirements
             for non-test actions.  Using threaded compression may result in
