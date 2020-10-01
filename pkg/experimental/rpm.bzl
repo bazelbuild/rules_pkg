@@ -380,7 +380,7 @@ install -d %{{buildroot}}/{0}
     if ctx.attr.binary_payload_compression:
         additional_rpmbuild_args.extend([
             "--define",
-            "build_rpm_binary_payload {}".format(ctx.attr.binary_payload_compression),
+            "_binary_payload {}".format(ctx.attr.binary_payload_compression),
         ])
 
     args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
@@ -722,12 +722,14 @@ pkg_rpm = rule(
             Must be a form that `rpmbuild(8)` knows how to process.  Current known
             options depend on the `rpmbuild` binary, and may include:
 
+            - "w0.ufdio" (no compression)
             - "w9.gzdio" (gzip level 9)
             - "w2.bzdio" (bzip2 level 2)
             - "w6.lzdio" (lzma-alone level 6, its default)
             - "w6.xzdio" (xz level 6, its default)
             - "w7T4.xzdio" (xz level 7, with four threads)
             - "w15.zstdio" (zstd level 15)
+            - "w19T8.zstdio" (zstd level 19 with eight threads)
 
             This corresponds to the `%_binary_payload` macro as provided to
             `rpmbuild`.  It is added near the preamble if provided.
@@ -736,8 +738,8 @@ pkg_rpm = rule(
             values and defaults.  If no value is provided, your system's
             defaults will be used.
 
-            NOTE: Bazel is currently not aware of action threading requirements
-            for non-test actions, and using threaded compression may result in
+            WARNING: Bazel is currently not aware of action threading requirements
+            for non-test actions.  Using threaded compression may result in
             overcommitting your system.
             """,
         ),
