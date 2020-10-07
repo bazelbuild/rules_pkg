@@ -14,12 +14,11 @@
 
 """Packaging related providers."""
 
-
 PackageArtifactInfo = provider(
     doc = """Metadata about a package artifact.""",
     fields = {
-        "label": "Label which produced it",
         "file_name": "The file name of the artifact.",
+        "label": "Label which produced it",
     },
 )
 
@@ -27,5 +26,71 @@ PackageVariablesInfo = provider(
     doc = """Variables which may be substituted into package names and content.""",
     fields = {
         "values": "Dict of name/value pairs",
+    },
+)
+
+# For the below, attributes always look something like this:
+#
+# ```
+#   {"unix": ["0755", "root", "root"]}
+# ```
+#
+
+# TODO: should all of these be singluar or plural?
+#
+# Seems like there's no harm in specifying a plural, even in rules: it would
+# allow some degree of simplification of rules without needing to specify a
+# custom manifest.
+
+# TODO: should we note exceptions from groups of files/labels?  I feel that
+# information is best encoded at the rule level, which seems to necessitate a
+# "plural" structure as defined below.
+PackageFilesInfo = provider(
+    doc = """Provider representing the installation of one or more files to destination with attributes""",
+    fields = {
+        "attributes": """dict of string -> string list: Attributes to apply to installed file(s)""",
+        "source_dest_map": """dict of File -> string: source-destination map""",
+    },
+)
+
+PackageDirInfo = provider(
+    doc = """Provider representing the creation of a single directory in a package""",
+    fields = {
+        "attributes": """dict of string -> string list: Attributes to apply to created directory""",
+        "destination": """string: Installed directory name""",
+    },
+)
+
+PackageSymlinkInfo = provider(
+    doc = """Provider representing the creation of a single symbolic link in a package""",
+    fields = {
+        "attributes": """dict of string -> string list: Attributes to apply to created symlink""",
+        "destination": """string: Filesystem link 'name'""",
+        "source": """string: Filesystem link 'target'""",
+    },
+)
+
+# Grouping provider: the only one that needs to be consumed by packaging (or
+# other) rules that materialize paths.
+
+PackageFilegroupInfo = provider(
+    doc = """Provider representing a collection of related packaging providers""",
+    fields = {
+        "children": """list of child providers, one of PackageFilesInfo, PackageDirInfo, or PackageSymlinkInfo""",
+
+        # TODO: does this really belong here?  Seems like the rerooting should
+        # just be done by the rule that creates this provider.
+        "prefix": """string: Base path of all the destinations in the 'children' attribute""",
+
+        # TODO: I'm increasingly unsure of where "section" should go.  From a
+        # high-level view, it makes sense that a "section" applies to a grouping
+        # of files, but it's hard to tell what a "section" actually is.
+        #
+        # For example, one can imagine a section of "documentation", or
+        # "config," files but then each "config" file may have different
+        # properties, but are still "config" files.
+        #
+        # Feels clumsy to me.
+        "section": """string: related file properties, such as "config", "config(noreplace)", "config(missingok)", "doc" """,
     },
 )
