@@ -16,6 +16,7 @@
 """
 
 import argparse
+import os
 import sys
 from string import Template
 import textwrap
@@ -23,16 +24,18 @@ import textwrap
 from releasing import release_tools
 
 
-def print_notes(org, repo, version, tarball_path, setup_file=None,
-                deps_method=None, toolchains_method=None):
+def print_notes(org, repo, version, tarball_path, mirror_host=None,
+                deps_method=None, setup_file=None, toolchains_method=None):
   file_name = release_tools.package_basename(repo, version)
   sha256 = release_tools.get_package_sha256(tarball_path)
 
   url = 'https://github.com/%s/%s/releases/download/%s/%s' % (
       org, repo, version, file_name)
+  mirror_url = 'https://%s/github.com/%s/%s/releases/download/%s/%s' % (
+      mirror_host, org, repo, version, file_name) if mirror_host else None
   workspace_stanza = release_tools.workspace_content(
-      url, repo, sha256, setup_file=setup_file, deps_method=deps_method,
-      toolchains_method=toolchains_method)
+      url, repo, sha256, mirror_url=mirror_url, setup_file=setup_file,
+      deps_method=deps_method, toolchains_method=toolchains_method)
   relnotes_template = Template(textwrap.dedent(
       """
       ------------------------ snip ----------------------------
@@ -58,7 +61,23 @@ def print_notes(org, repo, version, tarball_path, setup_file=None,
       'version': version,
       'workspace_stanza': workspace_stanza,
   }))
+  if mirror_url:
+    file = os.path.basename(tarball_path)
+    path = 'github.com/${org}/${repo}/releases/download/${version}/${file}'
+    mirroring_template = Template(textwrap.dedent(
+        """
 
+        !!!: Make sure to copy the file to the release notes.
+        If you are using Google Cloud Storage, you might use a command like
+        gsutil cp bazel-bin/distro/${file} gs://bazel-mirror/github.com/bazelbuild/rules_pkg/releases/download/0.3.0/${file}
+        """).strip())
+    print(mirroring_template.substitute({
+      'org': org,
+      'repo': repo,
+      'version': version,
+      'file': file,
+    }))
+    
 
 def main():
   parser = argparse.ArgumentParser(
@@ -74,6 +93,9 @@ def main():
       '--tarball_path', default=None,
       required=True, help='path to release tarball')
   parser.add_argument(
+      '--mirror_host', default=None,
+      help='If provider, the hostname of a mirror for the download url.')
+  parser.add_argument(
       '--setup_file', default=None,
       help='Alternate name for setup file. Default: deps.bzl')
   parser.add_argument(
@@ -85,7 +107,9 @@ def main():
 
   options = parser.parse_args()
   print_notes(options.org, options.repo, options.version, options.tarball_path,
-              setup_file=options.setup_file, deps_method=options.deps_method,
+              deps_method=options.deps_method,
+              mirror_host=options.mirror_host,
+              setup_file=options.setup_file,
               toolchains_method=options.toolchains_method)
 
 
