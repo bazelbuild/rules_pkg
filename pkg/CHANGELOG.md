@@ -1,3 +1,216 @@
+# Release 0.3.0
+
+This release features contributions by the Bazel team and
+andreas-0815-qwertz, Andrew Psaltis, Daniel Sullivan, David Schneider,
+Elliot Murphy, Matthias Frei, Matt Mikitka, Pras Velagapudi, Shimin Guo,
+and Ulf Adams
+
+**New Features**
+-   commit a4296dac48144dd839da1f093dce00fd3078eaf5
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Thu Oct 1 17:55:20 2020 -0400
+    experimental/rpm.bzl: Make compression settings configurable (#240)
+    This change adds a new attribute binary_payload_compression to the
+    experimental pkg_rpm rule. It is implemented in terms of command-line options
+    to rpmbuild(8), which are passed in via make_rpm.py.
+    We do this by instructing rpmbuild to define the _binary_payload macro on its command line. Tests are also provided.
+    This can also be added to the non-experimental pkg_rpm rule in the future; the
+    code would be similar.
+    Fixes #239.
+-   commit aa18e176673d03f05f1d3f0537bae424cfc225fe
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Tue Sep 29 22:32:00 2020 -0400
+    Provide capability to rename archives based on configuration values (#198)
+    TODO for later
+    - create cookbook style examples
+    - emit PkgFilegroupInfo when that is available
+    - implement for pkg_deb, rpm, zip
+-   commit 55a1a9b2eca5b78a44fb940f3143a1d88423c2e2
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Thu Sep 24 15:16:00 2020 -0400
+    Use symlink actions for RPM packages instead of custom actions (#236)
+    Like #232, but in the RPM builders.  No other callouts to `ln(1)` are made
+    directly by `rules_pkg`.
+-   commit effac40a51fea25bd566f266f6b7b1d23327f02a
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Thu Sep 24 08:16:35 2020 -0400
+    Add LICENSE to distribution tarball (#233)
+    Fixes #231
+-   commit bd9c7712163c03133b086e4efa0e19ed802aa956
+
+-   Author: Ulf Adams <ulfjack@users.noreply.github.com>
+    Date:   Thu Sep 24 03:35:39 2020 +0200
+    Use a symlink action, not a shell script (#232)
+    Using a shell script is not portable and also causes issues with
+    build-without-the-bytes, which can handle local symlink actions (at least in
+    principle), but cannot handle symlinks returned from remote execution.
+    Also see https://github.com/bazelbuild/bazel/issues/11532.
+-   commit 60fbda7768d16e0c5c87f9efdc775f0586001657
+
+-   Author: Daniel Sullivan <danielalexandersullivan@gmail.com>
+    Date:   Thu Sep 10 10:00:48 2020 -0400
+    Avoid stripping prefixes with incomplete directory names.
+-   commit e0d807d0ec4edfc5370f87259ae3461f86f0edb5
+
+-   Author: David Schneider <dschneider@tableau.com>
+    Date:   Tue Sep 8 18:02:30 2020 -0700
+    Add attribute strip_prefix to pkg_zip (#221) (#230)
+-   commit 2ad5bd8fa4dc034081c616521bc7d6a45eb21818
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Wed Aug 26 23:02:56 2020 -0400
+    `pkg_rpm_ex`: Provide in-rule dependency specifications (#224)
+    This change provides four additional attributes to the experimental `pkg_rpm`
+    rule, namely:
+    - `conflicts`, `string_list`, corresponding the `Conflicts` tag
+    - `provides`, `string_list`, corresponding the `Provides` tag
+    - `requires`, `string_list`, corresponding the `Requires` tag
+    Additionally:
+    - `requires_contextual`, `string_list_dict`, providing the capability to specify
+    tags like `Requires(postun)`.
+    Unit tests were also provided.  Non-rpm input files for the `pkg_rpm_ex` output
+    test have now been given the ".csv" extension to better help identify that they
+    are delimited files (but not strictly comma-delimited).
+    Note that these changes only impact the "strong" dependencies between packages;
+    [weak dependencies] like "Suggests" and "Recommends" are not explicitly
+    supported, but can be added in the future following a similar pattern.
+    Fixes #223.
+    [weak dependencies]: https://rpm.org/user_doc/dependencies.html#weak-dependencies
+-   commit 30bb5b27d11d117259a41d9356ddce0272932d60
+
+-   Author: Shimin Guo <shimin.guo@mixpanel.com>
+    Date:   Wed Aug 26 19:30:29 2020 -0700
+    Support "provides" in pkg_deb (#225)
+-   commit 569a0e57e98e96f7075f500fcc76609d68b465e2
+
+-   Author: dannysullivan <danielalexandersullivan@gmail.com>
+    Date:   Mon Aug 24 18:23:12 2020 -0400
+    Avoid stripping prefixes with incomplete directory names.
+-   commit f7cec56170384450c06004c37520b72e22952999
+
+-   Author: Daniel Sullivan <danielalexandersullivan@gmail.com>
+    Date:   Thu Aug 20 10:44:46 2020 -0400
+    Remove support for Python 2 (#222)
+-   commit 4ad8aa08e02694b71bfc0713da4793150aa4f4bc
+
+-   Author: Tony Aiuto <aiuto@google.com>
+    Date:   Fri Aug 7 11:46:28 2020 -0400
+    Remove testenv.sh. It is no longer used.
+-   commit e1b3bea742bc9b2b9d4c7862deafe82a749386cf
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Fri Aug 7 11:33:01 2020 -0400
+    use runfiles for pkg_tar_test to enable on Windows (#215)
+    This is a precursor to geting pkg_tar_test to run on Windows.
+    There are still problems to resolve.
+-   commit 933fa6fc7fc49788af04a60558722180818d091f
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Fri Aug 7 11:22:20 2020 -0400
+    Convert pkg_deb tests from shell to python (#211)
+-   commit dbd2c4b1f3186703c0b933429fc03924cafb8e4c
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Fri Aug 7 11:17:32 2020 -0400
+    write debian control tarball in GNU_FORMAT. (#217)
+    This addresses part 1 of #216
+-   commit 5985cfff16486f52bb029edd2732ad5868622b94
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Mon Aug 3 23:26:00 2020 -0400
+    Consolidate make_rpm.bzl and experimental/make_rpm.bzl (#179)
+    * Consolidate make_rpm.bzl and experimental/make_rpm.bzl
+    This change consolidates all of new features/fixes from
+    pkg/experimental/make_rpm.bzl into pkg/make_rpm.bzl.
+    Code used specifically by experimental/rpm.bzl is marked as such, and is grouped
+    as to be generally obvious.
+    Features now supported by non-experimental `pkg_rpm`:
+    - Support for older versions of `rpm(8)` (creation of `RPMS` output directory)
+    Features supported by non-experimental `pkg_rpm` not supported by experimental
+    `pkg_rpm`:
+    - Support for `SOURCE_DATE_EPOCH`
+    Fixes #173
+-   commit 4b0b9f4679484f107f750a60190ff5ec6b164a5f
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Wed Jul 15 14:59:02 2020 -0400
+    Add windows to presubmit tests. (#206)
+    * add windows to CI. Not everything, but enough to get started
+-   commit dede700a2f4aea9854238cad1833b54585f65d43
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Wed Jul 15 12:47:59 2020 -0400
+    Drop dependency on xzcat (#205)
+    We simply switch to use tarfile mode 'r:*' so that the Python runtime can pick the correct decompression.
+    This simplifies the code enormously.
+    The removed lines expressed concerns about the peformance of the python3 implementaion of xz decompression.
+    Those comments are fairly old, and were addressed in recent Python implementions as noted here: https://bugs.python.org/issue18003
+-   commit 67d64ba774b3e4c33061cf7a95215112c65657a9
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Wed Jul 15 12:21:48 2020 -0400
+    Convert build_tar_test to python for readability and portability (#196)
+-   commit 154479d9284535c77a781b5be26354f6d46cfe63
+
+-   Author: Elliot Murphy <statik@users.noreply.github.com>
+    Date:   Thu Jul 9 16:01:27 2020 -0400
+    Control mode on zip inputs (#96) (#97)
+-   commit f00b356970524f53d928503ca5443c6108e883e5
+
+
+-   Author: David Schneider <dschneider@tableau.com>
+    Date:   Wed Jul 1 07:28:00 2020 -0700
+    Allow custom archive name for pkg_tar, pkg_deb, and pkg_zip targets (#194)
+-   commit b5add5bf465c626407ad0ded679a0e2c14dad801
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Thu May 28 10:42:00 2020 -0400
+    Add licenses clauses to BUILD files (#186)
+-   commit 2977b089a6cd45038d39a5498f0a6cabb11774bf
+
+-   Author: aiuto <aiuto@google.com>
+    Date:   Fri May 22 14:50:42 2020 -0400
+    Add a minimal WORKSPACE file to the distributon. (#182)
+    We extract this from the top level workspace so it is easier to keep in sync.
+-   commit 808c192a0c48f292e6dfaaeb3bfa3d4378f6996d
+
+-   Author: andreas-0815-qwertz <57450822+andreas-0815-qwertz@users.noreply.github.com>
+    Date:   Tue May 19 18:51:17 2020 +0200
+    Make sequence of filenames in control.tar predictable (#120)
+    Replacing plain Python dict by an OrderedDict for Python versions
+    before 3.7, so that iteration order of "extrafiles" is determined by
+    insertion order.  Since 3.7 iteration order of plain dict itself is
+    stable.
+    https://github.com/bazelbuild/rules_pkg/issues/114
+-   commit eab297c6931260e283a3daaf2cdc438f0c6a1cfc
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Mon May 18 22:40:49 2020 -0400
+    Fix `pkg_rpm` `source_date_epoch` attribute (#176)
+    The existing `source_date_epoch` attribute for `pkg_rpm` is passed in as
+    an `int`, and is then appended to a string.  This, naturally, fails.
+    The `int` needs to be stringified first.
+    Additionally, since the [SOURCE_DATE_EPOCH] value can be any valid UNIX
+    epoch value, account for the possibility of it being set to 0 in the
+    Starlark code.
+    [SOURCE_DATE_EPOCH]: https://reproducible-builds.org/specs/source-date-epoch/#idm55
+-   commit ec802488edc1a0594b019fadf1794f13b434b365
+
+-   Author: Andrew Psaltis <apsaltis@vmware.com>
+    Date:   Fri Apr 10 10:33:50 2020 -0400
+    Provide pkg_mklinks for creation of in-package symbolic links
+    Symbolic links are often included within packages, referring to files and
+    directories within and without.
+    This commit provides a rule, `pkg_mklinks`, which allows for the creation of
+    arbitrary symbolic links within a package, and support within the experimental
+    `pkg_rpm` rule to emit them.
+    `buildifier` was also opportunistically applied to files in this change.
+-   commit b20c45f292be6c74d2f0d829ba02c83dbe271195
+
 # Release 0.2.6
 
 **New Features**
