@@ -69,6 +69,18 @@ class ReleaseToolsTest(unittest.TestCase):
         sha256='@computed@')
     self.assertTrue(content.find('\nload("@foo_bar') < 0)
 
+  def test_workspace_content_mirror(self):
+    content = release_tools.workspace_content(
+        url='http://github.com/foo/bar',
+        mirror_url='http://mirror/github.com/foo/bar',
+        repo='foo-bar',
+        sha256='@computed@')
+    url_pos = content.find('http://github.com/foo/bar')
+    mirror_pos = content.find('http://mirror/github.com/foo/bar')
+    self.assertTrue(url_pos > 0)
+    self.assertTrue(mirror_pos > 0)
+    self.assertTrue(mirror_pos < url_pos)
+
 
 if __name__ == "__main__":
     unittest.main()
