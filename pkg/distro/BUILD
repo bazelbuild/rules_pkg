@@ -39,8 +39,10 @@ print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
     deps_method = "rules_pkg_dependencies",
+    org = 'bazelbuild',
     repo = "rules_pkg",
     version = version,
+    mirror_host = 'mirror.bazel.build'
 )
 
 py_test(

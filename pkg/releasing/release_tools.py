@@ -25,7 +25,9 @@ WORKSPACE_STANZA_TEMPLATE = Template(textwrap.dedent(
     load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
     http_archive(
         name = "${repo}",
-        url = "${url}",
+        urls = [
+            ${urls},
+        ],
         sha256 = "${sha256}",
     )
     """).strip())
@@ -52,9 +54,10 @@ def workspace_content(
     url,
     repo,
     sha256,
+    deps_method=None,
+    mirror_url=None,
     rename_repo=None,
     setup_file=None,
-    deps_method=None,
     toolchains_method=None):
   # Create the WORKSPACE stanza needed for this rule set.
   if setup_file and not (deps_method or toolchains_method):
@@ -78,8 +81,13 @@ def workspace_content(
   # Correct the common mistake of not putting a ':' in your setup file name
   if setup_file and ':' not in setup_file:
     setup_file = ':' + setup_file
+  if mirror_url:
+    # this could be more elegant
+    urls = '"%s",\n        "%s"' % (mirror_url, url)
+  else:
+    urls = '"%s"' % url
   ret = WORKSPACE_STANZA_TEMPLATE.substitute({
-      'url': url,
+      'urls': urls,
       'sha256': sha256,
       'repo': repo,
   })
