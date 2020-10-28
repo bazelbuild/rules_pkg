@@ -77,9 +77,5 @@ PackageFilegroupInfo = provider(
         "pkg_files": "list of child PackageFilesInfo providers",
         "pkg_dirs": "list of child PackageDirInfo providers",
         "pkg_symlinks": "list of child PackageSymlinkInfo providers",
-
-        # TODO: does this really belong here?  Seems like the rerooting should
-        # just be done by the rule that creates this provider.
-        "prefix": """string: Base path of all the destinations in the 'children' attribute""",
     },
 )
