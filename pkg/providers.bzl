@@ -41,15 +41,13 @@ PackageVariablesInfo = provider(
 # Seems like there's no harm in specifying a plural, even in rules: it would
 # allow some degree of simplification of rules without needing to specify a
 # custom manifest.
-
-# TODO: should we note exceptions from groups of files/labels?  I feel that
-# information is best encoded at the rule level, which seems to necessitate a
-# "plural" structure as defined below.
 PackageFilesInfo = provider(
     doc = """Provider representing the installation of one or more files to destination with attributes""",
     fields = {
         "attributes": """dict of string -> string list: Attributes to apply to installed file(s)""",
-        "source_dest_map": """dict of File -> string: source-destination map""",
+        # TODO(nacl): determine what types actually should represent the sources here.  Files, or Labels?
+        # TODO(nacl): Should this be a map of destination -> source instead?
+        "source_dest_map": """Map of file sources to destinations""",
     },
 )
 
@@ -81,16 +79,5 @@ PackageFilegroupInfo = provider(
         # TODO: does this really belong here?  Seems like the rerooting should
         # just be done by the rule that creates this provider.
         "prefix": """string: Base path of all the destinations in the 'children' attribute""",
-
-        # TODO: I'm increasingly unsure of where "section" should go.  From a
-        # high-level view, it makes sense that a "section" applies to a grouping
-        # of files, but it's hard to tell what a "section" actually is.
-        #
-        # For example, one can imagine a section of "documentation", or
-        # "config," files but then each "config" file may have different
-        # properties, but are still "config" files.
-        #
-        # Feels clumsy to me.
-        "section": """string: related file properties, such as "config", "config(noreplace)", "config(missingok)", "doc" """,
     },
 )
