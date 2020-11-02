@@ -4,21 +4,9 @@ def _write_build(rctx, path):
     if not path:
        path = ""
     rctx.file(
-        'BUILD',
+        "BUILD",
         content = """# This content is generated
 load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
-
-constraint_setting(name = "rpmbuild_present")
-
-constraint_value(
-    name = "no",
-    constraint_setting = "rpmbuild_present",
-)
-
-constraint_value(
-    name = "yes",
-    constraint_setting = "rpmbuild_present",
-)
 
 rpmbuild_toolchain(
     name = "rpmbuild",
@@ -32,6 +20,20 @@ toolchain(
 )
 """ % path,
         executable=False)
+
+    register_func = """# This content is generated
+
+def register_rpmbuild_toolchain():
+"""
+    if not path:
+       register_func += "    pass\n"
+    else:
+       register_func += """    native.register_toolchains("@%s//:rpmbuild_toolchain")\n""" % rctx.name
+    rctx.file(
+        "register_toolchain.bzl",
+        content = register_func,
+        executable=False)
+
 
 def _autoconf_rpmbuild_impl(rctx):
     if not rctx.attr.installed_rpmbuild_path:
@@ -50,3 +52,6 @@ autoconf_rpmbuild = repository_rule(
         "installed_rpmbuild_path": attr.string(default=""),
     }
 )
+
+def register_autoconf(repo_name):
+   native.register_toolchains("@%s//:rpmbuild_toolchain" % repo_name)

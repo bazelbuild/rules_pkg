@@ -15,6 +15,7 @@ constraint_setting(name = "is_rpmbuild_present")
 constraint_value(
     name = "rpmbuild_present",
     constraint_setting = "is_rpmbuild_present",
+    visibility = ["//visibility:public"],
 )
 
 toolchain_type(

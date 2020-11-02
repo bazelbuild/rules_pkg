@@ -98,6 +98,10 @@ py_binary(
         ":archive",
         ":make_rpm_lib",
     ],
+    # TODO
+    #target_compatible_with = [
+    #    "//toolchains:rpmbuild_present",
+    #],
 )
 
 py_library(
