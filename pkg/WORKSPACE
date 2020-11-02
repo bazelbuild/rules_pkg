@@ -19,6 +19,14 @@ load("//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
+load("//toolchains:autoconf_rpmbuild.bzl", "autoconf_rpmbuild")
+autoconf_rpmbuild(name="rules_pkg_rpmbuild")
+register_toolchains("@rules_pkg_rpmbuild//:rpmbuild_toolchain")
+
+# load("//toolchains:rpmbuild.bzl", "register_rpmbuild_toolchains", "rpmbuild_toolchain")
+# register_toolchains("//foo:fake_rpmbuild")
+# register_rpmbuild_toolchains()
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
@@ -42,3 +50,7 @@ local_repository(
     name = "experimental_test_external_repo",
     path = "experimental/tests/external_repo",
 )
+
+#register_toolchains(
+#    "//toolchains:no_rpmbuild"
+#)

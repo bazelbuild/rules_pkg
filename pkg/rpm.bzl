@@ -20,13 +20,27 @@ spec_filetype = [".spec"]
 def _pkg_rpm_impl(ctx):
     """Implements to pkg_rpm rule."""
 
+
     files = []
     args = ["--name=" + ctx.label.name]
     if ctx.attr.debug:
         args += ["--debug"]
 
-    if ctx.attr.rpmbuild_path:
-        args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
+    rpmbuild_info = ctx.toolchains["//toolchains:rpmbuild_toolchain_type"].rpmbuild
+    print("rpmbuild_info", dir(rpmbuild_info))
+    print("rpmbuild_label", dir(rpmbuild_info.label))
+    if not rpmbuild_info.label and not rpmbuild_info.path:
+       fail("RpmbuildInfo must specify specify one of label or path")
+    if rpmbuild_info.path:
+        args += ["--rpmbuild=" + rpmbuild_info.path]
+        if rpmbuild_info.label:
+            fail("RpmbuildInfo should not specify both label and path")
+    else:
+        rpmbuild_exec = rpmbuild_info.label.files.to_list()
+        print("files_to_run", dir(rpmbuild_info.label.files_to_run.executable.path))
+        print("rpmbuild_label.files", rpmbuild_exec)
+        files += rpmbuild_exec
+        args += ["--rpmbuild=%s" % rpmbuild_info.label.files_to_run.executable.path]
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
@@ -88,8 +102,8 @@ def _pkg_rpm_impl(ctx):
     for f in ctx.files.data:
         args += [f.path]
 
+    print(args)
     # Call the generator script.
-    # TODO(katre): Generate a source RPM.
     ctx.actions.run(
         mnemonic = "MakeRpm",
         executable = ctx.executable._make_rpm,
@@ -158,7 +172,6 @@ pkg_rpm = rule(
         "debug": attr.bool(default = False),
 
         # Implicit dependencies.
-        "rpmbuild_path": attr.string(),
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),
             cfg = "exec",
@@ -169,6 +182,10 @@ pkg_rpm = rule(
     executable = False,
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
+    toolchains = ["//toolchains:rpmbuild_toolchain_type"],
+    #exec_compatible_with = [
+    #    "//toolchains:rpmbuild_present",
+    #],
 )
 
 """Creates an RPM format package from the data files.
