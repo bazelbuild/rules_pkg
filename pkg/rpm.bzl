@@ -21,11 +21,12 @@ def _pkg_rpm_impl(ctx):
     """Implements to pkg_rpm rule."""
 
     files = []
+    tools = []
     args = ["--name=" + ctx.label.name]
     if ctx.attr.debug:
         args += ["--debug"]
 
-    toolchain = ctx.toolchains["//toolchains:rpmbuild_toolchain_type"].rpmbuild
+    toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
     if not toolchain.label and not toolchain.path:
         fail("RpmbuildInfo must specify specify one of label or path")
     if toolchain.path:
@@ -33,9 +34,10 @@ def _pkg_rpm_impl(ctx):
         if toolchain.label:
             fail("RpmbuildInfo should not specify both label and path")
     else:
-        rpmbuild_exec = toolchain.label.files.to_list()
-        files += rpmbuild_exec
-        args += ["--rpmbuild=%s" % toolchain.label.files_to_run.executable.path]
+        executable = toolchain.label.files_to_run.executable
+        tools += [executable]
+        tools += toolchain.label.default_runfiles.files.to_list()
+        args += ["--rpmbuild=%s" % executable.path]
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
@@ -111,6 +113,7 @@ def _pkg_rpm_impl(ctx):
             "PYTHONIOENCODING": "UTF-8",
             "PYTHONUTF8": "1",
         },
+        tools = tools,
     )
 
     # Link the RPM to the expected output name.
@@ -176,7 +179,7 @@ pkg_rpm = rule(
     executable = False,
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
-    toolchains = ["//toolchains:rpmbuild_toolchain_type"],
+    toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
 
 """Creates an RPM format package from the data files.
