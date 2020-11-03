@@ -24,8 +24,8 @@ load("//toolchains:autoconf_rpmbuild.bzl", "autoconf_rpmbuild")
 autoconf_rpmbuild(name="rules_pkg_rpmbuild")
 
 # Register the built toolchain if we found it.
-load("@rules_pkg_rpmbuild//:register_toolchain.bzl", "register_rpmbuild_toolchain")
-register_rpmbuild_toolchain()
+load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")
+register_rpmbuild_toolchains()
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
