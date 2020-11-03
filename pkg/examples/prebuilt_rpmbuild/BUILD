@@ -21,9 +21,9 @@ pkg_rpm(
     name = "test-rpm",
     data = [
         "BUILD",
+        "WORKSPACE",
         "readme.md",
         "test_rpm.spec",
-        "WORKSPACE",
     ],
     release = "0",
     spec_file = "test_rpm.spec",

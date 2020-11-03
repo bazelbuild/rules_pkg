@@ -14,7 +14,7 @@
 
 # toolchain to wrap an rpmbuild binary
 
-load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain", "is_rpmbuild_available")
+load("//toolchains:rpmbuild.bzl", "is_rpmbuild_available", "rpmbuild_toolchain")
 
 filegroup(
     name = "standard_package",
