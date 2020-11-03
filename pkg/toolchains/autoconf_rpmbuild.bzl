@@ -15,7 +15,7 @@
 
 def _write_build(rctx, path):
     if not path:
-       path = ""
+        path = ""
     rctx.file(
         "BUILD",
         content = """# This content is generated
@@ -24,7 +24,6 @@ load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
 rpmbuild_toolchain(
     name = "rpmbuild",
     path = "%s",
-    is_present = True,
 )
 
 toolchain(
@@ -33,7 +32,8 @@ toolchain(
     toolchain_type = "@rules_pkg//toolchains:rpmbuild_toolchain_type",
 )
 """ % path,
-        executable=False)
+        executable = False,
+    )
 
 def _write_register_toolchains(rctx, path):
     register_func = """# This content is generated
@@ -41,33 +41,33 @@ def _write_register_toolchains(rctx, path):
 def register_rpmbuild_toolchains():
 """
     if path:
-       register_func += """    native.register_toolchains("@%s//:rpmbuild_toolchain")\n""" % rctx.name
+        register_func += """    native.register_toolchains("@%s//:rpmbuild_toolchain")\n""" % rctx.name
     register_func += """    native.register_toolchains("@rules_pkg//toolchains:rpmbuild_missing_toolchain")\n"""
     rctx.file(
         "register_toolchains.bzl",
         content = register_func,
-        executable=False)
-
+        executable = False,
+    )
 
 def _autoconf_rpmbuild_impl(rctx):
     if not rctx.attr.installed_rpmbuild_path:
-       rpmbuild_path = rctx.which("rpmbuild")
+        rpmbuild_path = rctx.which("rpmbuild")
     else:
-       rpmbuild_path = rctx.attr.installed_rpmbuild_path
-    print("rpmbuild.path='%s'" % rpmbuild_path)
-    _write_build(rctx=rctx, path=rpmbuild_path)
-    _write_register_toolchains(rctx=rctx, path=rpmbuild_path)
-    # I would like to register the toolchain here, but you can only call
-    # register_toolchains from the WORKSPACE file.
+        rpmbuild_path = rctx.attr.installed_rpmbuild_path
+    if rpmbuild_path:
+        print("Found rpmbuild at '%s'" % rpmbuild_path)
+    else:
+        print("No system rpmbuild found.")
+    _write_build(rctx = rctx, path = rpmbuild_path)
+    _write_register_toolchains(rctx = rctx, path = rpmbuild_path)
+    # Note: It would be nice to register the toolchain here, but you can only
+    # call register_toolchains from the WORKSPACE file.
 
 autoconf_rpmbuild = repository_rule(
-    implementation=_autoconf_rpmbuild_impl,
-    local=True,
-    attrs={
-        "installed_rpmbuild_path": attr.string(default=""),
-    }
+    implementation = _autoconf_rpmbuild_impl,
+    doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
+    local = True,
+    attrs = {
+        "installed_rpmbuild_path": attr.string(default = ""),
+    },
 )
-
-
-def XXXXegister_autoconf(repo_name):
-   native.register_toolchains("@%s//:rpmbuild_toolchain" % repo_name)

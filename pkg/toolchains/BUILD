@@ -14,7 +14,7 @@
 
 # toolchain to wrap an rpmbuild binary
 
-load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain", "rpmbuild_toolchain_feature")
+load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain", "is_rpmbuild_available")
 
 filegroup(
     name = "standard_package",
@@ -24,11 +24,11 @@ filegroup(
     visibility = ["//distro:__pkg__"],
 )
 
-# Expose the is_present attribute of the resolved toolchain as a feature flag, so
-# we cant select() on it.
-rpmbuild_toolchain_feature(
-    name = "is_rpmbuild_present",
-    visibility = ["//visibility:public"],
+# Expose the availabilty of an actual rpmbuild as a feature flag, so  we can
+# select() on it.
+is_rpmbuild_available(
+    name = "is_rpmbuild_available",
+    visibility = ["//:__pkg__"],
 )
 
 toolchain_type(
@@ -36,23 +36,23 @@ toolchain_type(
     visibility = ["//visibility:public"],
 )
 
-rpmbuild_toolchain(
-    name = "system_rpmbuild",
-    path = "/usr/bin/rpmbuild",
-    is_present = True,
-)
-
-toolchain(
-    name = "rpmbuild_linux_toolchain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-    ],
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
-    toolchain = ":system_rpmbuild",
-    toolchain_type = ":rpmbuild_toolchain_type",
-)
+# This is an example for the future.
+#rpmbuild_toolchain(
+#    name = "system_rpmbuild",
+#    path = "/usr/bin/rpmbuild",
+#)
+#
+#toolchain(
+#    name = "rpmbuild_linux_toolchain",
+#    exec_compatible_with = [
+#        "@platforms//os:linux",
+#    ],
+#    target_compatible_with = [
+#        "@platforms//os:linux",
+#    ],
+#    toolchain = ":system_rpmbuild",
+#    toolchain_type = ":rpmbuild_toolchain_type",
+#)
 
 # The fallback toolchain
 rpmbuild_toolchain(

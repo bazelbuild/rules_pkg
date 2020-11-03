@@ -20,27 +20,22 @@ spec_filetype = [".spec"]
 def _pkg_rpm_impl(ctx):
     """Implements to pkg_rpm rule."""
 
-
     files = []
     args = ["--name=" + ctx.label.name]
     if ctx.attr.debug:
         args += ["--debug"]
 
-    rpmbuild_info = ctx.toolchains["//toolchains:rpmbuild_toolchain_type"].rpmbuild
-    print("rpmbuild_info", dir(rpmbuild_info))
-    print("rpmbuild_label", dir(rpmbuild_info.label))
-    if not rpmbuild_info.label and not rpmbuild_info.path:
-       fail("RpmbuildInfo must specify specify one of label or path")
-    if rpmbuild_info.path:
-        args += ["--rpmbuild=" + rpmbuild_info.path]
-        if rpmbuild_info.label:
+    toolchain = ctx.toolchains["//toolchains:rpmbuild_toolchain_type"].rpmbuild
+    if not toolchain.label and not toolchain.path:
+        fail("RpmbuildInfo must specify specify one of label or path")
+    if toolchain.path:
+        args += ["--rpmbuild=" + toolchain.path]
+        if toolchain.label:
             fail("RpmbuildInfo should not specify both label and path")
     else:
-        rpmbuild_exec = rpmbuild_info.label.files.to_list()
-        print("files_to_run", dir(rpmbuild_info.label.files_to_run.executable.path))
-        print("rpmbuild_label.files", rpmbuild_exec)
+        rpmbuild_exec = toolchain.label.files.to_list()
         files += rpmbuild_exec
-        args += ["--rpmbuild=%s" % rpmbuild_info.label.files_to_run.executable.path]
+        args += ["--rpmbuild=%s" % toolchain.label.files_to_run.executable.path]
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
@@ -102,7 +97,6 @@ def _pkg_rpm_impl(ctx):
     for f in ctx.files.data:
         args += [f.path]
 
-    print(args)
     # Call the generator script.
     ctx.actions.run(
         mnemonic = "MakeRpm",
@@ -122,14 +116,14 @@ def _pkg_rpm_impl(ctx):
     # Link the RPM to the expected output name.
     ctx.actions.symlink(
         output = ctx.outputs.out,
-        target_file = ctx.outputs.rpm
+        target_file = ctx.outputs.rpm,
     )
 
     # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
         ctx.actions.symlink(
             output = ctx.outputs.rpm_nvra,
-            target_file = ctx.outputs.rpm
+            target_file = ctx.outputs.rpm,
         )
 
 def _pkg_rpm_outputs(version, release):
@@ -183,9 +177,6 @@ pkg_rpm = rule(
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
     toolchains = ["//toolchains:rpmbuild_toolchain_type"],
-    #exec_compatible_with = [
-    #    "//toolchains:rpmbuild_present",
-    #],
 )
 
 """Creates an RPM format package from the data files.

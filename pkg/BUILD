@@ -9,9 +9,9 @@ exports_files(
 )
 
 config_setting(
-    name = "has_rpmbuild",
+    name = "have_rpmbuild",
     flag_values = {
-        "//toolchains:is_rpmbuild_present": "1",
+        "//toolchains:is_rpmbuild_available": "1",
     },
     visibility = ["//visibility:private"],
 )
@@ -19,8 +19,8 @@ config_setting(
 constraint_setting(name = "not_compatible_setting")
 
 constraint_value(
-	name = "not_compatible",
-	constraint_setting = ":not_compatible_setting",
+    name = "not_compatible",
+    constraint_setting = ":not_compatible_setting",
 )
 
 filegroup(
@@ -108,15 +108,15 @@ py_binary(
     srcs = ["make_rpm.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    target_compatible_with = select({
+        ":have_rpmbuild": [],
+        "//conditions:default": [":not_compatible"],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
         ":make_rpm_lib",
     ],
-    target_compatible_with = select({
-        ":has_rpmbuild": [],
-        "//conditions:default": [":not_compatible"],
-    }),
 )
 
 py_library(
