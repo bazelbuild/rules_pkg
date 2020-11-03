@@ -44,7 +44,7 @@ rpmbuild_toolchain = rule(
 
 # Expose the presence of an rpmbuild in the resolved toolchain as a flag.
 def _is_rpmbuild_available_impl(ctx):
-    toolchain = ctx.toolchains["//toolchains:rpmbuild_toolchain_type"].rpmbuild
+    toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
     if toolchain.label or toolchain.path:
         value = "1"
     else:
@@ -54,5 +54,5 @@ def _is_rpmbuild_available_impl(ctx):
 is_rpmbuild_available = rule(
     implementation = _is_rpmbuild_available_impl,
     attrs = {},
-    toolchains = ["//toolchains:rpmbuild_toolchain_type"],
+    toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )

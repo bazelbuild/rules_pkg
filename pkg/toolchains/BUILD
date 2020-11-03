@@ -36,28 +36,9 @@ toolchain_type(
     visibility = ["//visibility:public"],
 )
 
-# This is an example for the future.
-#rpmbuild_toolchain(
-#    name = "system_rpmbuild",
-#    path = "/usr/bin/rpmbuild",
-#)
-#
-#toolchain(
-#    name = "rpmbuild_linux_toolchain",
-#    exec_compatible_with = [
-#        "@platforms//os:linux",
-#    ],
-#    target_compatible_with = [
-#        "@platforms//os:linux",
-#    ],
-#    toolchain = ":system_rpmbuild",
-#    toolchain_type = ":rpmbuild_toolchain_type",
-#)
-
 # The fallback toolchain
 rpmbuild_toolchain(
     name = "no_rpmbuild",
-    path = "",
 )
 
 toolchain(
