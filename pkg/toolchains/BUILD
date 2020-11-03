@@ -1,6 +1,6 @@
 # toolchain to provide the rpmbuild binary
 
-load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
+load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain", "rpmbuild_toolchain_feature")
 
 filegroup(
     name = "standard_package",
@@ -10,11 +10,9 @@ filegroup(
     visibility = ["//distro:__pkg__"],
 )
 
-constraint_setting(name = "is_rpmbuild_present")
-
-constraint_value(
-    name = "rpmbuild_present",
-    constraint_setting = "is_rpmbuild_present",
+# Expose the is_present attribute of the resolved toolchain as a feature flag.
+rpmbuild_toolchain_feature(
+    name = "is_rpmbuild_present",
     visibility = ["//visibility:public"],
 )
 
@@ -26,6 +24,7 @@ toolchain_type(
 rpmbuild_toolchain(
     name = "system_rpmbuild",
     path = "/usr/bin/rpmbuild",
+    is_present = True,
 )
 
 toolchain(

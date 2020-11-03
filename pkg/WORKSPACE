@@ -27,12 +27,6 @@ autoconf_rpmbuild(name="rules_pkg_rpmbuild")
 load("@rules_pkg_rpmbuild//:register_toolchain.bzl", "register_rpmbuild_toolchain")
 register_rpmbuild_toolchain()
 
-#XXXX register_toolchains("@rules_pkg_rpmbuild//:rpmbuild_toolchain")
-
-# load("//toolchains:rpmbuild.bzl", "register_rpmbuild_toolchains")
-# register_toolchains("//foo:fake_rpmbuild")
-# register_rpmbuild_toolchains()
-
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()

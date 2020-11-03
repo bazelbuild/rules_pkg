@@ -8,6 +8,21 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "has_rpmbuild",
+    flag_values = {
+        "//toolchains:is_rpmbuild_present": "1",
+    },
+    visibility = ["//visibility:private"],
+)
+
+constraint_setting(name = "not_compatible_setting")
+
+constraint_value(
+	name = "not_compatible",
+	constraint_setting = ":not_compatible_setting",
+)
+
 filegroup(
     name = "standard_package",
     srcs = glob([
@@ -98,10 +113,10 @@ py_binary(
         ":archive",
         ":make_rpm_lib",
     ],
-    # TODO
-    #target_compatible_with = [
-    #    "//toolchains:rpmbuild_present",
-    #],
+    target_compatible_with = select({
+        ":has_rpmbuild": [],
+        "//conditions:default": [":not_compatible"],
+    }),
 )
 
 py_library(
