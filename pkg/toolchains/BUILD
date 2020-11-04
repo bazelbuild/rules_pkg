@@ -24,6 +24,14 @@ filegroup(
     visibility = ["//distro:__pkg__"],
 )
 
+exports_files(
+    glob([
+       "*.bzl",
+       "*.tmpl",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
 # Expose the availabilty of an actual rpmbuild as a feature flag, so  we can
 # select() on it.
 is_rpmbuild_available(
