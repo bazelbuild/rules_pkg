@@ -20,8 +20,8 @@ load("//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 
 # Find rpmbuild if it exists.
-load("//toolchains:autoconf_rpmbuild.bzl", "autoconf_rpmbuild")
-autoconf_rpmbuild(name="rules_pkg_rpmbuild")
+load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
 # Register the built toolchain if we found it.
 load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")

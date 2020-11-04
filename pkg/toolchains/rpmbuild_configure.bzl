@@ -49,7 +49,7 @@ def register_rpmbuild_toolchains():
         executable = False,
     )
 
-def _autoconf_rpmbuild_impl(rctx):
+def _find_system_rpmbuild_impl(rctx):
     if not rctx.attr.installed_rpmbuild_path:
         rpmbuild_path = rctx.which("rpmbuild")
     else:
@@ -63,8 +63,8 @@ def _autoconf_rpmbuild_impl(rctx):
     # Note: It would be nice to register the toolchain here, but you can only
     # call register_toolchains from the WORKSPACE file.
 
-autoconf_rpmbuild = repository_rule(
-    implementation = _autoconf_rpmbuild_impl,
+find_system_rpmbuild = repository_rule(
+    implementation = _find_system_rpmbuild_impl,
     doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
     local = True,
     attrs = {
