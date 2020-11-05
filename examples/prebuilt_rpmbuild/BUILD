@@ -29,3 +29,12 @@ pkg_rpm(
     spec_file = "test_rpm.spec",
     version = "1",
 )
+
+# If you have rpmbuild, you probably have rpm2cpio too.
+# Feature idea: Add rpm2cpio and cpio to the rpmbuild toolchain
+genrule(
+    name = "inspect_content",
+    srcs = [":test-rpm"],
+    outs = ["content.txt"],
+    cmd = "rpm2cpio $(locations :test-rpm) | cpio -ivt >$@",
+)

@@ -23,7 +23,7 @@ rules_pkg_dependencies()
 load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
-# Register the built toolchain if we found it.
+# Register the newly built toolchain.
 load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")
 register_rpmbuild_toolchains()
 

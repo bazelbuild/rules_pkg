@@ -2,12 +2,12 @@
 load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
 
 rpmbuild_toolchain(
-    name = "rpmbuild",
+    name = "rpmbuild_auto",
     path = "{RPMBUILD_PATH}",
 )
 
 toolchain(
-    name = "rpmbuild_toolchain",
-    toolchain = ":rpmbuild",
+    name = "rpmbuild_auto_toolchain",
+    toolchain = ":rpmbuild_auto",
     toolchain_type = "@rules_pkg//toolchains:rpmbuild_toolchain_type",
 )

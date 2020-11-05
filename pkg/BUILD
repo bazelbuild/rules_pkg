@@ -8,14 +8,6 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-config_setting(
-    name = "have_rpmbuild",
-    flag_values = {
-        "//toolchains:is_rpmbuild_available": "1",
-    },
-    visibility = ["//visibility:private"],
-)
-
 constraint_setting(name = "not_compatible_setting")
 
 constraint_value(
@@ -109,7 +101,7 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY3",
     target_compatible_with = select({
-        ":have_rpmbuild": [],
+        "//toolchains:have_rpmbuild": [],
         "//conditions:default": [":not_compatible"],
     }),
     visibility = ["//visibility:public"],
