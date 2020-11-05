@@ -36,26 +36,25 @@ PackageVariablesInfo = provider(
 # ```
 #
 
-# TODO: should all of these be singluar or plural?
-#
-# Seems like there's no harm in specifying a plural, even in rules: it would
-# allow some degree of simplification of rules without needing to specify a
-# custom manifest.
 PackageFilesInfo = provider(
     doc = """Provider representing the installation of one or more files to destination with attributes""",
     fields = {
         "attributes": """dict of string -> string list: Attributes to apply to installed file(s)""",
-        # TODO(nacl): determine what types actually should represent the sources here.  Files, or Labels?
-        # TODO(nacl): Should this be a map of destination -> source instead?
-        "source_dest_map": """Map of file sources to destinations""",
+        # TODO(nacl): determine what types actually should represent the sources
+        # here.  Files, or Labels?
+
+        # This is a mapping of destinations to sources to allow for the same
+        # target to be installed to multiple locations within a package within a
+        # single provider.
+        "dest_src_map": """Map of file destinations to sources""",
     },
 )
 
-PackageDirInfo = provider(
-    doc = """Provider representing the creation of a single directory in a package""",
+PackageDirsInfo = provider(
+    doc = """Provider representing the creation of one or more directories in a package""",
     fields = {
-        "attributes": """dict of string -> string list: Attributes to apply to created directory""",
-        "destination": """string: Installed directory name""",
+        "attributes": """dict of string -> string list: Attributes to apply to created directories""",
+        "dirs": """string list: installed directory names""",
     },
 )
 
@@ -64,13 +63,12 @@ PackageSymlinkInfo = provider(
     fields = {
         "attributes": """dict of string -> string list: Attributes to apply to created symlink""",
         "destination": """string: Filesystem link 'name'""",
-        "source": """string: Filesystem link 'target'""",
+        "source": """string or Label: Filesystem link 'target'""",
     },
 )
 
 # Grouping provider: the only one that needs to be consumed by packaging (or
 # other) rules that materialize paths.
-
 PackageFilegroupInfo = provider(
     doc = """Provider representing a collection of related packaging providers""",
     fields = {
