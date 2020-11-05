@@ -17,7 +17,7 @@ licenses(["notice"])
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
-load(":my_package_name.bzl", "my_package_naming")
+load(":my_package_name.bzl", "basic_naming", "names_from_toolchains")
 
 config_setting(
     name = "special_build",
@@ -25,7 +25,7 @@ config_setting(
 )
 
 # Exposes the value of the compilation mode to the package naming.
-my_package_naming(
+basic_naming(
     name = "my_naming_vars",
 
     # An explicit value.
@@ -38,21 +38,42 @@ my_package_naming(
     # Use a config_setting flag to specify part of the package name.
     # In this example, we define the config_setting based on a command line
     # flag. Example
-    #     bazel build :my_tar
-    #     bazel build :my_tar --define=SPECIAL=1
+    #     bazel build :example1
+    #     bazel build :example1 --define=SPECIAL=1
     special_build = select({
         ":special_build": "-IsSpecial",
         "//conditions:default": "",
     }),
 )
 
-# Try building with various flag combinations to show the abilities
-#   bazel build :my_tar -c dbg --define=SPECIAL=1
+
+# Try building with various flag combinations to explore.
+#   bazel build :example1
+#   bazel build :example1 -c dbg
+#   bazel build :example1 -define=SPECIAL=1
+#   bazel build :example1 -c dbg --define=SPECIAL=1
 pkg_tar(
-    name = "my_tar",
+    name = "example1",
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
+    package_file_name = "example1-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
     package_variables = ":my_naming_vars",
+)
+
+
+# 
+# names_from_toolchains() extracts variables from the CC toolchain.
+#
+names_from_toolchains(
+    name = "toolchain_vars",
+)
+
+pkg_tar(
+    name = "example2",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "example2-{cc_cpu}-{compiler}-{compilation_mode}.tar",
+    package_variables = ":toolchain_vars",
 )
