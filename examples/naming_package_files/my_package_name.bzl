@@ -52,9 +52,10 @@ def _names_from_toolchains_impl(ctx):
     # calling find_cc_toolchain to direct lookup via the name.
     # cc_toolchain = ctx.toolchains["@rules_cc//cc:toolchain_type"]
     cc_toolchain = find_cc_toolchain(ctx)
+
     # compiler is uninformative. Use the name of the executable
-    values['compiler'] = cc_toolchain.compiler_executable.split('/')[-1]
-    values['cc_cpu'] = cc_toolchain.cpu
+    values["compiler"] = cc_toolchain.compiler_executable.split("/")[-1]
+    values["cc_cpu"] = cc_toolchain.cpu
 
     values["compilation_mode"] = ctx.var.get("COMPILATION_MODE")
 
@@ -68,13 +69,13 @@ names_from_toolchains = rule(
     # Going forward, the preferred way to depend on a toolchain is with via the
     # toolchains atttribute. The current C++ toolchains, however, are still not
     # using toolchain resolution, so we have to depend on the toolchain
-    # directly. 
+    # directly.
     # TODO(https://github.com/bazelbuild/bazel/issues/7260): Delete the
     # _cc_toolchain attribute.
     attrs = {
         "_cc_toolchain": attr.label(
             default = Label(
-                "@rules_cc//cc:current_cc_toolchain"
+                "@rules_cc//cc:current_cc_toolchain",
             ),
         ),
     },

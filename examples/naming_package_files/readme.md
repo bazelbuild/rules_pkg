@@ -49,6 +49,13 @@ def _names_from_toolchains_impl(ctx):
 
 names_from_toolchains = rule(
     implementation = _names_from_toolchains_impl,
+    attrs = {
+        "_cc_toolchain": attr.label(
+            default = Label(
+                "@rules_cc//cc:current_cc_toolchain",
+            ),
+        ),
+    },
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 ```

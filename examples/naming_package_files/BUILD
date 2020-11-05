@@ -16,7 +16,6 @@
 licenses(["notice"])
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-
 load(":my_package_name.bzl", "basic_naming", "names_from_toolchains")
 
 config_setting(
@@ -32,7 +31,7 @@ basic_naming(
     # This technique can be useful if you need to create packages in many
     # different formats but have not decided on the final naming yet. You
     # can use a placeholder and change it on one location.
-    # 
+    #
     product_name = "RulesPkgExamples",
 
     # Use a config_setting flag to specify part of the package name.
@@ -45,7 +44,6 @@ basic_naming(
         "//conditions:default": "",
     }),
 )
-
 
 # Try building with various flag combinations to explore.
 #   bazel build :example1
@@ -61,8 +59,7 @@ pkg_tar(
     package_variables = ":my_naming_vars",
 )
 
-
-# 
+#
 # names_from_toolchains() extracts variables from the CC toolchain.
 #
 names_from_toolchains(
