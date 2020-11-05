@@ -100,10 +100,11 @@ py_binary(
     srcs = ["make_rpm.py"],
     python_version = "PY3",
     srcs_version = "PY3",
-    target_compatible_with = select({
-        "//toolchains:have_rpmbuild": [],
-        "//conditions:default": [":not_compatible"],
-    }),
+    # TODO(aiuto): Enable this for bazel 4.x
+    #target_compatible_with = select({
+    #    "//toolchains:have_rpmbuild": [],
+    #    "//conditions:default": [":not_compatible"],
+    #}),
     visibility = ["//visibility:public"],
     deps = [
         ":archive",
