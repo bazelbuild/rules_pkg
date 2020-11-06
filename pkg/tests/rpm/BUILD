@@ -15,6 +15,7 @@
 
 licenses(["notice"])
 
+load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
 load("//:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(
@@ -25,3 +26,5 @@ pkg_rpm(
     spec_file = "test_rpm.spec",
     version = "1",
 )
+
+create_toolchain_analysis_tests()

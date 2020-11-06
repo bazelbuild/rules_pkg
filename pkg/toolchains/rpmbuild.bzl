@@ -16,14 +16,21 @@
 RpmbuildInfo = provider(
     doc = """Platform inde artifact.""",
     fields = {
+        "name": "The name of the toolchain",
+        "valid": "Is this toolchain valid and usable?",
         "label": "The path to a target I will build",
         "path": "The path to a pre-built rpmbuild",
     },
 )
 
 def _rpmbuild_toolchain_impl(ctx):
+    if ctx.attr.label and ctx.attr.path:
+       fail("rpmbuild_toolchain must not specify both label and path.")
+    valid = bool(ctx.attr.label) or bool(ctx.attr.path)
     toolchain_info = platform_common.ToolchainInfo(
         rpmbuild = RpmbuildInfo(
+            name = str(ctx.label),
+            valid = valid,
             label = ctx.attr.label,
             path = ctx.attr.path,
         ),
@@ -45,14 +52,15 @@ rpmbuild_toolchain = rule(
 # Expose the presence of an rpmbuild in the resolved toolchain as a flag.
 def _is_rpmbuild_available_impl(ctx):
     toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
-    if toolchain.label or toolchain.path:
-        value = "1"
-    else:
-        value = "0"
-    return [config_common.FeatureFlagInfo(value = value)]
+    return [config_common.FeatureFlagInfo(
+        value = ("1" if toolchain.valid else "0"))]
 
 is_rpmbuild_available = rule(
     implementation = _is_rpmbuild_available_impl,
     attrs = {},
     toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
+
+
+def rpmbuild_register_toolchains():
+    native.register_toolchains("@rules_pkg//toolchains:rpmbuild_missing_toolchain")

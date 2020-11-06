@@ -46,12 +46,11 @@ def _pkg_rpm_impl(ctx):
               + ' to migrate to toolchains')
     else:
         toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
-        if not toolchain.label and not toolchain.path:
-            fail("RpmbuildInfo must specify specify one of label or path")
+        if not toolchain.valid:
+            fail("The rpmbuild_toolchain is not properly configured: "
+                 + toolchain.name)
         if toolchain.path:
             args += ["--rpmbuild=" + toolchain.path]
-            if toolchain.label:
-                fail("RpmbuildInfo should not specify both label and path")
         else:
             executable = toolchain.label.files_to_run.executable
             tools += [executable]
