@@ -24,11 +24,24 @@ and debian package.
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_pkg",
-    url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.5/rules_pkg-0.2.5.tar.gz",
-    sha256 = "352c090cc3d3f9a6b4e676cf42a6047c16824959b438895a76c2989c6d7c246a",
+    url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.3.0/rules_pkg-0.3.0.tar.gz",
+    sha256 = "6b5969a7acd7b60c02f816773b06fcf32fbe8ba0c7919ccdc2df4f8fb923804a",
 )
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
+```
+
+If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
+`rpmbuild` tool.  Add this to WORKSPACE to use the installed version.
+
+```
+# Find rpmbuild provided on your system.
+load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+find_system_rpmbuild(name="rules_pkg_rpmbuild")
+
+# Register the newly built toolchain.
+load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")
+register_rpmbuild_toolchains()
 ```
 
 <a name="basic-example"></a>

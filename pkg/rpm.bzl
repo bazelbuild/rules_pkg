@@ -40,18 +40,23 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.debug:
         args += ["--debug"]
 
-    toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
-    if not toolchain.label and not toolchain.path:
-        fail("RpmbuildInfo must specify specify one of label or path")
-    if toolchain.path:
-        args += ["--rpmbuild=" + toolchain.path]
-        if toolchain.label:
-            fail("RpmbuildInfo should not specify both label and path")
+    if ctx.attr.rpmbuild_path:
+        args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
+        print('rpmbuild_path is deprecated. See the README for instructions on how'
+              + ' to migrate to toolchains')
     else:
-        executable = toolchain.label.files_to_run.executable
-        tools += [executable]
-        tools += toolchain.label.default_runfiles.files.to_list()
-        args += ["--rpmbuild=%s" % executable.path]
+        toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
+        if not toolchain.label and not toolchain.path:
+            fail("RpmbuildInfo must specify specify one of label or path")
+        if toolchain.path:
+            args += ["--rpmbuild=" + toolchain.path]
+            if toolchain.label:
+                fail("RpmbuildInfo should not specify both label and path")
+        else:
+            executable = toolchain.label.files_to_run.executable
+            tools += [executable]
+            tools += toolchain.label.default_runfiles.files.to_list()
+            args += ["--rpmbuild=%s" % executable.path]
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
@@ -183,6 +188,7 @@ pkg_rpm = rule(
         "debug": attr.bool(default = False),
 
         # Implicit dependencies.
+        "rpmbuild_path": attr.string(),  # deprecated
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),
             cfg = "exec",
