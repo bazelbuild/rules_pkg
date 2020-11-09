@@ -48,14 +48,12 @@ def _write_register_toolchains(rctx, found_rpmbuild):
     )
 
 def _find_system_rpmbuild_impl(rctx):
-    if not rctx.attr.installed_rpmbuild_path:
-        rpmbuild_path = rctx.which("rpmbuild")
-    else:
-        rpmbuild_path = rctx.attr.installed_rpmbuild_path
-    if rpmbuild_path:
-        print("Found rpmbuild at '%s'" % rpmbuild_path)
-    else:
-        print("No system rpmbuild found.")
+    rpmbuild_path = rctx.which("rpmbuild")
+    if rctx.attr.verbose:
+        if rpmbuild_path:
+            print("Found rpmbuild at '%s'" % rpmbuild_path)
+        else:
+            print("No system rpmbuild found.")
     _write_build(rctx = rctx, path = rpmbuild_path)
     _write_register_toolchains(rctx = rctx, found_rpmbuild = bool(rpmbuild_path))
     # It would be nice to register the toolchain here, but you can only call
@@ -66,6 +64,8 @@ find_system_rpmbuild = repository_rule(
     doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
     local = True,
     attrs = {
-        "installed_rpmbuild_path": attr.string(default = ""),
+        "verbose": attr.bool(
+            doc = "If true, print status messages.",
+        ),
     },
 )

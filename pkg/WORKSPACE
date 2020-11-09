@@ -29,7 +29,7 @@ bazel_skylib_workspace()
 
 # Find rpmbuild if it exists.
 load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
-find_system_rpmbuild(name="rules_pkg_rpmbuild")
+find_system_rpmbuild(name="rules_pkg_rpmbuild", verbose=True)
 
 # Register the newly built toolchain.
 load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")

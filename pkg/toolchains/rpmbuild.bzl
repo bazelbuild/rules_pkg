@@ -25,7 +25,7 @@ RpmbuildInfo = provider(
 
 def _rpmbuild_toolchain_impl(ctx):
     if ctx.attr.label and ctx.attr.path:
-       fail("rpmbuild_toolchain must not specify both label and path.")
+        fail("rpmbuild_toolchain must not specify both label and path.")
     valid = bool(ctx.attr.label) or bool(ctx.attr.path)
     toolchain_info = platform_common.ToolchainInfo(
         rpmbuild = RpmbuildInfo(
@@ -41,11 +41,14 @@ rpmbuild_toolchain = rule(
     implementation = _rpmbuild_toolchain_impl,
     attrs = {
         "label": attr.label(
+            doc = "A valid label of a target to build or a prebuilt binary.",
             cfg = "exec",
             executable = True,
             allow_files = True,
         ),
-        "path": attr.string(),
+        "path": attr.string(
+            doc = "The path to the rpmbuild executable.",
+        ),
     },
 )
 
@@ -53,14 +56,14 @@ rpmbuild_toolchain = rule(
 def _is_rpmbuild_available_impl(ctx):
     toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
     return [config_common.FeatureFlagInfo(
-        value = ("1" if toolchain.valid else "0"))]
+        value = ("1" if toolchain.valid else "0"),
+    )]
 
 is_rpmbuild_available = rule(
     implementation = _is_rpmbuild_available_impl,
     attrs = {},
     toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
-
 
 def rpmbuild_register_toolchains():
     native.register_toolchains("@rules_pkg//toolchains:rpmbuild_missing_toolchain")
