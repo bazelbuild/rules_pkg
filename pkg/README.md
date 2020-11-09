@@ -38,10 +38,6 @@ If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
 # Find rpmbuild provided on your system.
 load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name="rules_pkg_rpmbuild")
-
-# Register the newly built toolchain.
-load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")
-register_rpmbuild_toolchains()
 ```
 
 <a name="basic-example"></a>

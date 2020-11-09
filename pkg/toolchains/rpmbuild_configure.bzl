@@ -26,27 +26,6 @@ def _write_build(rctx, path):
         executable = False,
     )
 
-def _write_register_toolchains(rctx, found_rpmbuild):
-    toolchains = []
-    if found_rpmbuild:
-        toolchains.append("@%s//:rpmbuild_auto_toolchain" % rctx.name)
-
-    # We need a fallback toolchain so that toolchain resolution succeeds.
-    # If https://github.com/bazelbuild/bazel/issues/12419 gets done, then we
-    # can cut this out.
-    toolchains.append("@rules_pkg//toolchains:rpmbuild_missing_toolchain")
-
-    register_func = "def register_rpmbuild_toolchains():\n"
-    register_func += "".join([
-        """    native.register_toolchains("%s")\n""" % t
-        for t in toolchains
-    ])
-    rctx.file(
-        "register_toolchains.bzl",
-        content = register_func,
-        executable = False,
-    )
-
 def _find_system_rpmbuild_impl(rctx):
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
@@ -55,11 +34,8 @@ def _find_system_rpmbuild_impl(rctx):
         else:
             print("No system rpmbuild found.")
     _write_build(rctx = rctx, path = rpmbuild_path)
-    _write_register_toolchains(rctx = rctx, found_rpmbuild = bool(rpmbuild_path))
-    # It would be nice to register the toolchain here, but you can only call
-    # register_toolchains from the WORKSPACE file.
 
-find_system_rpmbuild = repository_rule(
+_find_system_rpmbuild = repository_rule(
     implementation = _find_system_rpmbuild_impl,
     doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
     local = True,
@@ -69,3 +45,9 @@ find_system_rpmbuild = repository_rule(
         ),
     },
 )
+
+def find_system_rpmbuild(name, verbose=False):
+    _find_system_rpmbuild(name=name, verbose=verbose)
+    native.register_toolchains(
+        "@%s//:rpmbuild_auto_toolchain" % name,
+        "@rules_pkg//toolchains:rpmbuild_missing_toolchain")

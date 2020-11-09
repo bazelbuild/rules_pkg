@@ -20,11 +20,6 @@ toolchain add the following stanza to WORKSPACE:
   # Find rpmbuild if it exists.
   load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
   find_system_rpmbuild(name="rules_pkg_rpmbuild")
-
-  # Register the newly created toolchain.
-  load("@rules_pkg_rpmbuild//:register_toolchains.bzl", "register_rpmbuild_toolchains")
-  register_rpmbuild_toolchains()
-
 """
 
 rpm_filetype = [".rpm"]
