@@ -56,6 +56,7 @@ def _names_from_toolchains_impl(ctx):
     # compiler is uninformative. Use the name of the executable
     values["compiler"] = cc_toolchain.compiler_executable.split("/")[-1]
     values["cc_cpu"] = cc_toolchain.cpu
+    values["libc"] = cc_toolchain.libc
 
     values["compilation_mode"] = ctx.var.get("COMPILATION_MODE")
 
