@@ -176,7 +176,7 @@ class PktDebTest(unittest.TestCase):
   def test_control_files(self):
     expected = [
         {'name': './conffiles', 'mode': 0o644},
-        {'name': './config', 'mode': 0o644},
+        {'name': './config', 'mode': 0o755},
         {'name': './control', 'mode': 0o644},
         {'name': './preinst', 'mode': 0o755},
         {'name': './templates', 'mode': 0o644},
