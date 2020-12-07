@@ -52,6 +52,8 @@ def _names_from_toolchains_impl(ctx):
     # calling find_cc_toolchain to direct lookup via the name.
     # cc_toolchain = ctx.toolchains["@rules_cc//cc:toolchain_type"]
     cc_toolchain = find_cc_toolchain(ctx)
+    for i in dir(cc_toolchain):
+      print(getattr(cc_toolchain, i))
 
     # compiler is uninformative. Use the name of the executable
     values["compiler"] = cc_toolchain.compiler_executable.split("/")[-1]
