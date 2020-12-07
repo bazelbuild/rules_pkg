@@ -76,6 +76,7 @@ def _pkg_tar_impl(ctx):
 
     # Start building the arguments.
     args = [
+        "--root_directory=" + ctx.attr.package_base,
         "--output=" + output_file.path,
         package_dir_arg,
         "--mode=" + ctx.attr.mode,
@@ -299,6 +300,7 @@ pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(),
+        "package_base": attr.string(default = "./"),
         "package_dir": attr.string(),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
