@@ -412,9 +412,9 @@ pkg_deb_impl = rule(
     },
 )
 
-def pkg_deb(name, package, **kwargs):
+def pkg_deb(name, package, archive_name=None, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
-    archive_name = kwargs.get("archive_name") or name
+    archive_name = archive_name or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
     out_deb = "%s_%s_%s.deb" % (package, version, architecture)
