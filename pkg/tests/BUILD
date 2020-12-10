@@ -272,14 +272,19 @@ py_test(
 
 pkg_deb(
     name = "test-deb",
+    architecture = select({
+        "//conditions:default": "all",
+    }),
     breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
+    changes = "titi_test_all.changes",
     conffiles = [
         "/etc/nsswitch.conf",
         "/etc/other",
     ],
     config = ":testdata/config",
     data = ":test-tar-basic-gz.tar.gz",
+    deb = "titi_test_all.deb",
     depends = [
         "dep1",
         "dep2",

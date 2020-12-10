@@ -417,8 +417,12 @@ def pkg_deb(name, package, archive_name=None, **kwargs):
     archive_name = archive_name or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
-    out_deb = "%s_%s_%s.deb" % (package, version, architecture)
-    out_changes = "%s_%s_%s.changes" % (package, version, architecture)
+    out_deb = kwargs.pop("deb", None)
+    if not out_deb:
+        out_deb = "%s_%s_%s.deb" % (package, version, architecture)
+    out_changes = kwargs.pop("changes", None)
+    if not out_changes:
+        out_changes = "%s_%s_%s.changes" % (package, version, architecture)
 
     pkg_deb_impl(
         name = name,
