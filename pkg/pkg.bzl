@@ -355,7 +355,7 @@ def pkg_tar(name, **kwargs):
     extension = kwargs.get("extension") or "tar"
     pkg_tar_impl(
         name = name,
-        out = kwargs.get("out") or (archive_name + "." + extension),
+        out = kwargs.pop("out", None) or (archive_name + "." + extension),
         **kwargs,
     )
 
