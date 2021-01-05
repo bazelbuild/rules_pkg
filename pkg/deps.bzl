@@ -31,10 +31,10 @@ def rules_pkg_dependencies():
         sha256 = "97e70364e9249702246c0e9444bccdc4b847bed1eb03c5a3ece4f83dfe6abc44",
     )
     maybe(
-        git_repository,
+        http_archive,
         name = "rules_python",
-        remote = "https://github.com/bazelbuild/rules_python.git",
-        commit = "4b84ad270387a7c439ebdccfd530e2339601ef27",  # (2019-08-02 or later)
+        url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+        sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
     )
 
 
