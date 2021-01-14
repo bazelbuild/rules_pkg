@@ -351,12 +351,17 @@ def pkg_tar(name, **kwargs):
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
                 kwargs["srcs"] = kwargs.pop("files")
-    archive_name = kwargs.get("archive_name") or name
+    archive_name = kwargs.pop("archive_name", default = None)
     extension = kwargs.get("extension") or "tar"
+    if archive_name:
+        if kwargs.get("package_file_name"):
+            fail("You may not set both archive_name and package_file_name")
+        print("archive_name is deprecated. Use package_file_name instead.")
+        kwargs["package_file_name"] = archive_name + "." + extension
     pkg_tar_impl(
         name = name,
-        out = kwargs.get("out") or (archive_name + "." + extension),
-        **kwargs,
+        out = kwargs.get("out") or (name + "." + extension),
+        **kwargs
     )
 
 # A rule for creating a deb file, see README.md
