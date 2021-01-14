@@ -41,13 +41,13 @@ rpmbuild_toolchain = rule(
     implementation = _rpmbuild_toolchain_impl,
     attrs = {
         "label": attr.label(
-            doc = "A valid label of a target to build or a prebuilt binary.",
+            doc = "A valid label of a target to build or a prebuilt binary. Mutually exclusive with path.",
             cfg = "exec",
             executable = True,
             allow_files = True,
         ),
         "path": attr.string(
-            doc = "The path to the rpmbuild executable.",
+            doc = "The path to the rpmbuild executable. Mutually exclusive with label.",
         ),
     },
 )
