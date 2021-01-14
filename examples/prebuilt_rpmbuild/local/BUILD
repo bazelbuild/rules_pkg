@@ -11,20 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# -*- coding: utf-8 -*-
 
-licenses(["notice"])
+load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
 
-load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
-load("//:rpm.bzl", "pkg_rpm")
-
-pkg_rpm(
-    name = "test-rpm",
-    data = ["//tests:archive_testdata"],
-    debug = 1,
-    release = "0",
-    spec_file = "test_rpm.spec",
-    version = "1",
+rpmbuild_toolchain(
+    name = "prebuilt_rpmbuild",
+    # You could also point to a target that builds rpmbuild from source.
+    label = ":rpmbuild_binary",
 )
 
-create_toolchain_analysis_tests()
+toolchain(
+    name = "local_rpmbuild",
+    toolchain = ":prebuilt_rpmbuild",
+    toolchain_type = "@rules_pkg//toolchains:rpmbuild_toolchain_type",
+)
