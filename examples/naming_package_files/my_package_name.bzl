@@ -67,7 +67,7 @@ def _names_from_toolchains_impl(ctx):
 #
 names_from_toolchains = rule(
     implementation = _names_from_toolchains_impl,
-    # Going forward, the preferred way to depend on a toolchain is with via the
+    # Going forward, the preferred way to depend on a toolchain through the
     # toolchains atttribute. The current C++ toolchains, however, are still not
     # using toolchain resolution, so we have to depend on the toolchain
     # directly.
