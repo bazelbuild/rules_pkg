@@ -8,6 +8,13 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+constraint_setting(name = "not_compatible_setting")
+
+constraint_value(
+    name = "not_compatible",
+    constraint_setting = ":not_compatible_setting",
+)
+
 filegroup(
     name = "standard_package",
     srcs = glob([
@@ -93,6 +100,11 @@ py_binary(
     srcs = ["make_rpm.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    # TODO(aiuto): Enable this for bazel 4.x
+    #target_compatible_with = select({
+    #    "//toolchains:have_rpmbuild": [],
+    #    "//conditions:default": [":not_compatible"],
+    #}),
     visibility = ["//visibility:public"],
     deps = [
         ":archive",

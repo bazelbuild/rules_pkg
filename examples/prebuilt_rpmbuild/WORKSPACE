@@ -11,20 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# -*- coding: utf-8 -*-
 
-licenses(["notice"])
+workspace(name = "rules_pkg_example_prebuilt_rpmbuild")
 
-load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
-load("//:rpm.bzl", "pkg_rpm")
-
-pkg_rpm(
-    name = "test-rpm",
-    data = ["//tests:archive_testdata"],
-    debug = 1,
-    release = "0",
-    spec_file = "test_rpm.spec",
-    version = "1",
+local_repository(
+    name = "rules_pkg",
+    path = "../../pkg",
 )
 
-create_toolchain_analysis_tests()
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
+
+load("//local:rpmbuild.bzl", "register_my_rpmbuild_toolchain")
+
+register_my_rpmbuild_toolchain()

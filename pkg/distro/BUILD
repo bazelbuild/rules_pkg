@@ -17,6 +17,7 @@ pkg_tar(
     srcs = [
         ":small_workspace",
         "//:standard_package",
+        "//toolchains:standard_package",
         "//releasing:standard_package",
     ],
     extension = "tar.gz",
