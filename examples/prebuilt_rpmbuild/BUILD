@@ -13,18 +13,26 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
-load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
-load("//:rpm.bzl", "pkg_rpm")
+load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(
     name = "test-rpm",
-    data = ["//tests:archive_testdata"],
-    debug = 1,
+    data = [
+        "BUILD",
+        "WORKSPACE",
+        "readme.md",
+        "test_rpm.spec",
+    ],
     release = "0",
     spec_file = "test_rpm.spec",
     version = "1",
 )
 
-create_toolchain_analysis_tests()
+# If you have rpmbuild, you probably have rpm2cpio too.
+# Feature idea: Add rpm2cpio and cpio to the rpmbuild toolchain
+genrule(
+    name = "inspect_content",
+    srcs = [":test-rpm"],
+    outs = ["content.txt"],
+    cmd = "rpm2cpio $(locations :test-rpm) | cpio -ivt >$@",
+)

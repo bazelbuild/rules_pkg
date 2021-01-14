@@ -151,9 +151,15 @@ class InvalidRpmbuildError(Exception):
 
 
 def FindRpmbuild(rpmbuild_path):
+  """Finds absolute path to rpmbuild.
+
+  Args:
+    rpmbuild_path: path to the rpmbuild_binary. If None, find 'rpmbuild' by
+                   walking $PATH.
+  """
   if rpmbuild_path:
-    if not IsExe(rpmbuild_path):
-      raise InvalidRpmbuildError('{} is not executable'.format(rpmbuild_path))
+    if not rpmbuild_path.startswith(os.path.sep):
+      return os.path.join(os.getcwd(), rpmbuild_path)
     return rpmbuild_path
   path = Which('rpmbuild')
   if path:

@@ -11,7 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules to create RPM archives."""
+"""Rules to create RPM archives.
+
+pkg_rpm() depends on the existence of an rpmbuild toolchain. Many users will
+find to convenient to use the one provided with their system. To enable that
+toolchain add the following stanza to WORKSPACE:
+
+  # Find rpmbuild if it exists.
+  load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+  find_system_rpmbuild(name="rules_pkg_rpmbuild")
+"""
 
 rpm_filetype = [".rpm"]
 
@@ -21,12 +30,27 @@ def _pkg_rpm_impl(ctx):
     """Implements to pkg_rpm rule."""
 
     files = []
+    tools = []
     args = ["--name=" + ctx.label.name]
     if ctx.attr.debug:
         args += ["--debug"]
 
     if ctx.attr.rpmbuild_path:
         args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
+        print('rpmbuild_path is deprecated. See the README for instructions on how'
+              + ' to migrate to toolchains')
+    else:
+        toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
+        if not toolchain.valid:
+            fail("The rpmbuild_toolchain is not properly configured: "
+                 + toolchain.name)
+        if toolchain.path:
+            args += ["--rpmbuild=" + toolchain.path]
+        else:
+            executable = toolchain.label.files_to_run.executable
+            tools += [executable]
+            tools += toolchain.label.default_runfiles.files.to_list()
+            args += ["--rpmbuild=%s" % executable.path]
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
@@ -89,7 +113,6 @@ def _pkg_rpm_impl(ctx):
         args += [f.path]
 
     # Call the generator script.
-    # TODO(katre): Generate a source RPM.
     ctx.actions.run(
         mnemonic = "MakeRpm",
         executable = ctx.executable._make_rpm,
@@ -103,19 +126,20 @@ def _pkg_rpm_impl(ctx):
             "PYTHONIOENCODING": "UTF-8",
             "PYTHONUTF8": "1",
         },
+        tools = tools,
     )
 
     # Link the RPM to the expected output name.
     ctx.actions.symlink(
         output = ctx.outputs.out,
-        target_file = ctx.outputs.rpm
+        target_file = ctx.outputs.rpm,
     )
 
     # Link the RPM to the RPM-recommended output name if possible.
     if "rpm_nvra" in dir(ctx.outputs):
         ctx.actions.symlink(
             output = ctx.outputs.rpm_nvra,
-            target_file = ctx.outputs.rpm
+            target_file = ctx.outputs.rpm,
         )
 
 def _pkg_rpm_outputs(version, release):
@@ -158,7 +182,7 @@ pkg_rpm = rule(
         "debug": attr.bool(default = False),
 
         # Implicit dependencies.
-        "rpmbuild_path": attr.string(),
+        "rpmbuild_path": attr.string(),  # deprecated
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),
             cfg = "exec",
@@ -169,6 +193,7 @@ pkg_rpm = rule(
     executable = False,
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
+    toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
 
 """Creates an RPM format package from the data files.
