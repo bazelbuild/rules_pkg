@@ -29,13 +29,17 @@ bazel_skylib_workspace()
 
 # Find rpmbuild if it exists.
 load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
-find_system_rpmbuild(name="rules_pkg_rpmbuild", verbose=True)
+
+find_system_rpmbuild(
+    name = "rules_pkg_rpmbuild",
+    verbose = True,
+)
 
 http_archive(
     name = "bazel_stardoc",
-    url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.zip",
     sha256 = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a",
     strip_prefix = "stardoc-0.4.0",
+    url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.zip",
 )
 
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")

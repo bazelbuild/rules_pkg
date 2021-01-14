@@ -13,8 +13,6 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(

@@ -70,50 +70,50 @@ toolchain_contents_test = analysistest.make(
 
 def _create_toolchain_creation_tests():
     rpmbuild_toolchain(
-        name = "label_and_path",
+        name = "tc_label_and_path",
         label = "foo",
         path = "bar",
         tags = ["manual"],
     )
     generic_neg_test(
-        name = "label_and_path_test",
-        target_under_test = ":label_and_path",
+        name = "tc_label_and_path_test",
+        target_under_test = ":tc_label_and_path",
         reason = "rpmbuild_toolchain must not specify both label and path.",
     )
 
     rpmbuild_toolchain(
-        name = "no_label_or_path",
+        name = "tc_no_label_or_path",
         tags = ["manual"],
     )
     toolchain_contents_test(
-        name = "no_label_or_path_test",
-        target_under_test = ":no_label_or_path",
+        name = "tc_no_label_or_path_test",
+        target_under_test = ":tc_no_label_or_path",
         expect_valid = False,
         expect_label = None,
         expect_path = "",
     )
 
     rpmbuild_toolchain(
-        name = "just_label",
+        name = "tc_just_label",
         label = ":toolchain_test.bzl",  # Using self so we have a real target.
         tags = ["manual"],
     )
     toolchain_contents_test(
-        name = "just_label_test",
-        target_under_test = ":just_label",
+        name = "tc_just_label_test",
+        target_under_test = ":tc_just_label",
         expect_valid = True,
         expect_label = Label("//tests/rpm:toolchain_test.bzl"),
         expect_path = "",
     )
 
     rpmbuild_toolchain(
-        name = "just_path",
+        name = "tc_just_path",
         path = "/usr/bin/foo",
         tags = ["manual"],
     )
     toolchain_contents_test(
-        name = "just_path_test",
-        target_under_test = ":just_path",
+        name = "tc_just_path_test",
+        target_under_test = ":tc_just_path",
         expect_valid = True,
         expect_label = None,
         expect_path = "/usr/bin/foo",

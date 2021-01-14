@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rules to create RPM archives.
 
-rpm_pkg() depends on the existence of an rpmbuild toolchain. Many users will
+pkg_rpm() depends on the existence of an rpmbuild toolchain. Many users will
 find to convenient to use the one provided with their system. To enable that
 toolchain add the following stanza to WORKSPACE:
 
