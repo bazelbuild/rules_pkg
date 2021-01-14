@@ -303,13 +303,8 @@ pkg_deb(
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-<<<<<<< HEAD
-    build_tar = "//:build_tar",
+    # build_tar = "//:build_tar",
     extension = ext,
-=======
-    extension = "tar%s" % ext,
-    # extension = ext[1:],
->>>>>>> main
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
