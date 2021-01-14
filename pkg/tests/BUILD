@@ -138,6 +138,15 @@ pkg_tar(
     package_dir_file = "testdata/test_tar_package_dir_file.txt",
 )
 
+
+pkg_tar(
+    name = "test_tar_out",
+    srcs = [
+        ":BUILD",
+    ],
+    out = "out.tar",
+)
+
 pkg_zip(
     name = "test_zip_empty",
     srcs = [],
