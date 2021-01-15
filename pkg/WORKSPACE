@@ -46,7 +46,13 @@ load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
 
+# TODO(nacl): remove this when the "new" framework is ready.
 local_repository(
     name = "experimental_test_external_repo",
     path = "experimental/tests/external_repo",
+)
+
+local_repository(
+    name = "mappings_test_external_repo",
+    path = "tests/mappings/external_repo",
 )
