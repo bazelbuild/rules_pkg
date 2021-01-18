@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Register a prebuilt rpmbuild.""".
 
+# buildifier: disable=unnamed-macro
 def register_my_rpmbuild_toolchain():
+    """Register a prebuilt rpmbuild.""".
     native.register_toolchains("//local:local_rpmbuild")

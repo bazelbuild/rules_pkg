@@ -13,162 +13,140 @@
 # limitations under the License.
 
 import filecmp
-import os
 import unittest
+from zipfile import ZipFile
+
 from bazel_tools.tools.python.runfiles import runfiles
 from build_zip import parse_date, ZIP_EPOCH
-from zipfile import ZipFile
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
 EXECUTABLE_CRC = 342626072
 
+
 class ZipTest(unittest.TestCase):
-    def get_test_zip(self, zipfile):
-        """Get the file path to a generated zip in the runfiles."""
 
-        return self.data_files.Rlocation(
-            "rules_pkg/tests/" + zipfile
-        )
+  def get_test_zip(self, zipfile):
+    """Get the file path to a generated zip in the runfiles."""
 
-    def setUp(self):
-        self.data_files = runfiles.Create()
+    return self.data_files.Rlocation(
+        "rules_pkg/tests/" + zipfile
+    )
+
+  def setUp(self):
+    super(ZipTest, self).setUp()
+    self.data_files = runfiles.Create()
+
 
 class ZipContentsCase(ZipTest):
-    """Use zipfile to check the contents of some generated zip files."""
+  """Use zipfile to check the contents of some generated zip files."""
 
-    def assertZipFileContent(self, zipfile, content):
-        """Assert that zipfile contains the entries described by content.
+  def assertZipFileContent(self, zipfile, content):
+    """Assert that zipfile contains the entries described by content.
 
-        Args:
-            zipfile: the test-package-relative path to a zip file to test.
-            content: an array of dictionaries containing a filename and crc
-                     key, and optionally a timestamp key.
-        """
-        with ZipFile(self.get_test_zip(zipfile)) as f:
-            infos = f.infolist()
-            self.assertEqual(len(infos), len(content))
+    Args:
+        zipfile: the test-package-relative path to a zip file to test.
+        content: an array of dictionaries containing a filename and crc key,
+                 and optionally a timestamp key.
+    """
+    with ZipFile(self.get_test_zip(zipfile)) as f:
+      infos = f.infolist()
+      self.assertEqual(len(infos), len(content))
 
-            for info, expected in zip(infos, content):
-                self.assertEqual(info.filename, expected["filename"])
-                self.assertEqual(info.CRC, expected["crc"])
+      for info, expected in zip(infos, content):
+        self.assertEqual(info.filename, expected["filename"])
+        self.assertEqual(info.CRC, expected["crc"])
 
-                ts = parse_date(expected.get("timestamp", ZIP_EPOCH))
-                self.assertEqual(info.date_time, ts)
-                self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
+        ts = parse_date(expected.get("timestamp", ZIP_EPOCH))
+        self.assertEqual(info.date_time, ts)
+        self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
 
+  def test_empty(self):
+    self.assertZipFileContent("test_zip_empty.zip", [])
 
-    def testEmpty(self):
-        self.assertZipFileContent("test_zip_empty.zip", [])
+  def test_basic(self):
+    self.assertZipFileContent("test_zip_basic.zip", [
+        {"filename": "hello.txt", "crc": HELLO_CRC},
+        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
-    def testBasic(self):
-        self.assertZipFileContent(
-            "test_zip_basic.zip",
-            [
-                {"filename": "hello.txt", "crc": HELLO_CRC},
-                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
+  def test_timestamp(self):
+    self.assertZipFileContent("test_zip_timestamp.zip", [
+        {"filename": "hello.txt", "crc": HELLO_CRC, "timestamp": 1234567890},
+    ])
 
-    def testTimestamp(self):
-        self.assertZipFileContent(
-            "test_zip_timestamp.zip",
-            [
-                {"filename": "hello.txt", "crc": HELLO_CRC, "timestamp": 1234567890},
-            ],
-        )
+  def test_permissions(self):
+    self.assertZipFileContent("test_zip_permissions.zip", [
+        {
+            "filename": "executable.sh",
+            "crc": EXECUTABLE_CRC,
+            "timestamp": 1234567890,
+            "attr": 0o644,
+        }
+    ])
 
-    def testPermissions(self):
-        self.assertZipFileContent(
-            "test_zip_permissions.zip",
-            [
-                {
-                    "filename": "executable.sh",
-                    "crc": EXECUTABLE_CRC,
-                    "timestamp": 1234567890,
-                    "attr": 0o644,
-                }
-            ]
-        )
+  def test_package_dir(self):
+    self.assertZipFileContent("test_zip_package_dir0.zip", [
+        {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
+        {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
-    def testPackageDir(self):
-        self.assertZipFileContent(
-            "test_zip_package_dir0.zip",
-            [
-                {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
-                {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
+  def test_zip_strip_prefix_empty(self):
+    self.assertZipFileContent("test-zip-strip_prefix-empty.zip", [
+        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
-    def testZipStripPrefixEmpty(self):
-        self.assertZipFileContent(
-            "test-zip-strip_prefix-empty.zip",
-            [
-                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
+  def test_zip_strip_prefix_none(self):
+    self.assertZipFileContent("test-zip-strip_prefix-none.zip", [
+        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
-    def testZipStripPrefixNone(self):
-        self.assertZipFileContent(
-            "test-zip-strip_prefix-none.zip",
-            [
-                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
+  def test_zip_strip_prefix_zipcontent(self):
+    self.assertZipFileContent("test-zip-strip_prefix-zipcontent.zip", [
+        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
-    def testZipStripPrefixZipcontent(self):
-        self.assertZipFileContent(
-            "test-zip-strip_prefix-zipcontent.zip",
-            [
-                {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
-
-    def testZipStripPrefixDot(self):
-        self.assertZipFileContent(
-            "test-zip-strip_prefix-dot.zip",
-            [
-                {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
-            ],
-        )
+  def test_zip_strip_prefix_dot(self):
+    self.assertZipFileContent("test-zip-strip_prefix-dot.zip", [
+        {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
+    ])
 
 
 class ZipEquivalency(ZipTest):
-    """Check that some generated zip files are equivalent to each-other."""
+  """Check that some generated zip files are equivalent to each-other."""
 
-    def assertFilesEqual(self, actual, expected):
-        """Assert that two zip files contain the same bytes."""
+  def assertFilesEqual(self, actual, expected):
+    """Assert that two zip files contain the same bytes."""
 
-        zipsAreEqual = filecmp.cmp(
-            self.get_test_zip(actual),
-            self.get_test_zip(expected),
-        )
+    zips_are_equal = filecmp.cmp(
+        self.get_test_zip(actual),
+        self.get_test_zip(expected),
+    )
+    self.assertTrue(zips_are_equal)
 
-        self.assertTrue(zipsAreEqual)
+  def test_small_timestamp(self):
+    self.assertFilesEqual(
+        "test_zip_basic_timestamp_before_epoch.zip",
+        "test_zip_basic.zip",
+    )
 
-    def testSmallTimestamp(self):
-        self.assertFilesEqual(
-            "test_zip_basic_timestamp_before_epoch.zip",
-            "test_zip_basic.zip",
-        )
+  def test_extension(self):
+    self.assertFilesEqual(
+        "test_zip_empty_different_extension.otherkindofzip",
+        "test_zip_empty.zip",
+    )
 
-    def testExtension(self):
-        self.assertFilesEqual(
-            "test_zip_empty_different_extension.otherkindofzip",
-            "test_zip_empty.zip",
-        )
+  def test_package_dir1(self):
+    self.assertFilesEqual(
+        "test_zip_package_dir1.zip",
+        "test_zip_package_dir0.zip",
+    )
 
-    def testPackageDir1(self):
-        self.assertFilesEqual(
-            "test_zip_package_dir1.zip",
-            "test_zip_package_dir0.zip",
-        )
-
-    def testPackageDir2(self):
-        self.assertFilesEqual(
-            "test_zip_package_dir2.zip",
-            "test_zip_package_dir0.zip",
-        )
+  def test_package_dir2(self):
+    self.assertFilesEqual(
+        "test_zip_package_dir2.zip",
+        "test_zip_package_dir0.zip",
+    )
 
 if __name__ == "__main__":
-    unittest.main()
+  unittest.main()
