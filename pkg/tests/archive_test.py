@@ -32,12 +32,12 @@ class SimpleArFileTest(unittest.TestCase):
     """Assert that arfile contains exactly the entry described by `content`.
 
     Args:
-        arfile: the path to the AR file to test.
-        content: an array describing the expected content of the AR file.
-            Each entry in that list should be a dictionary where each field
-            is a field to test in the corresponding SimpleArFileEntry. For
-            testing the presence of a file "x", then the entry could simply
-            be `{"filename": "x"}`, the missing field will be ignored.
+      arfile: the path to the AR file to test.
+      content: an array describing the expected content of the AR file.
+          Each entry in that list should be a dictionary where each field
+          is a field to test in the corresponding SimpleArFileEntry. For
+          testing the presence of a file "x", then the entry could simply
+          be `{"filename": "x"}`, the missing field will be ignored.
     """
     print("READING: %s" % arfile)
     with archive.SimpleArFile(arfile) as f:

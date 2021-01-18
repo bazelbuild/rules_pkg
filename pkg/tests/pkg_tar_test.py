@@ -13,7 +13,6 @@
 # limitations under the License.
 """Testing for archive."""
 
-import os
 import tarfile
 import unittest
 

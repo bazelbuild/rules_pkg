@@ -14,10 +14,10 @@
 
 import filecmp
 import unittest
-from zipfile import ZipFile
+import zipfile
 
 from bazel_tools.tools.python.runfiles import runfiles
-from build_zip import parse_date, ZIP_EPOCH
+import build_zip
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
@@ -26,11 +26,11 @@ EXECUTABLE_CRC = 342626072
 
 class ZipTest(unittest.TestCase):
 
-  def get_test_zip(self, zipfile):
+  def get_test_zip(self, zip_file):
     """Get the file path to a generated zip in the runfiles."""
 
     return self.data_files.Rlocation(
-        "rules_pkg/tests/" + zipfile
+        "rules_pkg/tests/" + zip_file
     )
 
   def setUp(self):
@@ -41,15 +41,15 @@ class ZipTest(unittest.TestCase):
 class ZipContentsCase(ZipTest):
   """Use zipfile to check the contents of some generated zip files."""
 
-  def assertZipFileContent(self, zipfile, content):
-    """Assert that zipfile contains the entries described by content.
+  def assertZipFileContent(self, zip_file, content):
+    """Assert that zip_file contains the entries described by content.
 
     Args:
-        zipfile: the test-package-relative path to a zip file to test.
+        zip_file: the test-package-relative path to a zip file to test.
         content: an array of dictionaries containing a filename and crc key,
                  and optionally a timestamp key.
     """
-    with ZipFile(self.get_test_zip(zipfile)) as f:
+    with zipfile.ZipFile(self.get_test_zip(zip_file)) as f:
       infos = f.infolist()
       self.assertEqual(len(infos), len(content))
 
@@ -57,7 +57,8 @@ class ZipContentsCase(ZipTest):
         self.assertEqual(info.filename, expected["filename"])
         self.assertEqual(info.CRC, expected["crc"])
 
-        ts = parse_date(expected.get("timestamp", ZIP_EPOCH))
+        ts = build_zip.parse_date(
+            expected.get("timestamp", build_zip.ZIP_EPOCH))
         self.assertEqual(info.date_time, ts)
         self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
 
