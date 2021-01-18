@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import filecmp
-import os
 import unittest
 
 import release_tools
@@ -80,5 +78,5 @@ class ReleaseToolsTest(unittest.TestCase):
     self.assertLess(mirror_pos, url_pos)
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == '__main__':
+  unittest.main()
