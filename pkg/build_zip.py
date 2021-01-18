@@ -14,38 +14,41 @@
 """This tool builds zip files from a list of inputs."""
 
 import argparse
-from datetime import datetime
+import datetime
+import zipfile
+
 from helpers import SplitNameValuePairAtSeparator
-import os
-from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ZIP_EPOCH = 315532800
 
-def _get_argument_parser():
-  parser = argparse.ArgumentParser(description = 'create a zip file',
-                                   fromfile_prefix_chars = '@')
 
-  parser.add_argument('-o', '--output', type = str,
+def _create_argument_parser():
+  """Creates the command line arg parser."""
+  parser = argparse.ArgumentParser(description='create a zip file',
+                                   fromfile_prefix_chars='@')
+
+  parser.add_argument('-o', '--output', type=str,
                       help='The output zip file path.')
 
   parser.add_argument(
-      '-d', '--directory', type=str, default = '/',
+      '-d', '--directory', type=str, default='/',
       help='An absolute path to use as a prefix for all files in the zip.')
 
   parser.add_argument(
-    '-t', '--timestamp', type=int, default=ZIP_EPOCH,
-    help='The unix time to use for files added into the zip. values prior to'
-          ' Jan 1, 1980 are ignored.')
+      '-t', '--timestamp', type=int, default=ZIP_EPOCH,
+      help='The unix time to use for files added into the zip. values prior to'
+           ' Jan 1, 1980 are ignored.')
 
   parser.add_argument(
-    '-m', '--mode',
-    help='The file system mode to use for files added into the zip.')
+      '-m', '--mode',
+      help='The file system mode to use for files added into the zip.')
 
   parser.add_argument(
-    'files', type=str, nargs='*',
-    help = 'Files to be added to the zip, in the form of {srcpath}={dstpath}.')
+      'files', type=str, nargs='*',
+      help='Files to be added to the zip, in the form of {srcpath}={dstpath}.')
 
   return parser
+
 
 def _combine_paths(left, right):
   result = left.rstrip('/') + '/' + right.lstrip('/')
@@ -55,9 +58,11 @@ def _combine_paths(left, right):
   # tool in Windows will complain that such a zip file is invalid.
   return result.lstrip('/')
 
+
 def parse_date(ts):
-  ts = datetime.utcfromtimestamp(ts)
+  ts = datetime.datetime.utcfromtimestamp(ts)
   return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
+
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
@@ -65,28 +70,26 @@ def main(args):
   default_mode = None
   if args.mode:
     default_mode = int(args.mode, 8)
-  
 
-  with ZipFile(args.output, 'w') as zip:
+  with zipfile.ZipFile(args.output, 'w') as zip_file:
     for f in args.files or []:
       (src_path, dst_path) = SplitNameValuePairAtSeparator(f, '=')
 
       dst_path = _combine_paths(args.directory, dst_path)
 
-      entry_info = ZipInfo(filename=dst_path, date_time=ts)
+      entry_info = zipfile.ZipInfo(filename=dst_path, date_time=ts)
 
       if default_mode:
         entry_info.external_attr = default_mode << 16
 
-      entry_info.compress_type = ZIP_DEFLATED
+      entry_info.compress_type = zipfile.ZIP_DEFLATED
 
       # the zipfile library doesn't support adding a file by path with write()
       # and specifying a ZipInfo at the same time.
       with open(src_path, 'rb') as src:
         data = src.read()
-        zip.writestr(entry_info, data)
+        zip_file.writestr(entry_info, data)
 
 if __name__ == '__main__':
-  parser = _get_argument_parser()
-  args = parser.parse_args()
-  main(args)
+  arg_parser = _create_argument_parser()
+  main(arg_parser.parse_args())
