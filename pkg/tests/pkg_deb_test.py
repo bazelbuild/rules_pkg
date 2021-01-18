@@ -56,10 +56,11 @@ class DebInspect(object):
     raise Exception('Could not find control file: %s' % file_name)
 
 
-class PktDebTest(unittest.TestCase):
+class PkgDebTest(unittest.TestCase):
   """Testing for pkg_deb rule."""
 
   def setUp(self):
+    super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
     self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/titi_test_all.deb')
