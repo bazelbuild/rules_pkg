@@ -62,7 +62,12 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
   }))
   if mirror_url:
     file = os.path.basename(tarball_path)
-    path = 'github.com/${org}/${repo}/releases/download/${version}/${file}'
+    path = 'github.com/{org}/{repo}/releases/download/{version}/{file}'.format(
+        org=org,
+        repo=repo,
+        version=version,
+        file=file
+    )
     mirroring_template = string.Template(textwrap.dedent(
         """
 
