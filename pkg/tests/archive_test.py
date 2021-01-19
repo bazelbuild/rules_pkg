@@ -110,7 +110,12 @@ class TarFileWriterTest(unittest.TestCase):
             be `{"name": "x"}`, the missing field will be ignored. To match
             the content of a file entry, use the key "data".
     """
-    with tarfile.open(tar, "r:") as f:
+    got_names = []
+    with tarfile.open(tar, "r:*") as f:
+      for current in f:
+        got_names.append(getattr(current, "name"))
+
+    with tarfile.open(tar, "r:*") as f:
       i = 0
       for current in f:
         error_msg = "Extraneous file at end of archive %s: %s" % (
@@ -130,6 +135,7 @@ class TarFileWriterTest(unittest.TestCase):
               "%s in archive %s does" % (current.name, tar),
               "not match expected value `%s`" % v
               ])
+          error_msg += str(got_names)
           self.assertEqual(value, v, error_msg)
         i += 1
       if i < len(content):
