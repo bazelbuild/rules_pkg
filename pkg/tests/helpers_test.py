@@ -28,16 +28,16 @@ class GetFlagValueTestCase(unittest.TestCase):
     self.assertEqual(helpers.GetFlagValue('value ', strip=True), 'value')
 
   def testNonStripped_fromFile(self):
-    with tempfile.TemporaryDirectory() as d:
-      argfile_path = os.path.join(d, 'argfile')
+    with tempfile.TemporaryDirectory() as temp_d:
+      argfile_path = os.path.join(temp_d, 'argfile')
       with open(argfile_path, 'wb') as f:
         f.write(b'value ')
       self.assertEqual(
           helpers.GetFlagValue('@'+argfile_path, strip=False), 'value ')
 
   def testStripped_fromFile(self):
-    with tempfile.TemporaryDirectory() as d:
-      argfile_path = os.path.join(d, 'argfile')
+    with tempfile.TemporaryDirectory() as temp_d:
+      argfile_path = os.path.join(temp_d, 'argfile')
       with open(argfile_path, 'wb') as f:
         f.write(b'value ')
       self.assertEqual(
