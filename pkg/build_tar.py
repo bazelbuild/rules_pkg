@@ -16,14 +16,11 @@
 import argparse
 import json
 import os
-import os.path
-import sys
 import tarfile
 import tempfile
 
 import archive
-
-from helpers import GetFlagValue, SplitNameValuePairAtSeparator
+import helpers
 
 
 class TarFile(object):
@@ -196,6 +193,7 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
+
 def main():
   parser = argparse.ArgumentParser(
       description='Helper for building tar packages',
@@ -224,8 +222,8 @@ def main():
   parser.add_argument('--deb', action='append',
                       help='A debian package to add to the layer')
   parser.add_argument(
-    '--link', action='append',
-    help='Add a symlink a inside the layer pointing to b if a:b is specified')
+      '--link', action='append',
+      help='Add a symlink a inside the layer pointing to b if a:b is specified')
   # TODO(aiuto): Add back in the validation
   # flags.register_validator(
   #   'link',
@@ -237,24 +235,24 @@ def main():
   parser.add_argument('--compression',
                       help='Compression (`gz` or `bz2`), default is none.')
   parser.add_argument(
-    '--modes', action='append',
-    help='Specific mode to apply to specific file (from the file argument),'
-         ' e.g., path/to/file=0455.')
+      '--modes', action='append',
+      help='Specific mode to apply to specific file (from the file argument),'
+           ' e.g., path/to/file=0455.')
   parser.add_argument(
-    '--owners', action='append',
-    help='Specify the numeric owners of individual files, '
-         'e.g. path/to/file=0.0.')
+      '--owners', action='append',
+      help='Specify the numeric owners of individual files, '
+           'e.g. path/to/file=0.0.')
   parser.add_argument(
-    '--owner', default='0.0',
-    help='Specify the numeric default owner of all files,'
-         ' e.g., 0.0')
+      '--owner', default='0.0',
+      help='Specify the numeric default owner of all files,'
+           ' e.g., 0.0')
   parser.add_argument(
       '--owner_name',
       help='Specify the owner name of all files, e.g. root.root.')
   parser.add_argument(
-    '--owner_names', action='append',
-    help='Specify the owner names of individual files, e.g. '
-         'path/to/file=root.root.')
+      '--owner_names', action='append',
+      help='Specify the owner names of individual files, e.g. '
+           'path/to/file=root.root.')
   parser.add_argument('--root_directory', default='./',
                       help='Default root directory is named "."')
   options = parser.parse_args()
@@ -268,7 +266,7 @@ def main():
   mode_map = {}
   if options.modes:
     for filemode in options.modes:
-      (f, mode) = SplitNameValuePairAtSeparator(filemode, '=')
+      (f, mode) = helpers.SplitNameValuePairAtSeparator(filemode, '=')
       if f[0] == '/':
         f = f[1:]
       mode_map[f] = int(mode, 8)
@@ -279,7 +277,7 @@ def main():
   names_map = {}
   if options.owner_names:
     for file_owner in options.owner_names:
-      (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
+      (f, owner) = helpers.SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
         f = f[1:]
@@ -290,7 +288,7 @@ def main():
   ids_map = {}
   if options.owners:
     for file_owner in options.owners:
-      (f, owner) = SplitNameValuePairAtSeparator(file_owner, '=')
+      (f, owner) = helpers.SplitNameValuePairAtSeparator(file_owner, '=')
       (user, group) = owner.split('.', 1)
       if f[0] == '/':
         f = f[1:]
@@ -298,7 +296,7 @@ def main():
 
   # Add objects to the tar file
   with TarFile(
-      options.output, GetFlagValue(options.directory),
+      options.output, helpers.GetFlagValue(options.directory),
       options.compression, options.root_directory, options.mtime) as output:
 
     def file_attributes(filename):
@@ -329,7 +327,7 @@ def main():
           output.add_deb(deb)
 
     for f in options.file or []:
-      (inf, tof) = SplitNameValuePairAtSeparator(f, '=')
+      (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
       output.add_file(inf, tof, **file_attributes(tof))
     for f in options.empty_file or []:
       output.add_empty_file(f, **file_attributes(f))
@@ -342,7 +340,7 @@ def main():
     for deb in options.deb or []:
       output.add_deb(deb)
     for link in options.link or []:
-      l = SplitNameValuePairAtSeparator(link, ':')
+      l = helpers.SplitNameValuePairAtSeparator(link, ':')
       output.add_link(l[0], l[1])
 
 

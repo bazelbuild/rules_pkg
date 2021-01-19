@@ -17,8 +17,7 @@
 
 import argparse
 import os
-import sys
-from string import Template
+import string
 import textwrap
 
 from releasing import release_tools
@@ -36,7 +35,7 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
   workspace_stanza = release_tools.workspace_content(
       url, repo, sha256, mirror_url=mirror_url, setup_file=setup_file,
       deps_method=deps_method, toolchains_method=toolchains_method)
-  relnotes_template = Template(textwrap.dedent(
+  relnotes_template = string.Template(textwrap.dedent(
       """
       ------------------------ snip ----------------------------
       **New Features**
@@ -63,21 +62,27 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
   }))
   if mirror_url:
     file = os.path.basename(tarball_path)
-    path = 'github.com/${org}/${repo}/releases/download/${version}/${file}'
-    mirroring_template = Template(textwrap.dedent(
+    path = 'github.com/{org}/{repo}/releases/download/{version}/{file}'.format(
+        org=org,
+        repo=repo,
+        version=version,
+        file=file
+    )
+    mirroring_template = string.Template(textwrap.dedent(
         """
 
         !!!: Make sure to copy the file to the release notes.
         If you are using Google Cloud Storage, you might use a command like
-        gsutil cp bazel-bin/distro/${file} gs://bazel-mirror/github.com/bazelbuild/rules_pkg/releases/download/0.3.0/${file}
+        gsutil cp bazel-bin/distro/${file} gs://bazel-mirror/${path}
         """).strip())
     print(mirroring_template.substitute({
-      'org': org,
-      'repo': repo,
-      'version': version,
-      'file': file,
+        'org': org,
+        'repo': repo,
+        'version': version,
+        'file': file,
+        'path': path,
     }))
-    
+
 
 def main():
   parser = argparse.ArgumentParser(

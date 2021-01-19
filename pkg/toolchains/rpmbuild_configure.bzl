@@ -30,9 +30,9 @@ def _find_system_rpmbuild_impl(rctx):
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
         if rpmbuild_path:
-            print("Found rpmbuild at '%s'" % rpmbuild_path)
+            print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
-            print("No system rpmbuild found.")
+          print("No system rpmbuild found.")  # buildifier: disable=print
     _write_build(rctx = rctx, path = rpmbuild_path)
 
 _find_system_rpmbuild = repository_rule(

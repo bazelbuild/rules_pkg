@@ -18,12 +18,12 @@
 import codecs
 from io import BytesIO
 import os
-import tarfile
 import sys
+import tarfile
 import unittest
 
-from rules_pkg import archive
 from bazel_tools.tools.python.runfiles import runfiles
+from rules_pkg import archive
 
 
 class DebInspect(object):
@@ -36,15 +36,15 @@ class DebInspect(object):
     with archive.SimpleArFile(deb_file) as f:
       info = f.next()
       while info:
-       if info.filename == 'debian-binary':
-         self.deb_version = info.data
-       elif info.filename == 'control.tar.gz':
-         self.control = info.data
-       elif info.filename == 'data.tar.gz':
-         self.data = info.data
-       else:
-         raise Exception('Unexpected file: %s' % info.filename)
-       info = f.next()
+        if info.filename == 'debian-binary':
+          self.deb_version = info.data
+        elif info.filename == 'control.tar.gz':
+          self.control = info.data
+        elif info.filename == 'data.tar.gz':
+          self.data = info.data
+        else:
+          raise Exception('Unexpected file: %s' % info.filename)
+        info = f.next()
 
   def get_deb_ctl_file(self, file_name):
     """Extract a control file."""
@@ -56,10 +56,11 @@ class DebInspect(object):
     raise Exception('Could not find control file: %s' % file_name)
 
 
-class PktDebTest(unittest.TestCase):
+class PkgDebTest(unittest.TestCase):
   """Testing for pkg_deb rule."""
 
   def setUp(self):
+    super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
     self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/titi_test_all.deb')
@@ -81,7 +82,7 @@ class PktDebTest(unittest.TestCase):
     """Assert that tarfile contains exactly the entry described by `expected`.
 
     Args:
-        file_name: the path to the TAR file to test.
+        data: the tar file stream to check.
         expected: an array describing the expected content of the TAR file.
             Each entry in that list should be a dictionary where each field
             is a field to test in the corresponding TarInfo. For
@@ -105,7 +106,7 @@ class PktDebTest(unittest.TestCase):
         error_msg = 'Extraneous file at end of archive: %s' % (
             info.name
             )
-        self.assertTrue(i < len(expected), error_msg)
+        self.assertLess(i, len(expected), error_msg)
         name_in_tar_file = getattr(info, 'name')
         if match_order:
           want = expected[i]
@@ -130,7 +131,7 @@ class PktDebTest(unittest.TestCase):
           self.assertEqual(value, v, error_msg)
         i += 1
       if i < len(expected):
-        self.fail('Missing file %s in archive %s' % (expected[i], file_path))
+        self.fail('Missing file %s' % expected[i])
 
   def test_expected_files(self):
     # Check the set of 'test-tar-basic-*' smoke test.
@@ -203,22 +204,20 @@ class PktDebTest(unittest.TestCase):
 
   def test_templates(self):
     templates = self.deb_file.get_deb_ctl_file('templates')
-    for field in (
-	'Template: titi/test',
-	'Type: string'):
+    for field in ('Template: titi/test', 'Type: string'):
       if templates.find(field) < 0:
         self.fail('Missing template field: <%s> in <%s>' % (field, templates))
 
   def test_changes(self):
-     changes_path = self.runfiles.Rlocation(
-         'rules_pkg/tests/titi_test_all.changes')
-     with open(changes_path, 'r', encoding='utf-8') as f:
-       content = f.read()
-       for field in (
-           'Urgency: low',
-           'Distribution: trusty'):
-         if content.find(field) < 0:
-           self.fail('Missing template field: <%s> in <%s>' % (field, content))
+    changes_path = self.runfiles.Rlocation(
+        'rules_pkg/tests/titi_test_all.changes')
+    with open(changes_path, 'r', encoding='utf-8') as f:
+      content = f.read()
+      for field in (
+          'Urgency: low',
+          'Distribution: trusty'):
+        if content.find(field) < 0:
+          self.fail('Missing template field: <%s> in <%s>' % (field, content))
 
 
 if __name__ == '__main__':

@@ -14,30 +14,30 @@
 """Testing for archive."""
 
 import os
-import os.path
 import tarfile
 import unittest
 
-from rules_pkg import archive
 from bazel_tools.tools.python.runfiles import runfiles
+from rules_pkg import archive
 
 
 class SimpleArFileTest(unittest.TestCase):
   """Testing for SimpleArFile class."""
 
   def setUp(self):
+    super(SimpleArFileTest, self).setUp()
     self.data_files = runfiles.Create()
 
   def assertArFileContent(self, arfile, content):
     """Assert that arfile contains exactly the entry described by `content`.
 
     Args:
-        arfile: the path to the AR file to test.
-        content: an array describing the expected content of the AR file.
-            Each entry in that list should be a dictionary where each field
-            is a field to test in the corresponding SimpleArFileEntry. For
-            testing the presence of a file "x", then the entry could simply
-            be `{"filename": "x"}`, the missing field will be ignored.
+      arfile: the path to the AR file to test.
+      content: an array describing the expected content of the AR file.
+          Each entry in that list should be a dictionary where each field
+          is a field to test in the corresponding SimpleArFileEntry. For
+          testing the presence of a file "x", then the entry could simply
+          be `{"filename": "x"}`, the missing field will be ignored.
     """
     print("READING: %s" % arfile)
     with archive.SimpleArFile(arfile) as f:
@@ -48,7 +48,7 @@ class SimpleArFileTest(unittest.TestCase):
             arfile,
             current.filename
             )
-        self.assertTrue(i < len(content), error_msg)
+        self.assertLess(i, len(content), error_msg)
         for k, v in content[i].items():
           value = getattr(current, k)
           error_msg = " ".join([
@@ -71,6 +71,7 @@ class SimpleArFileTest(unittest.TestCase):
   def assertSimpleFileContent(self, names):
     datafile = self.data_files.Rlocation(
         os.path.join("rules_pkg", "tests", "testdata", "_".join(names) + ".ar"))
+    # pylint: disable=g-complex-comprehension
     content = [{"filename": n,
                 "size": len(n.encode("utf-8")),
                 "data": n.encode("utf-8")}
@@ -118,7 +119,7 @@ class TarFileWriterTest(unittest.TestCase):
             tar,
             current.name
             )
-        self.assertTrue(i < len(content), error_msg)
+        self.assertLess(i, len(content), error_msg)
         for k, v in content[i].items():
           if k == "data":
             value = f.extractfile(current).read()
@@ -135,10 +136,12 @@ class TarFileWriterTest(unittest.TestCase):
         self.fail("Missing file %s in archive %s" % (content[i], tar))
 
   def setUp(self):
+    super(TarFileWriterTest, self).setUp()
     self.tempfile = os.path.join(os.environ["TEST_TMPDIR"], "test.tar")
     self.data_files = runfiles.Create()
 
   def tearDown(self):
+    super(TarFileWriterTest, self).tearDown()
     if os.path.exists(self.tempfile):
       os.remove(self.tempfile)
 
@@ -151,6 +154,7 @@ class TarFileWriterTest(unittest.TestCase):
     with archive.TarFileWriter(self.tempfile) as f:
       for n in names:
         f.add_file(n, content=n)
+    # pylint: disable=g-complex-comprehension
     content = ([{"name": "."}] +
                [{"name": n,
                  "size": len(n.encode("utf-8")),
@@ -209,8 +213,8 @@ class TarFileWriterTest(unittest.TestCase):
         ]
     for ext in ["", ".gz", ".bz2", ".xz"]:
       with archive.TarFileWriter(self.tempfile) as f:
-        datafile = self.data_files.Rlocation(
-            os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar" + ext))
+        datafile = self.data_files.Rlocation(os.path.join(
+            "rules_pkg", "tests", "testdata", "tar_test.tar" + ext))
         f.add_tar(datafile, name_filter=lambda n: n != "./b")
       self.assertTarFileContent(self.tempfile, content)
 
@@ -371,25 +375,25 @@ class TarFileWriterTest(unittest.TestCase):
     self.assertTarFileContent(self.tempfile, content)
 
   def testPackageDirFileAttribute(self):
-      """
-      Test package_dir and package_dir_file attributes of pkg_tar
+    """Tests package_dir and package_dir_file attributes of pkg_tar.
 
-      Verifies that passing package_dir (string) and package_dir_file(label)
-      to pkg_tar yields identical results
-      """
-      package_dir = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "test_tar_package_dir.tar"))
-      package_dir_file = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "test_tar_package_dir_file.tar"))
+    Verifies that passing package_dir (string) and package_dir_file(label) to
+    pkg_tar yields identical results.
+    """
+    package_dir = self.data_files.Rlocation(
+        os.path.join("rules_pkg", "tests", "test_tar_package_dir.tar"))
+    package_dir_file = self.data_files.Rlocation(
+        os.path.join("rules_pkg", "tests", "test_tar_package_dir_file.tar"))
 
-      expected_content = [
-          {'name': '.'},
-          {'name': './package'},
-          {'name': './package/nsswitch.conf'},
-      ]
+    expected_content = [
+        {"name": "."},
+        {"name": "./package"},
+        {"name": "./package/nsswitch.conf"},
+    ]
 
-      self.assertTarFileContent(package_dir, expected_content)
-      self.assertTarFileContent(package_dir_file, expected_content)
+    self.assertTarFileContent(package_dir, expected_content)
+    self.assertTarFileContent(package_dir_file, expected_content)
+
 
 if __name__ == "__main__":
   unittest.main()
