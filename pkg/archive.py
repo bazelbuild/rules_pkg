@@ -131,7 +131,7 @@ class TarFileWriter(object):
     # Support xz compression through xz... until we can use Py3
     self.xz = compression in ['xz', 'lzma']
     self.name = name
-    self.root_directory = root_directory.rstrip('/')
+    self.root_directory = root_directory.rstrip('/').rstrip('\\')
     self.preserve_mtime = preserve_tar_mtimes
     if default_mtime is None:
       self.default_mtime = 0

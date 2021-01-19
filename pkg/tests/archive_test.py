@@ -395,8 +395,8 @@ class TarFileWriterTest(unittest.TestCase):
           {'name': './package'},
           {'name': './package/nsswitch.conf'},
       ]
-      self.assertTarFileContent(package_dir_file, expected_content)
       self.assertTarFileContent(package_dir, expected_content)
+      self.assertTarFileContent(package_dir_file, expected_content)
 
 if __name__ == "__main__":
   unittest.main()
