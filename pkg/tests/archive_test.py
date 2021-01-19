@@ -121,8 +121,8 @@ class TarFileWriterTest(unittest.TestCase):
         for k, v in content[i].items():
           if k == "data":
             value = f.extractfile(current).read()
-          #XXXelif k == "name" and os.name == "nt":
-          #  value = getattr(current, k).replace("/", "\\")
+          elif k == "name" and os.name == "nt":
+            value = getattr(current, k).replace("\\", "/")
           else:
             value = getattr(current, k)
           error_msg = " ".join([
