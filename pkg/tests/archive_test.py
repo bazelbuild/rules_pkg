@@ -201,7 +201,8 @@ class TarFileWriterTest(unittest.TestCase):
     # structure it describes.
     for c in content:
       if "data" in c:
-        p = os.path.join(tempdir, c["name"][2:])
+        path_parts = c["name"][2:].split('/')
+        p = os.path.join(tempdir, *path_parts)
         os.makedirs(os.path.dirname(p))
         with open(p, "wb") as f:
           f.write(c["data"])

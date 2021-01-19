@@ -212,7 +212,7 @@ class TarFileWriter(object):
       filelist = os.listdir(path)
       filelist.sort()
       for f in filelist:
-        new_name = os.path.join(name, f)
+        new_name = name + '/' + f
         new_path = os.path.join(path, f)
         self.add_dir(new_name, new_path, uid, gid, uname, gname, mtime, mode,
                      depth - 1)
