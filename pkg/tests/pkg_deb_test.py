@@ -115,6 +115,8 @@ class PktDebTest(unittest.TestCase):
             value = name_in_tar_file.replace(os.path.sep, '/')
           elif k == 'isdir':
             value = info.isdir()
+          elif k == "name" and sys.platform == 'win32':
+            value = getattr(current, k).replace("\\", "/")
           else:
             value = getattr(info, k)
           error_msg = ' '.join([

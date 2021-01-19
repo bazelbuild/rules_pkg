@@ -201,6 +201,7 @@ class TarFileWriterTest(unittest.TestCase):
     # structure it describes.
     for c in content:
       if "data" in c:
+        # Create files is happening locally, so use native path sep.
         path_parts = c["name"][2:].split('/')
         p = os.path.join(tempdir, *path_parts)
         os.makedirs(os.path.dirname(p))
@@ -389,15 +390,13 @@ class TarFileWriterTest(unittest.TestCase):
           "rules_pkg/tests/test_tar_package_dir.tar")
       package_dir_file = self.data_files.Rlocation(
           "rules_pkg/tests/test_tar_package_dir_file.tar")
-
       expected_content = [
           {'name': '.'},
           {'name': './package'},
           {'name': './package/nsswitch.conf'},
       ]
-
-      self.assertTarFileContent(package_dir, expected_content)
       self.assertTarFileContent(package_dir_file, expected_content)
+      self.assertTarFileContent(package_dir, expected_content)
 
 if __name__ == "__main__":
   unittest.main()
