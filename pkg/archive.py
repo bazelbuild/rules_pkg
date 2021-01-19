@@ -186,7 +186,8 @@ class TarFileWriter(object):
     """
     if not (name == self.root_directory or name.startswith('/') or
             name.startswith(self.root_directory + '/')):
-      name = os.path.join(self.root_directory, name)
+      # XXXX name = os.path.join(self.root_directory, name)
+      name = self.root_directory + '/' + name
     if mtime is None:
       mtime = self.default_mtime
     if os.path.isdir(path):
