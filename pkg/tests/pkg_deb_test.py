@@ -90,11 +90,6 @@ class PktDebTest(unittest.TestCase):
             the content of a file entry, use the key 'data'.
         match_order: True if files must match in order as well as properties.
     """
-    # TODO(https://github.com/bazelbuild/rules_pkg/issues/213): On Windows,
-    # tarfile seems to not report the directory information. So we filter out
-    # items that are supposed to be directories.
-    if sys.platform == 'win32':
-      expected = [e for e in expected if not e.get('isdir')]
     expected_by_name = {}
     for e in expected:
       expected_by_name[e['name']] = e

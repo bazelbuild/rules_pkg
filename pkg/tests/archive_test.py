@@ -181,11 +181,8 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_file("./.d")
       f.add_file("..e")
       f.add_file(".f")
-    content = []
-    if os.name != "nt":
-      content = [{"name": "."}]
-    content.extend([
-        {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
+    content = [
+        {"name": "."}, {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
         {"name": "./.d"}, {"name": "./..e"}, {"name": "./.f"}
     ])
     self.assertTarFileContent(self.tempfile, content)
