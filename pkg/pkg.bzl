@@ -347,6 +347,8 @@ def pkg_tar(name, **kwargs):
         if "files" in kwargs:
             if not hasattr(kwargs["files"], "items"):
                 label = "%s//%s:%s" % (native.repository_name(), native.package_name(), kwargs["name"])
+
+                # buildifier: disable=print
                 print("%s: you provided a non dictionary to the pkg_tar `files` attribute. " % (label,) +
                       "This attribute was renamed to `srcs`. " +
                       "Consider renaming it in your BUILD file.")
@@ -356,6 +358,8 @@ def pkg_tar(name, **kwargs):
     if archive_name:
         if kwargs.get("package_file_name"):
             fail("You may not set both archive_name and package_file_name")
+
+        # buildifier: disable=print
         print("archive_name is deprecated. Use package_file_name instead.")
         kwargs["package_file_name"] = archive_name + "." + extension
     pkg_tar_impl(

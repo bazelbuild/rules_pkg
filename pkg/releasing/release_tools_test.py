@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import filecmp
-import os
 import unittest
 
 import release_tools
@@ -29,12 +27,12 @@ class ReleaseToolsTest(unittest.TestCase):
         setup_file='my_setup.bzl',
         deps_method='my_deps',
         toolchains_method='my_tools')
-    self.assertTrue(content.find(' name = "foo_bar",') > 0, content)
-    self.assertTrue(content.find(
-        '\nload("@foo_bar//:my_setup.bzl", "my_deps", "my_tools")\n') > 0,
-        content)
-    self.assertTrue(content.find('\nmy_deps()\n') > 0)
-    self.assertTrue(content.find('\nmy_tools()\n') > 0, content)
+    self.assertGreater(content.find(' name = "foo_bar",'), 0, content)
+    self.assertGreater(content.find(
+        '\nload("@foo_bar//:my_setup.bzl", "my_deps", "my_tools")\n'), 0,
+                       content)
+    self.assertGreater(content.find('\nmy_deps()\n'), 0)
+    self.assertGreater(content.find('\nmy_tools()\n'), 0, content)
 
   def test_workspace_content_notools(self):
     content = release_tools.workspace_content(
@@ -43,11 +41,10 @@ class ReleaseToolsTest(unittest.TestCase):
         sha256='@computed@',
         setup_file='my_setup.bzl',
         deps_method='my_deps')
-    self.assertTrue(content.find(
-        '\nload("@foo_bar//:my_setup.bzl", "my_deps")\n') > 0,
-        content)
-    self.assertTrue(content.find('\nmy_deps()\n') > 0)
-    self.assertTrue(content.find('\nmy_tools()\n') < 0)
+    self.assertGreater(content.find(
+        '\nload("@foo_bar//:my_setup.bzl", "my_deps")\n'), 0, content)
+    self.assertGreater(content.find('\nmy_deps()\n'), 0)
+    self.assertLess(content.find('\nmy_tools()\n'), 0)
 
   def test_workspace_content_nodeps(self):
     content = release_tools.workspace_content(
@@ -56,18 +53,17 @@ class ReleaseToolsTest(unittest.TestCase):
         sha256='@computed@',
         setup_file='my_setup.bzl',
         toolchains_method='my_tools')
-    self.assertTrue(content.find(
-        '\nload("@foo_bar//:my_setup.bzl", "my_tools")\n') > 0,
-        content)
-    self.assertTrue(content.find('\nmy_deps()\n') < 0)
-    self.assertTrue(content.find('\nmy_tools()\n') > 0)
+    self.assertGreater(content.find(
+        '\nload("@foo_bar//:my_setup.bzl", "my_tools")\n'), 0, content)
+    self.assertLess(content.find('\nmy_deps()\n'), 0)
+    self.assertGreater(content.find('\nmy_tools()\n'), 0)
 
   def test_workspace_content_minimal(self):
     content = release_tools.workspace_content(
         url='http://github.com',
         repo='foo-bar',
         sha256='@computed@')
-    self.assertTrue(content.find('\nload("@foo_bar') < 0)
+    self.assertLess(content.find('\nload("@foo_bar'), 0)
 
   def test_workspace_content_mirror(self):
     content = release_tools.workspace_content(
@@ -77,10 +73,10 @@ class ReleaseToolsTest(unittest.TestCase):
         sha256='@computed@')
     url_pos = content.find('http://github.com/foo/bar')
     mirror_pos = content.find('http://mirror/github.com/foo/bar')
-    self.assertTrue(url_pos > 0)
-    self.assertTrue(mirror_pos > 0)
-    self.assertTrue(mirror_pos < url_pos)
+    self.assertGreater(url_pos, 0)
+    self.assertGreater(mirror_pos, 0)
+    self.assertLess(mirror_pos, url_pos)
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == '__main__':
+  unittest.main()

@@ -37,13 +37,15 @@ def _pkg_rpm_impl(ctx):
 
     if ctx.attr.rpmbuild_path:
         args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
-        print('rpmbuild_path is deprecated. See the README for instructions on how'
-              + ' to migrate to toolchains')
+
+        # buildifier: disable=print
+        print("rpmbuild_path is deprecated. See the README for instructions on how" +
+              " to migrate to toolchains")
     else:
         toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
         if not toolchain.valid:
-            fail("The rpmbuild_toolchain is not properly configured: "
-                 + toolchain.name)
+            fail("The rpmbuild_toolchain is not properly configured: " +
+                 toolchain.name)
         if toolchain.path:
             args += ["--rpmbuild=" + toolchain.path]
         else:

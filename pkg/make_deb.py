@@ -16,9 +16,8 @@
 import argparse
 import gzip
 import hashlib
-from io import BytesIO
+import io
 import os
-import os.path
 import sys
 import tarfile
 import textwrap
@@ -95,7 +94,7 @@ def AddArFileEntry(fileobj, filename,
   """Add a AR file entry to fileobj."""
   # If we got the content as a string, turn it into a file like thing.
   if isinstance(content, (str, bytes)):
-    content_len, content = ConvertToFileLike(content, content_len, BytesIO)
+    content_len, content = ConvertToFileLike(content, content_len, io.BytesIO)
   inputs = [
       (filename + '/').ljust(16),  # filename (SysV)
       str(timestamp).ljust(12),  # timestamp
@@ -145,21 +144,21 @@ def CreateDebControl(extrafiles=None, **kwargs):
     if values[1] or (key in kwargs and kwargs[key]):
       controlfile += MakeDebianControlField(fieldname, kwargs[key], values[2])
   # Create the control.tar file
-  tar = BytesIO()
+  tar = io.BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz,
                       format=tarfile.GNU_FORMAT) as f:
       tarinfo = tarfile.TarInfo('./control')
       control_file_data = controlfile.encode('utf-8')
       tarinfo.size = len(control_file_data)
-      f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
+      f.addfile(tarinfo, fileobj=io.BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
           tarinfo = tarfile.TarInfo('./' + name)
           data_encoded = data.encode('utf-8')
           tarinfo.size = len(data_encoded)
           tarinfo.mode = mode
-          f.addfile(tarinfo, fileobj=BytesIO(data_encoded))
+          f.addfile(tarinfo, fileobj=io.BytesIO(data_encoded))
   control = tar.getvalue()
   tar.close()
   return control

@@ -13,30 +13,33 @@
 # limitations under the License.
 """Testing for helper functions."""
 
+import collections
 import imp
-import os.path
+import os
 import unittest
 
-from collections import namedtuple
 
 pkg_bzl = imp.load_source('pkg_bzl', 'path.bzl')
 
-Owner = namedtuple("Owner", ["workspace_name", "workspace_root"])
-Root = namedtuple("Root", ["path"])
+Owner = collections.namedtuple('Owner', ['workspace_name', 'workspace_root'])
+Root = collections.namedtuple('Root', ['path'])
+
 
 class File(object):
   """Mock Skylark File class for testing."""
 
   def __init__(self, short_path, is_generated=False, is_external=False):
     self.is_source = not is_generated
-    self.root = Root("bazel-out/k8-fastbuild/bin" if is_generated else "")
+    self.root = Root('bazel-out/k8-fastbuild/bin' if is_generated else '')
     if is_external:
-      self.owner = Owner("repo", "external/repo")
-      self.short_path = "../repo/" + short_path
+      self.owner = Owner('repo', 'external/repo')
+      self.short_path = '../repo/' + short_path
     else:
-      self.owner = Owner("", "")
+      self.owner = Owner('', '')
       self.short_path = short_path
-    self.path = os.path.join(self.root.path, self.owner.workspace_root, short_path)
+    self.path = os.path.join(
+        self.root.path, self.owner.workspace_root, short_path)
+
 
 class SafeShortPathTest(unittest.TestCase):
   """Testing for safe_short_path."""
@@ -54,8 +57,10 @@ class SafeShortPathTest(unittest.TestCase):
     self.assertEqual('external/repo/foo/bar/baz', path)
 
   def testSafeShortPathGenExt(self):
-    path = pkg_bzl.safe_short_path(File('foo/bar/baz', is_generated=True, is_external=True))
+    path = pkg_bzl.safe_short_path(
+        File('foo/bar/baz', is_generated=True, is_external=True))
     self.assertEqual('external/repo/foo/bar/baz', path)
+
 
 class ShortPathDirnameTest(unittest.TestCase):
   """Testing for _short_path_dirname."""
@@ -73,7 +78,8 @@ class ShortPathDirnameTest(unittest.TestCase):
     self.assertEqual('external/repo/foo/bar', path)
 
   def testShortPathDirnameGenExt(self):
-    path = pkg_bzl._short_path_dirname(File('foo/bar/baz', is_generated=True, is_external=True))
+    path = pkg_bzl._short_path_dirname(
+        File('foo/bar/baz', is_generated=True, is_external=True))
     self.assertEqual('external/repo/foo/bar', path)
 
   def testTopLevel(self):
@@ -101,7 +107,8 @@ class DestPathTest(unittest.TestCase):
     self.assertEqual('/bar/baz', path)
 
   def testDestPathExt(self):
-    path = pkg_bzl.dest_path(File('foo/bar/baz', is_external=True), 'external/repo/foo')
+    path = pkg_bzl.dest_path(
+        File('foo/bar/baz', is_external=True), 'external/repo/foo')
     self.assertEqual('/bar/baz', path)
 
   def testDestPathExtWrong(self):

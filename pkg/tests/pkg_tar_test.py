@@ -13,8 +13,6 @@
 # limitations under the License.
 """Testing for archive."""
 
-import os
-import os.path
 import tarfile
 import unittest
 
@@ -48,7 +46,7 @@ class PkgTarTest(unittest.TestCase):
             file_path,
             info.name
             )
-        self.assertTrue(i < len(content), error_msg)
+        self.assertLess(i, len(content), error_msg)
         for k, v in content[i].items():
           if k == 'data':
             value = f.extractfile(info).read()
@@ -129,7 +127,7 @@ class PkgTarTest(unittest.TestCase):
     content = [
         {'name': '.'},
         {'name': './tmp', 'isdir': True, 'size': 0, 'uid': 0,
-         'mtime': PORTABLE_MTIME },
+         'mtime': PORTABLE_MTIME},
         {'name': './pmt', 'isdir': True, 'size': 0, 'uid': 0,
          'mtime': PORTABLE_MTIME},
     ]
