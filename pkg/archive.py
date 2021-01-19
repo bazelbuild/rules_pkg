@@ -364,7 +364,8 @@ class TarFileWriter(object):
         name = tarinfo.name
         if (not name.startswith('/') and
             not name.startswith(self.root_directory)):
-          name = os.path.join(self.root_directory, name)
+          #XXX name = os.path.join(self.root_directory, name)
+          name = self.root_directory + '/' + name
         if root is not None:
           if name.startswith('.'):
             name = '.' + root + name.lstrip('.')

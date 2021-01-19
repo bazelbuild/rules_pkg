@@ -184,7 +184,7 @@ class TarFileWriterTest(unittest.TestCase):
     content = [
         {"name": "."}, {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
         {"name": "./.d"}, {"name": "./..e"}, {"name": "./.f"}
-    ])
+    ]
     self.assertTarFileContent(self.tempfile, content)
 
   def testAddDir(self):
