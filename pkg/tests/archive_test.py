@@ -121,8 +121,8 @@ class TarFileWriterTest(unittest.TestCase):
         for k, v in content[i].items():
           if k == "data":
             value = f.extractfile(current).read()
-          elif k == "name" and os.name == "nt":
-            value = getattr(current, k).replace("/", "\\")
+          #XXXelif k == "name" and os.name == "nt":
+          #  value = getattr(current, k).replace("/", "\\")
           else:
             value = getattr(current, k)
           error_msg = " ".join([
@@ -175,10 +175,13 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_file("./.d")
       f.add_file("..e")
       f.add_file(".f")
-    content = [
-        {"name": "."}, {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
+    content = []
+    if os.name != "nt":
+      content = [{"name": "."}]
+    content.extend([
+        {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
         {"name": "./.d"}, {"name": "./..e"}, {"name": "./.f"}
-    ]
+    ])
     self.assertTarFileContent(self.tempfile, content)
 
   def testAddDir(self):
