@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import tempfile
 import unittest
 
@@ -27,20 +28,20 @@ class GetFlagValueTestCase(unittest.TestCase):
     self.assertEqual(helpers.GetFlagValue('value ', strip=True), 'value')
 
   def testNonStripped_fromFile(self):
-    with tempfile.NamedTemporaryFile() as f:
-      f.write(b'value ')
-      f.flush()
-      self.assertEqual(helpers.GetFlagValue(
-          '@{}'.format(f.name),
-          strip=False), 'value ')
+    with tempfile.TemporaryDirectory() as d:
+      argfile_path = os.path.join(d, 'argfile')
+      with open(argfile_path, 'wb') as f:
+        f.write(b'value ')
+      self.assertEqual(
+          helpers.GetFlagValue('@'+argfile_path, strip=False), 'value ')
 
   def testStripped_fromFile(self):
-    with tempfile.NamedTemporaryFile() as f:
-      f.write(b'value ')
-      f.flush()
-      self.assertEqual(helpers.GetFlagValue(
-          '@{}'.format(f.name),
-          strip=True), 'value')
+    with tempfile.TemporaryDirectory() as d:
+      argfile_path = os.path.join(d, 'argfile')
+      with open(argfile_path, 'wb') as f:
+        f.write(b'value ')
+      self.assertEqual(
+          helpers.GetFlagValue('@'+argfile_path, strip=True), 'value')
 
 
 class SplitNameValuePairAtSeparatorTestCase(unittest.TestCase):
