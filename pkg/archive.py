@@ -272,7 +272,8 @@ class TarFileWriter(object):
       return
     if not (name == self.root_directory or name.startswith('/') or
             name.startswith(self.root_directory + '/')):
-      name = os.path.join(self.root_directory, name)
+      #XXX name = os.path.join(self.root_directory, name)
+      name = self.root_directory + '/' + name
     if kind == tarfile.DIRTYPE:
       name = name.rstrip('/')
       if name in self.directories:
