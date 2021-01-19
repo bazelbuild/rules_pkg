@@ -132,6 +132,7 @@ class TarFileWriter(object):
     self.xz = compression in ['xz', 'lzma']
     self.name = name
     self.root_directory = root_directory.rstrip('/').rstrip('\\')
+    self.root_directory = self.root_directory.replace('\\', '/')
     self.preserve_mtime = preserve_tar_mtimes
     if default_mtime is None:
       self.default_mtime = 0
@@ -267,6 +268,7 @@ class TarFileWriter(object):
       mtime: modification time to put in the archive.
       mode: unix permission mode of the file, default 0644 (0755).
     """
+    name = name.replace('\\', '/')
     if file_content and os.path.isdir(file_content):
       # Recurse into directory
       self.add_dir(name, file_content, uid, gid, uname, gname, mtime, mode)
