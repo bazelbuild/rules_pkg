@@ -32,5 +32,6 @@ tasks:
     test_targets:
     - "//tests:archive_test"
     - "//tests:pkg_deb_test"
+    - "//tests:pkg_tar_test"
     - "//tests:zip_test"
 
