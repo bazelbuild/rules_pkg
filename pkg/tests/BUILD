@@ -39,10 +39,6 @@ py_test(
     data = [":archive_testdata"],
     python_version = "PY3",
     srcs_version = "PY3",
-    tags = [
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
     deps = [
         "//:archive",
         "@bazel_tools//tools/python/runfiles",

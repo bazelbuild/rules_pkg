@@ -30,6 +30,8 @@ tasks:
     # one that works and can add to the list as we fix the broken behavior or
     # broken test.
     test_targets:
-    - "//tests:zip_test"
+    - "//tests:archive_test"
     - "//tests:pkg_deb_test"
+    - "//tests:pkg_tar_test"
+    - "//tests:zip_test"
 
