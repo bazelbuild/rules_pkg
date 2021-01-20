@@ -17,6 +17,7 @@ import tarfile
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
+from rules_pkg import archive
 
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
@@ -159,7 +160,7 @@ class PkgTarTest(unittest.TestCase):
         {'name': './usr/bin'},
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
     ]
-    for ext in ('', '.gz', '.bz2', '.xz'):
+    for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
       with self.subTest(ext=ext):
         self.assertTarFileContent('test-tar-basic-%s.tar%s' % (ext[1:], ext),
                                   content)
@@ -175,7 +176,7 @@ class PkgTarTest(unittest.TestCase):
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
         {'name': './BUILD'},
     ]
-    for ext in ('', '.gz', '.bz2', '.xz'):
+    for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
       with self.subTest(ext=ext):
         self.assertTarFileContent('test-tar-inclusion-%s.tar' % ext[1:],
                                   content)
