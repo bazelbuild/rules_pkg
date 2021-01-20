@@ -15,5 +15,5 @@
 
 # buildifier: disable=unnamed-macro
 def register_my_rpmbuild_toolchain():
-    """Register a prebuilt rpmbuild.""".
+    """Register a prebuilt rpmbuild."""
     native.register_toolchains("//local:local_rpmbuild")
