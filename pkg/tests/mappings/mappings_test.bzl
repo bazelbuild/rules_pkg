@@ -488,17 +488,6 @@ def _test_pkg_mkdirs():
         expected_attrs = {"unix": ["0711", "root", "sudo"]},
     )
 
-    pkg_mkdirs(
-        name = "pkg_mkdirs_bad_attrs_g",
-        dirs = ["foo/bar", "baz"],
-        attrs = {"not_unix": ["derp"]},
-        tags = ["manual"],
-    )
-    generic_neg_test(
-        name = "pkg_mkdirs_bad_attrs",
-        target_under_test = ":pkg_mkdirs_bad_attrs_g",
-    )
-
 ##########
 # Test strip_prefix pseudo-module
 ##########
@@ -559,7 +548,6 @@ def mappings_analysis_tests():
             ":pf_rename_single_excluded_value",
             # Tests involving pkg_mkdirs
             ":pkg_mkdirs_base",
-            ":pkg_mkdirs_bad_attrs",
         ],
     )
 

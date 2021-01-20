@@ -71,13 +71,6 @@ def _validate_attr(attr):
     # TODO(nacl): this needs to be rethought.  There could, for example, be
     # attributes for additional packaging types that live outside of rules_pkg.
 
-    # If/when the "attr" list expands, this should probably be modified to use
-    # sets (like the one in skylib) instead
-    valid_keys = ["unix"]
-    for k in attr.keys():
-        if k not in valid_keys:
-            fail("Invalid attr {}, allowed are {}".format(k, valid_keys), "attrs")
-
     # We could do more here, perhaps
     if "unix" in attr.keys():
         if len(attr["unix"]) != 3:
