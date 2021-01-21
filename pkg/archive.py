@@ -20,6 +20,17 @@ import os
 import subprocess
 import tarfile
 
+try:
+  import lzma  # pylint: disable=g-import-not-at-top, unused-import
+  HAS_LZMA = True
+except ImportError:
+  HAS_LZMA = False
+
+# This is slightly a lie. We do support xz fallback through the xz tool, but
+# that is fragile. Users should stick to the expectations provided here.
+COMPRESSIONS = ('', 'gz', 'bz2', 'xz') if HAS_LZMA else ('', 'gz', 'bz2')
+
+
 # Use a deterministic mtime that doesn't confuse other programs.
 # See: https://github.com/bazelbuild/bazel/issues/1299
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
@@ -54,7 +65,8 @@ class SimpleArFile(object):
     Attributes:
       filename: the filename of the entry, as described in the archive.
       timestamp: the timestamp of the file entry.
-      owner_id, group_id: numeric id of the user and group owning the file.
+      owner_id: numeric id of the user and group owning the file.
+      group_id: numeric id of the user and group owning the file.
       mode: unix permission mode of the file
       size: size of the file
       data: the content of the file.
@@ -128,8 +140,13 @@ class TarFileWriter(object):
     else:
       mode = 'w:'
     self.gz = compression in ['tgz', 'gz']
-    # Support xz compression through xz... until we can use Py3
-    self.xz = compression in ['xz', 'lzma']
+    # Fallback to xz compression through xz.
+    self.use_xz_tool = False
+    if compression in ['xz', 'lzma']:
+      if HAS_LZMA:
+        mode = 'w:xz'
+      else:
+        self.use_xz_tool = True
     self.name = name
     self.root_directory = root_directory.rstrip('/').rstrip('\\')
     self.root_directory = self.root_directory.replace('\\', '/')
@@ -405,7 +422,7 @@ class TarFileWriter(object):
     # Close the gzip file object if necessary.
     if self.fileobj:
       self.fileobj.close()
-    if self.xz:
+    if self.use_xz_tool:
       # Support xz compression through xz... until we can use Py3
       if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '

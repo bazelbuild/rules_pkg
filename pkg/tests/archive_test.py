@@ -220,7 +220,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./a", "data": b"a"},
         {"name": "./ab", "data": b"ab"},
         ]
-    for ext in ["", ".gz", ".bz2", ".xz"]:
+    for ext in [("." + comp if comp else "") for comp in archive.COMPRESSIONS]:
       with archive.TarFileWriter(self.tempfile) as f:
         datafile = self.data_files.Rlocation(
             "rules_pkg/tests/testdata/tar_test.tar" + ext)
