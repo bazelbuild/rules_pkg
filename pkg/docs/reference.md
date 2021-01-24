@@ -435,7 +435,7 @@ for more details on this.
           where the deb is installed.
         </p>
         <p>
-          See <a href="https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile">https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile</a>.
+          See <a href="https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files">https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files</a>.
         </p>
       </td>
     </tr>
