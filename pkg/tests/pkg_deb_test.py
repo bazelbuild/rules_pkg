@@ -178,6 +178,7 @@ class PkgDebTest(unittest.TestCase):
         {'name': './control', 'mode': 0o644},
         {'name': './preinst', 'mode': 0o755},
         {'name': './templates', 'mode': 0o644},
+        {'name': './triggers', 'mode': 0o644},
     ]
     self.assert_control_content(expected, match_order=False)
 
@@ -204,6 +205,13 @@ class PkgDebTest(unittest.TestCase):
     for field in ('Template: titi/test', 'Type: string'):
       if templates.find(field) < 0:
         self.fail('Missing template field: <%s> in <%s>' % (field, templates))
+
+  def test_triggers(self):
+    triggers = self.deb_file.get_deb_ctl_file('triggers')
+    self.assertEqual(
+        triggers,
+        '# tutu ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
+        'some-trigger\n')
 
   def test_changes(self):
     changes_path = self.runfiles.Rlocation(
