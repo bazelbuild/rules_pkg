@@ -172,6 +172,7 @@ def CreateDeb(output,
               postrm=None,
               config=None,
               templates=None,
+              triggers=None,
               conffiles=None,
               **kwargs):
   """Create a full debian package."""
@@ -188,6 +189,8 @@ def CreateDeb(output,
     extrafiles['config'] = (config, 0o755)
   if templates:
     extrafiles['templates'] = (templates, 0o644)
+  if triggers:
+    extrafiles['triggers'] = (triggers, 0o644)
   if conffiles:
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
   control = CreateDebControl(extrafiles=extrafiles, **kwargs)
@@ -325,6 +328,9 @@ def main():
   parser.add_argument(
       '--templates',
       help='The templates file (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--triggers',
+      help='The triggers file (prefix with @ to provide a path).')
   # see
   # https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
   parser.add_argument(
@@ -342,6 +348,7 @@ def main():
       postrm=GetFlagValue(options.postrm, False),
       config=GetFlagValue(options.config, False),
       templates=GetFlagValue(options.templates, False),
+      triggers=GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
       package=options.package,
       version=GetFlagValue(options.version),

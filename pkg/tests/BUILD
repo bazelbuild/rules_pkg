@@ -294,6 +294,7 @@ pkg_deb(
     provides = ["hello"],
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    triggers = ":testdata/deb_triggers",
     urgency = "low",
     version = "test",
 )
