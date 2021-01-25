@@ -13,52 +13,94 @@
 # limitations under the License.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//experimental:pkg_filegroup.bzl", "pkg_filegroup", "pkg_mkdirs", "pkg_mklinks")
-load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
+load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "pkg_mklink")
+load("@rules_pkg//new:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
+load(":analysis_tests.bzl", "analysis_tests")
 
-licenses(["notice"])
 
-filegroup(
-    name = "ars",
-    srcs = glob(["testdata/*.ar"]),
-)
+############################################################################
+# analysis tests
+############################################################################
+analysis_tests(name = "analysis_tests")
 
 ############################################################################
 # pkg_filegroups for testing
 ############################################################################
 
-pkg_filegroup(
-    name = "ars_pfg",
+filegroup(
+    name = "ars",
+    srcs = [
+        "//tests:testdata/a.ar",
+        "//tests:testdata/a_ab.ar",
+        "//tests:testdata/a_b.ar",
+        "//tests:testdata/a_b_ab.ar",
+        "//tests:testdata/ab.ar",
+        "//tests:testdata/b.ar",
+        "//tests:testdata/empty.ar",
+    ],
+)
+
+
+pkg_files(
+    name = "ars_pf",
     srcs = [
         ":ars",
     ],
-    attrs = {"unix": [
-        "0755",
-        "root",
-        "root",
-    ]},
+    attributes = pkg_attributes(
+        mode = "0755",
+        user = "root",
+        group = "root",
+    ),
     prefix = "/test",
+)
+
+genrule(
+    name = "config_empty",
+    outs = ["config.txt"],
+    cmd = "touch $@",
+)
+
+pkg_files(
+    name = "config_file",
+    srcs = [":config_empty"],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        rpm_filetag = "%config(missingok, noreplace)",
+        user = "root",
+    ),
 )
 
 pkg_mkdirs(
     name = "var_log_foo",
-    attrs = {"unix": [
-        "0755",
-        "root",
-        "root",
-    ]},
+    attributes = pkg_attributes(
+        mode = "0755",
+        user = "root",
+        group = "root",
+    ),
     dirs = ["/var/log/foo"],
 )
 
-pkg_mklinks(
+pkg_mklink(
     name = "test_links",
-    attrs = {"unix": [
-        "0777",
-        "root",
-        "root",
-    ]},
-    links = {"/usr/bin/link-name": "/usr/bin/link-target"},
+    attributes = pkg_attributes(
+        mode = "0777",
+        user = "root",
+        group = "root",
+    ),
+    dest = "/usr/bin/link-name",
+    src = "/usr/bin/link-target",
+)
+
+pkg_filegroup(
+    name = "test_pfg",
+    srcs = [
+        ":ars_pf",
+        ":config_file",
+        ":test_links",
+        ":var_log_foo",
+    ],
 )
 
 ############################################################################
@@ -69,10 +111,8 @@ pkg_rpm(
     name = "test_rpm",
     architecture = "noarch",
     conflicts = ["not-a-test"],
-    data = [
-        ":ars_pfg",
-        ":test_links",
-        ":var_log_foo",
+    srcs = [
+        ":test_pfg",
     ],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
@@ -95,10 +135,8 @@ pkg_rpm(
     architecture = "noarch",
     binary_payload_compression = "w2.bzdio",
     conflicts = ["not-a-test"],
-    data = [
-        ":ars_pfg",
-        ":test_links",
-        ":var_log_foo",
+    srcs = [
+        ":test_pfg",
     ],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
@@ -122,7 +160,10 @@ pkg_rpm(
 # Emit a CSV file providing a manifest providing the expected RPM contents
 genrule(
     name = "test_rpm_manifest",
-    srcs = [":ars"],
+    srcs = [
+        ":ars",
+        ":config_file",
+    ],
     outs = ["manifest.csv"],
     # Keep the header (the first line echo'd below) in sync with
     # rpm_queryformat_fieldnames in pkg_rpm_basic_test.py
@@ -139,7 +180,17 @@ genrule(
             # Symlink destination (not provided)
             echo ,
         ) >> $@
-
+    done
+    # Config file
+    for f in $(location :config_file); do
+        (
+            echo -n /$$(basename $$f),
+            md5sum $$f | cut -d' ' -f1 | tr '\\n' ,
+            # User,Group,Mode,Fflags (fflags "cmn" = config + missingok + noreplace)
+            echo -n 'root,root,100644,cmn'
+            # Symlink destination (not provided)
+            echo ,
+        ) >> $@
     done
     # Directory (has no hash)
     (
@@ -180,6 +231,7 @@ genrule(
 
         echo 'capability:sense'
         echo 'test:manual'
+        echo 'config(test_rpm) = 1.1.1-2222:config'
     ) > $(RULEDIR)/provides.csv
     (
         # NOTE: excludes 'rpmlib' requires that may be version-dependent
@@ -193,6 +245,7 @@ genrule(
         echo 'bash:preun'
         # Hand-specified
         echo 'test-lib > 1.0:manual'
+        echo 'config(test_rpm) = 1.1.1-2222:config'
     ) > $(RULEDIR)/requires.csv
     """,
 )
@@ -202,7 +255,7 @@ genrule(
 sh_library(
     name = "pkg_rpm_basic_test_data",
     testonly = True,
-    data = [
+    srcs = [
         ":test_rpm",
         ":test_rpm-bzip2",
         ":test_rpm_manifest",
@@ -231,10 +284,8 @@ pkg_rpm(
     name = "test_rpm_default_template",
     testonly = True,
     architecture = "noarch",
-    data = [
-        ":ars_pfg",
-        ":test_links",
-        ":var_log_foo",
+    srcs = [
+        ":test_pfg",
     ],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
