@@ -86,13 +86,25 @@ copy_file(
     out = "zipcontent/loremipsum.txt",
 )
 
+#
+# Tests for package_file_name
+#
 my_package_naming(
     name = "my_package_variables",
     label = "some_value",
 )
 
-# Try building with various flag combinations to show the abilities
-#   bazel build :test_tar_naming -c dbg
+pkg_deb(
+    name = "test_deb_naming",
+    data = ":test_tar_naming",
+    description = "desc",
+    maintainer = "someone@somewhere.com",
+    package = "some_name",
+    package_file_name = "test_naming_{label}.deb",
+    package_variables = ":my_package_variables",
+    version = "1",
+)
+
 pkg_tar(
     name = "test_tar_naming",
     srcs = [
@@ -117,6 +129,7 @@ sh_test(
     name = "package_naming_aggregate_test",
     srcs = ["package_naming_aggregate_test.sh"],
     data = [
+        ":test_deb_naming",
         ":test_tar_naming",
         ":test_zip_naming",
     ],
@@ -295,7 +308,6 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    make_deb = "//:make_deb",
     package = "titi",
     preinst = "testdata/deb_preinst",
     provides = ["hello"],

@@ -15,7 +15,8 @@
 
 licenses(["notice"])
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+load(":package_upload.bzl", "debian_upload")
 load(":my_package_name.bzl", "basic_naming", "names_from_toolchains")
 
 config_setting(
@@ -73,4 +74,31 @@ pkg_tar(
     ],
     package_file_name = "example2-{cc_cpu}-{compiler}-{compilation_mode}.tar",
     package_variables = ":toolchain_vars",
+)
+
+# Let
+pkg_deb(
+    name = "a_deb_package",
+    data = ":example1",
+    description = "what it does",
+    maintainer = "someone@somewhere.com",
+    package = "foo_tools",
+    # Note: We could not know target_cpu at the time I write this rule.
+    package_file_name = "foo_tools-1-{target_cpu}.deb",
+    package_variables = ":my_naming_vars",
+    version = "1",
+)
+
+# This does not actually build anything. It writes a skelaton of a script that
+# could upload the .deb and .changes pair.  You should see something like
+# $ cat bazel-bin/upload.sh
+# # Uploading foo_tools-1-k8
+# gsutil cp bazel-out/k8-fastbuild/bin/foo_tools-1-k8.deb gs://my_mirror/foo_tools-1-k8.deb
+# gsutil cp bazel-out/k8-fastbuild/bin/foo_tools-1-k8.changes gs://my_mirror/foo_tools-1-k8.changes
+debian_upload(
+    name = "upload",
+    out = "upload.sh",
+    host = "my_mirror",
+    # Refer to the target label, without having to know the final file name.
+    package = ":a_deb_package",
 )

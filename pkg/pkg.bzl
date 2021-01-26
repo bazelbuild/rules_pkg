@@ -161,8 +161,8 @@ def _pkg_tar_impl(ctx):
     )
     return [
         DefaultInfo(
-            files = depset(outputs),
-            runfiles = ctx.runfiles(files = [output_file]),
+            files = depset([output_file]),
+            runfiles = ctx.runfiles(files = outputs),
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
@@ -173,11 +173,21 @@ def _pkg_tar_impl(ctx):
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
     outputs, output_file, output_name = setup_output_files(ctx)
+    # If the user does not provide the changes file, comput it.
+    # TBD: Should the user even be allowed to provide it? That is, is there any
+    # value in ability to have the basename of the .deb and the .changes file
+    # be different?
+    if ctx.outputs.changes:
+        changes_file = ctx.outputs.changes
+    else:
+        changes_file = ctx.actions.declare_file(
+           output_name.split('.')[0] + ".changes")
+    outputs.append(changes_file)
 
     files = [ctx.file.data]
     args = [
         "--output=" + output_file.path,
-        "--changes=" + ctx.outputs.changes.path,
+        "--changes=" + changes_file.path,
         "--data=" + ctx.file.data.path,
         "--package=" + ctx.attr.package,
         "--architecture=" + ctx.attr.architecture,
@@ -272,7 +282,7 @@ def _pkg_deb_impl(ctx):
         executable = ctx.executable.make_deb,
         arguments = args,
         inputs = files,
-        outputs = [output_file, ctx.outputs.changes],
+        outputs = [output_file, changes_file],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -283,14 +293,13 @@ def _pkg_deb_impl(ctx):
     output_groups = {
         "out": [ctx.outputs.out],
         "deb": [output_file],
-        "changes": [ctx.outputs.changes],
+        "changes": [changes_file],
     }
-    outputs.append(ctx.outputs.changes)
     return [
         OutputGroupInfo(**output_groups),
         DefaultInfo(
-            files = depset(outputs),
-            runfiles = ctx.runfiles(files = [output_file, ctx.outputs.changes]),
+            files = depset([output_file]),
+            runfiles = ctx.runfiles(files = outputs),
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
@@ -339,6 +348,7 @@ pkg_tar_impl = rule(
             allow_files = True,
         ),
     },
+    provides = [PackageArtifactInfo],
 )
 
 def pkg_tar(name, **kwargs):
@@ -417,7 +427,7 @@ pkg_deb_impl = rule(
         ),
 
         # Outputs.
-        "changes": attr.output(mandatory = True),
+        "changes": attr.output(mandatory = False),
 
         # Implicit dependencies.
         "make_deb": attr.label(
@@ -427,6 +437,7 @@ pkg_deb_impl = rule(
             allow_files = True,
         ),
     },
+    provides = [PackageArtifactInfo],
 )
 
 def pkg_deb(name, package, archive_name = None, **kwargs):
@@ -437,14 +448,12 @@ def pkg_deb(name, package, archive_name = None, **kwargs):
     package_file_name = kwargs.pop("package_file_name", None)
     if not package_file_name:
         package_file_name = "%s_%s_%s.deb" % (package, version, architecture)
-    out_changes = "%s_%s_%s.changes" % (package, version, architecture)
 
     pkg_deb_impl(
         name = name,
         package = package,
         out = archive_name + ".deb",
         package_file_name = package_file_name,
-        changes = out_changes,
         **kwargs
     )
 
@@ -483,8 +492,8 @@ def _pkg_zip_impl(ctx):
     )
     return [
         DefaultInfo(
-            files = depset(outputs),
-            runfiles = ctx.runfiles(files = [output_file]),
+            files = depset([output_file]),
+            runfiles = ctx.runfiles(files = outputs),
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
@@ -517,6 +526,7 @@ pkg_zip_impl = rule(
             allow_files = True,
         ),
     },
+    provides = [PackageArtifactInfo],
 )
 
 def pkg_zip(name, **kwargs):
