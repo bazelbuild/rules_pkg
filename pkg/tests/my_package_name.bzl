@@ -15,13 +15,9 @@
 """Sample rule to show package naming."""
 
 load("//:providers.bzl", "PackageVariablesInfo")
-load("//:package_variables.bzl", "add_ctx_variables")
 
 def _my_package_naming_impl(ctx):
     values = {}
-
-    # Add variables which are always present
-    add_ctx_variables(ctx, values)
 
     # then add in my own custom values
     values["label"] = ctx.attr.label
