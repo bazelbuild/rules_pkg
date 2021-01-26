@@ -4,7 +4,10 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 licenses(["notice"])
 
 exports_files(
-    glob(["*.bzl"]),
+    glob([
+        "*.bzl",
+        "internal/**",
+    ]),
     visibility = ["//visibility:public"],
 )
 
@@ -21,6 +24,7 @@ filegroup(
         "*.bzl",
         "*.py",
         "*.md",
+        "internal/**",
     ]) + [
         "BUILD",
         "LICENSE",

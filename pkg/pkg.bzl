@@ -15,6 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("internal/common.bzl", "setup_output_files")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -47,23 +48,7 @@ def _pkg_tar_impl(ctx):
     # Files needed by rule implementation at runtime
     files = []
 
-    outputs = [ctx.outputs.out]
-    if ctx.attr.package_file_name:
-        output_name = ctx.attr.package_file_name
-        if ctx.attr.package_variables:
-            package_variables = ctx.attr.package_variables[PackageVariablesInfo]
-            output_name = output_name.format(**package_variables.values)
-        elif ctx.attr.package_file_name.find("{") >= 0:
-            fail("package_variables is required when using '{' in package_file_name")
-        output_file = ctx.actions.declare_file(output_name)
-        outputs.append(output_file)
-        ctx.actions.symlink(
-            output = ctx.outputs.out,
-            target_file = output_file,
-        )
-    else:
-        output_file = ctx.outputs.out
-        output_name = ctx.outputs.out.basename
+    outputs, output_file, output_name = setup_output_files(ctx)
 
     # Compute the relative path
     data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
@@ -187,9 +172,11 @@ def _pkg_tar_impl(ctx):
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
+    outputs, output_file, output_name = setup_output_files(ctx)
+
     files = [ctx.file.data]
     args = [
-        "--output=" + ctx.outputs.deb.path,
+        "--output=" + output_file.path,
         "--changes=" + ctx.outputs.changes.path,
         "--data=" + ctx.file.data.path,
         "--package=" + ctx.attr.package,
@@ -285,7 +272,7 @@ def _pkg_deb_impl(ctx):
         executable = ctx.executable.make_deb,
         arguments = args,
         inputs = files,
-        outputs = [ctx.outputs.deb, ctx.outputs.changes],
+        outputs = [output_file, ctx.outputs.changes],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -293,16 +280,23 @@ def _pkg_deb_impl(ctx):
             "PYTHONUTF8": "1",
         },
     )
-    ctx.actions.symlink(
-        output = ctx.outputs.out,
-        target_file = ctx.outputs.deb,
-    )
-    output_groups = {"out": [ctx.outputs.out]}
-    if hasattr(ctx.outputs, "deb"):
-        output_groups["deb"] = [ctx.outputs.deb]
-    if hasattr(ctx.outputs, "changes"):
-        output_groups["changes"] = [ctx.outputs.changes]
-    return OutputGroupInfo(**output_groups)
+    output_groups = {
+        "out": [ctx.outputs.out],
+        "deb": [output_file],
+        "changes": [ctx.outputs.changes],
+    }
+    outputs.append(ctx.outputs.changes)
+    return [
+        OutputGroupInfo(**output_groups),
+        DefaultInfo(
+            files = depset(outputs),
+            runfiles = ctx.runfiles(files = [output_file, ctx.outputs.changes]),
+        ),
+        PackageArtifactInfo(
+            label = ctx.label.name,
+            file_name = output_name,
+        ),
+    ]
 
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
@@ -329,13 +323,13 @@ pkg_tar_impl = rule(
         "include_runfiles": attr.bool(),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
+
+        # Common attributes
+        "out": attr.output(mandatory = True),
         "package_file_name": attr.string(),
         "package_variables": attr.label(
             providers = [PackageVariablesInfo],
         ),
-
-        # Outputs
-        "out": attr.output(),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -415,9 +409,14 @@ pkg_deb_impl = rule(
         "replaces": attr.string_list(default = []),
         "provides": attr.string_list(default = []),
 
-        # Outputs.
+        # Common attributes
         "out": attr.output(mandatory = True),
-        "deb": attr.output(mandatory = True),
+        "package_file_name": attr.string(),
+        "package_variables": attr.label(
+            providers = [PackageVariablesInfo],
+        ),
+
+        # Outputs.
         "changes": attr.output(mandatory = True),
 
         # Implicit dependencies.
@@ -435,22 +434,25 @@ def pkg_deb(name, package, archive_name = None, **kwargs):
     archive_name = archive_name or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
-    out_deb = "%s_%s_%s.deb" % (package, version, architecture)
+    package_file_name = kwargs.pop("package_file_name", None)
+    if not package_file_name:
+        package_file_name = "%s_%s_%s.deb" % (package, version, architecture)
     out_changes = "%s_%s_%s.changes" % (package, version, architecture)
 
     pkg_deb_impl(
         name = name,
         package = package,
         out = archive_name + ".deb",
-        deb = out_deb,
+        package_file_name = package_file_name,
         changes = out_changes,
         **kwargs
     )
 
 def _pkg_zip_impl(ctx):
-    args = ctx.actions.args()
+    outputs, output_file, output_name = setup_output_files(ctx)
 
-    args.add("-o", ctx.outputs.out.path)
+    args = ctx.actions.args()
+    args.add("-o", output_file.path)
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
@@ -458,7 +460,7 @@ def _pkg_zip_impl(ctx):
     for f in ctx.files.srcs:
         arg = "%s=%s" % (
             _quote(f.path),
-            dest_path(f, compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)),
+            dest_path(f, compute_data_path(output_file, ctx.attr.strip_prefix)),
         )
         args.add(arg)
 
@@ -470,7 +472,7 @@ def _pkg_zip_impl(ctx):
         inputs = ctx.files.srcs,
         executable = ctx.executable.build_zip,
         arguments = [args],
-        outputs = [ctx.outputs.out],
+        outputs = [output_file],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -479,18 +481,34 @@ def _pkg_zip_impl(ctx):
         },
         use_default_shell_env = True,
     )
-    return OutputGroupInfo(out = [ctx.outputs.out])
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            runfiles = ctx.runfiles(files = [output_file]),
+        ),
+        PackageArtifactInfo(
+            label = ctx.label.name,
+            file_name = output_name,
+        ),
+    ]
 
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
     attrs = {
         "extension": attr.string(default = "zip"),
-        "srcs": attr.label_list(allow_files = True),
-        "package_dir": attr.string(default = "/"),
-        "timestamp": attr.int(default = 315532800),
         "mode": attr.string(default = "0555"),
-        "out": attr.output(),
+        "package_dir": attr.string(default = "/"),
+        "srcs": attr.label_list(allow_files = True),
         "strip_prefix": attr.string(),
+        "timestamp": attr.int(default = 315532800),
+
+        # Common attributes
+        "out": attr.output(mandatory = True),
+        "package_file_name": attr.string(),
+        "package_variables": attr.label(
+            providers = [PackageVariablesInfo],
+        ),
+
         # Implicit dependencies.
         "build_zip": attr.label(
             default = Label("//:build_zip"),

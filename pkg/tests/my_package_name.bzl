@@ -19,19 +19,17 @@ load("//:package_variables.bzl", "add_ctx_variables")
 
 def _my_package_naming_impl(ctx):
     values = {}
+
     # Add variables which are always present
     add_ctx_variables(ctx, values)
+
     # then add in my own custom values
-    values['label'] = ctx.attr.label
-    values['special_build'] = ctx.attr.special_build
+    values["label"] = ctx.attr.label
     return PackageVariablesInfo(values = values)
 
 my_package_naming = rule(
     implementation = _my_package_naming_impl,
     attrs = {
         "label": attr.string(doc = "A label that matters to me."),
-        "special_build": attr.string(
-            doc = "Another label for the sake of the sample."
-        ),
-    }
+    },
 )

@@ -71,24 +71,6 @@ py_test(
     ],
 )
 
-# Exposes the value of the compilation mode to the package naming.
-config_setting(
-    name = "special_build",
-    values = {"define": "SPECIAL=1"},
-)
-
-my_package_naming(
-    name = "my_package_variables",
-    label = "-alpha",
-    # There is no important reason to use a config_setting and a select. This
-    # is really just to show a technique.
-    # TBD: Move this into a cookbook of examples.
-    special_build = select({
-        ":special_build": "-IsSpecial",
-        "//conditions:default": "",
-    }),
-)
-
 genrule(
     name = "generate_files",
     outs = [
@@ -104,15 +86,40 @@ copy_file(
     out = "zipcontent/loremipsum.txt",
 )
 
+my_package_naming(
+    name = "my_package_variables",
+    label = "some_value",
+)
+
 # Try building with various flag combinations to show the abilities
-#   bazel build :test_tar_naming -c dbg --define=SPECIAL=1
+#   bazel build :test_tar_naming -c dbg
 pkg_tar(
     name = "test_tar_naming",
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "test_naming-{target_cpu}-{compilation_mode}{label}{special_build}.tar",
+    package_file_name = "test_naming_{label}.tar",
     package_variables = ":my_package_variables",
+)
+
+pkg_zip(
+    name = "test_zip_naming",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "test_naming_{label}.zip",
+    package_variables = ":my_package_variables",
+)
+
+# This just proves that we would create the files via package_file_name rather
+# than the default out file.
+sh_test(
+    name = "package_naming_aggregate_test",
+    srcs = ["package_naming_aggregate_test.sh"],
+    data = [
+        ":test_tar_naming",
+        ":test_zip_naming",
+    ],
 )
 
 pkg_tar(
@@ -436,8 +443,8 @@ py_test(
         "pkg_deb_test.py",
     ],
     data = [
-        ":titi_test_all.changes",
-        ":titi_test_all.deb",
+        # The target includes both the .deb and .changes files in DefaultInfo
+        ":test-deb",
     ],
     python_version = "PY3",
     deps = [

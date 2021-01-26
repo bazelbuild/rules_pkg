@@ -36,8 +36,8 @@ pkg_tar(
     srcs = [
         ":small_workspace",
         "//:standard_package",
-        "//toolchains:standard_package",
         "//releasing:standard_package",
+        "//toolchains:standard_package",
     ],
     extension = "tar.gz",
     # It is all source code, so make it read-only.
@@ -59,10 +59,10 @@ print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
     deps_method = "rules_pkg_dependencies",
-    org = 'bazelbuild',
+    mirror_host = "mirror.bazel.build",
+    org = "bazelbuild",
     repo = "rules_pkg",
     version = version,
-    mirror_host = 'mirror.bazel.build'
 )
 
 py_test(
@@ -73,8 +73,8 @@ py_test(
         ":release_version.py",
     ],
     data = [
-        ":distro",
         "testdata/BUILD.tmpl",
+        ":distro",
     ],
     local = True,
     python_version = "PY3",
@@ -83,8 +83,8 @@ py_test(
         "noci",
     ],
     deps = [
-        "@bazel_tools//tools/python/runfiles",
         "//releasing:release_utils",
+        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
@@ -97,6 +97,7 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
+        "//:internal/common.bzl",
         "//:package_variables.bzl",
         "//:path.bzl",
         "//:pkg.bzl",
