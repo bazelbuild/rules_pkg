@@ -23,10 +23,12 @@ def _debian_upload_impl(ctx):
     for f in ctx.attr.package[DefaultInfo].default_runfiles.files.to_list():
         if f.basename.startswith(package_basename):
             content.append("gsutil cp %s gs://%s/%s" % (
-                f.path, ctx.attr.host, f.basename))
+                f.path,
+                ctx.attr.host,
+                f.basename,
+            ))
     ctx.actions.write(ctx.outputs.out, "\n".join(content))
     return
-
 
 debian_upload = rule(
     implementation = _debian_upload_impl,
@@ -35,7 +37,7 @@ debian_upload = rule(
         "package": attr.label(
             doc = "Package to upload",
             mandatory = True,
-            providers = [[PackageArtifactInfo]]
+            providers = [[PackageArtifactInfo]],
         ),
         "host": attr.string(
             doc = "Host to upload to",

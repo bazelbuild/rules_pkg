@@ -173,6 +173,7 @@ def _pkg_tar_impl(ctx):
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
     outputs, output_file, output_name = setup_output_files(ctx)
+
     # If the user does not provide the changes file, comput it.
     # TBD: Should the user even be allowed to provide it? That is, is there any
     # value in ability to have the basename of the .deb and the .changes file
@@ -181,7 +182,8 @@ def _pkg_deb_impl(ctx):
         changes_file = ctx.outputs.changes
     else:
         changes_file = ctx.actions.declare_file(
-           output_name.split('.')[0] + ".changes")
+            output_name.split(".")[0] + ".changes",
+        )
     outputs.append(changes_file)
 
     files = [ctx.file.data]
@@ -335,9 +337,9 @@ pkg_tar_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc="See Common Attributes"),
+        "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
-            doc="See Common Attributes",
+            doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
@@ -422,9 +424,9 @@ pkg_deb_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc="See Common Attributes"),
+        "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
-            doc="See Common Attributes",
+            doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
@@ -514,9 +516,9 @@ pkg_zip_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc="See Common Attributes"),
+        "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
-            doc="See Common Attributes",
+            doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
@@ -535,7 +537,6 @@ def pkg_zip(name, **kwargs):
     """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.pop("extension", None)
     if extension:
-
         # buildifier: disable=print
         print("extension is deprecated. Use package_file_name or out to name the output.")
     else:
