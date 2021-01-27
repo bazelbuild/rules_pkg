@@ -264,11 +264,11 @@ Creates a tar file from a list of inputs.
     </tr>
     <tr>
       <td><code>package_file_name</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
     <tr>
       <td><code>package_variables</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
   </tbody>
 </table>
@@ -306,6 +306,7 @@ Creates a zip file from a list of inputs.
       <td>
         <code>String, default to 'zip'</code>
         <p>
+            <b>Deprecated. Use <code>out</code> or <code>package_file_name</code> to specify the output file name.</b>
             The extension for the resulting zipfile. The output
             file will be '<i>name</i>.<i>extension</i>'.
         </p>
@@ -348,11 +349,11 @@ Creates a zip file from a list of inputs.
     </tr>
     <tr>
       <td><code>package_file_name</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
     <tr>
       <td><code>package_variables</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
   </tbody>
 </table>
@@ -547,11 +548,11 @@ for more details on this.
     </tr>
     <tr>
       <td><code>package_file_name</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
     <tr>
       <td><code>package_variables</code></td>
-      <td>See [Common Attributes](#common)</td>
+      <td>See <a href="#common">Common Attributes</a></td>
     </tr>
   </tbody>
 </table>
