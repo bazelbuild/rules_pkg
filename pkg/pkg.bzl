@@ -335,8 +335,9 @@ pkg_tar_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(),
+        "package_file_name": attr.string(doc="See Common Attributes"),
         "package_variables": attr.label(
+            doc="See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
@@ -421,8 +422,9 @@ pkg_deb_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(),
+        "package_file_name": attr.string(doc="See Common Attributes"),
         "package_variables": attr.label(
+            doc="See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
@@ -512,8 +514,9 @@ pkg_zip_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(),
+        "package_file_name": attr.string(doc="See Common Attributes"),
         "package_variables": attr.label(
+            doc="See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
 
