@@ -504,7 +504,6 @@ def _pkg_zip_impl(ctx):
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
     attrs = {
-        "extension": attr.string(default = "zip"),
         "mode": attr.string(default = "0555"),
         "package_dir": attr.string(default = "/"),
         "srcs": attr.label_list(allow_files = True),
@@ -531,9 +530,23 @@ pkg_zip_impl = rule(
 
 def pkg_zip(name, **kwargs):
     """Creates a .zip file. See pkg_zip_impl."""
-    extension = kwargs.get("extension") or "zip"
-    archive_name = kwargs.get("archive_name") or name
+    extension = kwargs.pop("extension", None)
+    if extension:
 
+        # buildifier: disable=print
+        print("extension is deprecated. Use package_file_name or out to name the output.")
+    else:
+        extension = "zip"
+    archive_name = kwargs.pop("archive_name", None)
+    if archive_name:
+        if kwargs.get("package_file_name"):
+            fail("You may not set both archive_name and package_file_name")
+
+        # buildifier: disable=print
+        print("archive_name is deprecated. Use package_file_name instead.")
+        kwargs["package_file_name"] = archive_name + "." + extension
+    else:
+        archive_name = name
     pkg_zip_impl(
         name = name,
         out = archive_name + "." + extension,
