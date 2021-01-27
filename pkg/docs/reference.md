@@ -11,6 +11,24 @@
 
 </div>
 
+<a name="common"></a>
+## Common Attributes
+
+Attributes common to pkg_deb, pkg_tar, and pkg_zip.
+
+**ATTRIBUTES**
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| out | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink. | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| package_file_name |  The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`.| String | optional | "" |
+| package_variables |  A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.| <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+
+See
+[examples/naming_package_files](https://github.com/bazelbuild/rules_pkg/tree/main/examples/naming_package_files)
+for examples of how `out`, `package_file_name`, and `package_variables`
+interact.
+`
 <a name="pkg_tar"></a>
 ## pkg_tar
 
