@@ -64,13 +64,12 @@ class SimpleArFileTest(unittest.TestCase):
 
   def testEmptyArFile(self):
     self.assertArFileContent(
-        self.data_files.Rlocation(
-            os.path.join("rules_pkg", "tests", "testdata", "empty.ar")),
+        self.data_files.Rlocation("rules_pkg/tests/testdata/empty.ar"),
         [])
 
   def assertSimpleFileContent(self, names):
     datafile = self.data_files.Rlocation(
-        os.path.join("rules_pkg", "tests", "testdata", "_".join(names) + ".ar"))
+        "rules_pkg/tests/testdata/" + "_".join(names) + ".ar")
     # pylint: disable=g-complex-comprehension
     content = [{"filename": n,
                 "size": len(n.encode("utf-8")),
@@ -112,7 +111,12 @@ class TarFileWriterTest(unittest.TestCase):
             be `{"name": "x"}`, the missing field will be ignored. To match
             the content of a file entry, use the key "data".
     """
-    with tarfile.open(tar, "r:") as f:
+    got_names = []
+    with tarfile.open(tar, "r:*") as f:
+      for current in f:
+        got_names.append(getattr(current, "name"))
+
+    with tarfile.open(tar, "r:*") as f:
       i = 0
       for current in f:
         error_msg = "Extraneous file at end of archive %s: %s" % (
@@ -123,6 +127,8 @@ class TarFileWriterTest(unittest.TestCase):
         for k, v in content[i].items():
           if k == "data":
             value = f.extractfile(current).read()
+          elif k == "name" and os.name == "nt":
+            value = getattr(current, k).replace("\\", "/")
           else:
             value = getattr(current, k)
           error_msg = " ".join([
@@ -130,6 +136,7 @@ class TarFileWriterTest(unittest.TestCase):
               "%s in archive %s does" % (current.name, tar),
               "not match expected value `%s`" % v
               ])
+          error_msg += str(got_names)
           self.assertEqual(value, v, error_msg)
         i += 1
       if i < len(content):
@@ -198,7 +205,9 @@ class TarFileWriterTest(unittest.TestCase):
     # structure it describes.
     for c in content:
       if "data" in c:
-        p = os.path.join(tempdir, c["name"][2:])
+        # Create files is happening locally, so use native path sep.
+        path_parts = c["name"][2:].split('/')
+        p = os.path.join(tempdir, *path_parts)
         os.makedirs(os.path.dirname(p))
         with open(p, "wb") as f:
           f.write(c["data"])
@@ -211,10 +220,10 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./a", "data": b"a"},
         {"name": "./ab", "data": b"ab"},
         ]
-    for ext in ["", ".gz", ".bz2", ".xz"]:
+    for ext in [("." + comp if comp else "") for comp in archive.COMPRESSIONS]:
       with archive.TarFileWriter(self.tempfile) as f:
-        datafile = self.data_files.Rlocation(os.path.join(
-            "rules_pkg", "tests", "testdata", "tar_test.tar" + ext))
+        datafile = self.data_files.Rlocation(
+            "rules_pkg/tests/testdata/tar_test.tar" + ext)
         f.add_tar(datafile, name_filter=lambda n: n != "./b")
       self.assertTarFileContent(self.tempfile, content)
 
@@ -227,7 +236,7 @@ class TarFileWriterTest(unittest.TestCase):
         ]
     with archive.TarFileWriter(self.tempfile) as f:
       datafile = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+          "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
     self.assertTarFileContent(self.tempfile, content)
 
@@ -246,7 +255,7 @@ class TarFileWriterTest(unittest.TestCase):
   def testPreserveTarMtimesTrueByDefault(self):
     with archive.TarFileWriter(self.tempfile) as f:
       input_tar_path = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+          "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
       for file_name in f.members:
@@ -257,7 +266,7 @@ class TarFileWriterTest(unittest.TestCase):
   def testPreserveTarMtimesFalse(self):
     with archive.TarFileWriter(self.tempfile, preserve_tar_mtimes=False) as f:
       input_tar_path = self.data_files.Rlocation(
-          os.path.join("rules_pkg", "tests", "testdata", "tar_test.tar"))
+          "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       for output_file in f.tar:
         self.assertEqual(output_file.mtime, 0)
@@ -381,9 +390,9 @@ class TarFileWriterTest(unittest.TestCase):
     pkg_tar yields identical results.
     """
     package_dir = self.data_files.Rlocation(
-        os.path.join("rules_pkg", "tests", "test_tar_package_dir.tar"))
+        "rules_pkg/tests/test_tar_package_dir.tar")
     package_dir_file = self.data_files.Rlocation(
-        os.path.join("rules_pkg", "tests", "test_tar_package_dir_file.tar"))
+        "rules_pkg/tests/test_tar_package_dir_file.tar")
 
     expected_content = [
         {"name": "."},
