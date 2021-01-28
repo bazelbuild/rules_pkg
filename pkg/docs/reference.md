@@ -14,12 +14,12 @@
 <a name="common"></a>
 ## Common Attributes
 
-Attributes common to pkg_deb, pkg_tar, and pkg_zip.
+These attributes are used in many rules within this module.
 
 **ATTRIBUTES**
 
 | Name  | Description | Type | Mandatory | Default |
-| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| :------------- | :------------- | :-------------: | :-------------: | :------------- |
 | out | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink. | String | required |  |
 | package_file_name |  The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`.| String | optional | "" |
 | package_variables |  A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.| <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
