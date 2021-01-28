@@ -14,7 +14,7 @@
 <a name="common"></a>
 ## Common Attributes
 
-These attributes are used in many rules within this module.
+These attributes are used in several rules within this module.
 
 **ATTRIBUTES**
 
@@ -28,7 +28,7 @@ See
 [examples/naming_package_files](https://github.com/bazelbuild/rules_pkg/tree/main/examples/naming_package_files)
 for examples of how `out`, `package_file_name`, and `package_variables`
 interact.
-`
+
 <a name="pkg_tar"></a>
 ## pkg_tar
 

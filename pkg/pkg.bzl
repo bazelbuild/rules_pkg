@@ -467,13 +467,14 @@ pkg_deb_impl = rule(
 
 def pkg_deb(name, archive_name = None, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
-    archive_name = archive_name or name
-    version = kwargs.get("version") or ""
-    architecture = kwargs.get("architecture") or "all"
-
+    if archive_name:
+        # buildifier: disable=print
+        print("archive_name is deprecated. Use package_file_name or out to name the output.")
+        if kwargs.get("package_file_name"):
+            fail("You may not set both archive_name and package_file_name")
     pkg_deb_impl(
         name = name,
-        out = archive_name + ".deb",
+        out = (archive_name or name) + ".deb",
         **kwargs
     )
 
