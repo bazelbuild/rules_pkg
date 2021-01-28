@@ -97,7 +97,7 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
-        "//:internal/common.bzl",
+        "//:internal/util.bzl",
         "//:package_variables.bzl",
         "//:path.bzl",
         "//:pkg.bzl",

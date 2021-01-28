@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("internal/common.bzl", "setup_output_files")
+load("internal/util.bzl", "setup_output_files")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -174,7 +174,7 @@ def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
     outputs, output_file, output_name = setup_output_files(ctx)
 
-    # If the user does not provide the changes file, comput it.
+    # If the user does not provide the changes file, compute it.
     # TBD: Should the user even be allowed to provide it? That is, is there any
     # value in ability to have the basename of the .deb and the .changes file
     # be different?
