@@ -462,6 +462,18 @@ for more details on this.
       </td>
     </tr>
     <tr>
+      <td><code>triggers</code></td>
+      <td>
+        <code>File, optional</code>
+        <p>
+          triggers file for configuring installation events exchanged by packages.
+        </p>
+        <p>
+          See <a href="https://wiki.debian.org/DpkgTriggers">https://wiki.debian.org/DpkgTriggers</a>.
+        </p>
+      </td>
+    </tr>
+    <tr>
       <td><code>conffiles</code>, <code>conffiles_file</code></td>
       <td>
         <code>String list or File, optional</code>
