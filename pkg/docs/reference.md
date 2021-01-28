@@ -21,7 +21,7 @@ These attributes are used in many rules within this module.
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :-------------: | :-------------: | :------------- |
 | out | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink. | String | required |  |
-| package_file_name |  The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`.| String | optional | "" |
+| package_file_name |  The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`.| String | optional | package type specific |
 | package_variables |  A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.| <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 See
@@ -548,7 +548,9 @@ for more details on this.
     </tr>
     <tr>
       <td><code>package_file_name</code></td>
-      <td>See <a href="#common">Common Attributes</a></td>
+      <td>See <a href="#common">Common Attributes</a>
+      Default: "%{package}-%{version}-%{architecture}.deb"
+      </td>
     </tr>
     <tr>
       <td><code>package_variables</code></td>

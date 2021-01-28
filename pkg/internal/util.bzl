@@ -15,7 +15,7 @@
 
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 
-def setup_output_files(ctx):
+def setup_output_files(ctx, package_file_name=None):
     """Handle processing of out and package_file_name.
 
     By default, output is to the "out" attribute. If package_file_name is
@@ -28,18 +28,24 @@ def setup_output_files(ctx):
             label: ctx.label.name
             file_name: output_name
 
+    Args:
+      ctx: context
+      package_file_name: computed value for package_file_name
+
     Returns:
-      ouputs: list(output handles).
+      ouputs: list(output handles)
       output_file: file handle to write to
       output_name: name of output file
     """
     outputs = [ctx.outputs.out]
-    if ctx.attr.package_file_name:
-        output_name = ctx.attr.package_file_name
+    if not package_file_name:
+        package_file_name = ctx.attr.package_file_name
+    if package_file_name:
+        output_name = package_file_name
         if ctx.attr.package_variables:
             package_variables = ctx.attr.package_variables[PackageVariablesInfo]
             output_name = output_name.format(**package_variables.values)
-        elif ctx.attr.package_file_name.find("{") >= 0:
+        elif package_file_name.find("{") >= 0:
             fail("package_variables is required when using '{' in package_file_name")
         output_file = ctx.actions.declare_file(output_name)
         outputs.append(output_file)

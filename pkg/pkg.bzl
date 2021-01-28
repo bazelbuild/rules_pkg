@@ -172,7 +172,19 @@ def _pkg_tar_impl(ctx):
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
-    outputs, output_file, output_name = setup_output_files(ctx)
+
+    package_file_name = ctx.attr.package_file_name
+    if not package_file_name:
+        package_file_name = "%s_%s_%s.deb" % (
+            ctx.attr.package,
+            ctx.attr.version,
+            ctx.attr.architecture,
+        )
+
+    outputs, output_file, output_name = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+    )
 
     # If the user does not provide the changes file, compute it.
     # TBD: Should the user even be allowed to provide it? That is, is there any
@@ -389,7 +401,10 @@ pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
     attrs = {
         "data": attr.label(mandatory = True, allow_single_file = tar_filetype),
-        "package": attr.string(mandatory = True),
+        "package": attr.string(
+            doc = "Package name",
+            mandatory = True,
+        ),
         "architecture": attr.string(default = "all"),
         "distribution": attr.string(default = "unstable"),
         "urgency": attr.string(default = "medium"),
@@ -402,8 +417,14 @@ pkg_deb_impl = rule(
         "templates": attr.label(allow_single_file = True),
         "conffiles_file": attr.label(allow_single_file = True),
         "conffiles": attr.string_list(default = []),
-        "version_file": attr.label(allow_single_file = True),
-        "version": attr.string(),
+        "version_file": attr.label(
+            doc = """File that contains the package version.
+            Must not be used with version.""",
+            allow_single_file = True,
+        ),
+        "version": attr.string(
+            doc = """Package version. Must not be used with version_file.""",
+        ),
         "description_file": attr.label(allow_single_file = True),
         "description": attr.string(),
         "built_using_file": attr.label(allow_single_file = True),
@@ -444,20 +465,15 @@ pkg_deb_impl = rule(
     provides = [PackageArtifactInfo],
 )
 
-def pkg_deb(name, package, archive_name = None, **kwargs):
+def pkg_deb(name, archive_name = None, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
     archive_name = archive_name or name
     version = kwargs.get("version") or ""
     architecture = kwargs.get("architecture") or "all"
-    package_file_name = kwargs.pop("package_file_name", None)
-    if not package_file_name:
-        package_file_name = "%s_%s_%s.deb" % (package, version, architecture)
 
     pkg_deb_impl(
         name = name,
-        package = package,
         out = archive_name + ".deb",
-        package_file_name = package_file_name,
         **kwargs
     )
 
