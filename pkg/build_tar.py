@@ -30,19 +30,21 @@ class TarFile(object):
     pass
 
   def __init__(self, output, directory, compression, root_directory,
-               default_mtime):
+               default_mtime, workspace_status_file=None):
     self.directory = directory
     self.output = output
     self.compression = compression
     self.root_directory = root_directory
     self.default_mtime = default_mtime
+    self.workspace_status_file = workspace_status_file
 
   def __enter__(self):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
         self.root_directory,
-        default_mtime=self.default_mtime)
+        default_mtime=self.default_mtime,
+        workspace_status_file=self.workspace_status_file)
     return self
 
   def __exit__(self, t, v, traceback):
@@ -256,6 +258,9 @@ def main():
            'path/to/file=root.root.')
   parser.add_argument('--root_directory', default='./',
                       help='Default root directory is named "."')
+  parser.add_argument('--workspace_status_file',
+                      help='Workspace status file with volatile keys/values '
+                           'for use with "mtime" containing the corresponding key to use.')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -298,7 +303,7 @@ def main():
   # Add objects to the tar file
   with TarFile(
       options.output, helpers.GetFlagValue(options.directory),
-      options.compression, options.root_directory, options.mtime) as output:
+      options.compression, options.root_directory, options.mtime, options.workspace_status_file) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

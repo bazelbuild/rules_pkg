@@ -244,6 +244,22 @@ Creates a tar file from a list of inputs.
         </p>
       </td>
     </tr>
+    <tr>
+      <td><code>stamp_mtime</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>
+          Stamp variable from workspace status file.
+          The key's name must not start with <code>STABLE_</code>
+          because only "volatile" keys are read.
+        </p>
+        <p>
+          <code>
+          stamp_mtime = "{STAMP_MTIME}",
+          </code>
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 

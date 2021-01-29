@@ -400,6 +400,15 @@ pkg_tar(
     portable_mtime = False,
 )
 
+pkg_tar(
+    name = "test-tar-stamp_mtime",
+    srcs = [
+        ":etc/nsswitch.conf",
+    ],
+    portable_mtime = False,
+    stamp_mtime = "{STAMP_MTIME}",
+)
+
 py_test(
     name = "pkg_tar_test",
     size = "medium",
@@ -411,6 +420,7 @@ py_test(
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
         ":test-tar-mtime.tar",
+        ":test-tar-stamp_mtime.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",

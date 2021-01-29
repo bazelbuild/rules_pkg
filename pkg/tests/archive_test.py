@@ -271,6 +271,11 @@ class TarFileWriterTest(unittest.TestCase):
       for output_file in f.tar:
         self.assertEqual(output_file.mtime, 0)
 
+  def testStampMtime(self):
+    with archive.TarFileWriter(self.tempfile, default_mtime="{STAMP_MTIME}",
+                               workspace_status_file="./tests/testdata/test_volatile-status.txt") as f:
+      self.assertEqual(f.default_mtime, 946684741)
+
   def testAddingDirectoriesForFile(self):
     with archive.TarFileWriter(self.tempfile) as f:
       f.add_file("d/f")

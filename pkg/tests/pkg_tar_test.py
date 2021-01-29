@@ -142,6 +142,14 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-mtime.tar', content)
 
+  def test_stamp_mtime(self):
+      # Note strange mtime. It is specified in the testdata/workspace_status.sh file.
+      content = [
+          {'name': '.', 'mtime': 946684741},
+          {'name': './nsswitch.conf', 'mtime': 946684741},
+      ]
+      self.assertTarFileContent('test-tar-stamp_mtime.tar', content)
+
   def test_basic(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     content = [

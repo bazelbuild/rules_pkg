@@ -1,0 +1,2 @@
+# Define workspace status command for stamp_mtime attribute in pkg_tar rule
+test --workspace_status_command=./tests/workspace_status.sh

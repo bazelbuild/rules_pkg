@@ -90,12 +90,28 @@ def _pkg_tar_impl(ctx):
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
     ]
+    stamp_inputs = []
     if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
+        if ctx.attr.stamp_mtime:
+            fail("You may not set both mtime and stamp_mtime")
         args.append("--mtime=%d" % ctx.attr.mtime)
     if ctx.attr.portable_mtime:
+        if ctx.attr.stamp_mtime:
+            fail("You may not set both portable_mtime and stamp_mtime")
         args.append("--mtime=portable")
+    if ctx.attr.stamp_mtime:
+        # Only ctx.version_file for file volatile-status.txt is needed
+        # because change of key/value should not invalid existing build
+        stamp_inputs += [ctx.version_file]
+        stamp_mtime_strip = ctx.attr.stamp_mtime.strip()
+        if not stamp_mtime_strip.startswith("{") or not stamp_mtime_strip.endswith("}"):
+            fail("You set stamp_mtime, but this doesn't contain a valid key variable")
+        # Add mtime with stamped mtime variable
+        args.append("--mtime=%s" % stamp_mtime_strip)
+        # Add volatile-status.txt file as argument
+        args.append("--workspace_status_file=%s" % ctx.version_file.path)
 
     # Add runfiles if requested
     file_inputs = []
@@ -162,7 +178,7 @@ def _pkg_tar_impl(ctx):
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
-        inputs = file_inputs + ctx.files.deps + files,
+        inputs = file_inputs + ctx.files.deps + files + stamp_inputs,
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],
         outputs = [output_file],
@@ -322,6 +338,7 @@ pkg_tar_impl = rule(
         "modes": attr.string_dict(),
         "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
+        "stamp_mtime": attr.string(),
         "owner": attr.string(default = "0.0"),
         "ownername": attr.string(default = "."),
         "owners": attr.string_dict(),

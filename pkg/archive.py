@@ -123,7 +123,8 @@ class TarFileWriter(object):
                compression='',
                root_directory='.',
                default_mtime=None,
-               preserve_tar_mtimes=True):
+               preserve_tar_mtimes=True,
+               workspace_status_file=None):
     """TarFileWriter wraps tarfile.open().
 
     Args:
@@ -155,6 +156,22 @@ class TarFileWriter(object):
       self.default_mtime = 0
     elif default_mtime == 'portable':
       self.default_mtime = PORTABLE_MTIME
+    elif workspace_status_file is not None:
+      default_mtime_strip = default_mtime.strip()
+      if not default_mtime_strip.startswith("{") or not default_mtime_strip.endswith("}"):
+        raise self.Error('Workspace status file provided, but mtime does not contain a valid key.')
+      default_mtime_key = default_mtime_strip[1:-1]
+      key_found = False
+      with open(workspace_status_file, 'r') as f:
+        for line in f:
+          key, value = line.strip().split(' ', 1)
+          if key == default_mtime_key:
+            key_found = True
+            self.default_mtime = int(value)
+            break
+      if not key_found:
+        raise self.Error('Key "{}" was not found in workspace status file. '.format(default_mtime_key) +
+                         'Please check if the volatile workspace status file contains this key.')
     else:
       self.default_mtime = int(default_mtime)
 
