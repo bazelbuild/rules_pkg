@@ -146,40 +146,25 @@ def _pkg_files_impl(ctx):
     srcs = [f for f in ctx.files.srcs if f not in ctx.files.excludes]
 
     if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
-        dests = [paths.join(ctx.attr.prefix, src.basename) for src in srcs]
+        src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
     elif ctx.attr.strip_prefix.startswith("/"):
         # Relative to workspace/repository root
-        dests = [
-            paths.join(
-                ctx.attr.prefix,
-                _do_strip_prefix(
-                    _path_relative_to_repo_root(f),
-                    ctx.attr.strip_prefix[1:],
-                ),
-            )
-            for f in srcs
-        ]
+        src_dest_paths_map = {src: paths.join(
+            ctx.attr.prefix,
+            _do_strip_prefix(
+                _path_relative_to_repo_root(src),
+                ctx.attr.strip_prefix[1:],
+            ),
+        ) for src in srcs}
     else:
         # Relative to package
-        dests = [
-            paths.join(
-                ctx.attr.prefix,
-                _do_strip_prefix(
-                    _path_relative_to_package(f),
-                    ctx.attr.strip_prefix,
-                ),
-            )
-            for f in srcs
-        ]
-
-    # If the lengths of these are not the same, then it impossible to correlate
-    # them in the actual package helpers, and in the map below.
-    if len(srcs) != len(dests):
-        fail("INTERNAL ERROR: pkg_files length mismatch")
-
-    # TODO(nacl): It would be nice to be able to
-    # build it in one fell swoop.
-    src_dest_paths_map = dict(zip(srcs, dests))
+        src_dest_paths_map = {src: paths.join(
+            ctx.attr.prefix,
+            _do_strip_prefix(
+                _path_relative_to_package(src),
+                ctx.attr.strip_prefix,
+            ),
+        ) for src in srcs}
 
     _validate_attr(ctx.attr.attrs)
 
