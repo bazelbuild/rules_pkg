@@ -179,7 +179,7 @@ def _pkg_files_impl(ctx):
 
     # TODO(nacl): It would be nice to be able to
     # build it in one fell swoop.
-    src_dest_files_map = dict(zip(srcs, dests))
+    src_dest_paths_map = dict(zip(srcs, dests))
 
     _validate_attr(ctx.attr.attrs)
 
@@ -197,19 +197,19 @@ def _pkg_files_impl(ctx):
             )
 
         src_file = rename_src_files[0]
-        if src_file not in src_dest_files_map:
+        if src_file not in src_dest_paths_map:
             fail(
                 "File remapping from {0} to {1} is invalid: {0} is not provided to this rule or was excluded".format(rename_src, rename_dest),
                 "renames",
             )
-        src_dest_files_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
+        src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
 
-    # At this point, we have a fully valid src -> dest mapping in src_dest_files_map.
+    # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
     # Construct the inverse of this mapping to pass to the output providers, and
     # check for duplicated destinations.
     dest_src_map = {}
-    for src, dest in src_dest_files_map.items():
+    for src, dest in src_dest_paths_map.items():
         if dest in dest_src_map:
             fail("After renames, multiple sources (at least {0}, {1}) map to the same destination.  Consider adjusting strip_prefix and/or renames".format(dest_src_map[dest].path, src.path))
         dest_src_map[dest] = src
@@ -324,8 +324,6 @@ pkg_files = rule(
             dict are source files/labels, values are destinations relative to
             the `prefix`, ignoring whatever value was provided for
             `strip_prefix`.
-
-            This is the most effective way to rename files using `pkg_file`s.
 
             The following keys are rejected:
 
