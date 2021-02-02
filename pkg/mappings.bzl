@@ -67,14 +67,14 @@ strip_prefix = struct(
 # Internal helpers
 ####
 
-def _validate_attr(attr):
+def _validate_attributes(attributes):
     # TODO(nacl): this needs to be rethought.  There could, for example, be
     # attributes for additional packaging types that live outside of rules_pkg.
 
     # We could do more here, perhaps
-    if "unix" in attr.keys():
-        if len(attr["unix"]) != 3:
-            fail("'unix' attrs key must have three child values")
+    if "unix" in attributes.keys():
+        if len(attributes["unix"]) != 3:
+            fail("'unix' attributes key must have three child values")
 
 def _do_strip_prefix(path, to_strip):
     path_norm = paths.normalize(path)
@@ -166,7 +166,7 @@ def _pkg_files_impl(ctx):
             ),
         ) for src in srcs}
 
-    _validate_attr(ctx.attr.attrs)
+    _validate_attributes(ctx.attr.attributes)
 
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
@@ -202,7 +202,7 @@ def _pkg_files_impl(ctx):
     return [
         PackageFilesInfo(
             dest_src_map = dest_src_map,
-            attributes = ctx.attr.attrs,
+            attributes = ctx.attr.attributes,
         ),
         DefaultInfo(
             # Simple passthrough
@@ -234,7 +234,7 @@ pkg_files = rule(
             mandatory = True,
             allow_files = True,
         ),
-        "attrs": attr.string_list_dict(
+        "attributes": attr.string_list_dict(
             doc = """Attributes to set for the output targets
 
             Must be a dict of at least:
@@ -325,12 +325,12 @@ pkg_files = rule(
 )
 
 def _pkg_mkdirs_impl(ctx):
-    _validate_attr(ctx.attr.attrs)
+    _validate_attributes(ctx.attr.attributes)
 
     return [
         PackageDirsInfo(
             dirs = ctx.attr.dirs,
-            attributes = ctx.attr.attrs,
+            attributes = ctx.attr.attributes,
         ),
     ]
 
@@ -365,7 +365,7 @@ pkg_mkdirs = rule(
             """,
             mandatory = True,
         ),
-        "attrs": attr.string_list_dict(
+        "attributes": attr.string_list_dict(
             doc = """Attributes to set for the output targets.
 
             Must be a dict of:
