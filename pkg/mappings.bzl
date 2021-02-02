@@ -55,9 +55,12 @@ strip_prefix = struct(
     - `from_pkg(path)`: strip all directory components up to the current
       package, plus what's in `path`, if provided.
 
-    - `from_root(path)`: strip beginning from the file's WORKSPACE root plus
-      what's in `path`, if provided.
-""",
+    - `from_root(path)`: strip beginning from the file's WORKSPACE root (even if
+      it is in an external workspace) plus what's in `path`, if provided.
+    
+    Prefix stripping is applied to each `src` in a `pkg_files` rule
+    independently.
+ """,
     files_only = _sp_files_only,
     from_pkg = _sp_from_pkg,
     from_root = _sp_from_root,
@@ -76,14 +79,24 @@ def _validate_attributes(attributes):
         if len(attributes["unix"]) != 3:
             fail("'unix' attributes key must have three child values")
 
-def _do_strip_prefix(path, to_strip):
+def _do_strip_prefix(path, to_strip, src_file):
+    if to_strip == "":
+        # We were asked to strip nothing, which is valid.  Just return the
+        # original path.
+        return path
+
     path_norm = paths.normalize(path)
     to_strip_norm = paths.normalize(to_strip) + "/"
 
     if path_norm.startswith(to_strip_norm):
         return path_norm[len(to_strip_norm):]
     else:
-        return path_norm
+        # Avoid user surprise by failing if prefix stripping doesn't work as
+        # expected.
+        #
+        # We already leave enough breadcrumbs, so if File.owner() returns None,
+        # this won't be a problem.
+        fail("Could not strip prefix '{}' from file {} ({})".format(to_strip, str(src_file), str(src_file.owner)))
 
 # The below routines make use of some path checking magic that may difficult to
 # understand out of the box.  This following table may be helpful to demonstrate
@@ -154,6 +167,7 @@ def _pkg_files_impl(ctx):
             _do_strip_prefix(
                 _path_relative_to_repo_root(src),
                 ctx.attr.strip_prefix[1:],
+                src,
             ),
         ) for src in srcs}
     else:
@@ -163,6 +177,7 @@ def _pkg_files_impl(ctx):
             _do_strip_prefix(
                 _path_relative_to_package(src),
                 ctx.attr.strip_prefix,
+                src,
             ),
         ) for src in srcs}
 
@@ -275,15 +290,18 @@ pkg_files = rule(
             doc = """What prefix of a file's path to discard prior to installation.
 
             This specifies what prefix of an incoming file's path should not be
-            included in the path the file is installed at after being appended
-            to the install prefix (the prefix attribute).  Note that this is
-            only applied to full directory names, see `strip_prefix` for
-            more details.
+            included in the output package at after being appended to the
+            install prefix (the `prefix` attribute).  Note that this is only
+            applied to full directory names, see `strip_prefix` for more
+            details.
 
             Use the `strip_prefix` struct to define this attribute.  If this
             attribute is not specified, all directories will be stripped from
             all files prior to being included in packages
             (`strip_prefix.files_only()`).
+            
+            If prefix stripping fails on any file provided in `srcs`, the build
+            will fail.
             
             Note that this only functions on paths that are known at analysis
             time.  Specifically, this will not consider directories within

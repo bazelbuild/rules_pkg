@@ -19,11 +19,10 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(
     glob(["**"]),
-    visibility = ["//visibility:public"],
 )
 
 sh_binary(
-    name = "script",
+    name = "dir/script",
     srcs = ["dir/extproj.sh"],
     visibility = ["//visibility:public"],
 )
@@ -33,6 +32,7 @@ pkg_files(
     srcs = ["dir/extproj.sh"],
     prefix = "usr/bin",
     strip_prefix = strip_prefix.from_pkg(),
+    tags = ["manual"],
 )
 
 test_referencing_remote_file(

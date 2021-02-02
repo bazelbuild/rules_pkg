@@ -98,7 +98,7 @@ def _test_pkg_files_contents():
     # Note that since the pkg_files rule is never actually used in anything
     # other than this test, nonexistent_script can be included with no ill effects. :P
     native.sh_binary(
-        name = "test_script",
+        name = "testdata/test_script",
         srcs = ["testdata/nonexistent_script.sh"],
         tags = ["manual"],
     )
@@ -108,7 +108,7 @@ def _test_pkg_files_contents():
         name = "pf_from_pkg_g",
         srcs = [
             "testdata/hello.txt",
-            ":test_script",
+            ":testdata/test_script",
         ],
         strip_prefix = strip_prefix.from_pkg("testdata/"),
         tags = ["manual"],
@@ -135,7 +135,7 @@ def _test_pkg_files_contents():
 
     pkg_files(
         name = "pf_from_root_g",
-        srcs = [":test_script"],
+        srcs = [":testdata/test_script"],
         strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
@@ -147,11 +147,12 @@ def _test_pkg_files_contents():
             # The script itself
             "testdata/nonexistent_script.sh",
             # The generated target output, in this case, a symlink
-            "test_script",
+            "testdata/test_script",
         ],
     )
 
-    # Test that pkg_files rejects cases where two sources resolve to the same destination.
+    # Test that pkg_files rejects cases where two sources resolve to the same
+    # destination.
     pkg_files(
         name = "pf_destination_collision_invalid_g",
         srcs = ["foo", "bar/foo"],
@@ -160,6 +161,17 @@ def _test_pkg_files_contents():
     generic_neg_test(
         name = "pf_destination_collision_invalid",
         target_under_test = ":pf_destination_collision_invalid_g",
+    )
+
+    pkg_files(
+        name = "pf_strip_prefix_from_package_invalid_g",
+        srcs = ["foo/foo", "bar/foo"],
+        strip_prefix = strip_prefix.from_pkg("bar"),
+        tags = ["manual"],
+    )
+    generic_neg_test(
+        name = "pf_strip_prefix_from_package_invalid",
+        target_under_test = ":pf_strip_prefix_from_package_invalid_g",
     )
 
 def _test_pkg_files_exclusions():
@@ -259,7 +271,7 @@ def _test_pkg_files_extrepo():
     # From external repo root, basenames only
     pkg_files(
         name = "pf_extrepo_strip_all_g",
-        srcs = ["@mappings_test_external_repo//pkg:script"],
+        srcs = ["@mappings_test_external_repo//pkg:dir/script"],
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -271,7 +283,7 @@ def _test_pkg_files_extrepo():
     # From external repo root, relative to the "pkg" package
     pkg_files(
         name = "pf_extrepo_strip_from_pkg_g",
-        srcs = ["@mappings_test_external_repo//pkg:script"],
+        srcs = ["@mappings_test_external_repo//pkg:dir/script"],
         strip_prefix = strip_prefix.from_pkg("dir"),
         tags = ["manual"],
     )
@@ -279,22 +291,22 @@ def _test_pkg_files_extrepo():
         name = "pf_extrepo_strip_from_pkg",
         target_under_test = ":pf_extrepo_strip_from_pkg_g",
         expected_dests = [
-            "extproj.sh",  # "dir" is stripped
-            "script",  # Nothing to strip
+            "extproj.sh",
+            "script",
         ],
     )
 
     # From external repo root, relative to the "pkg" directory
     pkg_files(
         name = "pf_extrepo_strip_from_root_g",
-        srcs = ["@mappings_test_external_repo//pkg:script"],
+        srcs = ["@mappings_test_external_repo//pkg:dir/script"],
         strip_prefix = strip_prefix.from_root("pkg"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
         name = "pf_extrepo_strip_from_root",
         target_under_test = ":pf_extrepo_strip_from_root_g",
-        expected_dests = ["dir/extproj.sh", "script"],
+        expected_dests = ["dir/extproj.sh", "dir/script"],
     )
 
     native.filegroup(
@@ -529,6 +541,9 @@ def mappings_analysis_tests():
             ":pf_exclude_by_filename_strip_from_pkg",
             ":pf_exclude_by_label_strip_from_root",
             ":pf_exclude_by_filename_strip_from_root",
+            # Negative tests
+            ":pf_destination_collision_invalid",
+            ":pf_strip_prefix_from_package_invalid",
             # Tests involving external repositories
             ":pf_extrepo_strip_all",
             ":pf_extrepo_strip_from_pkg",

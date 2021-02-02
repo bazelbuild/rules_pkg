@@ -58,6 +58,7 @@ def test_referencing_remote_file(name):
         srcs = ["@//tests:loremipsum_txt"],
         # The prefix in rules_pkg.  Why yes, this is knotty
         strip_prefix = strip_prefix.from_root("tests"),
+        tags = ["manual"],
     )
 
     pkg_files_contents_test(
