@@ -163,6 +163,7 @@ def _test_pkg_files_contents():
         target_under_test = ":pf_destination_collision_invalid_g",
     )
 
+    # Test strip_prefix when it can't complete the strip operation as requested.
     pkg_files(
         name = "pf_strip_prefix_from_package_invalid_g",
         srcs = ["foo/foo", "bar/foo"],
@@ -172,6 +173,18 @@ def _test_pkg_files_contents():
     generic_neg_test(
         name = "pf_strip_prefix_from_package_invalid",
         target_under_test = ":pf_strip_prefix_from_package_invalid_g",
+    )
+
+    # Ditto, except strip from the root.
+    pkg_files(
+        name = "pf_strip_prefix_from_root_invalid_g",
+        srcs = ["foo", "bar"],
+        strip_prefix = strip_prefix.from_root("not/the/root"),
+        tags = ["manual"],
+    )
+    generic_neg_test(
+        name = "pf_strip_prefix_from_root_invalid",
+        target_under_test = ":pf_strip_prefix_from_root_invalid_g",
     )
 
 def _test_pkg_files_exclusions():
@@ -544,6 +557,7 @@ def mappings_analysis_tests():
             # Negative tests
             ":pf_destination_collision_invalid",
             ":pf_strip_prefix_from_package_invalid",
+            ":pf_strip_prefix_from_root_invalid",
             # Tests involving external repositories
             ":pf_extrepo_strip_all",
             ":pf_extrepo_strip_from_pkg",
