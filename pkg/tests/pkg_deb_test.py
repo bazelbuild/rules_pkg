@@ -91,11 +91,6 @@ class PkgDebTest(unittest.TestCase):
             the content of a file entry, use the key 'data'.
         match_order: True if files must match in order as well as properties.
     """
-    # TODO(https://github.com/bazelbuild/rules_pkg/issues/213): On Windows,
-    # tarfile seems to not report the directory information. So we filter out
-    # items that are supposed to be directories.
-    if sys.platform == 'win32':
-      expected = [e for e in expected if not e.get('isdir')]
     expected_by_name = {}
     for e in expected:
       expected_by_name[e['name']] = e
@@ -121,6 +116,8 @@ class PkgDebTest(unittest.TestCase):
             value = name_in_tar_file.replace(os.path.sep, '/')
           elif k == 'isdir':
             value = info.isdir()
+          elif k == "name" and sys.platform == 'win32':
+            value = getattr(current, k).replace("\\", "/")
           else:
             value = getattr(info, k)
           error_msg = ' '.join([
@@ -181,6 +178,7 @@ class PkgDebTest(unittest.TestCase):
         {'name': './control', 'mode': 0o644},
         {'name': './preinst', 'mode': 0o755},
         {'name': './templates', 'mode': 0o644},
+        {'name': './triggers', 'mode': 0o644},
     ]
     self.assert_control_content(expected, match_order=False)
 
@@ -207,6 +205,13 @@ class PkgDebTest(unittest.TestCase):
     for field in ('Template: titi/test', 'Type: string'):
       if templates.find(field) < 0:
         self.fail('Missing template field: <%s> in <%s>' % (field, templates))
+
+  def test_triggers(self):
+    triggers = self.deb_file.get_deb_ctl_file('triggers')
+    self.assertEqual(
+        triggers,
+        '# tutu ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
+        'some-trigger\n')
 
   def test_changes(self):
     changes_path = self.runfiles.Rlocation(

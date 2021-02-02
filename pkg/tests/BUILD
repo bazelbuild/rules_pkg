@@ -15,10 +15,9 @@
 
 licenses(["notice"])
 
-load("//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
+load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
-
 load(":my_package_name.bzl", "my_package_naming")
 
 exports_files(glob(["testdata/**"]))
@@ -40,16 +39,11 @@ py_test(
     data = [":archive_testdata"],
     python_version = "PY3",
     srcs_version = "PY3",
-    tags = [
-        # TODO(laszlocsomor): fix on Windows or describe why it cannot pass.
-        "no_windows",
-    ],
     deps = [
         "//:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
-
 
 py_test(
     name = "path_test",
@@ -138,7 +132,6 @@ pkg_tar(
     ],
     package_dir_file = "testdata/test_tar_package_dir_file.txt",
 )
-
 
 pkg_tar(
     name = "test_tar_out",
@@ -230,10 +223,10 @@ pkg_zip(
 filegroup(
     name = "test_zip_strip_prefix",
     srcs = [
+        "test-zip-strip_prefix-dot",
         "test-zip-strip_prefix-empty",
         "test-zip-strip_prefix-none",
         "test-zip-strip_prefix-zipcontent",
-        "test-zip-strip_prefix-dot",
     ],
 )
 
@@ -300,21 +293,21 @@ pkg_deb(
     make_deb = "//:make_deb",
     package = "titi",
     preinst = "testdata/deb_preinst",
-    replaces = ["oldpkg"],
     provides = ["hello"],
+    replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    triggers = ":testdata/deb_triggers",
     urgency = "low",
     version = "test",
 )
 
 [pkg_tar(
-    name = "test-tar-basic-%s" % ext[1:],
+    name = "test-tar-basic-%s" % ext,
     srcs = [
         ":etc/nsswitch.conf",
         ":usr/titi",
     ],
-    extension = "tar%s" % ext,
-    # extension = ext[1:],
+    extension = "tar.%s" % ext if ext else "tar",
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
@@ -324,12 +317,7 @@ pkg_deb(
     package_dir = "/",
     strip_prefix = ".",
     symlinks = {"usr/bin/java": "/path/to/bin/java"},
-) for ext in [
-    "",
-    ".gz",
-    ".bz2",
-    ".xz",  # This will breaks if xzcat is not installed
-]]
+) for ext in SUPPORTED_TAR_COMPRESSIONS]
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
@@ -338,12 +326,7 @@ pkg_deb(
         ":test-tar-basic-%s" % ext,
         ":test_tar_naming",
     ],
-) for ext in [
-    "",
-    "gz",
-    "bz2",
-    "xz",
-]]
+) for ext in SUPPORTED_TAR_COMPRESSIONS]
 
 pkg_tar(
     name = "test-tar-strip_prefix-empty",
@@ -426,26 +409,25 @@ py_test(
         "pkg_tar_test.py",
     ],
     data = [
-        ":test-tar-basic-.tar",
-        ":test-tar-basic-bz2.tar.bz2",
-        ":test-tar-basic-gz.tar.gz",
-        ":test-tar-basic-xz.tar.xz",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
-        ":test-tar-inclusion-.tar",
-        ":test-tar-inclusion-bz2.tar",
-        ":test-tar-inclusion-gz.tar",
-        ":test-tar-inclusion-xz.tar",
         ":test-tar-mtime.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+    ] + [
+        ":test-tar-basic-%s" % compression
+        for compression in SUPPORTED_TAR_COMPRESSIONS
+    ] + [
+        ":test-tar-inclusion-%s" % compression
+        for compression in SUPPORTED_TAR_COMPRESSIONS
     ],
     python_version = "PY3",
     deps = [
+        "//:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -456,11 +438,11 @@ py_test(
     srcs = [
         "pkg_deb_test.py",
     ],
-    python_version = "PY3",
     data = [
-        ":titi_test_all.deb",
         ":titi_test_all.changes",
+        ":titi_test_all.deb",
     ],
+    python_version = "PY3",
     deps = [
         "//:archive",
         "@bazel_tools//tools/python/runfiles",
@@ -470,7 +452,6 @@ py_test(
 test_suite(
     name = "windows_tests",
     tags = [
-        "-no_windows",
         "-slow",
     ],
     visibility = ["//visibility:private"],

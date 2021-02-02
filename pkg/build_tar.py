@@ -70,7 +70,8 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    dest = os.path.normpath(dest)
+    # Note: normpath changes / to \ on windows, but we expect / style paths.
+    dest = os.path.normpath(dest).replace(os.path.sep, '/')
     self.tarfile.add_file(
         dest,
         file_content=f,
@@ -104,7 +105,7 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    dest = os.path.normpath(dest)
+    dest = os.path.normpath(dest).replace(os.path.sep, '/')
     self.tarfile.add_file(
         dest,
         content='' if kind == tarfile.REGTYPE else None,
@@ -165,7 +166,7 @@ class TarFile(object):
       symlink: the name of the symbolic link to add.
       destination: where the symbolic link point to.
     """
-    symlink = os.path.normpath(symlink)
+    symlink = os.path.normpath(symlink).replace(os.path.sep, '/')
     self.tarfile.add_file(symlink, tarfile.SYMTYPE, link=destination)
 
   def add_deb(self, deb):
