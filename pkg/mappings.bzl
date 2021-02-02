@@ -322,6 +322,7 @@ pkg_files = rule(
             allow_files = True,
         ),
     },
+    provides = [PackageFilesInfo],
 )
 
 def _pkg_mkdirs_impl(ctx):
@@ -383,4 +384,5 @@ pkg_mkdirs = rule(
             default = {"unix": ["-", "-", "-"]},
         ),
     },
+    provides = [PackageDirsInfo],
 )
