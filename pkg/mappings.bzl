@@ -256,14 +256,19 @@ pkg_files = rule(
 
             ```
             "unix" : [
-                "Four-digit octal permissions string (e.g. "0644") or "-" (don't change from what's provided),
-                "User Id, or "-" (use current user)",
-                "Group Id, or "-" (use current group)",
+                Four-digit octal permissions string (e.g. "0644") or "-",
+                User Id, or "-",
+                Group Id, or "-",
             ]
             ```
+            
+            `-` means to defer to package rule defaults.
 
-            All values default to "-".  Note that for built/generated files,
-            this is likely not what you expect it to be.
+            Package rule defaults may be configurable and vary between
+            individual packaging rules.  Consult the appropriate documentation
+            for more details.
+
+            All values default to "-".  In many cases, this is not desirable.
             """,
             default = {"unix": ["-", "-", "-"]},
         ),
@@ -385,19 +390,25 @@ pkg_mkdirs = rule(
             mandatory = True,
         ),
         "attributes": attr.string_list_dict(
-            doc = """Attributes to set for the output targets.
+            doc = """Attributes to set for created directories
 
-            Must be a dict of:
+            Must be a dict of at least:
 
             ```
             "unix" : [
-                "Four-digit octal permissions string (e.g. "0755") or "-" (don't change from what's provided),
-                "User Id, or "-" (use current user)",
-                "Group Id, or "-" (use current group)",
+                Four-digit octal permissions string (e.g. "0644") or "-",
+                User Id, or "-",
+                Group Id, or "-",
             ]
             ```
+            
+            `-` means to defer to package rule defaults.
 
-            All values default to "-".
+            Package rule defaults may be configurable and vary between
+            individual packaging rules.  Consult the appropriate documentation
+            for more details.
+
+            All values default to "-".  In many cases, this is not desirable.
             """,
             default = {"unix": ["-", "-", "-"]},
         ),
