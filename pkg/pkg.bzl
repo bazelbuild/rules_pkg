@@ -16,12 +16,19 @@
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 
+# TODO(aiuto): Figure  out how to get this from the python toolchain.
+# See check for lzma in archive.py for a hint at a method.
+HAS_XZ_SUPPORT = True
+
 # Filetype to restrict inputs
-tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2", ".bz2",
-                ".xz"]
+tar_filetype = (
+    [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"] if HAS_XZ_SUPPORT else [".tar", ".tar.gz", ".tgz", ".tar.bz2"]
+)
+SUPPORTED_TAR_COMPRESSIONS = (
+    ["", "gz", "bz2", "xz"] if HAS_XZ_SUPPORT else ["", "gz", "bz2"]
+)
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
-
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -33,7 +40,6 @@ def _remap(remap_paths, path):
 def _quote(filename, protect = "="):
     """Quote the filename, by escaping = by \\= and \\ by \\\\"""
     return filename.replace("\\", "\\\\").replace(protect, "\\" + protect)
-
 
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
@@ -47,13 +53,13 @@ def _pkg_tar_impl(ctx):
         if ctx.attr.package_variables:
             package_variables = ctx.attr.package_variables[PackageVariablesInfo]
             output_name = output_name.format(**package_variables.values)
-        elif ctx.attr.package_file_name.find('{') >= 0:
+        elif ctx.attr.package_file_name.find("{") >= 0:
             fail("package_variables is required when using '{' in package_file_name")
         output_file = ctx.actions.declare_file(output_name)
         outputs.append(output_file)
         ctx.actions.symlink(
             output = ctx.outputs.out,
-            target_file = output_file
+            target_file = output_file,
         )
     else:
         output_file = ctx.outputs.out
@@ -61,7 +67,7 @@ def _pkg_tar_impl(ctx):
 
     # Compute the relative path
     data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(output_file, '.')
+    data_path_without_prefix = compute_data_path(output_file, ".")
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -107,7 +113,9 @@ def _pkg_tar_impl(ctx):
 
     args += [
         "--file=%s=%s" % (_quote(f.path), _remap(
-            remap_paths, dest_path(f, data_path, data_path_without_prefix)))
+            remap_paths,
+            dest_path(f, data_path, data_path_without_prefix),
+        ))
         for f in file_inputs
     ]
     for target, f_dest_path in ctx.attr.files.items():
@@ -178,7 +186,7 @@ def _pkg_tar_impl(ctx):
         PackageArtifactInfo(
             label = ctx.label.name,
             file_name = output_name,
-        )
+        ),
     ]
 
 def _pkg_deb_impl(ctx):
@@ -210,6 +218,9 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.templates:
         args += ["--templates=@" + ctx.file.templates.path]
         files += [ctx.file.templates]
+    if ctx.attr.triggers:
+        args += ["--triggers=@" + ctx.file.triggers.path]
+        files += [ctx.file.triggers]
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
@@ -372,7 +383,7 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
-        **kwargs,
+        **kwargs
     )
 
 # A rule for creating a deb file, see README.md
@@ -391,6 +402,7 @@ pkg_deb_impl = rule(
         "postrm": attr.label(allow_single_file = True),
         "config": attr.label(allow_single_file = True),
         "templates": attr.label(allow_single_file = True),
+        "triggers": attr.label(allow_single_file = True),
         "conffiles_file": attr.label(allow_single_file = True),
         "conffiles": attr.string_list(default = []),
         "version_file": attr.label(allow_single_file = True),
@@ -428,7 +440,7 @@ pkg_deb_impl = rule(
     },
 )
 
-def pkg_deb(name, package, archive_name=None, **kwargs):
+def pkg_deb(name, package, archive_name = None, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
     archive_name = archive_name or name
     version = kwargs.get("version") or ""
@@ -456,7 +468,7 @@ def _pkg_zip_impl(ctx):
     for f in ctx.files.srcs:
         arg = "%s=%s" % (
             _quote(f.path),
-            dest_path(f, compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix))
+            dest_path(f, compute_data_path(ctx.outputs.out, ctx.attr.strip_prefix)),
         )
         args.add(arg)
 
