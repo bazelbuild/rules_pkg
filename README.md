@@ -12,7 +12,7 @@ CI:
 
 ### Package building rules
 
-*   [pkg](https://github.com/bazelbuild/rules_pkg/tree/master/pkg) - Rules for
+*   [pkg](https://github.com/bazelbuild/rules_pkg/tree/main/pkg) - Rules for
     building packages of various types.
 
 Bazel now uses this rule set for packaging its distribution. It still contains
@@ -22,10 +22,10 @@ Bazel release.
 
 ### debian specific rules
 
-*   [deb_packages](https://github.com/bazelbuild/rules_pkg/tree/master/deb_packages#deb_packages) -
+*   [deb_packages](https://github.com/bazelbuild/rules_pkg/tree/main/deb_packages#deb_packages) -
     WORKSPACE rule to fetch deb files from Debain style mirror servers
 
-*   [update_deb_packages](https://github.com/bazelbuild/rules_pkg/tree/master/deb_packages/tools#deb_packages) -
+*   [update_deb_packages](https://github.com/bazelbuild/rules_pkg/tree/main/deb_packages/tools#deb_packages) -
     update the hash and path of files mentioned in `deb_packages` rules
 
 WARNING: These rules are currently unmaintained and may eventually be dropped
