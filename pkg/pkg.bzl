@@ -159,8 +159,8 @@ def _pkg_tar_impl(ctx):
         for k in ctx.attr.symlinks
     ]
     if ctx.attr.stamp_pkg:
-       args.append("--stamp_from=%s" % ctx.file._stamp_file.path)
-       files.append(ctx.file._stamp_file)
+       args.append("--stamp_from=%s" % ctx.version_file.path)
+       files.append(ctx.version_file)
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -353,10 +353,6 @@ pkg_tar_impl = rule(
             cfg = "exec",
             executable = True,
             allow_files = True,
-        ),
-        "_stamp_file": attr.label(
-            default = Label("//internal:volatile_status"),
-            allow_single_file = True,
         ),
     },
 )

@@ -8,16 +8,6 @@ config_setting(
     visibility = ["//visibility:private"],
 )
 
-genrule(
-    name = "volatile_status",
-    srcs = [],
-    outs = ["volatile_status.txt"],
-    cmd = "cp bazel-out/volatile-status.txt $@",
-    stamp = True,
-    # This should be private to rules in :pkg.bzl, but that is not possible.
-    visibility = ["//visibility:public"],
-)
-
 py_library(
     name = "build_info",
     srcs = [
