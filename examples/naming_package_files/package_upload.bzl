@@ -28,7 +28,6 @@ def _debian_upload_impl(ctx):
                 f.basename,
             ))
     ctx.actions.write(ctx.outputs.out, "\n".join(content))
-    return
 
 debian_upload = rule(
     implementation = _debian_upload_impl,
@@ -37,7 +36,7 @@ debian_upload = rule(
         "package": attr.label(
             doc = "Package to upload",
             mandatory = True,
-            providers = [[PackageArtifactInfo]],
+            providers = [PackageArtifactInfo],
         ),
         "host": attr.string(
             doc = "Host to upload to",

@@ -76,7 +76,9 @@ pkg_tar(
     package_variables = ":toolchain_vars",
 )
 
-# Let
+#
+# Demonstrate how the .changes file defaults based on package_file_name.
+#
 pkg_deb(
     name = "a_deb_package",
     data = ":example1",

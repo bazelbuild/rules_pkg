@@ -6,7 +6,7 @@ licenses(["notice"])
 exports_files(
     glob([
         "*.bzl",
-        "internal/**",
+        "private/**",
     ]),
     visibility = ["//visibility:public"],
 )
@@ -24,7 +24,7 @@ filegroup(
         "*.bzl",
         "*.py",
         "*.md",
-        "internal/**",
+        "private/**",
     ]) + [
         "BUILD",
         "LICENSE",

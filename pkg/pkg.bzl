@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("internal/util.bzl", "setup_output_files")
+load("private/util.bzl", "setup_output_files")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -187,9 +187,10 @@ def _pkg_deb_impl(ctx):
     )
 
     # If the user does not provide the changes file, compute it.
-    # TBD: Should the user even be allowed to provide it? That is, is there any
-    # value in ability to have the basename of the .deb and the .changes file
-    # be different?
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/289): Should the
+    # user even be allowed to provide it? That is, is there any value in
+    # ability to have the basename of the .deb and the .changes file be
+    # different?
     if ctx.outputs.changes:
         changes_file = ctx.outputs.changes
     else:
@@ -388,7 +389,7 @@ def pkg_tar(name, **kwargs):
     extension = kwargs.get("extension") or "tar"
     if archive_name:
         if kwargs.get("package_file_name"):
-            fail("You may not set both archive_name and package_file_name")
+            fail("You may not set both 'archive_name' and 'package_file_name'.")
 
         # buildifier: disable=print
         print("archive_name is deprecated. Use package_file_name instead.")
@@ -473,9 +474,9 @@ def pkg_deb(name, archive_name = None, **kwargs):
     """Creates a deb file. See pkg_deb_impl."""
     if archive_name:
         # buildifier: disable=print
-        print("archive_name is deprecated. Use package_file_name or out to name the output.")
+        print("'archive_name' is deprecated. Use 'package_file_name' or 'out' to name the output.")
         if kwargs.get("package_file_name"):
-            fail("You may not set both archive_name and package_file_name")
+            fail("You may not set both 'archive_name' and 'package_file_name'.")
     pkg_deb_impl(
         name = name,
         out = (archive_name or name) + ".deb",
@@ -559,13 +560,13 @@ def pkg_zip(name, **kwargs):
     extension = kwargs.pop("extension", None)
     if extension:
         # buildifier: disable=print
-        print("extension is deprecated. Use package_file_name or out to name the output.")
+        print("'extension' is deprecated. Use 'package_file_name' or 'out' to name the output.")
     else:
         extension = "zip"
     archive_name = kwargs.pop("archive_name", None)
     if archive_name:
         if kwargs.get("package_file_name"):
-            fail("You may not set both archive_name and package_file_name")
+            fail("You may not set both 'archive_name' and 'package_file_name'.")
 
         # buildifier: disable=print
         print("archive_name is deprecated. Use package_file_name instead.")
