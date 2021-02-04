@@ -21,6 +21,7 @@ import tempfile
 
 import archive
 import helpers
+from internal import build_info
 
 
 class TarFile(object):
@@ -256,6 +257,8 @@ def main():
            'path/to/file=root.root.')
   parser.add_argument('--root_directory', default='./',
                       help='Default root directory is named "."')
+  parser.add_argument('--stamp_from', default='',
+                      help='File to find BUILD_STAMP in')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -294,6 +297,9 @@ def main():
       if f[0] == '/':
         f = f[1:]
       ids_map[f] = (int(user), int(group))
+
+  if options.stamp_from:
+    print(">>>> should time stamp at %d", build_info.get_timestamp(options.stamp_from))
 
   # Add objects to the tar file
   with TarFile(

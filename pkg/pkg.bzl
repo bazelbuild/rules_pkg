@@ -44,6 +44,9 @@ def _quote(filename, protect = "="):
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
+    print('Info file', ctx.info_file.path)
+    print('Version file', ctx.version_file.path)
+
     # Files needed by rule implementation at runtime
     files = []
 
@@ -155,6 +158,9 @@ def _pkg_tar_impl(ctx):
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
         for k in ctx.attr.symlinks
     ]
+    if ctx.attr.stamp_pkg:
+       args.append("--stamp_from=%s" % ctx.file._stamp_file.path)
+       files.append(ctx.file._stamp_file)
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -336,6 +342,7 @@ pkg_tar_impl = rule(
         "package_variables": attr.label(
             providers = [PackageVariablesInfo],
         ),
+        "stamp_pkg": attr.bool(default = False),
 
         # Outputs
         "out": attr.output(),
@@ -346,6 +353,10 @@ pkg_tar_impl = rule(
             cfg = "exec",
             executable = True,
             allow_files = True,
+        ),
+        "_stamp_file": attr.label(
+            default = Label("//internal:volatile_status"),
+            allow_single_file = True,
         ),
     },
 )
@@ -377,6 +388,10 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
+        stamp_pkg = select({
+            "//internal:stamp": True,
+            "//conditions:default": False,
+        }),
         **kwargs
     )
 

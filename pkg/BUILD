@@ -69,6 +69,7 @@ py_binary(
     deps = [
         ":archive",
         ":helpers",
+        "//internal:build_info",
     ],
 )
 
