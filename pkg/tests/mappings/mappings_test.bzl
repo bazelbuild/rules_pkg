@@ -18,6 +18,7 @@ load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load(
     "//:mappings.bzl",
+    "pkg_attributes",
     "pkg_files",
     "pkg_mkdirs",
     "strip_prefix",
@@ -33,6 +34,15 @@ def _pkg_files_contents_test_impl(ctx):
 
     asserts.new_set_equals(env, expected_dests, actual_dests, "pkg_files dests do not match expectations")
 
+    # Simple equality checks for the others, if specified
+    if ctx.attr.expected_attributes:
+        asserts.equals(
+            env,
+            json.decode(ctx.attr.expected_attributes),
+            target_under_test[PackageFilesInfo].attributes,
+            "pkg_files attributes do not match expectations",
+        )
+
     return analysistest.end(env)
 
 pkg_files_contents_test = analysistest.make(
@@ -43,7 +53,7 @@ pkg_files_contents_test = analysistest.make(
         "expected_dests": attr.string_list(
             mandatory = True,
         ),
-        # attrs are always passed through unchanged (and maybe rejected)
+        "expected_attributes": attr.string(),
     },
 )
 
@@ -70,6 +80,13 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_no_strip_prefix_g",
         srcs = ["testdata/hello.txt"],
+        attributes = pkg_attributes(
+            mode = "0644",
+            user = "foo",
+            group = "bar",
+            # kwargs begins here
+            foo = "bar",
+        ),
         tags = ["manual"],
     )
 
@@ -77,6 +94,12 @@ def _test_pkg_files_contents():
         name = "pf_no_strip_prefix",
         target_under_test = ":pf_no_strip_prefix_g",
         expected_dests = ["hello.txt"],
+        expected_attributes = pkg_attributes(
+            mode = "0644",
+            user = "foo",
+            group = "bar",
+            foo = "bar",
+        ),
     )
 
     # And now, files_only = True
@@ -479,19 +502,20 @@ def _pkg_mkdirs_contents_test_impl(ctx):
     asserts.new_set_equals(env, expected_dirs, actual_dirs, "pkg_mkdirs dirs do not match expectations")
 
     # Simple equality checks for the others
-    asserts.equals(
-        env,
-        ctx.attr.expected_attributes,
-        target_under_test[PackageDirsInfo].attributes,
-        "pkg_mkdir attributes do not match expectations",
-    )
+    if ctx.attr.expected_attributes != None:
+        asserts.equals(
+            env,
+            json.decode(ctx.attr.expected_attributes),
+            target_under_test[PackageDirsInfo].attributes,
+            "pkg_mkdir attributes do not match expectations",
+        )
 
     return analysistest.end(env)
 
 pkg_mkdirs_contents_test = analysistest.make(
     _pkg_mkdirs_contents_test_impl,
     attrs = {
-        "expected_attributes": attr.string_list_dict(),
+        "expected_attributes": attr.string(),
         "expected_dirs": attr.string_list(
             mandatory = True,
         ),
@@ -503,14 +527,22 @@ def _test_pkg_mkdirs():
     pkg_mkdirs(
         name = "pkg_mkdirs_base_g",
         dirs = ["foo/bar", "baz"],
-        attributes = {"unix": ["0711", "root", "sudo"]},
+        attributes = pkg_attributes(
+            mode = "0711",
+            user = "root",
+            group = "sudo",
+        ),
         tags = ["manual"],
     )
     pkg_mkdirs_contents_test(
         name = "pkg_mkdirs_base",
         target_under_test = "pkg_mkdirs_base_g",
         expected_dirs = ["foo/bar", "baz"],
-        expected_attributes = {"unix": ["0711", "root", "sudo"]},
+        expected_attributes = pkg_attributes(
+            mode = "0711",
+            user = "root",
+            group = "sudo",
+        ),
     )
 
 ##########

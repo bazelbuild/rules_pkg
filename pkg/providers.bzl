@@ -29,31 +29,32 @@ PackageVariablesInfo = provider(
     },
 )
 
-# For the below, attributes always look something like this:
-#
-# ```
-#   {"unix": ["0755", "root", "root"]}
-# ```
-#
-
 PackageFilesInfo = provider(
     doc = """Provider representing the installation of one or more files to destination with attributes""",
     fields = {
-        "attributes": """dict of string -> string list: Attributes to apply to installed file(s)""",
-        # TODO(nacl): determine what types actually should represent the sources
-        # here.  Files, or Labels?
+        "attributes": """Attribute information, represented as a `dict`.
+
+        Keys are strings representing attribute identifiers, values are
+        arbitrary data structures that represent the associated data.  These are
+        most often strings, but are not explicity defined.
+
+        For known attributes and data type expectations, see the Common
+        Attributes documentation in the `rules_pkg` reference.
+        """,
 
         # This is a mapping of destinations to sources to allow for the same
         # target to be installed to multiple locations within a package within a
         # single provider.
-        "dest_src_map": """Map of file destinations to sources""",
+        "dest_src_map": """Map of file destinations to sources.
+
+        Sources are represented by bazel `File` structures.""",
     },
 )
 
 PackageDirsInfo = provider(
     doc = """Provider representing the creation of one or more directories in a package""",
     fields = {
-        "attributes": """dict of string -> string list: Attributes to apply to created directories""",
+        "attributes": """See `attributes` in PackageFilesInfo.""",
         "dirs": """string list: installed directory names""",
     },
 )
@@ -61,7 +62,7 @@ PackageDirsInfo = provider(
 PackageSymlinkInfo = provider(
     doc = """Provider representing the creation of a single symbolic link in a package""",
     fields = {
-        "attributes": """dict of string -> string list: Attributes to apply to created symlink""",
+        "attributes": """See `attributes` in PackageFilesInfo.""",
         "destination": """string: Filesystem link 'name'""",
         "source": """string or Label: Filesystem link 'target'""",
     },

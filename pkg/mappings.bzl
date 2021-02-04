@@ -66,18 +66,39 @@ strip_prefix = struct(
     from_root = _sp_from_root,
 )
 
+def pkg_attributes(mode = "0444", user = None, group = None, **kwargs):
+    """Format attributes for use in package mapping rules.
+
+    Args:
+      mode: string: UNIXy octal permissions, as a string.  Defaults to being read-only ("0444")
+      user: string: Filesystem owning user.
+      group: string: Filesystem owning group.
+      **kwargs: any other desired attributes.
+
+    Not providing any of "user", or "group" will result in the package builder
+    choosing one for you.  The chosen value should not be relied upon.
+
+    Well-known attributes outside of the above are documented in the rules_pkg
+    reference.
+
+    This is the only supported means of passing in attributes to package mapping
+    rules (e.g. `pkg_files`).
+
+    Returns:
+      A value usable in the "attributes" attribute in package mapping rules.
+
+    """
+    ret = kwargs
+    ret["mode"] = mode
+    if user:
+        ret["user"] = user
+    if group:
+        ret["group"] = group
+    return json.encode(ret)
+
 ####
 # Internal helpers
 ####
-
-def _validate_attributes(attributes):
-    # TODO(nacl): this needs to be rethought.  There could, for example, be
-    # attributes for additional packaging types that live outside of rules_pkg.
-
-    # We could do more here, perhaps
-    if "unix" in attributes.keys():
-        if len(attributes["unix"]) != 3:
-            fail("'unix' attributes key must have three child values")
 
 def _do_strip_prefix(path, to_strip, src_file):
     if to_strip == "":
@@ -181,7 +202,7 @@ def _pkg_files_impl(ctx):
             ),
         ) for src in srcs}
 
-    _validate_attributes(ctx.attr.attributes)
+    out_attributes = json.decode(ctx.attr.attributes)
 
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
@@ -217,7 +238,7 @@ def _pkg_files_impl(ctx):
     return [
         PackageFilesInfo(
             dest_src_map = dest_src_map,
-            attributes = ctx.attr.attributes,
+            attributes = out_attributes,
         ),
         DefaultInfo(
             # Simple passthrough
@@ -249,13 +270,15 @@ pkg_files = rule(
             mandatory = True,
             allow_files = True,
         ),
-        "attributes": attr.string_list_dict(
+        "attributes": attr.string(
             doc = """Attributes to set on packaged files.
+
+            Always use `pkg_attributes()` to set this rule attribute.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = {"unix": ["-", "-", "-"]},
+            default = pkg_attributes(),
         ),
         "prefix": attr.string(
             doc = """Installation prefix.
@@ -334,12 +357,10 @@ pkg_files = rule(
 )
 
 def _pkg_mkdirs_impl(ctx):
-    _validate_attributes(ctx.attr.attributes)
-
     return [
         PackageDirsInfo(
             dirs = ctx.attr.dirs,
-            attributes = ctx.attr.attributes,
+            attributes = json.decode(ctx.attr.attributes),
         ),
     ]
 
@@ -374,13 +395,18 @@ pkg_mkdirs = rule(
             """,
             mandatory = True,
         ),
-        "attributes": attr.string_list_dict(
+        "attributes": attr.string(
             doc = """Attributes to set on packaged directories.
+
+            Always use `pkg_attributes()` to set this rule attribute.
+
+            The default value for this is UNIX "0755", or the target
+            platform's equivalent.  All other values are left unspecified.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = {"unix": ["-", "-", "-"]},
+            default = pkg_attributes(mode = "0755"),
         ),
     },
     provides = [PackageDirsInfo],

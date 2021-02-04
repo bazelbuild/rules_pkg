@@ -23,7 +23,7 @@ These attributes are used in several rules within this module.
 | out               | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink.            | String                                                             | required        |                                           |
 | package_file_name | The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`. | String                                                             | optional        | package type specific                     |
 | package_variables | A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.                                                                                           | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional        | None                                      |
-| attributes        | Attributes to set on entities created within packages.  Not to be confused with bazel rule attributes.  See 'Mapping "Attributes"' below                                        | dict of String -> String List                                      | optional        | Varies.  See 'Mapping "Attributes"' below |
+| attributes        | Attributes to set on entities created within packages.  Not to be confused with bazel rule attributes.  See 'Mapping "Attributes"' below                                        | Undefined.                                                         | optional        | Varies.  Consult individual rule documentation for details. |
 
 See
 [examples/naming_package_files](https://github.com/bazelbuild/rules_pkg/tree/main/examples/naming_package_files)
@@ -38,31 +38,27 @@ rules such as `pkg_files`, and `pkg_mkdirs`.  These allow fine-grained control
 of the contents of your package.  For example:
 
 ```python
-attributes = {
-    "unix": ("0644", "myapp", "myapp"),
-    "my_custom_attribute": ("some custom value",),
-}
+attributes = pkg_attributes(
+    mode = "0644",
+    user = "root",
+    group = "wheel",
+    my_custom_attribute = "some custom value",
+)
 ```
 
-Known attributes include the following:
+`mode`, `user`, and `group` correspond to common UNIX-style filesystem
+permissions.  Attributes should always be specified using the `pkg_attributes`
+helper macro.
 
-#### `unix`
+When `mode` is not specified, it defaults to "0444" (read-only).  If `user` and
+`group` are not specified, then defaults will be chosen by the underlying
+package builder.  Any specific behavior from package builders should not be
+relied upon.
 
-Specifies basic UNIX-style filesystem permissions. For example:
+Any other attributes should be specified as additional arguments to the
+`pkg_attributes` rule.
 
-```python
-{"unix": ("0755", "root", "root")}
-```
-
-This is a three-element tuple, providing the filesystem mode (as an octal
-string, like above), user, and group.
-
-`"-"` may be provided in place of any of the values in the tuple.  Packaging
-rules will set these to a default, which will vary based on the underlying
-package builder and is otherwise unspecified.  Relying upon values set by it is
-not recommended.
-
-Package mapping rules typically set this to `("-", "-", "-")`.
+There are currently no other well-known attributes known at this time.
 
 ---
 
