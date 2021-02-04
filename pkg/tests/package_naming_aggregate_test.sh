@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sample rule to show package naming."""
+# This test simply checks that when we create packages with package_file_name
+# that we get the expected file names.
+set -e
 
-load("//:providers.bzl", "PackageVariablesInfo")
+declare -r DATA_DIR="${TEST_SRCDIR}/rules_pkg/tests"
 
-def _my_package_naming_impl(ctx):
-    values = {}
-
-    # then add in my own custom values
-    values["label"] = ctx.attr.label
-    return PackageVariablesInfo(values = values)
-
-my_package_naming = rule(
-    implementation = _my_package_naming_impl,
-    attrs = {
-        "label": attr.string(doc = "A label that matters to me."),
-    },
-)
+for pkg in test_naming_some_value.deb test_naming_some_value.tar test_naming_some_value.zip ; do
+  ls -l "${DATA_DIR}/$pkg"
+done
+echo "PASS"
