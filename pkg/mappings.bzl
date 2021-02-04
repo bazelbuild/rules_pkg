@@ -250,25 +250,10 @@ pkg_files = rule(
             allow_files = True,
         ),
         "attributes": attr.string_list_dict(
-            doc = """Attributes to set for the output targets
+            doc = """Attributes to set on packaged files.
 
-            Must be a dict of at least:
-
-            ```
-            "unix" : [
-                Four-digit octal permissions string (e.g. "0644") or "-",
-                User Id, or "-",
-                Group Id, or "-",
-            ]
-            ```
-            
-            `-` means to defer to package rule defaults.
-
-            Package rule defaults may be configurable and vary between
-            individual packaging rules.  Consult the appropriate documentation
-            for more details.
-
-            All values default to "-".  In many cases, this is not desirable.
+            Consult the "Mapping Attributes" documentation in the rules_pkg
+            reference for more details.
             """,
             default = {"unix": ["-", "-", "-"]},
         ),
@@ -390,25 +375,10 @@ pkg_mkdirs = rule(
             mandatory = True,
         ),
         "attributes": attr.string_list_dict(
-            doc = """Attributes to set for created directories
+            doc = """Attributes to set on packaged directories.
 
-            Must be a dict of at least:
-
-            ```
-            "unix" : [
-                Four-digit octal permissions string (e.g. "0644") or "-",
-                User Id, or "-",
-                Group Id, or "-",
-            ]
-            ```
-            
-            `-` means to defer to package rule defaults.
-
-            Package rule defaults may be configurable and vary between
-            individual packaging rules.  Consult the appropriate documentation
-            for more details.
-
-            All values default to "-".  In many cases, this is not desirable.
+            Consult the "Mapping Attributes" documentation in the rules_pkg
+            reference for more details.
             """,
             default = {"unix": ["-", "-", "-"]},
         ),
