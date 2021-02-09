@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example rule to show package naming techniques."""
+"""Example rules to show package naming techniques."""
 
 load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
@@ -81,4 +81,22 @@ names_from_toolchains = rule(
         ),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
+)
+
+#
+# Using a build setting to name a package.
+#
+def _label_from_command_line_naming_impl(ctx):
+    values = {"label": ctx.build_setting_value or "@unset@"}
+    return PackageVariablesInfo(values = values)
+
+#
+# A rule to inject variables from the build file into package names.
+#
+label_from_command_line = rule(
+    implementation = _label_from_command_line_naming_impl,
+    doc = "Use --//:label_from_command_line=<value> to set me",
+    # We use allow multiple so this can be optional.
+    # build_setting = config.string(flag = True, allow_multiple = True),
+    build_setting = config.string(flag = True),
 )
