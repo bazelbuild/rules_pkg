@@ -84,19 +84,17 @@ names_from_toolchains = rule(
 )
 
 #
-# Using a build setting to name a package.
+# Using a command line build setting to name a package.
 #
 def _label_from_command_line_naming_impl(ctx):
-    values = {"label": ctx.build_setting_value or "@unset@"}
+    values = {"label": ctx.build_setting_value}
     return PackageVariablesInfo(values = values)
 
 #
-# A rule to inject variables from the build file into package names.
+# Creating this build_setting defines a flag the user can set.
 #
 label_from_command_line = rule(
     implementation = _label_from_command_line_naming_impl,
-    doc = "Use --//:label_from_command_line=<value> to set me",
-    # We use allow multiple so this can be optional.
-    # build_setting = config.string(flag = True, allow_multiple = True),
+    # Note that the default value comes from the rule instantiation.
     build_setting = config.string(flag = True),
 )

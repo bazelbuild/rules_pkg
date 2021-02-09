@@ -108,10 +108,10 @@ debian_upload(
 #
 # Demonstrate how we can use a value from the command line in a package name.
 #
-# bazel build --//:pkg_name_from_command_line=bar  :tarball_that_needs_a_name
-# ls bazel-bin/foo-foo.tar
+# bazel build --//:label_from_command_line=bar  :tarball_that_needs_a_name
+# ls bazel-bin/foo-bar.tar
 label_from_command_line(
-    name = "pkg_name_from_command_line",
+    name = "label_from_command_line",
     build_setting_default = "@set_me@",
 )
 
@@ -121,5 +121,5 @@ pkg_tar(
         ":BUILD",
     ],
     package_file_name = "foo-{label}.tar",
-    package_variables = ":pkg_name_from_command_line",
+    package_variables = ":label_from_command_line",
 )
