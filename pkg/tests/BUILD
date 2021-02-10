@@ -20,6 +20,8 @@ load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
 
+exports_files(glob(["testdata/**"]))
+
 filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
