@@ -509,7 +509,7 @@ def _pkg_filegroup_impl(ctx):
                     },
                     attributes = s[PackageFilesInfo].attributes,
                 )
-                files.append(new_pfi)
+                files.append((new_pfi, s.label))
 
                 # dict.values() returns a list, not an iterator like in python3
                 mapped_files_depsets.append(s[DefaultInfo].files)
@@ -519,7 +519,7 @@ def _pkg_filegroup_impl(ctx):
                     dirs = [paths.join(ctx.attr.prefix, d) for d in s[PackageDirsInfo].dirs],
                     attributes = s[PackageDirsInfo].attributes,
                 )
-                dirs.append(new_pdi)
+                dirs.append((new_pdi, s.label))
 
             if PackageSymlinkInfo in s:
                 new_psi = PackageSymlinkInfo(
@@ -527,19 +527,19 @@ def _pkg_filegroup_impl(ctx):
                     destination = paths.join(ctx.attr.prefix, s[PackageSymlinkInfo].destination),
                     attributes = s[PackageSymlinkInfo].attributes,
                 )
-                links.append(new_psi)
+                links.append((new_psi, s.label))
     else:
         # Otherwise, everything is pretty much direct copies
         for s in ctx.attr.srcs:
             if PackageFilesInfo in s:
-                files.append(s[PackageFilesInfo])
+                files.append((s[PackageFilesInfo], s.label))
 
                 # dict.values() returns a list, not an iterator like in python3
                 mapped_files_depsets.append(s[DefaultInfo].files)
             if PackageDirsInfo in s:
-                dirs.append(s[PackageDirsInfo])
+                dirs.append((s[PackageDirsInfo], s.label))
             if PackageSymlinkInfo in s:
-                links.append(s[PackageSymlinkInfo])
+                links.append((s[PackageSymlinkInfo], s.label))
 
     return [
         PackageFilegroupInfo(

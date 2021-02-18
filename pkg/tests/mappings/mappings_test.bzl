@@ -675,23 +675,44 @@ def _pkg_filegroup_contents_test_impl(ctx):
     asserts.equals(
         env,
         [t[PackageFilesInfo] for t in ctx.attr.expected_pkg_files],
-        target_under_test[PackageFilegroupInfo].pkg_files,
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_files],
         "pkg_filegroup file list does not match expectations",
     )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_files],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_files],
+            "pkg_filegroup file origin list does not match expectations",
+        )
 
     asserts.equals(
         env,
         [t[PackageDirsInfo] for t in ctx.attr.expected_pkg_dirs],
-        target_under_test[PackageFilegroupInfo].pkg_dirs,
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_dirs],
         "pkg_filegroup directory list does not match expectations",
     )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_dirs],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_dirs],
+            "pkg_filegroup directory origin list does not match expectations",
+        )
 
     asserts.equals(
         env,
         [t[PackageSymlinkInfo] for t in ctx.attr.expected_pkg_symlinks],
-        target_under_test[PackageFilegroupInfo].pkg_symlinks,
-        "pkg_filegroup symlink map list does not match expectations",
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_symlinks],
+        "pkg_filegroup symlink map does not match expectations",
     )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_symlinks],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_symlinks],
+            "pkg_filegroup symlink origin list does not match expectations",
+        )
 
     # Verify that the DefaultInfo is propagated properly out of the input
     # pkg_files's -- these are the files that need to be passed along to the
@@ -725,6 +746,9 @@ pkg_filegroup_contents_test = analysistest.make(
         "expected_pkg_symlinks": attr.label_list(
             providers = [PackageSymlinkInfo],
             default = [],
+        ),
+        "verify_origins": attr.bool(
+            default = True,
         ),
     },
 )
@@ -804,6 +828,11 @@ def _test_pkg_filegroup(name):
         expected_pkg_files = ["{}_pkg_files_prefixed".format(name)],
         expected_pkg_dirs = ["{}_pkg_dirs_prefixed".format(name)],
         expected_pkg_symlinks = ["{}_pkg_symlink_prefixed".format(name)],
+        # The origins for everythin will be wrong here, since they're derived
+        # from the labels of the inputs to pkg_filegroup.
+        #
+        # The first test here should be adequate for this purpose.
+        verify_origins = False,
     )
 
     native.test_suite(
