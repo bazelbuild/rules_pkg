@@ -64,7 +64,10 @@ PackageSymlinkInfo = provider(
     fields = {
         "attributes": """See `attributes` in PackageFilesInfo.""",
         "destination": """string: Filesystem link 'name'""",
-        "source": """string or Label: Filesystem link 'target'""",
+        "source": """string or Label: Filesystem link 'target'.
+        
+        TODO(nacl): Label sources not yet supported.
+        """,
     },
 )
 
@@ -74,7 +77,7 @@ PackageFilegroupInfo = provider(
     doc = """Provider representing a collection of related packaging providers""",
     fields = {
         "pkg_files": "list of child PackageFilesInfo providers",
-        "pkg_dirs": "list of child PackageDirInfo providers",
+        "pkg_dirs": "list of child PackageDirsInfo providers",
         "pkg_symlinks": "list of child PackageSymlinkInfo providers",
     },
 )
