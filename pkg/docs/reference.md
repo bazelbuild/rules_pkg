@@ -18,16 +18,53 @@ These attributes are used in several rules within this module.
 
 **ATTRIBUTES**
 
-| Name  | Description | Type | Mandatory | Default |
-| :------------- | :------------- | :-------------: | :-------------: | :------------- |
-| out | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink. | String | required |  |
-| package_file_name |  The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`.| String | optional | package type specific |
-| package_variables |  A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.| <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| Name              | Description                                                                                                                                                                     | Type                                                               | Mandatory       | Default                                   |
+| :-------------    | :-------------                                                                                                                                                                  | :-------------:                                                    | :-------------: | :-------------                            |
+| out               | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink.            | String                                                             | required        |                                           |
+| package_file_name | The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`. | String                                                             | optional        | package type specific                     |
+| package_variables | A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.                                                                                           | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional        | None                                      |
+| attributes        | Attributes to set on entities created within packages.  Not to be confused with bazel rule attributes.  See 'Mapping "Attributes"' below                                        | dict of String -> String List                                      | optional        | Varies.  See 'Mapping "Attributes"' below |
 
 See
 [examples/naming_package_files](https://github.com/bazelbuild/rules_pkg/tree/main/examples/naming_package_files)
 for examples of how `out`, `package_file_name`, and `package_variables`
 interact.
+
+<a name="mapping-attrs"></a>
+### Mapping "Attributes"
+
+The "attributes" attribute specifies properties of package contents as used in
+rules such as `pkg_files`, and `pkg_mkdirs`.  These allow fine-grained control
+of the contents of your package.  For example:
+
+```python
+attributes = {
+    "unix": ("0644", "myapp", "myapp"),
+    "my_custom_attribute": ("some custom value",),
+}
+```
+
+Known attributes include the following:
+
+#### `unix`
+
+Specifies basic UNIX-style filesystem permissions. For example:
+
+```python
+{"unix": ("0755", "root", "root")}
+```
+
+This is a three-element tuple, providing the filesystem mode (as an octal
+string, like above), user, and group.
+
+`"-"` may be provided in place of any of the values in the tuple.  Packaging
+rules will set these to a default, which will vary based on the underlying
+package builder and is otherwise unspecified.  Relying upon values set by it is
+not recommended.
+
+Package mapping rules typically set this to `("-", "-", "-")`.
+
+---
 
 <a name="pkg_tar"></a>
 ## pkg_tar
