@@ -50,15 +50,17 @@ attributes = pkg_attributes(
 permissions.  Attributes should always be specified using the `pkg_attributes`
 helper macro.
 
-When `mode` is not specified, it defaults to "0444" (read-only).  If `user` and
-`group` are not specified, then defaults will be chosen by the underlying
-package builder.  Any specific behavior from package builders should not be
-relied upon.
+Each mapping rule has some default mapping attributes.  At this time, the only
+default is "mode", which will be set if it is not otherwise overridden by the user.
 
-Any other attributes should be specified as additional arguments to the
-`pkg_attributes` rule.
+If `user` and `group` are not specified, then defaults for them will be chosen
+by the underlying package builder.  Any specific behavior from package builders
+should not be relied upon.
 
-There are currently no other well-known attributes known at this time.
+Any other attributes should be specified as additional arguments to
+`pkg_attributes`.
+
+There are currently no other well-known attributes.
 
 ---
 

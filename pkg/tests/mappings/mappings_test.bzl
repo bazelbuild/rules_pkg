@@ -81,7 +81,7 @@ def _test_pkg_files_contents():
         name = "pf_no_strip_prefix_g",
         srcs = ["testdata/hello.txt"],
         attributes = pkg_attributes(
-            mode = "0644",
+            mode = "0755",
             user = "foo",
             group = "bar",
             # kwargs begins here
@@ -95,7 +95,7 @@ def _test_pkg_files_contents():
         target_under_test = ":pf_no_strip_prefix_g",
         expected_dests = ["hello.txt"],
         expected_attributes = pkg_attributes(
-            mode = "0644",
+            mode = "0755",
             user = "foo",
             group = "bar",
             foo = "bar",
@@ -172,6 +172,31 @@ def _test_pkg_files_contents():
             # The generated target output, in this case, a symlink
             "testdata/test_script",
         ],
+    )
+
+    # Test that the default mode (0644) is always set regardless of the other
+    # values in "attributes".
+    pkg_files(
+        name = "pf_attributes_mode_overlay_if_not_provided_g",
+        srcs = ["foo"],
+        strip_prefix = strip_prefix.from_pkg(),
+        attributes = pkg_attributes(
+            user = "foo",
+            group = "bar",
+            foo = "bar",
+        ),
+        tags = ["manual"],
+    )
+    pkg_files_contents_test(
+        name = "pf_attributes_mode_overlay_if_not_provided",
+        target_under_test = ":pf_attributes_mode_overlay_if_not_provided_g",
+        expected_dests = ["foo"],
+        expected_attributes = pkg_attributes(
+            mode = "0644",
+            user = "foo",
+            group = "bar",
+            foo = "bar",
+        ),
     )
 
     # Test that pkg_files rejects cases where two sources resolve to the same
@@ -536,10 +561,32 @@ def _test_pkg_mkdirs():
     )
     pkg_mkdirs_contents_test(
         name = "pkg_mkdirs_base",
-        target_under_test = "pkg_mkdirs_base_g",
+        target_under_test = ":pkg_mkdirs_base_g",
         expected_dirs = ["foo/bar", "baz"],
         expected_attributes = pkg_attributes(
             mode = "0711",
+            user = "root",
+            group = "sudo",
+        ),
+    )
+
+    # Test that the default mode (0755) is always set regardless of the other
+    # values in "attributes".
+    pkg_mkdirs(
+        name = "pkg_mkdirs_mode_overlay_if_not_provided_g",
+        dirs = ["foo"],
+        attributes = pkg_attributes(
+            user = "root",
+            group = "sudo",
+        ),
+        tags = ["manual"],
+    )
+    pkg_mkdirs_contents_test(
+        name = "pkg_mkdirs_mode_overlay_if_not_provided",
+        target_under_test = ":pkg_mkdirs_mode_overlay_if_not_provided_g",
+        expected_dirs = ["foo"],
+        expected_attributes = pkg_attributes(
+            mode = "0755",
             user = "root",
             group = "sudo",
         ),
@@ -579,6 +626,7 @@ def mappings_analysis_tests():
             ":pf_files_only",
             ":pf_strip_testdata_from_pkg",
             ":pf_strip_prefix_from_root",
+            ":pf_attributes_mode_overlay_if_not_provided",
             # Tests involving excluded files
             ":pf_exclude_by_label_strip_all",
             ":pf_exclude_by_filename_strip_all",
@@ -609,6 +657,7 @@ def mappings_analysis_tests():
             ":pf_rename_single_excluded_value",
             # Tests involving pkg_mkdirs
             ":pkg_mkdirs_base",
+            ":pkg_mkdirs_mode_overlay_if_not_provided",
         ],
     )
 

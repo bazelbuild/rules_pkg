@@ -57,7 +57,7 @@ strip_prefix = struct(
 
     - `from_root(path)`: strip beginning from the file's WORKSPACE root (even if
       it is in an external workspace) plus what's in `path`, if provided.
-    
+
     Prefix stripping is applied to each `src` in a `pkg_files` rule
     independently.
  """,
@@ -66,14 +66,18 @@ strip_prefix = struct(
     from_root = _sp_from_root,
 )
 
-def pkg_attributes(mode = "0444", user = None, group = None, **kwargs):
+def pkg_attributes(mode = None, user = None, group = None, **kwargs):
     """Format attributes for use in package mapping rules.
 
     Args:
-      mode: string: UNIXy octal permissions, as a string.  Defaults to being read-only ("0444")
+      mode: string: UNIXy octal permissions, as a string.
       user: string: Filesystem owning user.
       group: string: Filesystem owning group.
       **kwargs: any other desired attributes.
+
+    If "mode" is not provided, it will default to the mapping rule's default
+    mode.  These vary per mapping rule; consult the respective documentation for
+    more details.
 
     Not providing any of "user", or "group" will result in the package builder
     choosing one for you.  The chosen value should not be relied upon.
@@ -89,7 +93,8 @@ def pkg_attributes(mode = "0444", user = None, group = None, **kwargs):
 
     """
     ret = kwargs
-    ret["mode"] = mode
+    if mode:
+        ret["mode"] = mode
     if user:
         ret["user"] = user
     if group:
@@ -204,6 +209,9 @@ def _pkg_files_impl(ctx):
 
     out_attributes = json.decode(ctx.attr.attributes)
 
+    # Default mode is the common, "sane" 0644
+    out_attributes.setdefault("mode", "0644")
+
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
         # rename_src.files is a depset
@@ -253,7 +261,7 @@ pkg_files = rule(
     targets when they are packaged. No outputs are created other than Providers
     that are intended to be consumed by other packaging rules, such as
     `pkg_rpm`.
-    
+
     Labels associated with these rules are not passed directly to packaging
     rules, instead, they should be passed to an associated `pkg_filegroup` rule,
     which in turn should be passed to packaging rules.
@@ -275,10 +283,13 @@ pkg_files = rule(
 
             Always use `pkg_attributes()` to set this rule attribute.
 
+            If not otherwise overridden, the file's mode will be set to UNIX
+            "0644".
+
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = pkg_attributes(),
+            default = "{}",  # Empty JSON
         ),
         "prefix": attr.string(
             doc = """Installation prefix.
@@ -312,10 +323,10 @@ pkg_files = rule(
             attribute is not specified, all directories will be stripped from
             all files prior to being included in packages
             (`strip_prefix.files_only()`).
-            
+
             If prefix stripping fails on any file provided in `srcs`, the build
             will fail.
-            
+
             Note that this only functions on paths that are known at analysis
             time.  Specifically, this will not consider directories within
             TreeArtifacts (directory outputs), or the directories themselves.
@@ -357,10 +368,14 @@ pkg_files = rule(
 )
 
 def _pkg_mkdirs_impl(ctx):
+    out_attributes = json.decode(ctx.attr.attributes)
+
+    # Default mode is the common, "sane" 0755
+    out_attributes.setdefault("mode", "0755")
     return [
         PackageDirsInfo(
             dirs = ctx.attr.dirs,
-            attributes = json.decode(ctx.attr.attributes),
+            attributes = out_attributes,
         ),
     ]
 
@@ -400,13 +415,13 @@ pkg_mkdirs = rule(
 
             Always use `pkg_attributes()` to set this rule attribute.
 
-            The default value for this is UNIX "0755", or the target
-            platform's equivalent.  All other values are left unspecified.
+            If not otherwise overridden, the directory's mode will be set to
+            UNIX "0755".
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = pkg_attributes(mode = "0755"),
+            default = "{}",  # Empty JSON
         ),
     },
     provides = [PackageDirsInfo],
