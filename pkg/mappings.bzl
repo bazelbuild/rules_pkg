@@ -209,7 +209,7 @@ def _pkg_files_impl(ctx):
 
     out_attributes = json.decode(ctx.attr.attributes)
 
-    # Default mode is the common, "sane" 0644
+    # The least surprising default mode is that of a normal file (0644)
     out_attributes.setdefault("mode", "0644")
 
     # Do file renaming
@@ -370,7 +370,7 @@ pkg_files = rule(
 def _pkg_mkdirs_impl(ctx):
     out_attributes = json.decode(ctx.attr.attributes)
 
-    # Default mode is the common, "sane" 0755
+    # The least surprising default mode is that of a normal directory (0755)
     out_attributes.setdefault("mode", "0755")
     return [
         PackageDirsInfo(
