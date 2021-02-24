@@ -57,7 +57,7 @@ strip_prefix = struct(
 
     - `from_root(path)`: strip beginning from the file's WORKSPACE root (even if
       it is in an external workspace) plus what's in `path`, if provided.
-    
+
     Prefix stripping is applied to each `src` in a `pkg_files` rule
     independently.
  """,
@@ -66,18 +66,44 @@ strip_prefix = struct(
     from_root = _sp_from_root,
 )
 
+def pkg_attributes(mode = None, user = None, group = None, **kwargs):
+    """Format attributes for use in package mapping rules.
+
+    Args:
+      mode: string: UNIXy octal permissions, as a string.
+      user: string: Filesystem owning user.
+      group: string: Filesystem owning group.
+      **kwargs: any other desired attributes.
+
+    If "mode" is not provided, it will default to the mapping rule's default
+    mode.  These vary per mapping rule; consult the respective documentation for
+    more details.
+
+    Not providing any of "user", or "group" will result in the package builder
+    choosing one for you.  The chosen value should not be relied upon.
+
+    Well-known attributes outside of the above are documented in the rules_pkg
+    reference.
+
+    This is the only supported means of passing in attributes to package mapping
+    rules (e.g. `pkg_files`).
+
+    Returns:
+      A value usable in the "attributes" attribute in package mapping rules.
+
+    """
+    ret = kwargs
+    if mode:
+        ret["mode"] = mode
+    if user:
+        ret["user"] = user
+    if group:
+        ret["group"] = group
+    return json.encode(ret)
+
 ####
 # Internal helpers
 ####
-
-def _validate_attributes(attributes):
-    # TODO(nacl): this needs to be rethought.  There could, for example, be
-    # attributes for additional packaging types that live outside of rules_pkg.
-
-    # We could do more here, perhaps
-    if "unix" in attributes.keys():
-        if len(attributes["unix"]) != 3:
-            fail("'unix' attributes key must have three child values")
 
 def _do_strip_prefix(path, to_strip, src_file):
     if to_strip == "":
@@ -181,7 +207,10 @@ def _pkg_files_impl(ctx):
             ),
         ) for src in srcs}
 
-    _validate_attributes(ctx.attr.attributes)
+    out_attributes = json.decode(ctx.attr.attributes)
+
+    # The least surprising default mode is that of a normal file (0644)
+    out_attributes.setdefault("mode", "0644")
 
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
@@ -217,7 +246,7 @@ def _pkg_files_impl(ctx):
     return [
         PackageFilesInfo(
             dest_src_map = dest_src_map,
-            attributes = ctx.attr.attributes,
+            attributes = out_attributes,
         ),
         DefaultInfo(
             # Simple passthrough
@@ -232,7 +261,7 @@ pkg_files = rule(
     targets when they are packaged. No outputs are created other than Providers
     that are intended to be consumed by other packaging rules, such as
     `pkg_rpm`.
-    
+
     Labels associated with these rules are not passed directly to packaging
     rules, instead, they should be passed to an associated `pkg_filegroup` rule,
     which in turn should be passed to packaging rules.
@@ -249,13 +278,18 @@ pkg_files = rule(
             mandatory = True,
             allow_files = True,
         ),
-        "attributes": attr.string_list_dict(
+        "attributes": attr.string(
             doc = """Attributes to set on packaged files.
+
+            Always use `pkg_attributes()` to set this rule attribute.
+
+            If not otherwise overridden, the file's mode will be set to UNIX
+            "0644".
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = {"unix": ["-", "-", "-"]},
+            default = "{}",  # Empty JSON
         ),
         "prefix": attr.string(
             doc = """Installation prefix.
@@ -289,10 +323,10 @@ pkg_files = rule(
             attribute is not specified, all directories will be stripped from
             all files prior to being included in packages
             (`strip_prefix.files_only()`).
-            
+
             If prefix stripping fails on any file provided in `srcs`, the build
             will fail.
-            
+
             Note that this only functions on paths that are known at analysis
             time.  Specifically, this will not consider directories within
             TreeArtifacts (directory outputs), or the directories themselves.
@@ -334,12 +368,14 @@ pkg_files = rule(
 )
 
 def _pkg_mkdirs_impl(ctx):
-    _validate_attributes(ctx.attr.attributes)
+    out_attributes = json.decode(ctx.attr.attributes)
 
+    # The least surprising default mode is that of a normal directory (0755)
+    out_attributes.setdefault("mode", "0755")
     return [
         PackageDirsInfo(
             dirs = ctx.attr.dirs,
-            attributes = ctx.attr.attributes,
+            attributes = out_attributes,
         ),
     ]
 
@@ -374,13 +410,18 @@ pkg_mkdirs = rule(
             """,
             mandatory = True,
         ),
-        "attributes": attr.string_list_dict(
+        "attributes": attr.string(
             doc = """Attributes to set on packaged directories.
+
+            Always use `pkg_attributes()` to set this rule attribute.
+
+            If not otherwise overridden, the directory's mode will be set to
+            UNIX "0755".
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = {"unix": ["-", "-", "-"]},
+            default = "{}",  # Empty JSON
         ),
     },
     provides = [PackageDirsInfo],
