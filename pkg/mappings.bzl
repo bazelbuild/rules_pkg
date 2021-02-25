@@ -480,7 +480,7 @@ pkg_mklink = rule(
             mandatory = True,
         ),
         "attributes": attr.string(
-            doc = """Attributes to set on packaged directories.
+            doc = """Attributes to set on packaged symbolic links.
 
             Always use `pkg_attributes()` to set this rule attribute.
 
