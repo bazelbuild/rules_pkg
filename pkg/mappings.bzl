@@ -286,7 +286,7 @@ pkg_files = rule(
             Always use `pkg_attributes()` to set this rule attribute.
 
             If not otherwise overridden, the file's mode will be set to UNIX
-            "0644".
+            "0644", or the target platform's equivalent.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
@@ -418,7 +418,7 @@ pkg_mkdirs = rule(
             Always use `pkg_attributes()` to set this rule attribute.
 
             If not otherwise overridden, the directory's mode will be set to
-            UNIX "0755".
+            UNIX "0755", or the target platform's equivalent.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
@@ -430,11 +430,17 @@ pkg_mkdirs = rule(
 )
 
 def _pkg_mklink_impl(ctx):
+    out_attributes = json.decode(ctx.attr.attributes)
+
+    # The least surprising default mode is that of a symbolic link (0777).
+    # Permissions on symlinks typically don't matter, as the operation is
+    # typically moved to where the link is pointing.
+    out_attributes.setdefault("mode", "0777")
     return [
         PackageSymlinkInfo(
             destination = ctx.attr.dest,
             source = ctx.attr.src,
-            attributes = json.decode(ctx.attr.attributes),
+            attributes = out_attributes,
         ),
     ]
 
@@ -448,6 +454,7 @@ pkg_mklink = rule(
 
     """,
     implementation = _pkg_mklink_impl,
+    # @unsorted-dict-items
     attrs = {
         "dest": attr.string(
             doc = """Link "target", a path within the package.
@@ -477,16 +484,16 @@ pkg_mklink = rule(
 
             Always use `pkg_attributes()` to set this rule attribute.
 
-            The default value for this is UNIX "0777", or the target
-            platform's equivalent.  All other values are left unspecified.
-
             Symlink permissions may have different meanings depending on your
             host operating system; consult its documentation for more details.
+
+            If not otherwise overridden, the link's mode will be set to UNIX
+            "0777", or the target platform's equivalent.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
             """,
-            default = pkg_attributes(mode = "0777"),
+            default = "{}",  # Empty JSON
         ),
     },
     provides = [PackageSymlinkInfo],
@@ -562,6 +569,7 @@ pkg_filegroup = rule(
     such as a prefix or a human-readable category.
     """,
     implementation = _pkg_filegroup_impl,
+    # @unsorted-dict-items
     attrs = {
         "srcs": attr.label_list(
             doc = """A list of packaging specifications to be grouped together.""",

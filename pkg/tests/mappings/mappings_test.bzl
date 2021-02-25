@@ -655,6 +655,7 @@ def _test_pkg_mklink():
         dest = "foo",
         src = "bar",
         tags = ["manual"],
+        attributes = pkg_attributes(mode = "0111"),
     )
 
     pkg_mklink_contents_test(
@@ -662,7 +663,31 @@ def _test_pkg_mklink():
         target_under_test = ":pkg_mklink_base_g",
         expected_dest = "foo",
         expected_src = "bar",
-        expected_attributes = pkg_attributes(mode = "0777"),
+        expected_attributes = pkg_attributes(mode = "0111"),
+    )
+
+    # Test that the default mode (0755) is always set regardless of the other
+    # values in "attributes".
+    pkg_mklink(
+        name = "pkg_mklink_mode_overlay_if_not_provided_g",
+        dest = "foo",
+        src = "bar",
+        attributes = pkg_attributes(
+            user = "root",
+            group = "sudo",
+        ),
+        tags = ["manual"],
+    )
+    pkg_mklink_contents_test(
+        name = "pkg_mklink_mode_overlay_if_not_provided",
+        target_under_test = ":pkg_mklink_mode_overlay_if_not_provided_g",
+        expected_dest = "foo",
+        expected_src = "bar",
+        expected_attributes = pkg_attributes(
+            mode = "0777",
+            user = "root",
+            group = "sudo",
+        ),
     )
 
 ##########
@@ -919,6 +944,7 @@ def mappings_analysis_tests():
             ":pkg_mkdirs_mode_overlay_if_not_provided",
             # Tests involving pkg_mklink
             ":pkg_mklink_base",
+            ":pkg_mklink_mode_overlay_if_not_provided",
             # Tests involving pkg_filegroup
             ":pfg_tests",
         ],
