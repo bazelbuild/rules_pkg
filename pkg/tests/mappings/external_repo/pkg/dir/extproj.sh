@@ -1,4 +1,6 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+#!/bin/bash
+
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sample rule to show package naming."""
-
-load("//:providers.bzl", "PackageVariablesInfo")
-
-def _my_package_naming_impl(ctx):
-    values = {}
-
-    # then add in my own custom values
-    values["label"] = ctx.attr.label
-    return PackageVariablesInfo(values = values)
-
-my_package_naming = rule(
-    implementation = _my_package_naming_impl,
-    attrs = {
-        "label": attr.string(doc = "A label that matters to me."),
-    },
-)
+echo "External project script!"
