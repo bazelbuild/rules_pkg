@@ -116,6 +116,15 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_tar(
+    name = "test_tar_package_dir_substitution",
+    srcs = [
+        ":BUILD",
+    ],
+    package_dir = "level1/{label}/level3",
+    package_variables = ":my_package_variables",
+)
+
 pkg_zip(
     name = "test_zip_naming",
     srcs = [
@@ -133,6 +142,7 @@ sh_test(
     data = [
         ":test_deb_naming",
         ":test_tar_naming",
+        ":test_tar_package_dir_substitution",
         ":test_zip_naming",
     ],
 )
