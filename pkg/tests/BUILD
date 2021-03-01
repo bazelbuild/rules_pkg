@@ -142,7 +142,6 @@ sh_test(
     data = [
         ":test_deb_naming",
         ":test_tar_naming",
-        ":test_tar_package_dir_substitution",
         ":test_zip_naming",
     ],
 )
@@ -447,6 +446,7 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+        ":test_tar_package_dir_substitution.tar",
     ] + [
         ":test-tar-basic-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS

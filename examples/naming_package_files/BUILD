@@ -60,7 +60,7 @@ pkg_tar(
     package_variables = ":my_naming_vars",
 )
 
-# This example shows that in the same way as package_file_name inner folder structure of the archive
+# This example shows that in the same way as package_file_name, the inner folder structure of the archive
 # specified with package_dir attribute also can be controlled by the package_variables attribute.
 pkg_tar(
     name = "example2",

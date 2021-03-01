@@ -63,17 +63,17 @@ def substitute_package_variables(ctx, attribute_value):
     Returns:
       expanded_attribute_value: new value of the attribute after package_variables substitution
     """
-    if not ctx.attr.package_variables:
-        # Nothing to substitute. Return the attribute value as is.
-        if type(attribute_value) == "string" and attribute_value.find("{") >= 0:
-            fail("package_variables is required when using '{' in attribute value %s" % attribute_value)
-        return attribute_value
-
     if not attribute_value:
         return attribute_value
 
     if type(attribute_value) != "string":
         fail("attempt to substitute package_variables in the attribute value %s which is not a string" % attribute_value)
+
+    if not ctx.attr.package_variables:
+        # Nothing to substitute. Return the attribute value as is.
+        if attribute_value.find("{") >= 0:
+            fail("package_variables is required when using '{' in attribute value %s" % attribute_value)
+        return attribute_value
 
     package_variables = ctx.attr.package_variables[PackageVariablesInfo]
     return attribute_value.format(**package_variables.values)
