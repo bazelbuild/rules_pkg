@@ -853,7 +853,7 @@ def _test_pkg_filegroup(name):
         expected_pkg_files = ["{}_pkg_files_prefixed".format(name)],
         expected_pkg_dirs = ["{}_pkg_dirs_prefixed".format(name)],
         expected_pkg_symlinks = ["{}_pkg_symlink_prefixed".format(name)],
-        # The origins for everythin will be wrong here, since they're derived
+        # The origins for everything will be wrong here, since they're derived
         # from the labels of the inputs to pkg_filegroup.
         #
         # The first test here should be adequate for this purpose.
