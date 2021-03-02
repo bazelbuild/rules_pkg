@@ -67,7 +67,7 @@ pkg_tar(
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "example1-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
+    package_file_name = "example2-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
     package_dir = "example1/{product_name}/{target_cpu}/{compilation_mode}{special_build}",
     package_variables = ":my_naming_vars",
 )
@@ -84,7 +84,7 @@ pkg_tar(
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "example2-{cc_cpu}-{compiler}-{compilation_mode}.tar",
+    package_file_name = "example3-{cc_cpu}-{compiler}-{compilation_mode}.tar",
     package_variables = ":toolchain_vars",
 )
 
