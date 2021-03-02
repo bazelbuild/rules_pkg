@@ -1,3 +1,0 @@
-common --enable_platform_specific_config=true
-build:windows --shell_executable="C:/Program Files/Git/usr/bin/bash.exe"
-build:windows --enable_runfiles
