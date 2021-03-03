@@ -35,7 +35,7 @@ filegroup(
 
 exports_files(
     ["WORKSPACE"],
-    visibility = ["//distro:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
