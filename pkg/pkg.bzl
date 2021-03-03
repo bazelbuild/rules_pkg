@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("private/util.bzl", "setup_output_files")
+load("private/util.bzl", "setup_output_files", "substitute_package_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -64,7 +64,8 @@ def _pkg_tar_impl(ctx):
         package_dir_arg = "--directory=@" + ctx.file.package_dir_file.path
         files.append(ctx.file.package_dir_file)
     else:
-        package_dir_arg = "--directory=" + ctx.attr.package_dir or "/"
+        package_dir_expanded = substitute_package_variables(ctx, ctx.attr.package_dir)
+        package_dir_arg = "--directory=" + package_dir_expanded or "/"
 
     # Start building the arguments.
     args = [

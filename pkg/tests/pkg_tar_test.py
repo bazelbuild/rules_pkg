@@ -181,6 +181,16 @@ class PkgTarTest(unittest.TestCase):
         self.assertTarFileContent('test-tar-inclusion-%s.tar' % ext[1:],
                                   content)
 
+  def test_strip_prefix_empty(self):
+    content = [
+        {'name': '.'},
+        {'name': './level1'},
+        {'name': './level1/some_value'},
+        {'name': './level1/some_value/level3'},
+        {'name': './level1/some_value/level3/BUILD'},
+    ]
+    self.assertTarFileContent('test_tar_package_dir_substitution.tar', content)
+
 
 if __name__ == '__main__':
   unittest.main()

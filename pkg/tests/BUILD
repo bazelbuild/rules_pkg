@@ -116,6 +116,15 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_tar(
+    name = "test_tar_package_dir_substitution",
+    srcs = [
+        ":BUILD",
+    ],
+    package_dir = "level1/{label}/level3",
+    package_variables = ":my_package_variables",
+)
+
 pkg_zip(
     name = "test_zip_naming",
     srcs = [
@@ -437,6 +446,7 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+        ":test_tar_package_dir_substitution.tar",
     ] + [
         ":test-tar-basic-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS
