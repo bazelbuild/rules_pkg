@@ -36,7 +36,7 @@ If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
 
 ```
 # Find rpmbuild provided on your system.
-load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 
