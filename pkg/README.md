@@ -32,7 +32,6 @@ http_archive(
 )
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
-
 ```
 
 If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
