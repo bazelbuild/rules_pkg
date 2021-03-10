@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//:mappings.bzl", "pkg_filegroup", "pkg_files")
-load(":rpm.bzl", "pkg_rpm")
-
 exports_files(
     glob([
         "*.bzl",
@@ -33,24 +30,4 @@ filegroup(
         "template.spec.in",
     ],
     visibility = ["//:__pkg__"],
-)
-
-pkg_files(
-    name = "artifacts",
-    srcs = [":template.spec.in"],
-)
-
-pkg_filegroup(
-    name = "usr_share_artifacts",
-    srcs = [":artifacts"],
-)
-
-pkg_rpm(
-    name = "example",
-    srcs = [":usr_share_artifacts"],
-    description = "Other example!",
-    license = "N/A",
-    release = "1",
-    summary = "Example!",
-    version = "1.0",
 )
