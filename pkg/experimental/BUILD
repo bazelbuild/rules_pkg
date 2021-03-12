@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_binary")
+
 exports_files(
     glob([
         "*.bzl",
@@ -25,9 +27,18 @@ filegroup(
     name = "standard_package",
     srcs = glob([
         "*.bzl",
+        "*.py",
     ]) + [
         "BUILD",
         "template.spec.in",
     ],
     visibility = ["//:__pkg__"],
+)
+
+# Helper script used to augment the %install scriptlet and %files list with
+# those found in TreeArtifacts (directory outputs) See also #292.
+py_binary(
+    name = "augment_rpm_files_install",
+    srcs = ["augment_rpm_files_install.py"],
+    visibility = ["//visibility:public"],
 )
