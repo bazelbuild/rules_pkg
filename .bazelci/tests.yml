@@ -2,9 +2,6 @@ common: &common
   working_directory: /workdir/pkg
   test_targets:
   - "..."
-  # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
-  - "-//tests/rpm/..."
-  - "-//experimental/tests/rpm/..."
 
 tasks:
   centos7:

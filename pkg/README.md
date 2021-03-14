@@ -9,7 +9,8 @@
 <a name="notes"></a>
 ## Release Notes
 
-Version 0.3.0 or later requires Bazel 3.2.0 or later.
+Version 1.0.0 or later (including all currently in-development code) requires
+Bazel 4.0.0 or later.
 
 <a name="overview"></a>
 ## Overview
