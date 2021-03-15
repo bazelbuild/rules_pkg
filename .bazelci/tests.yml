@@ -10,8 +10,9 @@ common: &common
 tasks:
   centos7:
     platform: centos7
+    working_directory: /workdir/pkg
     test_targets:
-    # This include the rpm tests, whihc are not (yet) supported in the below
+    # This include the rpm tests, which are not (yet) supported in the below
     # cases.
     - "..."
   ubuntu1604:
