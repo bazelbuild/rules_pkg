@@ -21,7 +21,7 @@ and debian package.
 <a name="workspace-setup"></a>
 ### WORKSPACE setup
 
-```
+```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_pkg",
@@ -35,10 +35,11 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 ```
 
-If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
-`rpmbuild` tool.  Add this to WORKSPACE to use the installed version.
+If you want to use `pkg_rpm()` (either from `rpm.bzl` or `experimental/rpm.bzl`)
+you must instantiate a toolchain to provide the `rpmbuild` tool.  Add this to
+WORKSPACE to use one installed on your system:
 
-```
+```python
 # Find rpmbuild provided on your system.
 load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name = "rules_pkg_rpmbuild")
