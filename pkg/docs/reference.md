@@ -68,8 +68,9 @@ There are currently no other well-known attributes.
 ## pkg_tar
 
 ```python
-pkg_tar(name, extension, strip_prefix, package_dir, srcs,
-        mode, modes, deps, symlinks, package_file_name, package_variables)
+pkg_tar(name, extension, strip_prefix, package_dir, srcs, compressor,
+        compressor_args, mode, modes, deps, symlinks, package_file_name,
+        package_variables)
 ```
 
 Creates a tar file from a list of inputs.
@@ -143,6 +144,20 @@ Creates a tar file from a list of inputs.
         <p>
           A list of files that should be included in the archive.
         </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compressor</code></td>
+      <td>
+        <code>Label, optional</code>
+        <p>Executable to be used as compression program.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compressor_args</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>Arguments to be passed to compression program.</p>
       </td>
     </tr>
     <tr>

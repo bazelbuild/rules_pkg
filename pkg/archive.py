@@ -121,6 +121,7 @@ class TarFileWriter(object):
   def __init__(self,
                name,
                compression='',
+               compressor='',
                root_directory='.',
                default_mtime=None,
                preserve_tar_mtimes=True):
@@ -129,6 +130,7 @@ class TarFileWriter(object):
     Args:
       name: the tar file name.
       compression: compression type: bzip2, bz2, gz, tgz, xz, lzma.
+      compressor: custom command to do the compression.
       root_directory: virtual root to prepend to elements in the archive.
       default_mtime: default mtime to use for elements in the archive.
           May be an integer or the value 'portable' to use the date
@@ -148,6 +150,7 @@ class TarFileWriter(object):
       else:
         self.use_xz_tool = True
     self.name = name
+    self.compressor = compressor
     self.root_directory = root_directory.rstrip('/').rstrip('\\')
     self.root_directory = self.root_directory.replace('\\', '/')
     self.preserve_mtime = preserve_tar_mtimes
@@ -422,7 +425,14 @@ class TarFileWriter(object):
     # Close the gzip file object if necessary.
     if self.fileobj:
       self.fileobj.close()
-    if self.use_xz_tool:
+    if self.compressor:
+      if subprocess.call(
+          '< {0} {1} > {0}.d && mv {0}.d {0}'.format(self.name,
+                                                     self.compressor),
+          shell=True,
+          stdout=subprocess.PIPE):
+        raise self.Error("Compression with '{}' failed".format(self.compressor))
+    elif self.use_xz_tool:
       # Support xz compression through xz... until we can use Py3
       if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '
