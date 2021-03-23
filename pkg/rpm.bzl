@@ -233,7 +233,10 @@ Args:
   changelog: A changelog file to include. This will not be written to the spec
     file, which should only list changes to the packaging, not the software itself.
   source_date_epoch: Value to export as SOURCE_DATE_EPOCH to facilitate reproducible
+    timestamps.  Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
+    subordinate call to `rpmbuild` to facilitate more consistent in-RPM file
     timestamps.
-  source_date_epoch_file: File containing the SOURCE_DATE_EPOCH value
+  source_date_epoch_file: File containing the SOURCE_DATE_EPOCH value.  Sets
+    `%clamp_mtime_to_source_date_epoch` like with "source_date_epoch".
   data: List all files to be included in the package here.
 """
