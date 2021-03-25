@@ -17,6 +17,17 @@ import csv
 import subprocess
 
 
+def get_rpm_version_as_tuple(rpm_bin_path="rpm"):
+    """Get the current version of the requested rpm(8) binary."""
+    output = subprocess.check_output(
+        [rpm_bin_path, "--version"]).decode('utf-8')
+
+    # e.g. RPM Version 4.13.1
+    version_str = output.split()[2]
+
+    return tuple(int(component) for component in version_str.split('.'))
+    
+
 def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
     """Helper to ease the invocation of an rpm query with a custom queryformat.
 
