@@ -26,7 +26,7 @@ def get_rpm_version_as_tuple(rpm_bin_path="rpm"):
     version_str = output.split()[2]
 
     return tuple(int(component) for component in version_str.split('.'))
-    
+
 
 def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
     """Helper to ease the invocation of an rpm query with a custom queryformat.
@@ -44,11 +44,12 @@ def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
 def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
     """Read rpm file-based metadata into a dictionary
 
-    Keys are the file names (absolute paths), values are the metadata as another dictionary.
+    Keys are the file names (absolute paths), values are the metadata as another
+    dictionary.
 
     The metadata fields are those defined in an RPM query, and is a map of query
-    tags to simple variable names.  The fields must be plural, as identified
-    by the names.  Some examples are in the default argument, described below.
+    tags to simple variable names.  The fields must be plural, as identified by
+    the names.  Some examples are in the default argument, described below.
 
     - FILENAMES        -> path (file absolute path)
     - FILEDIGESTS      -> digest (hash of file.  MD5 for compatibility)
@@ -70,7 +71,6 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
     # sometimes changed, e.g.:
     #
     # https://github.com/rpm-software-management/rpm/commit/2cf7096ba534b065feb038306c792784458ac9c7
-
 
     if query_tag_map is None:
         rpm_queryformat = (
@@ -94,7 +94,8 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
         ]
     else:
         rpm_queryformat = "["
-        rpm_queryformat += ",".join(["%{{{}}}".format(query_tag) for query_tag in query_tag_map.keys() ])
+        rpm_queryformat += ",".join(["%{{{}}}".format(query_tag)
+                                     for query_tag in query_tag_map.keys()])
         rpm_queryformat += "\n]"
 
         rpm_queryformat_fieldnames = list(query_tag_map.values())
@@ -104,6 +105,8 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
 
     sio = io.StringIO(rpm_output.decode('utf-8'))
     rpm_output_reader = csv.DictReader(
-        sio, fieldnames = rpm_queryformat_fieldnames)
+        sio,
+        fieldnames=rpm_queryformat_fieldnames
+    )
 
-    return {r['path'] : r for r in rpm_output_reader}
+    return {r['path']: r for r in rpm_output_reader}
