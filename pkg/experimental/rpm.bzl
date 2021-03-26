@@ -49,10 +49,27 @@ _INSTALL_DIR_STANZA_FMT = """
 install -d %{{buildroot}}/{0}
 """
 
-# {0} is the name of the link, {1} is the target
+# {0} is the name of the link, {1} is the target, {2} is the desired symlink "mode".
+#
+# In particular, {2} exists because umasks on symlinks apply on macOS, unlike
+# Linux.  You can't even change symlink permissions in Linux; all permissions
+# apply to the target instead.
+#
+# This is not the case in BSDs and macOS.  This comes up because rpmbuild(8)
+# does not know about the BSD "lchmod" call, which would otherwise be used to
+# set permissions.
+#
+# This is primarily to ensure that tests pass.  Actually attempting to build
+# functional RPMs on macOS in rules_pkg has not yet been attempted at any scale.
+#
+# XXX: This may not apply all that well to users of cygwin and mingw.  We'll
+# deal with that when the time comes.
 _INSTALL_SYMLINK_STANZA_FMT = """
 %{{__install}} -d %{{buildroot}}/$(dirname {0})
 %{{__ln_s}} {1} %{{buildroot}}/{0}
+%if "%_host_os" != "linux"
+    %{{__chmod}} -h {2} %{{buildroot}}/{0}
+%endif
 """
 
 def _package_contents_metadata(origin_label, grouping_label):
@@ -391,6 +408,7 @@ def _pkg_rpm_impl(ctx):
             install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
                 entry.destination,
                 entry.source,
+                entry.attributes["mode"],
             ))
 
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
