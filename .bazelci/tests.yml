@@ -6,10 +6,15 @@ common: &common
   - "-//tests/rpm/..."
   - "-//experimental/tests/rpm/..."
 
+
 tasks:
   centos7:
     platform: centos7
-    <<: *common
+    working_directory: /workdir/pkg
+    test_targets:
+    # This includes the rpm tests, which are not (yet) supported in the below
+    # cases.
+    - "..."
   ubuntu1604:
     platform: ubuntu1604
     <<: *common

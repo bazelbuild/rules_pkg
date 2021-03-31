@@ -16,14 +16,28 @@
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load(
     "//:mappings.bzl",
     "pkg_attributes",
+    "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
+    "pkg_mklink",
     "strip_prefix",
 )
-load("//:providers.bzl", "PackageDirsInfo", "PackageFilesInfo")
+
+##########
+# Helpers
+##########
+
+def _flatten(list_of_lists):
+    """Transform a list of lists into a single list, preserving relative order."""
+    return [item for sublist in list_of_lists for item in sublist]
+
+##########
+# pkg_files tests
+##########
 
 def _pkg_files_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -42,6 +56,8 @@ def _pkg_files_contents_test_impl(ctx):
             target_under_test[PackageFilesInfo].attributes,
             "pkg_files attributes do not match expectations",
         )
+
+    # TODO(nacl): verify DefaultInfo propagation
 
     return analysistest.end(env)
 
@@ -593,6 +609,269 @@ def _test_pkg_mkdirs():
     )
 
 ##########
+# Test pkg_mklink
+##########
+def _pkg_mklink_contents_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+
+    asserts.equals(
+        env,
+        ctx.attr.expected_src,
+        target_under_test[PackageSymlinkInfo].source,
+        "pkg_mklink source does not match expectations",
+    )
+
+    asserts.equals(
+        env,
+        ctx.attr.expected_dest,
+        target_under_test[PackageSymlinkInfo].destination,
+        "pkg_mklink destination does not match expectations",
+    )
+
+    # Simple equality checks for the others, if specified
+    if ctx.attr.expected_attributes:
+        asserts.equals(
+            env,
+            json.decode(ctx.attr.expected_attributes),
+            target_under_test[PackageSymlinkInfo].attributes,
+            "pkg_mklink attributes do not match expectations",
+        )
+
+    return analysistest.end(env)
+
+pkg_mklink_contents_test = analysistest.make(
+    _pkg_mklink_contents_test_impl,
+    attrs = {
+        "expected_src": attr.string(mandatory = True),
+        "expected_dest": attr.string(mandatory = True),
+        "expected_attributes": attr.string(),
+    },
+)
+
+def _test_pkg_mklink():
+    pkg_mklink(
+        name = "pkg_mklink_base_g",
+        dest = "foo",
+        src = "bar",
+        tags = ["manual"],
+        attributes = pkg_attributes(mode = "0111"),
+    )
+
+    pkg_mklink_contents_test(
+        name = "pkg_mklink_base",
+        target_under_test = ":pkg_mklink_base_g",
+        expected_dest = "foo",
+        expected_src = "bar",
+        expected_attributes = pkg_attributes(mode = "0111"),
+    )
+
+    # Test that the default mode (0755) is always set regardless of the other
+    # values in "attributes".
+    pkg_mklink(
+        name = "pkg_mklink_mode_overlay_if_not_provided_g",
+        dest = "foo",
+        src = "bar",
+        attributes = pkg_attributes(
+            user = "root",
+            group = "sudo",
+        ),
+        tags = ["manual"],
+    )
+    pkg_mklink_contents_test(
+        name = "pkg_mklink_mode_overlay_if_not_provided",
+        target_under_test = ":pkg_mklink_mode_overlay_if_not_provided_g",
+        expected_dest = "foo",
+        expected_src = "bar",
+        expected_attributes = pkg_attributes(
+            mode = "0777",
+            user = "root",
+            group = "sudo",
+        ),
+    )
+
+##########
+# Test pkg_filegroup
+##########
+def _pkg_filegroup_contents_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+
+    asserts.equals(
+        env,
+        [t[PackageFilesInfo] for t in ctx.attr.expected_pkg_files],
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_files],
+        "pkg_filegroup file list does not match expectations",
+    )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_files],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_files],
+            "pkg_filegroup file origin list does not match expectations",
+        )
+
+    asserts.equals(
+        env,
+        [t[PackageDirsInfo] for t in ctx.attr.expected_pkg_dirs],
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_dirs],
+        "pkg_filegroup directory list does not match expectations",
+    )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_dirs],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_dirs],
+            "pkg_filegroup directory origin list does not match expectations",
+        )
+
+    asserts.equals(
+        env,
+        [t[PackageSymlinkInfo] for t in ctx.attr.expected_pkg_symlinks],
+        [info for info, _ in target_under_test[PackageFilegroupInfo].pkg_symlinks],
+        "pkg_filegroup symlink map does not match expectations",
+    )
+    if ctx.attr.verify_origins:
+        asserts.equals(
+            env,
+            [t.label for t in ctx.attr.expected_pkg_symlinks],
+            [origin for _, origin in target_under_test[PackageFilegroupInfo].pkg_symlinks],
+            "pkg_filegroup symlink origin list does not match expectations",
+        )
+
+    # Verify that the DefaultInfo is propagated properly out of the input
+    # pkg_files's -- these are the files that need to be passed along to the
+    # packaging rules.
+    expected_packaged_files = sorted(_flatten([
+        t[DefaultInfo].files.to_list()
+        for t in ctx.attr.expected_pkg_files
+    ]))
+    packaged_files = sorted(target_under_test[DefaultInfo].files.to_list())
+
+    asserts.equals(
+        env,
+        expected_packaged_files,
+        packaged_files,
+        "pkg_filegroup does not propagate DefaultInfo from pkg_file inputs",
+    )
+
+    return analysistest.end(env)
+
+pkg_filegroup_contents_test = analysistest.make(
+    _pkg_filegroup_contents_test_impl,
+    attrs = {
+        "expected_pkg_files": attr.label_list(
+            providers = [PackageFilesInfo],
+            default = [],
+        ),
+        "expected_pkg_dirs": attr.label_list(
+            providers = [PackageDirsInfo],
+            default = [],
+        ),
+        "expected_pkg_symlinks": attr.label_list(
+            providers = [PackageSymlinkInfo],
+            default = [],
+        ),
+        "verify_origins": attr.bool(
+            default = True,
+        ),
+    },
+)
+
+def _test_pkg_filegroup(name):
+    pkg_files(
+        name = "{}_pkg_files".format(name),
+        srcs = ["foo", "bar"],
+        prefix = "bin",
+        tags = ["manual"],
+    )
+
+    pkg_mkdirs(
+        name = "{}_pkg_dirs".format(name),
+        dirs = ["etc"],
+        tags = ["manual"],
+    )
+
+    pkg_mklink(
+        name = "{}_pkg_symlink".format(name),
+        src = "src",
+        dest = "dest",
+        tags = ["manual"],
+    )
+
+    pkg_filegroup(
+        name = "{}_pfg".format(name),
+        srcs = [t.format(name) for t in ["{}_pkg_files", "{}_pkg_dirs", "{}_pkg_symlink"]],
+        tags = ["manual"],
+    )
+
+    # Base case: confirm that basic data translation is working
+    pkg_filegroup_contents_test(
+        name = "{}_contents_valid".format(name),
+        target_under_test = "{}_pfg".format(name),
+        expected_pkg_files = ["{}_pkg_files".format(name)],
+        expected_pkg_dirs = ["{}_pkg_dirs".format(name)],
+        expected_pkg_symlinks = ["{}_pkg_symlink".format(name)],
+    )
+
+    ##################################################
+
+    pkg_files(
+        name = "{}_pkg_files_prefixed".format(name),
+        srcs = ["foo", "bar"],
+        prefix = "prefix/bin",
+        tags = ["manual"],
+    )
+
+    pkg_mkdirs(
+        name = "{}_pkg_dirs_prefixed".format(name),
+        dirs = ["prefix/etc"],
+        tags = ["manual"],
+    )
+
+    pkg_mklink(
+        name = "{}_pkg_symlink_prefixed".format(name),
+        src = "src",
+        dest = "prefix/dest",
+        tags = ["manual"],
+    )
+
+    # Test that prefixing works by using the unprefixed mapping rules we
+    # initially created, and set a prefix.
+    pkg_filegroup(
+        name = "{}_prefixed_pfg".format(name),
+        srcs = [t.format(name) for t in ["{}_pkg_files", "{}_pkg_dirs", "{}_pkg_symlink"]],
+        prefix = "prefix",
+        tags = ["manual"],
+    )
+
+    # Then test that the results are equivalent to manually specifying the
+    # prefix everywhere.
+    pkg_filegroup_contents_test(
+        name = "{}_contents_prefix_translated".format(name),
+        target_under_test = "{}_prefixed_pfg".format(name),
+        expected_pkg_files = ["{}_pkg_files_prefixed".format(name)],
+        expected_pkg_dirs = ["{}_pkg_dirs_prefixed".format(name)],
+        expected_pkg_symlinks = ["{}_pkg_symlink_prefixed".format(name)],
+        # The origins for everything will be wrong here, since they're derived
+        # from the labels of the inputs to pkg_filegroup.
+        #
+        # The first test here should be adequate for this purpose.
+        verify_origins = False,
+    )
+
+    native.test_suite(
+        name = name,
+        tests = [
+            t.format(name)
+            for t in [
+                "{}_contents_valid",
+                "{}_contents_prefix_translated",
+            ]
+        ],
+    )
+
+##########
 # Test strip_prefix pseudo-module
 ##########
 
@@ -614,6 +893,11 @@ def mappings_analysis_tests():
     _test_pkg_files_extrepo()
     _test_pkg_files_rename()
     _test_pkg_mkdirs()
+    _test_pkg_mklink()
+
+    # TODO(nacl) migrate the above to use a scheme the one used here.  At the very
+    # least, the test suites should be easy to find/name.
+    _test_pkg_filegroup(name = "pfg_tests")
 
     native.test_suite(
         name = "pkg_files_analysis_tests",
@@ -658,6 +942,11 @@ def mappings_analysis_tests():
             # Tests involving pkg_mkdirs
             ":pkg_mkdirs_base",
             ":pkg_mkdirs_mode_overlay_if_not_provided",
+            # Tests involving pkg_mklink
+            ":pkg_mklink_base",
+            ":pkg_mklink_mode_overlay_if_not_provided",
+            # Tests involving pkg_filegroup
+            ":pfg_tests",
         ],
     )
 

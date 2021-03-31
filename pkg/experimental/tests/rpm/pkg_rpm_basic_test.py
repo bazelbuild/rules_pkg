@@ -125,11 +125,10 @@ echo postun
         sio = io.StringIO(rpm_output.decode('utf-8'))
         rpm_output_reader = csv.DictReader(
             sio, fieldnames = rpm_queryformat_fieldnames)
-        for rpm_file_info in rpm_output_reader:
-            my_path = rpm_file_info['path']
-            self.assertIn(my_path, manifest_specs)
-            self.assertDictEqual(manifest_specs[my_path], rpm_file_info)
 
+        rpm_output_specs = {r['path'] : r for r in rpm_output_reader}
+
+        self.assertDictEqual(manifest_specs, rpm_output_specs)
     def test_preamble_metadata(self):
         metadata_prefix = "rules_pkg/experimental/tests/rpm"
 

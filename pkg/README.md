@@ -9,7 +9,8 @@
 <a name="notes"></a>
 ## Release Notes
 
-Version 0.3.0 or later requires Bazel 3.2.0 or later.
+Version 1.0.0 or later (including all currently in-development code) requires
+Bazel 4.0.0 or later.
 
 <a name="overview"></a>
 ## Overview
@@ -20,24 +21,28 @@ and debian package.
 <a name="workspace-setup"></a>
 ### WORKSPACE setup
 
-```
+```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_pkg",
-    url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.3.0/rules_pkg-0.3.0.tar.gz",
-    sha256 = "6b5969a7acd7b60c02f816773b06fcf32fbe8ba0c7919ccdc2df4f8fb923804a",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
+    ],
+    sha256 = "038f1caa773a7e35b3663865ffb003169c6a71dc995e39bf4815792f385d837d",
 )
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 ```
 
-If you want to use `pkg_rpm()` you must instantiate a toolchain to provide the
-`rpmbuild` tool.  Add this to WORKSPACE to use the installed version.
+If you want to use `pkg_rpm()` (either from `rpm.bzl` or `experimental/rpm.bzl`)
+you must instantiate a toolchain to provide the `rpmbuild` tool.  Add this to
+WORKSPACE to use one installed on your system:
 
-```
+```python
 # Find rpmbuild provided on your system.
-load("//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
-find_system_rpmbuild(name="rules_pkg_rpmbuild")
+load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+find_system_rpmbuild(name = "rules_pkg_rpmbuild")
 ```
 
 <a name="basic-example"></a>

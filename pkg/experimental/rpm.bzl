@@ -1,4 +1,4 @@
-# Copyright 2019-2020 The Bazel Authors. All rights reserved.
+# Copyright 2019 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,98 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# NOTE: This is different from make_rpm.py in pkg/, and is specific to the
-# `pkg_rpm` rule in this directory.
+"""Provides rules for creating RPM packages via pkg_filegroup and friends.
 
-"""Provides rules for creating RPM packages via pkg_filegroup and friends."""
+pkg_rpm() depends on the existence of an rpmbuild toolchain. Many users will
+find to convenient to use the one provided with their system. To enable that
+toolchain add the following stanza to WORKSPACE:
 
-load("//experimental:pkg_filegroup.bzl", "PackageDirInfo", "PackageFileInfo", "PackageSymlinkInfo")
+```
+# Find rpmbuild if it exists.
+load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+find_system_rpmbuild(name="rules_pkg_rpmbuild")
+```
+"""
+
+load("//:providers.bzl", "PackageFilegroupInfo")
 
 rpm_filetype = [".rpm"]
 
 spec_filetype = [".spec", ".spec.in"]
 
+# TODO(nacl): __install, __cp
+# {0} is the source, {1} is the dest
+#
+# TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
+_INSTALL_FILE_STANZA_FMT = """
+install -d %{{buildroot}}/$(dirname {1})
+cp -r {0} %{{buildroot}}/{1}
+"""
+
+# TODO(nacl): __install
+# {0} is the directory name
+#
+# This may not be strictly necessary, given that they'll be created in the
+# CPIO when rpmbuild processes the `%files` list.
+_INSTALL_DIR_STANZA_FMT = """
+install -d %{{buildroot}}/{0}
+"""
+
+# {0} is the name of the link, {1} is the target
+_INSTALL_SYMLINK_STANZA_FMT = """
+%{{__install}} -d %{{buildroot}}/$(dirname {0})
+%{{__ln_s}} {1} %{{buildroot}}/{0}
+"""
+
+def _package_contents_metadata(origin_label, grouping_label):
+    """Named construct for helping to identify conflicting packaged contents"""
+    return struct(
+        origin = origin_label if origin_label else "<UNKNOWN>",
+        group = grouping_label,
+    )
+
+def _conflicting_contents_error(destination, from1, from2, attr_name = "srcs"):
+    message = """Destination {destination} is provided by both (1) {from1_origin} and (2) {from2_origin}; please sensure that each destination is provided by exactly one input.
+
+    (1) {from1_origin} is provided from group {from1_group}
+    (2) {from2_origin} is provided from group {from2_group}
+    """.format(
+        destination = destination,
+        from1_origin = from1.origin,
+        from1_group = from1.group,
+        from2_origin = from2.origin,
+        from2_group = from2.group,
+    )
+
+    fail(message, attr_name)
+
+def _make_filetags(attributes, default_filetag = None):
+    """Helper function for rendering RPM spec file tags, like
+
+    ```
+    %attr(0755, root, root) %dir
+    ```
+    """
+    template = "%attr({mode}, {user}, {group}) {supplied_filetag}"
+
+    mode = attributes.get("mode", "-")
+    user = attributes.get("user", "-")
+    group = attributes.get("group", "-")
+
+    supplied_filetag = attributes.get("rpm_filetag", default_filetag)
+
+    return template.format(
+        mode = mode,
+        user = user,
+        group = group,
+        supplied_filetag = supplied_filetag or "",
+    )
+
 def _pkg_rpm_impl(ctx):
     """Implements the pkg_rpm rule."""
 
     files = []
+    tools = []
     args = ["--name=" + ctx.label.name]
 
     if ctx.attr.debug:
@@ -34,6 +111,22 @@ def _pkg_rpm_impl(ctx):
 
     if ctx.attr.rpmbuild_path:
         args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
+
+        # buildifier: disable=print
+        print("rpmbuild_path is deprecated. See the README for instructions on how" +
+              " to migrate to toolchains")
+    else:
+        toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
+        if not toolchain.valid:
+            fail("The rpmbuild_toolchain is not properly configured: " +
+                 toolchain.name)
+        if toolchain.path:
+            args.append("--rpmbuild=" + toolchain.path)
+        else:
+            executable = toolchain.label.files_to_run.executable
+            tools.append(executable)
+            tools += toolchain.label.default_runfiles.files.to_list()
+            args.append("--rpmbuild=%s" % executable.path)
 
     #### rpm spec "preamble"
     preamble_pieces = []
@@ -203,7 +296,7 @@ def _pkg_rpm_impl(ctx):
         files.append(ctx.file.changelog)
         args.append(ctx.file.changelog.path)
 
-    files += ctx.files.data
+    files += ctx.files.srcs
 
     #### Sanity checking
 
@@ -211,14 +304,9 @@ def _pkg_rpm_impl(ctx):
     # sane, but the output may also create hard-to-debug issues.  Better to err
     # on the side of correctness here.
     dest_check_map = {}
-    for d in ctx.attr.data:
+    for dep in ctx.attr.srcs:
         # TODO(nacl, #191): This loop should be consolidated with the install
         # script-generating loop below, as they're iterating on the same data.
-
-        # d is a Target
-
-        # FIXME: if/when we start to consider other providers here, we may want
-        # to create a subroutine to consolidate these loops.
 
         # NOTE: This does not detect cases where directories are not named
         # consistently.  For example, all of these may collide in reality, but
@@ -232,52 +320,33 @@ def _pkg_rpm_impl(ctx):
         # to be consistent with path naming conventions.
         #
         # There is also an unsolved question of determining how to handle
-        # subdirectories of "PackageFileInfo" targets that are actually
+        # subdirectories of "PackageFilesInfo" targets that are actually
         # directories.
-        if PackageFileInfo in d:
-            pfi = d[PackageFileInfo]
-            for dest in pfi.dests:
-                if dest in dest_check_map:
-                    fail(
-                        "Destination '{0}' is provided by both {1} and {2}; please ensure each destination is provided by exactly one incoming rule".format(
-                            dest,
-                            dest_check_map[dest],
-                            d.label,
-                        ),
-                        "data",
-                    )
-                else:
-                    dest_check_map[dest] = d.label
 
-        if PackageDirInfo in d:
-            pdi = d[PackageDirInfo]
-            for dest in pdi.dirs:
+        # d is a Target
+        pfg_info = dep[PackageFilegroupInfo]
+        for entry, origin in pfg_info.pkg_files:
+            for dest, src in entry.dest_src_map.items():
+                metadata = _package_contents_metadata(origin, dep.label)
                 if dest in dest_check_map:
-                    fail(
-                        "Destination '{0}' is provided by both {1} and {2}; please ensure each destination is provided by exactly one incoming rule".format(
-                            dest,
-                            dest_check_map[dest],
-                            d.label,
-                        ),
-                        "data",
-                    )
+                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
                 else:
-                    dest_check_map[dest] = d.label
+                    dest_check_map[dest] = metadata
 
-        if PackageSymlinkInfo in d:
-            psi = d[PackageSymlinkInfo]
-            for dest in psi.link_map.keys():
+        for entry, origin in pfg_info.pkg_dirs:
+            for dest in entry.dirs:
+                metadata = _package_contents_metadata(origin, dep.label)
                 if dest in dest_check_map:
-                    fail(
-                        "Destination '{0}' is provided by both {1} and {2}; please ensure each destination is provided by exactly one incoming rule".format(
-                            dest,
-                            dest_check_map[dest],
-                            d.label,
-                        ),
-                        "data",
-                    )
+                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
                 else:
-                    dest_check_map[dest] = d.label
+                    dest_check_map[dest] = metadata
+
+        for entry, origin in pfg_info.pkg_symlinks:
+            metadata = _package_contents_metadata(origin, dep.label)
+            if entry.destination in dest_check_map:
+                _conflicting_contents_error(entry.destination, metadata, dest_check_map[entry.destination])
+            else:
+                dest_check_map[entry.destination] = metadata
 
     #### Procedurally-generated scripts/lists (%install, %files)
 
@@ -285,28 +354,6 @@ def _pkg_rpm_impl(ctx):
     install_script_pieces = []
     if ctx.attr.debug:
         install_script_pieces.append("set -x")
-
-    # TODO(nacl): __install, __cp
-    # {0} is the source, {1} is the dest
-    install_file_stanza_fmt = """
-install -d %{{buildroot}}/$(dirname {1})
-cp -r {0} %{{buildroot}}/{1}
-    """
-
-    # TODO(nacl): __install
-    # {0} is the directory name
-    #
-    # This may not be strictly necessary, given that they'll be created in the
-    # CPIO when rpmbuild processes the `%files` list.
-    install_dir_stanza_fmt = """
-install -d %{{buildroot}}/{0}
-    """
-
-    # {0} is the name of the link, {1} is the target
-    install_symlink_stanza_fmt = """
-%{{__install}} -d %{{buildroot}}/$(dirname {0})
-%{{__ln_s}} {1} %{{buildroot}}/{0}
-"""
 
     # Build up the RPM files list (%files -f)
     rpm_files_list = []
@@ -318,45 +365,33 @@ install -d %{{buildroot}}/{0}
     # produce an installation script that is longer than necessary.  A better
     # implementation would track directories that are created and ensure that
     # they aren't unnecessarily recreated.
-    for elem in ctx.attr.data:
-        if PackageFileInfo in elem:
-            pfi = elem[PackageFileInfo]
-            file_base = "%attr({}) {}".format(
-                ", ".join(pfi.attrs["unix"]),
-                "%" + pfi.section if pfi.section else "",
-            )
-            for (source, dest) in zip(pfi.srcs, pfi.dests):
+    for dep in ctx.attr.srcs:
+        pfg_info = dep[PackageFilegroupInfo]
+        for entry, _ in pfg_info.pkg_files:
+            file_base = _make_filetags(entry.attributes)
+
+            for dest, src in entry.dest_src_map.items():
                 rpm_files_list.append(file_base + " /" + dest)
 
-                install_script_pieces.append(install_file_stanza_fmt.format(
-                    source.path,
+                install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
+                    src.path,
                     dest,
                 ))
-        if PackageDirInfo in elem:
-            pdi = elem[PackageDirInfo]
-            file_base = "%attr({}) {}".format(
-                ", ".join(pdi.attrs["unix"]),
-                "%" + pdi.section if pdi.section else "",
-            )
-            for d in pdi.dirs:
+        for entry, _ in pfg_info.pkg_dirs:
+            file_base = _make_filetags(entry.attributes, "%dir")
+            for d in entry.dirs:
                 rpm_files_list.append(file_base + " /" + d)
 
-                install_script_pieces.append(install_dir_stanza_fmt.format(
+                install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
                     d,
                 ))
-        if PackageSymlinkInfo in elem:
-            psi = elem[PackageSymlinkInfo]
-            file_base = "%attr({}) {}".format(
-                ", ".join(psi.attrs["unix"]),
-                "%" + psi.section if psi.section else "",
-            )
-            for link_name, target in psi.link_map.items():
-                rpm_files_list.append(file_base + " /" + link_name)
-
-                install_script_pieces.append(install_symlink_stanza_fmt.format(
-                    link_name,
-                    target,
-                ))
+        for entry, _ in pfg_info.pkg_symlinks:
+            file_base = _make_filetags(entry.attributes)
+            rpm_files_list.append(file_base + " /" + entry.destination)
+            install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
+                entry.destination,
+                entry.source,
+            ))
 
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
     ctx.actions.write(
@@ -385,7 +420,7 @@ install -d %{{buildroot}}/{0}
 
     args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
-    for f in ctx.files.data:
+    for f in ctx.files.srcs:
         args.append(f.path)
 
     #### Call the generator script.
@@ -403,6 +438,7 @@ install -d %{{buildroot}}/{0}
             "PYTHONIOENCODING": "UTF-8",
             "PYTHONUTF8": "1",
         },
+        tools = tools,
     )
 
     #### Output construction
@@ -441,27 +477,9 @@ def _pkg_rpm_outputs(name, rpm_name, version, release):
 pkg_rpm = rule(
     doc = """Creates an RPM format package via `pkg_filegroup` and friends.
 
-    The uses the outputs of the rules in `pkg_filegroup.bzl` to construct arbitrary RPM
-    packages.  Attributes of this rule provide preamble information and
+    The uses the outputs of the rules in `mappings.bzl` to construct arbitrary
+    RPM packages.  Attributes of this rule provide preamble information and
     scriptlets, which are then used to compose a valid RPM spec file.
-
-    The meat is in the `data` attribute, which is handled like so:
-
-    - `pkg_filegroup`s provide mappings of targets to output files:
-
-      - They are copied to their destination after their destination directory
-        is created.
-
-      - No directory ownership is implied; they will typically be owned by
-        `root.root` and given permissions associated with `root`'s `umask`,
-        typically 0755, unless otherwise overidden.
-
-      - File permissions are set in the `%files` manifest.  `%config` or other
-        `%files` properties are propagated from the `section` attribute.
-
-    - `pkg_mkdirs` provide directories and directory ownership. They are
-      created in the package tree directly.  They are owned as specified by the
-      `section` attribute, which typically is the same as `%dir`.
 
     This rule will fail at analysis time if:
 
@@ -482,6 +500,16 @@ pkg_rpm = rule(
     - `rpmbuild` (as specified in `rpmbuild_path`, or available in `$PATH`)
 
     - GNU coreutils.  BSD coreutils may work, but are not tested.
+
+    To set RPM file attributes (like `%config` and friends), set the
+    `rpm_filetag` in corresponding packaging rule (`pkg_files`, etc).  The value
+    is prepended with "%" and added to the `%files` list, for example:
+
+    ```
+    attrs = {"rpm_filetag": ("config(missingok, noreplace)",)},
+    ```
+
+    Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
     """,
     # @unsorted-dict-items
@@ -582,17 +610,13 @@ pkg_rpm = rule(
         "changelog": attr.label(
             allow_single_file = True,
         ),
-        "data": attr.label_list(
-            doc = """Mappings to include in this RPM.
+        "srcs": attr.label_list(
+            doc = """Mapping groups to include in this RPM.
 
             These are typically brought into life as `pkg_filegroup`s.
             """,
             mandatory = True,
-            providers = [
-                [PackageFileInfo],
-                [PackageDirInfo],
-                [PackageSymlinkInfo],
-            ],
+            providers = [PackageFilegroupInfo],
         ),
         "debug": attr.bool(
             doc = """Debug the RPM helper script and RPM generation""",
@@ -700,11 +724,6 @@ pkg_rpm = rule(
             acceptable to `rpm(8)`.
             """,
         ),
-
-        # TODO(nacl): this should be a toolchain
-        "rpmbuild_path": attr.string(
-            doc = """Path to a `rpmbuild` binary.""",
-        ),
         "spec_template": attr.label(
             doc = """Spec file template.
 
@@ -733,12 +752,15 @@ pkg_rpm = rule(
 
             If not provided, the compression mode will be computed using normal
             RPM spec file processing.  Defaults may vary per distribution:
-            consult your distribution's documentation for more details.
+            consult its documentation for more details.
 
             WARNING: Bazel is currently not aware of action threading requirements
             for non-test actions.  Using threaded compression may result in
             overcommitting your system.
             """,
+        ),
+        "rpmbuild_path": attr.string(
+            doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
         ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
@@ -751,4 +773,5 @@ pkg_rpm = rule(
     executable = False,
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
+    toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )

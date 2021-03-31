@@ -20,13 +20,15 @@ the following:
 
 - `pkg_files` describes destinations for rule outputs
 - `pkg_mkdirs` describes directory structures
+- `pkg_mklink` describes symbolic links
+- `pkg_filegroup` creates groupings of above to add to packages
 
 Rules that actually make use of the outputs of the above rules are not specified
 here.  TODO(nacl): implement one.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//:providers.bzl", "PackageDirsInfo", "PackageFilesInfo")
+load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 
 _PKGFILEGROUP_STRIP_ALL = "."
 
@@ -284,7 +286,7 @@ pkg_files = rule(
             Always use `pkg_attributes()` to set this rule attribute.
 
             If not otherwise overridden, the file's mode will be set to UNIX
-            "0644".
+            "0644", or the target platform's equivalent.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
@@ -416,7 +418,7 @@ pkg_mkdirs = rule(
             Always use `pkg_attributes()` to set this rule attribute.
 
             If not otherwise overridden, the directory's mode will be set to
-            UNIX "0755".
+            UNIX "0755", or the target platform's equivalent.
 
             Consult the "Mapping Attributes" documentation in the rules_pkg
             reference for more details.
@@ -425,4 +427,167 @@ pkg_mkdirs = rule(
         ),
     },
     provides = [PackageDirsInfo],
+)
+
+def _pkg_mklink_impl(ctx):
+    out_attributes = json.decode(ctx.attr.attributes)
+
+    # The least surprising default mode is that of a symbolic link (0777).
+    # Permissions on symlinks typically don't matter, as the operation is
+    # typically moved to where the link is pointing.
+    out_attributes.setdefault("mode", "0777")
+    return [
+        PackageSymlinkInfo(
+            destination = ctx.attr.dest,
+            source = ctx.attr.src,
+            attributes = out_attributes,
+        ),
+    ]
+
+pkg_mklink = rule(
+    doc = """Define a symlink  within packages
+
+    This rule results in the creation of a single link within a package.
+
+    Symbolic links specified by this rule may point at files/directories outside of the
+    package, or otherwise left dangling.
+
+    """,
+    implementation = _pkg_mklink_impl,
+    # @unsorted-dict-items
+    attrs = {
+        "dest": attr.string(
+            doc = """Link "target", a path within the package.
+
+            This is the actual created symbolic link.
+
+            If the directory structure provided by this attribute is not
+            otherwise created when exist within the package when it is built, it
+            will be created implicitly, much like with `pkg_files`.
+
+            This path may be prefixed or rooted by grouping or packaging rules.
+
+            """,
+            mandatory = True,
+        ),
+        "src": attr.string(
+            doc = """Link "source", a path on the filesystem.
+
+            This is what the link "points" to, and may point to an arbitrary
+            filesystem path, even relative paths.
+
+            """,
+            mandatory = True,
+        ),
+        "attributes": attr.string(
+            doc = """Attributes to set on packaged symbolic links.
+
+            Always use `pkg_attributes()` to set this rule attribute.
+
+            Symlink permissions may have different meanings depending on your
+            host operating system; consult its documentation for more details.
+
+            If not otherwise overridden, the link's mode will be set to UNIX
+            "0777", or the target platform's equivalent.
+
+            Consult the "Mapping Attributes" documentation in the rules_pkg
+            reference for more details.
+            """,
+            default = "{}",  # Empty JSON
+        ),
+    },
+    provides = [PackageSymlinkInfo],
+)
+
+def _pkg_filegroup_impl(ctx):
+    files = []
+    dirs = []
+    links = []
+    mapped_files_depsets = []
+
+    if ctx.attr.prefix:
+        # If "prefix" is provided, we need to manipulate the incoming providers.
+        for s in ctx.attr.srcs:
+            if PackageFilesInfo in s:
+                new_pfi = PackageFilesInfo(
+                    dest_src_map = {
+                        paths.join(ctx.attr.prefix, dest): src
+                        for dest, src in s[PackageFilesInfo].dest_src_map.items()
+                    },
+                    attributes = s[PackageFilesInfo].attributes,
+                )
+                files.append((new_pfi, s.label))
+
+                # dict.values() returns a list, not an iterator like in python3
+                mapped_files_depsets.append(s[DefaultInfo].files)
+
+            if PackageDirsInfo in s:
+                new_pdi = PackageDirsInfo(
+                    dirs = [paths.join(ctx.attr.prefix, d) for d in s[PackageDirsInfo].dirs],
+                    attributes = s[PackageDirsInfo].attributes,
+                )
+                dirs.append((new_pdi, s.label))
+
+            if PackageSymlinkInfo in s:
+                new_psi = PackageSymlinkInfo(
+                    source = s[PackageSymlinkInfo].source,
+                    destination = paths.join(ctx.attr.prefix, s[PackageSymlinkInfo].destination),
+                    attributes = s[PackageSymlinkInfo].attributes,
+                )
+                links.append((new_psi, s.label))
+    else:
+        # Otherwise, everything is pretty much direct copies
+        for s in ctx.attr.srcs:
+            if PackageFilesInfo in s:
+                files.append((s[PackageFilesInfo], s.label))
+
+                # dict.values() returns a list, not an iterator like in python3
+                mapped_files_depsets.append(s[DefaultInfo].files)
+            if PackageDirsInfo in s:
+                dirs.append((s[PackageDirsInfo], s.label))
+            if PackageSymlinkInfo in s:
+                links.append((s[PackageSymlinkInfo], s.label))
+
+    return [
+        PackageFilegroupInfo(
+            pkg_files = files,
+            pkg_dirs = dirs,
+            pkg_symlinks = links,
+        ),
+        # Necessary to ensure that dependent rules have access to files being
+        # mapped in.
+        DefaultInfo(
+            files = depset(transitive = mapped_files_depsets),
+        ),
+    ]
+
+pkg_filegroup = rule(
+    doc = """Package contents grouping rule.
+
+    This rule represents a collection of packaging specifications (e.g. those
+    created by `pkg_files`, `pkg_mklink`, etc.) that have something in common,
+    such as a prefix or a human-readable category.
+    """,
+    implementation = _pkg_filegroup_impl,
+    # @unsorted-dict-items
+    attrs = {
+        "srcs": attr.label_list(
+            doc = """A list of packaging specifications to be grouped together.""",
+            mandatory = True,
+            providers = [
+                [PackageFilesInfo, DefaultInfo],
+                [PackageDirsInfo],
+                [PackageSymlinkInfo],
+            ],
+        ),
+        "prefix": attr.string(
+            doc = """A prefix to prepend to provided paths, applied like so:
+
+            - For files and directories, this is simply prepended to the destination
+            - For symbolic links, this is prepended to the "destination" part.
+
+            """,
+        ),
+    },
+    provides = [PackageFilegroupInfo],
 )

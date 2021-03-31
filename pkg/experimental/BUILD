@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])
-
 exports_files(
     glob([
         "*.bzl",
+    ]) + [
         "template.spec.in",
-    ]),
+    ],
     visibility = ["//visibility:public"],
 )
 

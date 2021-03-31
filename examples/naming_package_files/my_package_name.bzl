@@ -81,6 +81,7 @@ names_from_toolchains = rule(
         ),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 #
