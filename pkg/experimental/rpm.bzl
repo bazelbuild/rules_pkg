@@ -25,7 +25,8 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 """
 
-load("//:providers.bzl", "PackageFilegroupInfo")
+load("//:private/util.bzl", "setup_output_files")
+load("//:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageVariablesInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -49,10 +50,27 @@ _INSTALL_DIR_STANZA_FMT = """
 install -d %{{buildroot}}/{0}
 """
 
-# {0} is the name of the link, {1} is the target
+# {0} is the name of the link, {1} is the target, {2} is the desired symlink "mode".
+#
+# In particular, {2} exists because umasks on symlinks apply on macOS, unlike
+# Linux.  You can't even change symlink permissions in Linux; all permissions
+# apply to the target instead.
+#
+# This is not the case in BSDs and macOS.  This comes up because rpmbuild(8)
+# does not know about the BSD "lchmod" call, which would otherwise be used to
+# set permissions.
+#
+# This is primarily to ensure that tests pass.  Actually attempting to build
+# functional RPMs on macOS in rules_pkg has not yet been attempted at any scale.
+#
+# XXX: This may not apply all that well to users of cygwin and mingw.  We'll
+# deal with that when the time comes.
 _INSTALL_SYMLINK_STANZA_FMT = """
 %{{__install}} -d %{{buildroot}}/$(dirname {0})
 %{{__ln_s}} {1} %{{buildroot}}/{0}
+%if "%_host_os" != "linux"
+    %{{__chmod}} -h {2} %{{buildroot}}/{0}
+%endif
 """
 
 def _package_contents_metadata(origin_label, grouping_label):
@@ -140,14 +158,33 @@ def _pkg_rpm_impl(ctx):
             tools += toolchain.label.default_runfiles.files.to_list()
             args.append("--rpmbuild=%s" % executable.path)
 
+    #### Calculate output file name
+    # rpm_name takes precedence over name if provided
+    if ctx.attr.package_name:
+        rpm_name = ctx.attr.package_name
+    else:
+        rpm_name = ctx.attr.name
+
+    default_file = ctx.actions.declare_file("{}.rpm".format(rpm_name))
+
+    package_file_name = ctx.attr.package_file_name
+    if not package_file_name:
+        package_file_name = "%s-%s-%s.%s.rpm" % (
+            rpm_name,
+            ctx.attr.version,
+            ctx.attr.release,
+            ctx.attr.architecture,
+        )
+
+    outputs, output_file, output_name = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+        default_output_file = default_file,
+    )
+
     #### rpm spec "preamble"
     preamble_pieces = []
 
-    # rpm_name takes precedence over name if provided
-    if ctx.attr.rpm_name:
-        rpm_name = ctx.attr.rpm_name
-    else:
-        rpm_name = ctx.attr.name
     preamble_pieces.append("Name: " + rpm_name)
 
     # Version can be specified by a file or inlined.
@@ -301,7 +338,7 @@ def _pkg_rpm_impl(ctx):
     args.append("--spec_file=" + spec_file.path)
     files.append(spec_file)
 
-    args.append("--out_file=" + ctx.outputs.rpm.path)
+    args.append("--out_file=" + output_file.path)
 
     # Add data files.
     if ctx.file.changelog:
@@ -428,6 +465,7 @@ def _pkg_rpm_impl(ctx):
             install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
                 abs_dest,
                 entry.source,
+                entry.attributes["mode"],
             ))
 
     # We need to write these out regardless of whether we are using
@@ -517,7 +555,7 @@ def _pkg_rpm_impl(ctx):
         use_default_shell_env = True,
         arguments = args,
         inputs = files,
-        outputs = [ctx.outputs.rpm],
+        outputs = [output_file],
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -527,37 +565,15 @@ def _pkg_rpm_impl(ctx):
         tools = tools,
     )
 
-    #### Output construction
-
-    # Link the RPM to the expected output name.
-    ctx.actions.symlink(
-        output = ctx.outputs.out,
-        target_file = ctx.outputs.rpm,
-    )
-
-    # Link the RPM to the RPM-recommended output name if possible.
-    if "rpm_nvra" in dir(ctx.outputs):
-        ctx.actions.symlink(
-            output = ctx.outputs.rpm_nvra,
-            target_file = ctx.outputs.rpm,
-        )
-
-# TODO(nacl): this relies on deprecated behavior (should use Providers
-# instead), it should be removed at some point.
-def _pkg_rpm_outputs(name, rpm_name, version, release):
-    actual_rpm_name = rpm_name or name
-    outputs = {
-        "out": actual_rpm_name + ".rpm",
-        "rpm": actual_rpm_name + "-%{architecture}.rpm",
-    }
-
-    # The "rpm_nvra" output follows the recommended package naming convention of
-    # Name-Version-Release.Arch.rpm
-    # See http://ftp.rpm.org/max-rpm/ch-rpm-file-format.html
-    if version and release:
-        outputs["rpm_nvra"] = actual_rpm_name + "-%{version}-%{release}.%{architecture}.rpm"
-
-    return outputs
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+        ),
+        PackageArtifactInfo(
+            label = ctx.label.name,
+            file_name = output_name,
+        ),
+    ]
 
 # Define the rule.
 pkg_rpm = rule(
@@ -571,14 +587,6 @@ pkg_rpm = rule(
 
     - Any `data` input may create the same destination, regardless of other
       attributes.
-
-    Currently, two outputs are guaranteed to be produced: "%{name}.rpm", and
-    "%{name}-%{architecture}.rpm". If the "version" and "release" arguments are
-    non-empty, a third output will be produced, following the RPM-recommended
-    N-V-R.A format (Name-Version-Release.Architecture.rpm). Note that due to
-    the fact that rule implementations cannot access the contents of files,
-    the "version_file" and "release_file" arguments will not create an output
-    using N-V-R.A format.
 
     This rule only functions on UNIXy platforms. The following tools must be
     available on your system for this to function properly:
@@ -600,16 +608,26 @@ pkg_rpm = rule(
     """,
     # @unsorted-dict-items
     attrs = {
-        "rpm_name": attr.string(
+        "package_name": attr.string(
             doc = """Optional; RPM name override.
 
             If not provided, the `name` attribute of this rule will be used
             instead.
 
-            This influences values like the spec file name, and the name of the
-            output RPM.
-
+            This influences values like the spec file name.
             """,
+        ),
+        "package_file_name": attr.string(
+            doc = """See 'Common Attributes' in the rules_pkg reference.
+
+            If this is not provided, the package file given a NVRA-style
+            (name-version-release.arch) output, which is preferred by most RPM
+            repositories.
+            """,
+        ),
+        "package_variables": attr.label(
+            doc = "See 'Common Attributes' in the rules_pkg reference",
+            providers = [PackageVariablesInfo],
         ),
         "version": attr.string(
             doc = """RPM "Version" tag.
@@ -791,8 +809,8 @@ pkg_rpm = rule(
             ```
 
             This is most useful for ensuring that required tools exist when
-            scriptlets are run, although other properties are known.  Valid keys
-            for this attribute may include, but are not limited to:
+            scriptlets are run, although there may be other valid use cases.
+            Valid keys for this attribute may include, but are not limited to:
 
             - `pre`
             - `post`
@@ -827,7 +845,7 @@ pkg_rpm = rule(
             Must be a form that `rpmbuild(8)` knows how to process, which will
             depend on the version of `rpmbuild` in use.  The value corresponds
             to the `%_binary_payload` macro and is set on the `rpmbuild(8)`
-            command line if this attribute is provided.
+            command line if provided.
 
             Some examples of valid values (which may not be supported on your
             system) can be found [here](https://git.io/JU9Wg).  On CentOS
@@ -836,9 +854,9 @@ pkg_rpm = rule(
             `/usr/lib/rpm/macros`.  Other systems have similar files and
             configurations.
 
-            If not provided, the compression mode will be computed using normal
-            RPM spec file processing.  Defaults may vary per distribution:
-            consult its documentation for more details.
+            If not provided, the compression mode will be computed by `rpmbuild`
+            itself.  Defaults may vary per distribution or build of `rpm`;
+            consult the relevant documentation for more details.
 
             WARNING: Bazel is currently not aware of action threading requirements
             for non-test actions.  Using threaded compression may result in
@@ -863,7 +881,7 @@ pkg_rpm = rule(
         ),
     },
     executable = False,
-    outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
+    provides = [PackageArtifactInfo],
     toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
