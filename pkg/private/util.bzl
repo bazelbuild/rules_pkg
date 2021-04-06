@@ -15,29 +15,38 @@
 
 load(":providers.bzl", "PackageVariablesInfo")
 
-def setup_output_files(ctx, package_file_name = None):
-    """Handle processing of out and package_file_name.
+def setup_output_files(ctx, package_file_name = None, default_output_file = None):
+    """Provide output file metadata for common packaging rules
 
-    By default, output is to the "out" attribute. If package_file_name is
-    given, we will write to that name instead, and out will be a symlink to it.
+    By default, this will instruct rules to write directly to the File specified
+    by the `default_output_file` argument or `ctx.outputs.out` otherwise.
+
+    If `package_file_name` is given, or is available in `ctx`, we will write to
+    that name instead, do substitution via `ctx.attr.package_variables`, and the
+    default output (either by `default_output_file` or `ctx.outputs.out`) will
+    be a symlink to it.
 
     Callers should:
-       - write to ouput_file
-       - add outputs to their returned DefaultInfo(files) provider
-       - return a PackageArtifactInfo provider of the form:
-            label: ctx.label.name
-            file_name: output_name
+       - write to `output_file`
+       - add `outputs` to their returned `DefaultInfo(files)` provider
+       - return a `PackageArtifactInfo` provider of the form:
+            label: `ctx.label.name`
+            file_name: `output_name`
 
     Args:
-      ctx: context
+      ctx: rule context
       package_file_name: computed value for package_file_name
+      default_output_file: File identifying the rule's default output, otherwise `ctx.outputs.out` will be used instead.
 
     Returns:
-      ouputs: list(output handles)
+      outputs: list(output handles)
       output_file: file handle to write to
       output_name: name of output file
+
     """
-    outputs = [ctx.outputs.out]
+    default_output = default_output_file or ctx.outputs.out
+
+    outputs = [default_output]
     if not package_file_name:
         package_file_name = ctx.attr.package_file_name
     if package_file_name:
@@ -45,12 +54,12 @@ def setup_output_files(ctx, package_file_name = None):
         output_file = ctx.actions.declare_file(output_name)
         outputs.append(output_file)
         ctx.actions.symlink(
-            output = ctx.outputs.out,
+            output = default_output,
             target_file = output_file,
         )
     else:
-        output_file = ctx.outputs.out
-        output_name = ctx.outputs.out.basename
+        output_file = default_output
+        output_name = output_file.basename
     return outputs, output_file, output_name
 
 def substitute_package_variables(ctx, attribute_value):
