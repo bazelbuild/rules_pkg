@@ -60,6 +60,18 @@ pkg_tar(
     package_variables = ":my_naming_vars",
 )
 
+# This example shows that in the same way as package_file_name, the inner folder structure of the archive
+# specified with package_dir attribute also can be controlled by the package_variables attribute.
+pkg_tar(
+    name = "example2",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "example2-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
+    package_dir = "example1/{product_name}/{target_cpu}/{compilation_mode}{special_build}",
+    package_variables = ":my_naming_vars",
+)
+
 #
 # names_from_toolchains() extracts variables from the CC toolchain.
 #
@@ -68,11 +80,11 @@ names_from_toolchains(
 )
 
 pkg_tar(
-    name = "example2",
+    name = "example3",
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "example2-{cc_cpu}-{compiler}-{compilation_mode}.tar",
+    package_file_name = "example3-{cc_cpu}-{compiler}-{compilation_mode}.tar",
     package_variables = ":toolchain_vars",
 )
 
