@@ -1,4 +1,6 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+#!/usr/bin/env python3
+
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,4 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "test_external_project")
+'''Simple cross-platform md5sum tool for computing hashes in packaging tests.'''
+
+import hashlib
+import sys
+
+fname = sys.argv[1]
+
+md5 = hashlib.md5()
+
+with open(fname, 'rb') as fh:
+    md5.update(fh.read())
+
+print(md5.hexdigest())

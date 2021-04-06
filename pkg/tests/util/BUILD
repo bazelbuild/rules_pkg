@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Intenionally empty; defines package boundaries
+# Test utilities
 
-licenses(["notice"])
+load("@rules_python//python:defs.bzl", "py_binary")
 
+py_binary(
+    name = "md5",
+    srcs = ["md5.py"],
+    visibility = ["//visibility:public"],
+)
