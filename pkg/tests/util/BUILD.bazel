@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-'''Simple cross-platform md5sum tool for computing hashes in RPM packaging tests.'''
+# Test utilities
 
-import hashlib
-import sys
+load("@rules_python//python:defs.bzl", "py_binary")
 
-fname = sys.argv[1]
-
-md5 = hashlib.md5()
-
-with open(fname, 'rb') as fh:
-    md5.update(fh.read())
-
-print(md5.hexdigest())
+py_binary(
+    name = "md5",
+    srcs = ["md5.py"],
+    visibility = ["//visibility:public"],
+)
