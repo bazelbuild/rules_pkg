@@ -25,7 +25,9 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
     "strip_prefix",
+    "REMOVE_BASE_DIRECTORY",
 )
+load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
 
 ##########
 # Helpers
@@ -71,24 +73,6 @@ pkg_files_contents_test = analysistest.make(
         ),
         "expected_attributes": attr.string(),
     },
-)
-
-# Generic negative test boilerplate
-def _generic_neg_test_impl(ctx):
-    env = analysistest.begin(ctx)
-
-    asserts.expect_failure(env, ctx.attr.reason)
-
-    return analysistest.end(env)
-
-generic_neg_test = analysistest.make(
-    _generic_neg_test_impl,
-    attrs = {
-        "reason": attr.string(
-            default = "",
-        ),
-    },
-    expect_failure = True,
 )
 
 def _test_pkg_files_contents():
@@ -222,7 +206,7 @@ def _test_pkg_files_contents():
         srcs = ["foo", "bar/foo"],
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_destination_collision_invalid",
         target_under_test = ":pf_destination_collision_invalid_g",
     )
@@ -234,7 +218,7 @@ def _test_pkg_files_contents():
         strip_prefix = strip_prefix.from_pkg("bar"),
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_strip_prefix_from_package_invalid",
         target_under_test = ":pf_strip_prefix_from_package_invalid_g",
     )
@@ -246,7 +230,7 @@ def _test_pkg_files_contents():
         strip_prefix = strip_prefix.from_root("not/the/root"),
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_strip_prefix_from_root_invalid",
         target_under_test = ":pf_strip_prefix_from_root_invalid_g",
     )
@@ -472,7 +456,7 @@ def _test_pkg_files_rename():
         },
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_rename_rule_with_multiple_outputs",
         target_under_test = ":pf_rename_rule_with_multiple_outputs_g",
     )
@@ -488,7 +472,7 @@ def _test_pkg_files_rename():
         },
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_rename_single_missing_value",
         target_under_test = ":pf_rename_single_missing_value_g",
     )
@@ -509,7 +493,7 @@ def _test_pkg_files_rename():
         },
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_rename_single_excluded_value",
         target_under_test = ":pf_rename_single_excluded_value_g",
     )
@@ -524,10 +508,40 @@ def _test_pkg_files_rename():
         renames = {"foo": "bar"},
         tags = ["manual"],
     )
-    generic_neg_test(
+    generic_negative_test(
         name = "pf_rename_destination_collision",
         target_under_test = ":pf_rename_destination_collision_g",
     )
+
+    # Test that we are *not* allowed to rename a file to nothing
+    pkg_files(
+        name = "pf_file_rename_to_empty_g",
+        srcs = ["foo"],
+        renames = {"foo": REMOVE_BASE_DIRECTORY},
+        tags = ["manual"],
+    )
+    generic_negative_test(
+        name = "pf_file_rename_to_empty",
+        target_under_test = ":pf_file_rename_to_empty_g",
+    )
+
+    # Test that we are allowed to rename a directory to nothing (to "strip" it)
+    directory(
+        name = "a_directory",
+        filenames = ["a_file"],
+        tags = ["manual"],
+    )
+    pkg_files(
+        name = "pf_directory_rename_to_empty_g",
+        srcs = [":a_directory"],
+        renames = {":a_directory": REMOVE_BASE_DIRECTORY},
+        tags = ["manual"],
+    )
+    generic_base_case_test(
+        name = "pf_directory_rename_to_empty",
+        target_under_test = ":pf_directory_rename_to_empty_g",
+    )
+
 
 ##########
 # Test pkg_mkdirs
@@ -690,9 +704,9 @@ def _test_pkg_mklink():
         ),
     )
 
-##########
+############################################################
 # Test pkg_filegroup
-##########
+############################################################
 def _pkg_filegroup_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
@@ -929,6 +943,8 @@ def mappings_analysis_tests():
             ":pf_extrepo_filegroup_strip_from_pkg",
             ":pf_extrepo_filegroup_strip_from_root",
             ":pf_pkg_files_in_extrepo",
+            ":pf_file_rename_to_empty",
+            ":pf_directory_rename_to_empty",
             # This one fits into the same category, but can't be aliased, apparently.
             #
             # The main purpose behind it is to verify cases wherein we build a

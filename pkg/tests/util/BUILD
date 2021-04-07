@@ -16,8 +16,16 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 
+exports_files(["defs.bzl"])
+
 py_binary(
     name = "md5",
     srcs = ["md5.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "create_directory_with_contents",
+    srcs = ["create_directory_with_contents.py"],
     visibility = ["//visibility:public"],
 )

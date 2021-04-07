@@ -24,13 +24,15 @@ the following:
 - `pkg_filegroup` creates groupings of above to add to packages
 
 Rules that actually make use of the outputs of the above rules are not specified
-here.  TODO(nacl): implement one.
+here.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 
 _PKGFILEGROUP_STRIP_ALL = "."
+
+REMOVE_BASE_DIRECTORY = ""
 
 def _sp_files_only():
     return _PKGFILEGROUP_STRIP_ALL
@@ -124,7 +126,13 @@ def _do_strip_prefix(path, to_strip, src_file):
         #
         # We already leave enough breadcrumbs, so if File.owner() returns None,
         # this won't be a problem.
-        fail("Could not strip prefix '{}' from file {} ({})".format(to_strip, str(src_file), str(src_file.owner)))
+        failmsg = "Could not strip prefix '{}' from file {} ({})".format(to_strip, str(src_file), str(src_file.owner))
+        if src_file.is_directory:
+            failmsg += """\n\nNOTE: prefix stripping does not operate within TreeArtifacts (directory outputs)
+
+To strip the directory named by the TreeArtifact itself, see documentation for the `renames` attribute.
+"""
+        fail(failmsg)
 
 # The below routines make use of some path checking magic that may difficult to
 # understand out of the box.  This following table may be helpful to demonstrate
@@ -231,6 +239,12 @@ def _pkg_files_impl(ctx):
         if src_file not in src_dest_paths_map:
             fail(
                 "File remapping from {0} to {1} is invalid: {0} is not provided to this rule or was excluded".format(rename_src, rename_dest),
+                "renames",
+            )
+
+        if rename_dest == REMOVE_BASE_DIRECTORY and not src_file.is_directory:
+            fail(
+                "REMOVE_BASE_DIRECTORY as a renaming target for non-directories is disallowed.",
                 "renames",
             )
         src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
@@ -353,6 +367,12 @@ pkg_files = rule(
             dict are source files/labels, values are destinations relative to
             the `prefix`, ignoring whatever value was provided for
             `strip_prefix`.
+
+            If the key refers to a TreeArtifact (directory output), you may
+            specify the constant `REMOVE_BASE_DIRECTORY` as the value, which
+            will result in all containing files and directories being installed
+            relative to the otherwise install prefix (via the `prefix` and
+            `strip_prefix` attributes), not the directory name.
 
             The following keys are rejected:
 
