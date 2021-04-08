@@ -87,15 +87,18 @@ names_from_toolchains = rule(
 #
 # Using a command line build setting to name a package.
 #
-def _label_from_command_line_naming_impl(ctx):
-    values = {"label": ctx.build_setting_value}
+def _name_part_from_command_line_naming_impl(ctx):
+    values = {"name_part": ctx.build_setting_value}
+    # Just pass the value from the command line through. An implementation
+    # could also perform validation, such as done in
+    # https://github.com/bazelbuild/bazel-skylib/blob/master/rules/common_settings.bzl
     return PackageVariablesInfo(values = values)
 
 #
 # Creating this build_setting defines a flag the user can set.
 #
-label_from_command_line = rule(
-    implementation = _label_from_command_line_naming_impl,
+name_part_from_command_line = rule(
+    implementation = _name_part_from_command_line_naming_impl,
     # Note that the default value comes from the rule instantiation.
     build_setting = config.string(flag = True),
 )
