@@ -129,3 +129,10 @@ py_library(
         ":helpers",
     ],
 )
+
+py_binary(
+    name = "filter_directory",
+    srcs = ["filter_directory.py"],
+    visibility = ["//visibility:public"],
+    python_version = "PY3",
+)
