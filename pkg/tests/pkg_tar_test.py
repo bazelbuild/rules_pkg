@@ -195,7 +195,7 @@ class PkgTarTest(unittest.TestCase):
     content = [
       {'name': '.'},
       {'name': './can_i_repackage_a_file_with_a_long_name'},
-      {'name': 'can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
+      {'name': './can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
     self.assertTarFileContent('test-tar-repackaging-long-filename.tar', content)
 
