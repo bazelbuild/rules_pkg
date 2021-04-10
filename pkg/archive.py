@@ -137,22 +137,6 @@ class TarFileWriter(object):
           2000-01-01, which is compatible with non *nix OSes'.
       preserve_tar_mtimes: if true, keep file mtimes from input tar file.
     """
-    if compression in ['bzip2', 'bz2']:
-      mode = 'w:bz2'
-    else:
-      mode = 'w:'
-    self.gz = compression in ['tgz', 'gz']
-    # Fallback to xz compression through xz.
-    self.use_xz_tool = False
-    if compression in ['xz', 'lzma']:
-      if HAS_LZMA:
-        mode = 'w:xz'
-      else:
-        self.use_xz_tool = True
-    self.name = name
-    self.compressor = compressor
-    self.root_directory = root_directory.rstrip('/').rstrip('\\')
-    self.root_directory = self.root_directory.replace('\\', '/')
     self.preserve_mtime = preserve_tar_mtimes
     if default_mtime is None:
       self.default_mtime = 0
@@ -162,11 +146,35 @@ class TarFileWriter(object):
       self.default_mtime = int(default_mtime)
 
     self.fileobj = None
-    if self.gz:
-      # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
-      # Instead, we manually re-implement gzopen from tarfile.py and set mtime.
-      self.fileobj = gzip.GzipFile(
-          filename=name, mode='w', compresslevel=9, mtime=self.default_mtime)
+    self.compressor_cmd = compressor.split() if compressor else None
+    if self.compressor_cmd:
+      pass
+    # Support xz compression through xz... until we can use Py3
+    elif compression in ['xz', 'lzma']:
+      if HAS_LZMA:
+        mode = 'w:xz'
+      else:
+        self.compressor_cmd = ['xz', '-F', compression, '-']
+    elif compression in ['bzip2', 'bz2']:
+      mode = 'w:bz2'
+    else:
+      mode = 'w:'
+      if compression in ['tgz', 'gz']:
+        # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
+        # Instead, we manually reimplement gzopen from tarfile.py and set mtime.
+        self.fileobj = gzip.GzipFile(
+            filename=name, mode='w', compresslevel=9, mtime=self.default_mtime)
+    self.compressor_proc = None
+    if self.compressor_cmd:
+      mode = 'w|'
+      self.compressor_proc = subprocess.Popen(self.compressor_cmd,
+                                              stdin=subprocess.PIPE,
+                                              stdout=open(name, 'wb'))
+      self.fileobj = self.compressor_proc.stdin
+    self.name = name
+    self.root_directory = root_directory.rstrip('/').rstrip('\\')
+    self.root_directory = self.root_directory.replace('\\', '/')
+
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
     self.members = set([])
     self.directories = set([])
@@ -422,22 +430,6 @@ class TarFileWriter(object):
       TarFileWriter.Error: if an error happens when compressing the output file.
     """
     self.tar.close()
-    # Close the gzip file object if necessary.
+    # Close the file object if necessary.
     if self.fileobj:
       self.fileobj.close()
-    if self.compressor:
-      if subprocess.call(
-          '< {0} {1} > {0}.d && mv {0}.d {0}'.format(self.name,
-                                                     self.compressor),
-          shell=True,
-          stdout=subprocess.PIPE):
-        raise self.Error("Compression with '{}' failed".format(self.compressor))
-    elif self.use_xz_tool:
-      # Support xz compression through xz... until we can use Py3
-      if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
-        raise self.Error('Cannot handle .xz and .lzma compression: '
-                         'xz not found.')
-      subprocess.call(
-          'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
-          shell=True,
-          stdout=subprocess.PIPE)
