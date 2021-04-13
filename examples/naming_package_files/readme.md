@@ -8,7 +8,7 @@ See the BUILD file for the complete source.
 ### Using command line flags to modify a package name
 
 We can use a `config_setting` to capture the command line flag and then
-`select()` on that to drop a label into the name.
+`select()` on that to drop a part into into the name.
 
 ```
 config_setting(
