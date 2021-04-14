@@ -146,7 +146,7 @@ class TarFileWriter(object):
       self.default_mtime = int(default_mtime)
 
     self.fileobj = None
-    self.compressor_cmd = compressor.split() if compressor else None
+    self.compressor_cmd = (compressor or '').strip()
     if self.compressor_cmd:
       pass
     # Support xz compression through xz... until we can use Py3
@@ -154,7 +154,7 @@ class TarFileWriter(object):
       if HAS_LZMA:
         mode = 'w:xz'
       else:
-        self.compressor_cmd = ['xz', '-F', compression, '-']
+        self.compressor_cmd = 'xz -F {} -'.format(compression)
     elif compression in ['bzip2', 'bz2']:
       mode = 'w:bz2'
     else:
@@ -167,7 +167,7 @@ class TarFileWriter(object):
     self.compressor_proc = None
     if self.compressor_cmd:
       mode = 'w|'
-      self.compressor_proc = subprocess.Popen(self.compressor_cmd,
+      self.compressor_proc = subprocess.Popen(self.compressor_cmd.split(),
                                               stdin=subprocess.PIPE,
                                               stdout=open(name, 'wb'))
       self.fileobj = self.compressor_proc.stdin
@@ -433,3 +433,6 @@ class TarFileWriter(object):
     # Close the file object if necessary.
     if self.fileobj:
       self.fileobj.close()
+    if self.compressor_proc and self.compressor_proc.wait() != 0:
+      raise self.Error('Custom compression command '
+                       '"{}" failed'.format(self.compressor_cmd))
