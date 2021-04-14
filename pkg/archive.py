@@ -148,6 +148,8 @@ class TarFileWriter(object):
     self.fileobj = None
     self.compressor_cmd = (compressor or '').strip()
     if self.compressor_cmd:
+      # Some custom command has been specified: no need for further
+      # configuration, we're just going to use it.
       pass
     # Support xz compression through xz... until we can use Py3
     elif compression in ['xz', 'lzma']:
