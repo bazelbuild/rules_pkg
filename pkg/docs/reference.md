@@ -150,14 +150,21 @@ Creates a tar file from a list of inputs.
       <td><code>compressor</code></td>
       <td>
         <code>Label, optional</code>
-        <p>Executable to be used as compression program.</p>
+        <p>
+          Executable to be built and used as part of a custom compression filter.
+          For example, to compress with <code>pigz -p 4</code>, use <code>"@pigz"</code> here
+          (assuming a workspace rule named "pigz" exists).
+        </p>
       </td>
     </tr>
     <tr>
       <td><code>compressor_args</code></td>
       <td>
         <code>String, optional</code>
-        <p>Arguments to be passed to compression program.</p>
+        <p>
+          Arguments to be passed to <code>compressor</code>.
+          For example, to compress with <code>pigz -p 4</code>, use <code>"-p 4"</code> here.
+        </p>
       </td>
     </tr>
     <tr>
