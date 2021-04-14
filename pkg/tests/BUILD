@@ -25,6 +25,8 @@ exports_files(glob(["testdata/**"]))
 filegroup(
     name = "archive_testdata",
     srcs = glob(["testdata/**"]) + [
+        ":compressor",
+        ":test_tar_compression",
         ":test_tar_package_dir",
         ":test_tar_package_dir_file",
     ],
@@ -86,6 +88,19 @@ copy_file(
     name = "zipcontent_loremipsum",
     src = "testdata/loremipsum.txt",
     out = "zipcontent/loremipsum.txt",
+)
+
+py_binary(
+    name = "compressor",
+    srcs = ["compressor.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
+pkg_tar(
+    name = "test_tar_compression",
+    deps = ["testdata/tar_test.tar"],
+    compressor = ":compressor",
 )
 
 #
