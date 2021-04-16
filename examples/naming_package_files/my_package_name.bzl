@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example rule to show package naming techniques."""
+"""Example rules to show package naming techniques."""
 
 load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
@@ -82,4 +82,23 @@ names_from_toolchains = rule(
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
+)
+
+#
+# Using a command line build setting to name a package.
+#
+def _name_part_from_command_line_naming_impl(ctx):
+    values = {"name_part": ctx.build_setting_value}
+    # Just pass the value from the command line through. An implementation
+    # could also perform validation, such as done in
+    # https://github.com/bazelbuild/bazel-skylib/blob/master/rules/common_settings.bzl
+    return PackageVariablesInfo(values = values)
+
+#
+# Creating this build_setting defines a flag the user can set.
+#
+name_part_from_command_line = rule(
+    implementation = _name_part_from_command_line_naming_impl,
+    # Note that the default value comes from the rule instantiation.
+    build_setting = config.string(flag = True),
 )

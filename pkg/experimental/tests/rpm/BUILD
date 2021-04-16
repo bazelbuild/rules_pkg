@@ -184,7 +184,7 @@ genrule(
         (
             echo -n /test/$$(basename $$f),
             # Hash
-            md5sum $$f | cut -d' ' -f1 | tr '\\n' ,
+            $(execpath //tests/util:md5) $$f | tr '\\n' ,
             # User,Group,Mode,Fflags (fflags not provided)
             echo -n 'root,root,100755,'
             # Symlink destination (not provided)
@@ -195,7 +195,7 @@ genrule(
     for f in $(location :config_file); do
         (
             echo -n /$$(basename $$f),
-            md5sum $$f | cut -d' ' -f1 | tr '\\n' ,
+            $(execpath //tests/util:md5) $$f | tr '\\n' ,
             # User,Group,Mode,Fflags (fflags "cmn" = config + missingok + noreplace)
             echo -n 'root,root,100644,cmn'
             # Symlink destination (not provided)
@@ -216,6 +216,7 @@ genrule(
         echo ,root,root,120777,,/usr/bin/link-target
     ) >> $@
     """,
+    tools = ["//tests/util:md5"],
 )
 
 genrule(
