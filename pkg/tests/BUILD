@@ -463,6 +463,7 @@ py_test(
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
         ":test_tar_package_dir_substitution.tar",
+        ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
     ] + [
         ":test-tar-basic-%s" % compression
