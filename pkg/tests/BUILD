@@ -13,12 +13,12 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
 load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
+
+licenses(["notice"])
 
 exports_files(glob(["testdata/**"]))
 
@@ -430,6 +430,22 @@ pkg_tar(
     portable_mtime = False,
 )
 
+pkg_tar(
+    name = "test-tar-long-filename",
+    srcs = [
+        "testdata/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    strip_prefix = "testdata",
+)
+
+pkg_tar(
+    name = "test-tar-repackaging-long-filename",
+    package_dir = "can_i_repackage_a_file_with_a_long_name",
+    deps = [
+        ":test-tar-long-filename",
+    ],
+)
+
 py_test(
     name = "pkg_tar_test",
     size = "medium",
@@ -447,6 +463,8 @@ py_test(
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
         ":test_tar_package_dir_substitution.tar",
+        ":test-tar-long-filename",
+        ":test-tar-repackaging-long-filename.tar",
     ] + [
         ":test-tar-basic-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS

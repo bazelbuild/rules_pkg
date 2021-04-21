@@ -49,10 +49,9 @@ def _pkg_rpm_impl(ctx):
         if toolchain.path:
             args += ["--rpmbuild=" + toolchain.path]
         else:
-            executable = toolchain.label.files_to_run.executable
-            tools += [executable]
-            tools += toolchain.label.default_runfiles.files.to_list()
-            args += ["--rpmbuild=%s" % executable.path]
+            executable_files = toolchain.label[DefaultInfo].files_to_run
+            tools.append(executable_files)
+            args.append("--rpmbuild=%s" % executable_files.executable.path)
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:
