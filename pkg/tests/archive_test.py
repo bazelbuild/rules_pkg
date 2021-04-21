@@ -19,6 +19,7 @@ import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
 from rules_pkg import archive
+from tests import compressor
 
 
 class SimpleArFileTest(unittest.TestCase):
@@ -403,6 +404,21 @@ class TarFileWriterTest(unittest.TestCase):
     self.assertTarFileContent(package_dir, expected_content)
     self.assertTarFileContent(package_dir_file, expected_content)
 
+  def testCustomCompression(self):
+    original = self.data_files.Rlocation(
+        "rules_pkg/tests/testdata/tar_test.tar")
+    compressed = self.data_files.Rlocation(
+        "rules_pkg/tests/test_tar_compression.tar")
+    expected_content = [
+        {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
+    ]
+    with open(compressed, "rb") as f_in, open(self.tempfile, "wb") as f_out:
+      # "Decompress" by skipping garbage bytes
+      f_in.seek(len(compressor.GARBAGE))
+      f_out.write(f_in.read())
+
+    self.assertTarFileContent(original, expected_content)
+    self.assertTarFileContent(self.tempfile, expected_content)
 
 if __name__ == "__main__":
   unittest.main()
