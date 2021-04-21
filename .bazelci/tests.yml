@@ -39,5 +39,6 @@ tasks:
     - "//tests:helpers_test"
     - "//tests:pkg_deb_test"
     - "//tests:pkg_tar_test"
+    - "//tests:test_tar_compression"
     - "//tests:zip_test"
 
