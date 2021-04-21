@@ -191,6 +191,20 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test_tar_package_dir_substitution.tar', content)
 
+  def test_tar_with_long_file_name(self):
+    content = [
+      {'name': '.'},
+      {'name': './file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
+    ]
+    self.assertTarFileContent('test-tar-long-filename.tar', content)
+
+  def test_repackage_file_with_long_name(self):
+    content = [
+      {'name': '.'},
+      {'name': './can_i_repackage_a_file_with_a_long_name'},
+      {'name': './can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
+    ]
+    self.assertTarFileContent('test-tar-repackaging-long-filename.tar', content)
 
 if __name__ == '__main__':
   unittest.main()

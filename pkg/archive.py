@@ -402,6 +402,12 @@ class TarFileWriter(object):
             tarinfo.linkname = '.' + root + link.lstrip('.')
         tarinfo.name = name
 
+        # Remove path pax header to ensure that the proposed name is going
+        # to be used. Without this, files with long names will not be
+        # properly written to its new path.
+        if 'path' in tarinfo.pax_headers:
+          del tarinfo.pax_headers['path']
+
         if tarinfo.isfile():
           # use extractfile(tarinfo) instead of tarinfo.name to preserve
           # seek position in intar
