@@ -76,6 +76,8 @@ def _pkg_tar_impl(ctx):
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
     ]
+    if ctx.executable.compressor:
+        args.append("--compressor=%s %s" % (ctx.executable.compressor.path, ctx.attr.compressor_args))
     if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
@@ -129,7 +131,7 @@ def _pkg_tar_impl(ctx):
         args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
     if ctx.attr.empty_dirs:
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
-    if ctx.attr.extension:
+    if ctx.attr.extension and not ctx.executable.compressor:
         compression = None
         dotPos = ctx.attr.extension.rfind(".")
         if dotPos >= 0:
@@ -153,6 +155,7 @@ def _pkg_tar_impl(ctx):
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
         inputs = file_inputs + ctx.files.deps + files,
+        tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],
         outputs = [output_file],
@@ -355,6 +358,8 @@ pkg_tar_impl = rule(
         "include_runfiles": attr.bool(),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
+        "compressor": attr.label(executable = True, cfg = "exec"),
+        "compressor_args": attr.string(),
 
         # Common attributes
         "out": attr.output(mandatory = True),
