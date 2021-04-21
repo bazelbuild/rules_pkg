@@ -4,5 +4,7 @@ import sys
 
 GARBAGE = b'garbage'
 
-sys.stdout.buffer.write(GARBAGE)
-sys.stdout.buffer.write(sys.stdin.buffer.read())
+if __name__ == '__main__':
+    assert sys.argv[1:] == ['-a', '-b', '-c']
+    sys.stdout.buffer.write(GARBAGE)
+    sys.stdout.buffer.write(sys.stdin.buffer.read())

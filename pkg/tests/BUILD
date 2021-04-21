@@ -101,6 +101,7 @@ pkg_tar(
     name = "test_tar_compression",
     deps = ["testdata/tar_test.tar"],
     compressor = ":compressor",
+    compressor_args = "-a -b -c"
 )
 
 #
