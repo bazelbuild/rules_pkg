@@ -16,24 +16,52 @@ import io
 import csv
 import subprocess
 
-def read_rpm_filedata(rpm_path, rpm_bin_path="rpm"):
-    """Read rpm metadata into a dictionary
 
-    Keys are the file names (absolute paths), values are the metadata as another dictionary.
+def get_rpm_version_as_tuple(rpm_bin_path="rpm"):
+    """Get the current version of the requested rpm(8) binary."""
+    output = subprocess.check_output(
+        [rpm_bin_path, "--version"]).decode('utf-8')
 
-    The metadata fields are those defined in an RPM query.  To summarize, the fields are:
+    # e.g. RPM Version 4.13.1
+    version_str = output.split()[2]
 
-    - path: file absolute path
-    - digest: hash of the file at "path".  All RPMs in this test suite use MD5 to
-              maintain compatibility.
-    - user: UNIX owning user
-    - group: UNIX owning group
-    - mode: UNIX octal mode
-    - fflags: RPM file flags (see upstream documentation for what these mean)
-    - symlink: Symlink target, or a "falsy" value if not provideds
+    return tuple(int(component) for component in version_str.split('.'))
+
+
+def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
+    """Helper to ease the invocation of an rpm query with a custom queryformat.
+
+    Returns any output as a UTF-8 decoded string.
+    """
+    return subprocess.check_output(
+        [rpm_bin_path, "-qp", "--queryformat", queryformat, rpm_file_path]).decode("utf-8")
+
+
+# TODO(nacl): "rpm_bin_path" should be derived from a toolchain somewhere.
+#
+# At this time, the "Rpmbuild" toolchain only contains rpmbuild.  Since `rpm`
+# itself is only useful for tests, this may be overkill.
+def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
+    """Read rpm file-based metadata into a dictionary
+
+    Keys are the file names (absolute paths), values are the metadata as another
+    dictionary.
+
+    The metadata fields are those defined in an RPM query, and is a map of query
+    tags to simple variable names.  The fields must be plural, as identified by
+    the names.  Some examples are in the default argument, described below.
+
+    - FILENAMES        -> path (file absolute path)
+    - FILEDIGESTS      -> digest (hash of file.  MD5 for compatibility)
+    - FILEUSERNAME     -> user (UNIX owning user) 
+    - FILEGROUPNAME    -> group (UNIX owning group) 
+    - FILEMODES:octal  -> mode (UNIX mode, as an octal string)
+    - FILEFLAGS:fflags -> fflags (RPM file flags as a string, see upstream documentation)
+    - FILELINKTOS      -> Symlink target, or nothing (something "falsy") if not provided
 
     Check out the implementation for more details, and consult the RPM
-    documentation for more details.
+    documentation even more more details.  You can get a list of all tags by
+    invoking `rpm --querytags`.
 
     """
     # It is not necessary to check for file sizes, as the hashes are
@@ -44,32 +72,41 @@ def read_rpm_filedata(rpm_path, rpm_bin_path="rpm"):
     #
     # https://github.com/rpm-software-management/rpm/commit/2cf7096ba534b065feb038306c792784458ac9c7
 
-    rpm_queryformat = (
-        "[%{FILENAMES}"
-        ",%{FILEDIGESTS}"
-        ",%{FILEUSERNAME}"
-        ",%{FILEGROUPNAME}"
-        ",%{FILEMODES:octal}"
-        ",%{FILEFLAGS:fflags}"
-        ",%{FILELINKTOS}"
-        "\n]"
-    )
+    if query_tag_map is None:
+        rpm_queryformat = (
+            "[%{FILENAMES}"
+            ",%{FILEDIGESTS}"
+            ",%{FILEUSERNAME}"
+            ",%{FILEGROUPNAME}"
+            ",%{FILEMODES:octal}"
+            ",%{FILEFLAGS:fflags}"
+            ",%{FILELINKTOS}"
+            "\n]"
+        )
+        rpm_queryformat_fieldnames = [
+            "path",
+            "digest",
+            "user",
+            "group",
+            "mode",
+            "fflags",
+            "symlink",
+        ]
+    else:
+        rpm_queryformat = "["
+        rpm_queryformat += ",".join(["%{{{}}}".format(query_tag)
+                                     for query_tag in query_tag_map.keys()])
+        rpm_queryformat += "\n]"
 
-    rpm_queryformat_fieldnames = [
-        "path",
-        "digest",
-        "user",
-        "group",
-        "mode",
-        "fflags",
-        "symlink",
-    ]
+        rpm_queryformat_fieldnames = list(query_tag_map.values())
 
     rpm_output = subprocess.check_output(
-        [rpm_bin_path, "-qp", "--queryformat", rpm_queryformat, rpm_path])
+        [rpm_bin_path, "-qp", "--queryformat", rpm_queryformat, rpm_file_path])
 
     sio = io.StringIO(rpm_output.decode('utf-8'))
     rpm_output_reader = csv.DictReader(
-        sio, fieldnames = rpm_queryformat_fieldnames)
+        sio,
+        fieldnames=rpm_queryformat_fieldnames
+    )
 
-    return {r['path'] : r for r in rpm_output_reader}
+    return {r['path']: r for r in rpm_output_reader}

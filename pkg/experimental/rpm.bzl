@@ -212,6 +212,14 @@ def _pkg_rpm_impl(ctx):
     else:
         fail("None of the release or release_file attributes were specified")
 
+    if ctx.attr.source_date_epoch_file:
+        if ctx.attr.source_date_epoch:
+            fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
+        args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
+        files.append(ctx.file.source_date_epoch_file)
+    elif ctx.attr.source_date_epoch != None:
+        args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
+
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
     if ctx.attr.url:
@@ -584,7 +592,7 @@ pkg_rpm = rule(
 
     This rule will fail at analysis time if:
 
-    - Any `data` input may create the same destination, regardless of other
+    - Any `srcs` input creates the same destination, regardless of other
       attributes.
 
     This rule only functions on UNIXy platforms. The following tools must be
@@ -657,8 +665,30 @@ pkg_rpm = rule(
 
             """,
         ),
+        "source_date_epoch": attr.int(
+            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate repr
+
+            Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
+            subordinate call to `rpmbuild` to facilitate more consistent in-RPM
+            file timestamps.
+            """,
+        ),
+        "source_date_epoch_file": attr.label(
+            doc = """File containing the SOURCE_DATE_EPOCH value.
+
+            Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
+            subordinate call to `rpmbuild` to facilitate more consistent in-RPM
+            file timestamps.
+            """,
+            allow_single_file = True,
+        ),
         # TODO(nacl): this should be augmented to use bazel platforms, and
         # should not really set BuildArch.
+        #
+        # TODO(nacl): This, uh, is more required than it looks.  It influences
+        # the "A" part of the "NVRA" RPM file name, and RPMs file names look
+        # funny if it's not provided.  The contents of the RPM are believed to
+        # be set as expected, though.
         "architecture": attr.string(
             doc = """Package architecture.
 

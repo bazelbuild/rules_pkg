@@ -17,8 +17,7 @@
 import sys
 import os
 
-"""
-Creates a directory containing some files with determined contents
+"""Creates a directory containing some files with provided contents
 
 Usage: ./this.py output_dir_name file1 contents1 ... fileN contentsN
 """
@@ -27,7 +26,7 @@ dirname = sys.argv[1]
 
 files_contents_map = {}
 
-# Simple way of grouping over pairs.  There other ones, like
+# Simple way of grouping over pairs.  There are other ones, like
 # https://stackoverflow.com/a/16789836, but they either requiring copying a
 # bunch of code around or having something that's a smidge unreadable.
 rest_args_iter = iter(sys.argv[2:])
@@ -39,7 +38,7 @@ os.makedirs(dirname, exist_ok=True)
 for fname, contents in files_contents_map.items():
     os.makedirs(
         os.path.join(dirname, os.path.dirname(fname)),
-        exist_ok=True
+        exist_ok=True,
     )
     with open(os.path.join(dirname, fname), 'w') as fh:
         fh.write(contents)
