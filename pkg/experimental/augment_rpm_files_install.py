@@ -22,7 +22,7 @@ import os
 import sys
 import json
 
-# XXX: Keep this in sync with the same variable in rpm.bzl
+# NOTE: Keep this in sync with the same variable in rpm.bzl
 _INSTALL_FILE_STANZA_FMT = """
 install -d %{{buildroot}}/$(dirname {1})
 cp {0} %{{buildroot}}/{1}

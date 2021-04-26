@@ -541,6 +541,7 @@ def _pkg_rpm_impl(ctx):
     args.append("--file_list=" + rpm_files_file.path)
 
     #### Remaining setup
+
     additional_rpmbuild_args = []
     if ctx.attr.binary_payload_compression:
         additional_rpmbuild_args.extend([
@@ -665,8 +666,8 @@ pkg_rpm = rule(
             """,
         ),
         "source_date_epoch": attr.int(
-            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate reproducible timestamps.
-            
+            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate repr
+
             Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
             subordinate call to `rpmbuild` to facilitate more consistent in-RPM
             file timestamps.

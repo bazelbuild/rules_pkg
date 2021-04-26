@@ -29,11 +29,12 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, root_directory,
+  def __init__(self, output, directory, compression, compressor, root_directory,
                default_mtime):
     self.directory = directory
     self.output = output
     self.compression = compression
+    self.compressor = compressor
     self.root_directory = root_directory
     self.default_mtime = default_mtime
 
@@ -41,6 +42,7 @@ class TarFile(object):
     self.tarfile = archive.TarFileWriter(
         self.output,
         self.compression,
+        self.compressor,
         self.root_directory,
         default_mtime=self.default_mtime)
     return self
@@ -233,8 +235,14 @@ def main():
   parser.add_argument(
       '--directory',
       help='Directory in which to store the file inside the layer')
-  parser.add_argument('--compression',
-                      help='Compression (`gz` or `bz2`), default is none.')
+
+  compression = parser.add_mutually_exclusive_group()
+  compression.add_argument('--compression',
+                           help='Compression (`gz` or `bz2`), default is none.')
+  compression.add_argument('--compressor',
+                           help='Compressor program and arguments, '
+                                'e.g. `pigz -p 4`')
+
   parser.add_argument(
       '--modes', action='append',
       help='Specific mode to apply to specific file (from the file argument),'
@@ -298,7 +306,8 @@ def main():
   # Add objects to the tar file
   with TarFile(
       options.output, helpers.GetFlagValue(options.directory),
-      options.compression, options.root_directory, options.mtime) as output:
+      options.compression, options.compressor, options.root_directory,
+      options.mtime) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
