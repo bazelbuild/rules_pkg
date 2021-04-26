@@ -17,9 +17,9 @@ pkg_rpm() depends on the existence of an rpmbuild toolchain. Many users will
 find to convenient to use the one provided with their system. To enable that
 toolchain add the following stanza to WORKSPACE:
 
-  # Find rpmbuild if it exists.
-  load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
-  find_system_rpmbuild(name="rules_pkg_rpmbuild")
+    # Find rpmbuild if it exists.
+    load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+    find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
 rpm_filetype = [".rpm"]
@@ -49,10 +49,9 @@ def _pkg_rpm_impl(ctx):
         if toolchain.path:
             args += ["--rpmbuild=" + toolchain.path]
         else:
-            executable = toolchain.label.files_to_run.executable
-            tools += [executable]
-            tools += toolchain.label.default_runfiles.files.to_list()
-            args += ["--rpmbuild=%s" % executable.path]
+            executable_files = toolchain.label[DefaultInfo].files_to_run
+            tools.append(executable_files)
+            args.append("--rpmbuild=%s" % executable_files.executable.path)
 
     # Version can be specified by a file or inlined.
     if ctx.attr.version_file:

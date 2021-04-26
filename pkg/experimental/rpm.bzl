@@ -153,10 +153,9 @@ def _pkg_rpm_impl(ctx):
         if toolchain.path:
             args.append("--rpmbuild=" + toolchain.path)
         else:
-            executable = toolchain.label.files_to_run.executable
-            tools.append(executable)
-            tools += toolchain.label.default_runfiles.files.to_list()
-            args.append("--rpmbuild=%s" % executable.path)
+            executable_files = toolchain.label[DefaultInfo].files_to_run
+            tools.append(executable_files)
+            args.append("--rpmbuild=%s" % executable_files.executable.path)
 
     #### Calculate output file name
     # rpm_name takes precedence over name if provided

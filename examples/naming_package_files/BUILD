@@ -17,7 +17,7 @@ licenses(["notice"])
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
 load(":package_upload.bzl", "debian_upload")
-load(":my_package_name.bzl", "basic_naming", "names_from_toolchains")
+load(":my_package_name.bzl", "basic_naming", "name_part_from_command_line", "names_from_toolchains")
 
 config_setting(
     name = "special_build",
@@ -115,4 +115,24 @@ debian_upload(
     host = "my_mirror",
     # Refer to the target label, without having to know the final file name.
     package = ":a_deb_package",
+)
+
+#
+# Demonstrate how we can use a value from the command line in a package name.
+#
+# bazel build --//:name_part_from_command_line=bar  :tarball_that_needs_a_name
+# ls bazel-bin/foo-bar.tar
+name_part_from_command_line(
+    name = "name_part_from_command_line",
+    # We use a harmless default value so that the build succeeds all the time.
+    build_setting_default = "@set_me@",
+)
+
+pkg_tar(
+    name = "tarball_that_needs_a_name",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "foo-{name_part}.tar",
+    package_variables = ":name_part_from_command_line",
 )

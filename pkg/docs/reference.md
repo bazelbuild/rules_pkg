@@ -68,8 +68,9 @@ There are currently no other well-known attributes.
 ## pkg_tar
 
 ```python
-pkg_tar(name, extension, strip_prefix, package_dir, srcs,
-        mode, modes, deps, symlinks, package_file_name, package_variables)
+pkg_tar(name, extension, strip_prefix, package_dir, srcs, compressor,
+        compressor_args, mode, modes, deps, symlinks, package_file_name,
+        package_variables)
 ```
 
 Creates a tar file from a list of inputs.
@@ -142,6 +143,27 @@ Creates a tar file from a list of inputs.
         <p>File to add to the layer.</p>
         <p>
           A list of files that should be included in the archive.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compressor</code></td>
+      <td>
+        <code>Label, optional</code>
+        <p>
+          Executable to be built and used as part of a custom compression filter.
+          For example, to compress with <code>pigz -p 4</code>, use <code>"@pigz"</code> here
+          (assuming a workspace rule named "pigz" exists).
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>compressor_args</code></td>
+      <td>
+        <code>String, optional</code>
+        <p>
+          Arguments to be passed to <code>compressor</code>.
+          For example, to compress with <code>pigz -p 4</code>, use <code>"-p 4"</code> here.
         </p>
       </td>
     </tr>
