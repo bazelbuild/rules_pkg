@@ -16,6 +16,7 @@ load("//tests/util:defs.bzl", "directory")
 load(
     "@rules_pkg//:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
+    "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
@@ -99,6 +100,11 @@ pkg_filegroup(
 pkg_files(
     name = "test_dir1_pf",
     srcs = [":test_dir1"],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        user = "root",
+    ),
     strip_prefix = strip_prefix.from_pkg(""),
 )
 
@@ -117,6 +123,11 @@ directory(
 pkg_files(
     name = "test_files_from_rules",
     srcs = [":my_files"],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        user = "root",
+    ),
     prefix = "test_dir",
 )
 
@@ -233,5 +244,10 @@ pkg_files(
     srcs = [
         ":test_dir1",
     ],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        user = "root",
+    ),
     renames = {":test_dir1": REMOVE_BASE_DIRECTORY},
 )
