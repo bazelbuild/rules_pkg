@@ -30,9 +30,11 @@ here.
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 
+# TODO(#333): strip_prefix module functions should produce unique outputs.  In
+# particular, this one and `_sp_from_pkg` can overlap.
 _PKGFILEGROUP_STRIP_ALL = "."
 
-REMOVE_BASE_DIRECTORY = ""
+REMOVE_BASE_DIRECTORY = "\0"
 
 def _sp_files_only():
     return _PKGFILEGROUP_STRIP_ALL
@@ -242,12 +244,18 @@ def _pkg_files_impl(ctx):
                 "renames",
             )
 
-        if rename_dest == REMOVE_BASE_DIRECTORY and not src_file.is_directory:
-            fail(
-                "REMOVE_BASE_DIRECTORY as a renaming target for non-directories is disallowed.",
-                "renames",
-            )
-        src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
+        if rename_dest == REMOVE_BASE_DIRECTORY:
+            if not src_file.is_directory:
+                fail(
+                    "REMOVE_BASE_DIRECTORY as a renaming target for non-directories is disallowed.",
+                    "renames",
+                )
+            # REMOVE_BASE_DIRECTORY results in the contents being dropped into
+            # place directly in the prefix path.
+            src_dest_paths_map[src_file] = ctx.attr.prefix
+            
+        else:
+            src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
 
     # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
@@ -373,7 +381,7 @@ pkg_files = rule(
             will result in all containing files and directories being installed
             relative to the otherwise install prefix (via the `prefix` and
             `strip_prefix` attributes), not the directory name.
-
+            
             The following keys are rejected:
 
             - Any label that expands to more than one file (mappings must be
@@ -381,6 +389,15 @@ pkg_files = rule(
 
             - Any label or file that was either not provided or explicitly
               `exclude`d.
+            
+            The following values result in undefined behavior:
+
+            - "" (the empty string)
+
+            - "."
+            
+            - Anything containing ".."
+
             """,
             default = {},
             allow_files = True,
