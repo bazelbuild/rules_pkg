@@ -56,17 +56,14 @@ with open(dir_data_path, 'r') as fh:
 
     for d in dir_data:
         # d is a dict, d["src"] is the TreeArtifact directory to walk.
-        print(d["src"])
         for root, dirs, files in os.walk(d["src"]):
             # "root" is the current directory we're walking through.  This
             # computes the path the source location (the TreeArtifact root) --
             # the desired install location relative to the user-provided install
             # destination.
             path_relative_to_install_dest = os.path.relpath(root, start=d["src"])
-            print(path_relative_to_install_dest)
 
             for f in files:
-                print(" ", d["dest"], path_relative_to_install_dest, f)
                 full_dest = os.path.join(d["dest"], path_relative_to_install_dest, f)
                 dir_install_script_segments.append(_INSTALL_FILE_STANZA_FMT.format(
                     os.path.join(root, f),

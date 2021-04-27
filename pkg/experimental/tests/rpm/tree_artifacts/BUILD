@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//tests/util:defs.bzl", "directory")
 load(
     "@rules_pkg//:mappings.bzl",
+    "REMOVE_BASE_DIRECTORY",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load(":rules.bzl", "directory")
+load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################
 # Test handling of directory outputs
@@ -183,10 +184,54 @@ pkg_filegroup(
 )
 
 ############################################################################
-# Utility (used by the "directory" rule)
+# Test that renaming TreeArtifacts to nothing results in the files being dropped
+# in their prefix.
 ############################################################################
+py_test(
+    name = "treeartifact_ops",
+    srcs = ["rpm_treeartifact_ops_test.py"],
+    data = [":treeartifact_ops_rpm_test_data"],
+    main = "rpm_treeartifact_ops_test.py",
+    tags = [
+        "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
+    ],
+    deps = [
+        "//experimental/tests/rpm:rpm_util",
+        "@rules_python//python/runfiles",
+    ],
+)
 
-py_binary(
-    name = "create_directory_with_contents",
-    srcs = ["create_directory_with_contents.py"],
+sh_library(
+    name = "treeartifact_ops_rpm_test_data",
+    testonly = True,
+    srcs = [":treeartifact_ops_rpm"],
+)
+
+pkg_rpm(
+    name = "treeartifact_ops_rpm",
+    srcs = [
+        ":treeartifact_ops_pfg",
+    ],
+    architecture = "noarch",
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    release = "2222",
+    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+)
+
+pkg_filegroup(
+    name = "treeartifact_ops_pfg",
+    srcs = [
+        ":stripped_treeartifact_pf",
+    ],
+)
+
+pkg_files(
+    name = "stripped_treeartifact_pf",
+    srcs = [
+        ":test_dir1",
+    ],
+    renames = {":test_dir1": REMOVE_BASE_DIRECTORY},
 )

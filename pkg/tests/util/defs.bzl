@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules to aid TreeArtifact testing"""
+"""Rules to aid testing"""
+
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
@@ -54,3 +57,38 @@ Paths containing directories will also have the intermediate directories created
         ),
     },
 )
+
+############################################################
+# Test boilerplate
+############################################################
+def _generic_base_case_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    # Nothing here intentionally, this is simply an attempt to verify successful
+    # analysis.
+
+    return analysistest.end(env)
+
+generic_base_case_test = analysistest.make(
+    _generic_base_case_test_impl,
+    attrs = {},
+)
+
+# Generic negative test boilerplate
+def _generic_negative_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    asserts.expect_failure(env, ctx.attr.reason)
+
+    return analysistest.end(env)
+
+generic_negative_test = analysistest.make(
+    _generic_negative_test_impl,
+    attrs = {
+        "reason": attr.string(
+            default = "",
+        ),
+    },
+    expect_failure = True,
+)
+
