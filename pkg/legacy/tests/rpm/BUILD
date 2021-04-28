@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
+load("//:rpm.bzl", "pkg_rpm")
 
-create_toolchain_analysis_tests()
+pkg_rpm(
+    name = "test-rpm",
+    data = ["//tests:archive_testdata"],
+    debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
+)
