@@ -1,0 +1,3 @@
+imports:
+- tests.yml
+- integration.yml

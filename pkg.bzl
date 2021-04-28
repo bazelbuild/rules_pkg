@@ -18,6 +18,7 @@ load(":path.bzl", "compute_data_path", "dest_path")
 # Filetype to restrict inputs
 tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.xz", ".tar.bz2"]
 deb_filetype = [".deb", ".udeb"]
+_DEFAULT_MTIME = -1
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -71,7 +72,7 @@ def _pkg_tar_impl(ctx):
         "--owner=" + ctx.attr.owner,
         "--owner_name=" + ctx.attr.ownername,
     ]
-    if ctx.attr.mtime != -1:  # Note: Must match default in rule def.
+    if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
         args.append("--mtime=%d" % ctx.attr.mtime)
@@ -336,7 +337,7 @@ pkg_tar_impl = rule(
         "files": attr.label_keyed_string_dict(allow_files = True),
         "mode": attr.string(default = "0555"),
         "modes": attr.string_dict(),
-        "mtime": attr.int(default = -1),
+        "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
         "owner": attr.string(default = "0.0"),
         "ownername": attr.string(default = "."),
@@ -368,6 +369,8 @@ pkg_tar_impl = rule(
 )
 
 def pkg_tar(**kwargs):
+    """Creates a .tar file. See pkg_tar_impl."""
+
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.
     if "srcs" not in kwargs:
@@ -509,6 +512,7 @@ pkg_zip_impl = rule(
 )
 
 def pkg_zip(name, **kwargs):
+    """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.get("extension") or "zip"
 
     pkg_zip_impl(

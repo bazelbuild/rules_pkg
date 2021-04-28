@@ -159,7 +159,13 @@ function test_tar() {
 ./nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-etc.tar)"
   check_eq "./
 ./etc/
-./etc/nsswitch.conf" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
+./etc/nsswitch.conf
+./external/
+./external/bazel_tools/
+./external/bazel_tools/tools/
+./external/bazel_tools/tools/python/
+./external/bazel_tools/tools/python/runfiles/
+./external/bazel_tools/tools/python/runfiles/runfiles.py" "$(get_tar_listing test-tar-strip_prefix-dot.tar)"
   check_eq "./
 ./not-etc/
 ./not-etc/mapped-filename.conf" "$(get_tar_listing test-tar-files_dict.tar)"
@@ -210,22 +216,28 @@ function check_deb() {
   get_deb_ctl_file ${package} config >$TEST_log
   expect_log "# test config file"
 
+  get_deb_ctl_file ${package} preinst >$TEST_log
+  expect_log "#!/usr/bin/env bash"
+  expect_log "# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é"
+  expect_log "echo fnord"
+
   if ! dpkg_deb_supports_ctrl_tarfile ${package} ; then
     echo "Unable to test deb control files listing, too old dpkg-deb!" >&2
     return 0
   fi
-  local ctrl_listing="conffiles
-config
-control
-templates"
+  local ctrl_listing="./conffiles
+./config
+./control
+./preinst
+./templates"
   # TODO: The config and templates come out with a+x permissions. Because I am
   # currently seeing the same behavior in the Bazel sources, I am going to look
   # at root causes later. I am not sure if this is WAI or not.
   check_eq "$ctrl_listing" "$(get_deb_ctl_listing ${package})"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} conffiles)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} config)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} control)"
-  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} templates)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./conffiles)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./config)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./control)"
+  check_eq "-rw-r--r--" "$(get_deb_ctl_permission ${package} ./templates)"
   local conffiles="/etc/nsswitch.conf
 /etc/other"
   check_eq "$conffiles" "$(get_deb_ctl_file ${package} conffiles)"

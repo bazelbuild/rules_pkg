@@ -143,16 +143,17 @@ def CreateDebControl(extrafiles=None, **kwargs):
   tar = BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
     with tarfile.open('control.tar.gz', mode='w', fileobj=gz) as f:
-      tarinfo = tarfile.TarInfo('control')
+      tarinfo = tarfile.TarInfo('./control')
       control_file_data = controlfile.encode('utf-8')
       tarinfo.size = len(control_file_data)
       f.addfile(tarinfo, fileobj=BytesIO(control_file_data))
       if extrafiles:
         for name, (data, mode) in extrafiles.items():
-          tarinfo = tarfile.TarInfo(name)
-          tarinfo.size = len(data)
+          tarinfo = tarfile.TarInfo('./' + name)
+          data_encoded = data.encode('utf-8')
+          tarinfo.size = len(data_encoded)
           tarinfo.mode = mode
-          f.addfile(tarinfo, fileobj=BytesIO(data.encode('utf-8')))
+          f.addfile(tarinfo, fileobj=BytesIO(data_encoded))
   control = tar.getvalue()
   tar.close()
   return control
@@ -358,7 +359,10 @@ def main():
       priority=options.priority,
       conflicts=options.conflicts,
       breaks=options.breaks,
+<<<<<<< HEAD:make_deb.py
       provides=options.provides,
+=======
+>>>>>>> 0.2.6-1:pkg/make_deb.py
       installedSize=GetFlagValue(options.installed_size))
   if options.output_changes:
     CreateChanges(

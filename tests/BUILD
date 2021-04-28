@@ -3,6 +3,7 @@ licenses(["notice"])  # Apache 2.0
 
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar", "pkg_zip")
 load("@rules_pkg//:rpm.bzl", "pkg_rpm")
+load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
     name = "generate_files",
@@ -166,6 +167,12 @@ py_test(
     ],
 )
 
+genrule(
+    name = "test-deb-preinst",
+    outs = ["test-deb.preinst"],
+    cmd = "echo -n \"#!/usr/bin/env bash\n# tete ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\necho fnord\" > \"$@\"",
+)
+
 pkg_deb(
     name = "test-deb",
     built_using = "some_test_data (0.1.2)",
@@ -187,6 +194,7 @@ pkg_deb(
     breaks = ["oldbrokenpkg"],
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test",
 )
@@ -247,6 +255,7 @@ pkg_deb(
     breaks = ["oldbrokenpkg"],
     replaces = ["oldpkg"],
     templates = ":testdata/templates",
+    preinst = ":test-deb-preinst",
     urgency = "low",
     version = "test_py2",
 )
@@ -313,6 +322,7 @@ pkg_tar(
     name = "test-tar-strip_prefix-dot",
     srcs = [
         ":etc/nsswitch.conf",
+        "@bazel_tools//tools/python/runfiles",
     ],
     strip_prefix = ".",
 )
@@ -412,4 +422,13 @@ test_suite(
 test_suite(
     name = "all_windows_tests",
     tests = [":windows_tests"],
+)
+
+# Used within experimental/tests/ for external repo genpkg tests
+filegroup(
+    name = "loremipsum_txt",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    visibility = ["//visibility:public"],
 )

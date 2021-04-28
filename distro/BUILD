@@ -2,9 +2,12 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@rules_pkg//:version.bzl", "version")
 load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
+load("@rules_pkg//:version.bzl", "version")
+load("@rules_python//python:defs.bzl", "py_test")
 
 # Build the artifact to put on the github release page.
 pkg_tar(
@@ -25,6 +28,7 @@ pkg_tar(
 print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
+    deps_method = "rules_pkg_dependencies",
     repo = "rules_pkg",
     version = version,
 )
@@ -56,4 +60,55 @@ genrule(
     name = "version_as_py",
     outs = ["release_version.py"],
     cmd = "echo RELEASE_VERSION = \\'%s\\' >$@" % version,
+)
+
+bzl_library(
+    name = "rules_pkg_lib",
+    srcs = [
+        "@//:path.bzl",
+        "@//:pkg.bzl",
+        "@//:rpm.bzl",
+        "@//:version.bzl",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+stardoc(
+    name = "docs_deb",
+    out = "pkg_deb.md",
+    input = "@//:pkg.bzl",
+    symbol_names = [
+        "pkg_deb",
+        "pkg_deb_impl",
+    ],
+    deps = [":rules_pkg_lib"],
+)
+
+stardoc(
+    name = "docs_tar",
+    out = "pkg_tar.md",
+    input = "@//:pkg.bzl",
+    symbol_names = [
+        "pkg_tar",
+        "pkg_tar_impl",
+    ],
+    deps = [":rules_pkg_lib"],
+)
+
+stardoc(
+    name = "docs_zip",
+    out = "pkg_zip.md",
+    input = "@//:pkg.bzl",
+    symbol_names = [
+        "pkg_zip",
+        "pkg_zip_impl",
+    ],
+    deps = [":rules_pkg_lib"],
+)
+
+stardoc(
+    name = "docs_rpm",
+    out = "pkg_rpm.md",
+    input = "@//:rpm.bzl",
+    deps = [":rules_pkg_lib"],
 )

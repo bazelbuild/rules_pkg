@@ -46,7 +46,9 @@ class PackagingTest(unittest.TestCase):
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
         release_tools.workspace_content(
-            'file://%s' % local_path, self.repo, sha256)
+            'file://%s' % local_path, self.repo, sha256,
+            deps_method='rules_pkg_dependencies'
+        )
       ))
       workspace.write(workspace_content)
       if _VERBOSE:
