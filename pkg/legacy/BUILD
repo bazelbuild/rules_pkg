@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# -*- coding: utf-8 -*-
 
-load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
+exports_files(["rpm.bzl"])
 
-create_toolchain_analysis_tests()
+filegroup(
+    name = "standard_package",
+    srcs = glob([
+        "*.bzl",
+    ]) + [
+        "BUILD",
+    ],
+    visibility = ["//:__pkg__"],
+)
