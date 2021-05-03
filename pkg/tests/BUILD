@@ -31,8 +31,8 @@ filegroup(
         ":test_tar_package_dir_file",
     ],
     visibility = [
-        "//tests:__subpackages__",
         "//legacy/tests:__subpackages__",
+        "//tests:__subpackages__",
     ],
 )
 
@@ -102,9 +102,9 @@ py_binary(
 
 pkg_tar(
     name = "test_tar_compression",
-    deps = ["testdata/tar_test.tar"],
     compressor = ":compressor",
-    compressor_args = "-a -b -c"
+    compressor_args = "-a -b -c",
+    deps = ["testdata/tar_test.tar"],
 )
 
 #
@@ -535,4 +535,23 @@ filegroup(
         "testdata/loremipsum.txt",
     ],
     visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "stamped_tar",
+    srcs = ["BUILD"],
+    stamp = 1,
+)
+
+py_test(
+    name = "stamp_test",
+    srcs = [
+        "stamp_test.py",
+    ],
+    data = [
+        "stamped_tar.tar",
+    ],
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
 )
