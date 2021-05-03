@@ -20,7 +20,6 @@ licenses(["notice"])
 exports_files(
     glob([
         "*.bzl",
-        "private/**",
     ]),
     visibility = ["//visibility:public"],
 )
@@ -88,7 +87,7 @@ py_binary(
     deps = [
         ":archive",
         ":helpers",
-        "//internal:build_info",
+        "//private:build_info",
     ],
 )
 

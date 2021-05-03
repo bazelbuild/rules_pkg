@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("private/util.bzl", "setup_output_files", "substitute_package_variables")
+load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -144,7 +144,7 @@ def _pkg_tar_impl(ctx):
         for k in ctx.attr.symlinks
     ]
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
-                               ctx.attr.internal_stamp_detect):
+                               ctx.attr.private_stamp_detect):
         args.append("--stamp_from=%s" % ctx.version_file.path)
         files.append(ctx.version_file)
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
@@ -370,7 +370,7 @@ pkg_tar_impl = rule(
         ),
         "stamp": attr.int(default = 0),
         # 
-        "internal_stamp_detect": attr.bool(default = False),
+        "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -410,8 +410,8 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
-        internal_stamp_detect = select({
-            "@rules_pkg//internal:stamp": True,
+        private_stamp_detect = select({
+            "@rules_pkg//private:stamp": True,
             "//conditions:default": False,
         }),
         **kwargs

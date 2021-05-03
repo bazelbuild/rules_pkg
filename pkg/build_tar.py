@@ -21,7 +21,7 @@ import tempfile
 
 import archive
 import helpers
-from internal import build_info
+from private import build_info
 
 
 class TarFile(object):

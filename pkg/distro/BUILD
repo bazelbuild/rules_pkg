@@ -36,6 +36,7 @@ pkg_tar(
     srcs = [
         ":small_workspace",
         "//:standard_package",
+        "//private:standard_package",
         "//releasing:standard_package",
         "//toolchains:standard_package",
     ],
@@ -97,7 +98,7 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
-        "//:private/util.bzl",
+        "//private:util.bzl",
         "//:package_variables.bzl",
         "//:path.bzl",
         "//:pkg.bzl",
