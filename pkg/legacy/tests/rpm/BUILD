@@ -11,21 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# -*- coding: utf-8 -*-
 
-# Test utilities
+load("//:rpm.bzl", "pkg_rpm")
 
-load("@rules_python//python:defs.bzl", "py_binary")
-
-exports_files(["defs.bzl"])
-
-py_binary(
-    name = "md5",
-    srcs = ["md5.py"],
-    visibility = ["//visibility:public"],
-)
-
-py_binary(
-    name = "create_directory_with_contents",
-    srcs = ["create_directory_with_contents.py"],
-    visibility = ["//visibility:public"],
+pkg_rpm(
+    name = "test-rpm",
+    data = ["//tests:archive_testdata"],
+    debug = 1,
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )

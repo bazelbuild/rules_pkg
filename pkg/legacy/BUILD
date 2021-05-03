@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Test utilities
+exports_files(["rpm.bzl"])
 
-load("@rules_python//python:defs.bzl", "py_binary")
-
-exports_files(["defs.bzl"])
-
-py_binary(
-    name = "md5",
-    srcs = ["md5.py"],
-    visibility = ["//visibility:public"],
-)
-
-py_binary(
-    name = "create_directory_with_contents",
-    srcs = ["create_directory_with_contents.py"],
-    visibility = ["//visibility:public"],
+filegroup(
+    name = "standard_package",
+    srcs = glob([
+        "*.bzl",
+    ]) + [
+        "BUILD",
+    ],
+    visibility = ["//:__pkg__"],
 )

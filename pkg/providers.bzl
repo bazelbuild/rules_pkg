@@ -34,12 +34,12 @@ PackageFilesInfo = provider(
     fields = {
         "attributes": """Attribute information, represented as a `dict`.
 
-        Keys are strings representing attribute identifiers, values are
-        arbitrary data structures that represent the associated data.  These are
-        most often strings, but are not explicity defined.
+Keys are strings representing attribute identifiers, values are
+arbitrary data structures that represent the associated data.  These are
+most often strings, but are not explicity defined.
 
-        For known attributes and data type expectations, see the Common
-        Attributes documentation in the `rules_pkg` reference.
+For known attributes and data type expectations, see the Common
+Attributes documentation in the `rules_pkg` reference.
         """,
 
         # This is a mapping of destinations to sources to allow for the same

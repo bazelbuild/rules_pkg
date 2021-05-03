@@ -38,7 +38,7 @@ spec_filetype = [".spec", ".spec.in"]
 # TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
 _INSTALL_FILE_STANZA_FMT = """
 install -d %{{buildroot}}/$(dirname {1})
-cp -r {0} %{{buildroot}}/{1}
+cp {0} %{{buildroot}}/{1}
 """
 
 # TODO(nacl): __install
@@ -116,6 +116,18 @@ def _make_filetags(attributes, default_filetag = None):
         group = group,
         supplied_filetag = supplied_filetag or "",
     )
+
+def _make_absolute_if_not_already_or_is_macro(path):
+    # Make a destination path absolute if it isn't already or if it starts with
+    # a macro (assumed to be a value that starts with "%").
+    #
+    # If the user has provided a macro as the installation destination, assume
+    # they know what they're doing.  Specifically, the macro needs to resolve to
+    # an absolute path.
+
+    # This may not be the fastest way to do this, but if it becomes a problem
+    # this can be inlined easily.
+    return path if path.startswith(("/", "%")) else "/" + path
 
 def _pkg_rpm_impl(ctx):
     """Implements the pkg_rpm rule."""
@@ -199,6 +211,14 @@ def _pkg_rpm_impl(ctx):
         preamble_pieces.append("Release: " + ctx.attr.release)
     else:
         fail("None of the release or release_file attributes were specified")
+
+    if ctx.attr.source_date_epoch_file:
+        if ctx.attr.source_date_epoch:
+            fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
+        args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
+        files.append(ctx.file.source_date_epoch_file)
+    elif ctx.attr.source_date_epoch != None:
+        args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
@@ -334,11 +354,11 @@ def _pkg_rpm_impl(ctx):
 
     files += ctx.files.srcs
 
-    #### Sanity checking
+    #### Consistency checking
 
     # Ensure that no destinations collide.  RPMs that fail this check may be
-    # sane, but the output may also create hard-to-debug issues.  Better to err
-    # on the side of correctness here.
+    # correct, but the output may also create hard-to-debug issues.  Better to
+    # err on the side of correctness here.
     dest_check_map = {}
     for dep in ctx.attr.srcs:
         # TODO(nacl, #191): This loop should be consolidated with the install
@@ -386,13 +406,19 @@ def _pkg_rpm_impl(ctx):
 
     #### Procedurally-generated scripts/lists (%install, %files)
 
-    # Build up the install script
+    # The contents of the "%install" scriptlet
     install_script_pieces = []
     if ctx.attr.debug:
         install_script_pieces.append("set -x")
 
-    # Build up the RPM files list (%files -f)
+    # The list of entries in the "%files" list
     rpm_files_list = []
+
+    # Directories (TreeArtifacts) are to be treated differently.  Specifically,
+    # since Bazel does not know their contents at analysis time, processing them
+    # needs to be delegated to a helper script.  This is done via the
+    # _treeartifact_helper script used later on.
+    packaged_directories = []
 
     # Iterate over all incoming data, creating datasets as we go from the
     # actual contents of the RPM.
@@ -407,36 +433,55 @@ def _pkg_rpm_impl(ctx):
             file_base = _make_filetags(entry.attributes)
 
             for dest, src in entry.dest_src_map.items():
-                rpm_files_list.append(file_base + " /" + dest)
+                dest = _make_absolute_if_not_already_or_is_macro(dest)
 
-                install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
-                    src.path,
-                    dest,
-                ))
+                if src.is_directory:
+                    # Set aside TreeArtifact information for external processing
+                    #
+                    # TODO: Should we do all processing in the helper script that
+                    # processes TreeArtifacts instead?
+                    packaged_directories.append({
+                        "src": src,
+                        "dest": dest,
+                        # This doesn't exactly make it extensible, but it saves
+                        # us from having to having to maintain tag processing
+                        # code in multiple places.
+                        "tags": file_base,
+                    })
+                else:
+                    # Files are well-known.  Take care of them right here.
+                    rpm_files_list.append(file_base + " " + dest)
+                    install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
+                        src.path,
+                        dest,
+                    ))
+
         for entry, _ in pfg_info.pkg_dirs:
             file_base = _make_filetags(entry.attributes, "%dir")
             for d in entry.dirs:
-                rpm_files_list.append(file_base + " /" + d)
+                abs_dirname = _make_absolute_if_not_already_or_is_macro(d)
+                rpm_files_list.append(file_base + " " + abs_dirname)
 
                 install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
-                    d,
+                    abs_dirname,
                 ))
         for entry, _ in pfg_info.pkg_symlinks:
+            abs_dest = _make_absolute_if_not_already_or_is_macro(entry.destination)
             file_base = _make_filetags(entry.attributes)
-            rpm_files_list.append(file_base + " /" + entry.destination)
+            rpm_files_list.append(file_base + " " + abs_dest)
             install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
-                entry.destination,
+                abs_dest,
                 entry.source,
                 entry.attributes["mode"],
             ))
 
+    # We need to write these out regardless of whether we are using
+    # TreeArtifacts.  That stage will use these files as inputs.
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
     ctx.actions.write(
         install_script,
         "\n".join(install_script_pieces),
     )
-    files.append(install_script)
-    args.append("--install_script=" + install_script.path)
 
     rpm_files_file = ctx.actions.declare_file(
         "{}.spec.files".format(rpm_name),
@@ -445,8 +490,57 @@ def _pkg_rpm_impl(ctx):
         rpm_files_file,
         "\n".join(rpm_files_list),
     )
+
+    # TreeArtifact processing work
+    if packaged_directories:
+        packaged_directories_file = ctx.actions.declare_file("{}.spec.packaged_directories.json".format(rpm_name))
+
+        packaged_directories_inputs = [d["src"] for d in packaged_directories]
+
+        # This isn't the prettiest thing in the world, but it works.  Bazel
+        # needs the "File" data to pass to the command, but "File"s cannot be
+        # JSONified.
+        #
+        # This data isn't used outside of this block, so it's probably fine.
+        # Cleaner code would separate the JSONable values from the File type (in
+        # a struct, probably).
+        for d in packaged_directories:
+            d["src"] = d["src"].path
+
+        ctx.actions.write(packaged_directories_file, json.encode(packaged_directories))
+
+        # Overwrite all following uses of the install script and files lists to
+        # use the ones generated below.
+        install_script_old = install_script
+        install_script = ctx.actions.declare_file("{}.spec.install.with_dirs".format(rpm_name))
+        rpm_files_file_old = rpm_files_file
+        rpm_files_file = ctx.actions.declare_file("{}.spec.files.with_dirs".format(rpm_name))
+
+        input_files = [packaged_directories_file, install_script_old, rpm_files_file_old]
+        output_files = [install_script, rpm_files_file]
+
+        helper_args = ctx.actions.args()
+        helper_args.add_all(input_files)
+        helper_args.add_all(output_files)
+
+        ctx.actions.run(
+            executable = ctx.executable._treeartifact_helper,
+            use_default_shell_env = True,
+            arguments = [helper_args],
+            inputs = input_files + packaged_directories_inputs,
+            outputs = output_files,
+            progress_message = "Generating RPM TreeArtifact Data " + str(ctx.label),
+        )
+
+    # And then we're done.  Yay!
+
+    files.append(install_script)
+    args.append("--install_script=" + install_script.path)
+
     files.append(rpm_files_file)
     args.append("--file_list=" + rpm_files_file.path)
+
+    #### Remaining setup
 
     additional_rpmbuild_args = []
     if ctx.attr.binary_payload_compression:
@@ -498,7 +592,7 @@ pkg_rpm = rule(
 
     This rule will fail at analysis time if:
 
-    - Any `data` input may create the same destination, regardless of other
+    - Any `srcs` input creates the same destination, regardless of other
       attributes.
 
     This rule only functions on UNIXy platforms. The following tools must be
@@ -571,8 +665,30 @@ pkg_rpm = rule(
 
             """,
         ),
+        "source_date_epoch": attr.int(
+            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate repr
+
+            Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
+            subordinate call to `rpmbuild` to facilitate more consistent in-RPM
+            file timestamps.
+            """,
+        ),
+        "source_date_epoch_file": attr.label(
+            doc = """File containing the SOURCE_DATE_EPOCH value.
+
+            Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
+            subordinate call to `rpmbuild` to facilitate more consistent in-RPM
+            file timestamps.
+            """,
+            allow_single_file = True,
+        ),
         # TODO(nacl): this should be augmented to use bazel platforms, and
         # should not really set BuildArch.
+        #
+        # TODO(nacl): This, uh, is more required than it looks.  It influences
+        # the "A" part of the "NVRA" RPM file name, and RPMs file names look
+        # funny if it's not provided.  The contents of the RPM are believed to
+        # be set as expected, though.
         "architecture": attr.string(
             doc = """Package architecture.
 
@@ -782,6 +898,12 @@ pkg_rpm = rule(
         # Implicit dependencies.
         "_make_rpm": attr.label(
             default = Label("//:make_rpm"),
+            cfg = "exec",
+            executable = True,
+            allow_files = True,
+        ),
+        "_treeartifact_helper": attr.label(
+            default = Label("//experimental:augment_rpm_files_install"),
             cfg = "exec",
             executable = True,
             allow_files = True,

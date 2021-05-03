@@ -24,39 +24,7 @@ load(
     "pkg_mklink",
 )
 load("//:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-
-# Generic negative test boilerplate
-#
-# TODO: create an internal test library containing this function, and maybe the second one too
-def _generic_neg_test_impl(ctx):
-    env = analysistest.begin(ctx)
-
-    asserts.expect_failure(env, ctx.attr.reason)
-
-    return analysistest.end(env)
-
-generic_neg_test = analysistest.make(
-    _generic_neg_test_impl,
-    attrs = {
-        "reason": attr.string(
-            default = "",
-        ),
-    },
-    expect_failure = True,
-)
-
-def _generic_base_case_test_impl(ctx):
-    env = analysistest.begin(ctx)
-
-    # Nothing here intentionally, this is simply an attempt to verify successful
-    # analysis.
-
-    return analysistest.end(env)
-
-generic_base_case_test = analysistest.make(
-    _generic_base_case_test_impl,
-    attrs = {},
-)
+load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
 
 def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):
     pfg_name = "{}_pfg".format(name)
@@ -89,7 +57,7 @@ def _declare_conflicts_test(name, srcs, **kwargs):
         tags = ["manual"],
     )
 
-    generic_neg_test(
+    generic_negative_test(
         name = name,
         target_under_test = ":" + rpm_name,
     )

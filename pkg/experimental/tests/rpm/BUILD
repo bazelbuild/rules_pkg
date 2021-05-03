@@ -13,10 +13,22 @@
 # limitations under the License.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "pkg_mklink")
+load(
+    "@rules_pkg//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_filegroup",
+    "pkg_files",
+    "pkg_mkdirs",
+    "pkg_mklink",
+)
 load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load(":analysis_tests.bzl", "analysis_tests")
+
+exports_files(
+    ["template-test.spec.in"],
+    visibility = [":__subpackages__"],
+)
 
 ############################################################################
 # analysis tests
@@ -266,6 +278,13 @@ sh_library(
 # Actual tests
 ############################################################################
 
+py_library(
+    name = "rpm_util",
+    srcs = ["rpm_util.py"],
+    imports = ["."],
+    visibility = [":__subpackages__"],
+)
+
 # RPM content verification tests
 py_test(
     name = "pkg_rpm_basic_test",
@@ -273,9 +292,12 @@ py_test(
     data = [":pkg_rpm_basic_test_data"],
     python_version = "PY3",
     tags = [
-        "no_windows",  # Windows doesn't have rpmbuild(8)
+        "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
-    deps = ["@rules_python//python/runfiles"],
+    deps = [
+        ":rpm_util",
+        "@rules_python//python/runfiles",
+    ],
 )
 
 # Smoke test for defaults

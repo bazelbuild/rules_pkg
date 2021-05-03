@@ -30,7 +30,10 @@ filegroup(
         ":test_tar_package_dir",
         ":test_tar_package_dir_file",
     ],
-    visibility = ["//tests:__subpackages__"],
+    visibility = [
+        "//tests:__subpackages__",
+        "//legacy/tests:__subpackages__",
+    ],
 )
 
 py_test(
