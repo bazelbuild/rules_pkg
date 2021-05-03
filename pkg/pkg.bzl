@@ -369,7 +369,8 @@ pkg_tar_impl = rule(
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(default = 0),
-        # 
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
         "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
@@ -411,7 +412,7 @@ def pkg_tar(name, **kwargs):
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
         private_stamp_detect = select({
-            "@rules_pkg//private:stamp": True,
+            "@rules_pkg//private:private_stamp_detect": True,
             "//conditions:default": False,
         }),
         **kwargs

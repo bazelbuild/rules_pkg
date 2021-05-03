@@ -31,7 +31,9 @@ class PackagingTest(unittest.TestCase):
   def setUp(self):
     self.data_files = runfiles.Create()
     self.source_repo = 'rules_pkg'
-    self.dest_repo = 'not_named_rules_pkg'
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Rename back
+    # to 'not_named_rules_pkg'
+    self.dest_repo = 'rules_pkg'
     self.version = release_version.RELEASE_VERSION
 
   def testBuild(self):

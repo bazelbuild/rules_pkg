@@ -38,7 +38,7 @@ exports_files(
 )
 
 config_setting(
-    name = "stamp",
+    name = "private_stamp_detect",
     values = {"stamp": "1"},
 )
 
