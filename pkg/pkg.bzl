@@ -30,6 +30,8 @@ SUPPORTED_TAR_COMPRESSIONS = (
 )
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
+# Tricky way to get a proper reference to the stamp condition.
+_stamp_condition = "@" + Label("//:build_tar").workspace_name + "//private:private_stamp_detect"
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -333,6 +335,7 @@ def _pkg_deb_impl(ctx):
         ),
     ]
 
+
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
@@ -412,7 +415,7 @@ def pkg_tar(name, **kwargs):
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
         private_stamp_detect = select({
-            "@rules_pkg//private:private_stamp_detect": True,
+            _stamp_condition: True,
             "//conditions:default": False,
         }),
         **kwargs
