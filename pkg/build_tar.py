@@ -306,14 +306,15 @@ def main():
         f = f[1:]
       ids_map[f] = (int(user), int(group))
 
+  default_mtime = options.mtime
   if options.stamp_from:
-    print(">>>> should time stamp at %d", build_info.get_timestamp(options.stamp_from))
+    default_mtime = build_info.get_timestamp(options.stamp_from)
 
   # Add objects to the tar file
   with TarFile(
       options.output, helpers.GetFlagValue(options.directory),
       options.compression, options.compressor, options.root_directory,
-      options.mtime) as output:
+      default_mtime=default_mtime) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

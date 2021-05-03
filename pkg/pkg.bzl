@@ -45,9 +45,6 @@ def _quote(filename, protect = "="):
 def _pkg_tar_impl(ctx):
     """Implementation of the pkg_tar rule."""
 
-    print('Info file', ctx.info_file.path)
-    print('Version file', ctx.version_file.path)
-
     # Files needed by rule implementation at runtime
     files = []
 
@@ -146,9 +143,10 @@ def _pkg_tar_impl(ctx):
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
         for k in ctx.attr.symlinks
     ]
-    if ctx.attr.stamp_pkg:
-       args.append("--stamp_from=%s" % ctx.version_file.path)
-       files.append(ctx.version_file)
+    if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
+                               ctx.attr.internal_stamp_detect):
+        args.append("--stamp_from=%s" % ctx.version_file.path)
+        files.append(ctx.version_file)
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -370,7 +368,9 @@ pkg_tar_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
-        "stamp_pkg": attr.bool(default = False),
+        "stamp": attr.int(default = 0),
+        # 
+        "internal_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -410,8 +410,8 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
-        stamp_pkg = select({
-            "//internal:stamp": True,
+        internal_stamp_detect = select({
+            "@rules_pkg//internal:stamp": True,
             "//conditions:default": False,
         }),
         **kwargs

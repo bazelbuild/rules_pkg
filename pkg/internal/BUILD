@@ -1,3 +1,8 @@
+"""rules_pkg internal code.
+
+This is subject to change at any time.
+"""
+
 load("@rules_python//python:defs.bzl", "py_library")
 
 licenses(["notice"])
