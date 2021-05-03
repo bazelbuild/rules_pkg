@@ -25,7 +25,7 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 """
 
-load("//:private/util.bzl", "setup_output_files")
+load("//private:util.bzl", "setup_output_files")
 load("//:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageVariablesInfo")
 
 rpm_filetype = [".rpm"]
