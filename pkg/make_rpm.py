@@ -21,6 +21,7 @@ import argparse
 import contextlib
 import fileinput
 import os
+import pprint
 import re
 import shutil
 import subprocess
@@ -368,15 +369,18 @@ class RpmBuilder(object):
 
     args.append(self.spec_file)
 
-    if self.debug:
-      print('Running rpmbuild as:', ' '.join(["'" + a + "'" for a in args]))
-
     env = {
         'LANG': 'C',
         'RPM_BUILD_ROOT': buildroot,
     }
     if self.source_date_epoch:
       env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
+      args += ["--define", "clamp_mtime_to_source_date_epoch Y"]
+
+    if self.debug:
+      print('Running rpmbuild as:', ' '.join(["'" + a + "'" for a in args]))
+      print('With environment:')
+      pprint.pprint(env)
 
     p = subprocess.Popen(
         args,

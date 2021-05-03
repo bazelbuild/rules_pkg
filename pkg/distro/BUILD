@@ -142,8 +142,10 @@ stardoc(
 )
 
 stardoc(
-    name = "docs_rpm",
-    out = "pkg_rpm.md",
-    input = "//:rpm.bzl",
+    name = "docs_legacy_rpm",
+    out = "legacy_pkg_rpm.md",
+    input = "//legacy:rpm.bzl",
     deps = [":rules_pkg_lib"],
 )
+
+# TODO(nacl): update this for the new RPM builder; pkg_filegroup
