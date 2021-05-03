@@ -19,6 +19,7 @@ import subprocess
 import csv
 import io
 import os
+import rpm_util
 from rules_python.python.runfiles import runfiles
 
 # This provides some tests for built RPMs, mostly by taking the built RPM and
@@ -90,45 +91,10 @@ echo postun
             manifest_reader = csv.DictReader(fh)
             manifest_specs = {r['path']: r for r in manifest_reader}
 
-        # It is not necessary to check for file sizes, as the hashes are
-        # sufficient for determining whether or not files are the same.
-        #
-        # This also simplifies behavior where RPM's size calculations have
-        # sometimes changed, e.g.:
-        #
-        # https://github.com/rpm-software-management/rpm/commit/2cf7096ba534b065feb038306c792784458ac9c7
+        rpm_specs = rpm_util.read_rpm_filedata(self.test_rpm_path)
 
-        rpm_queryformat = (
-            "[%{FILENAMES}"
-            ",%{FILEDIGESTS}"
-            ",%{FILEUSERNAME}"
-            ",%{FILEGROUPNAME}"
-            ",%{FILEMODES:octal}"
-            ",%{FILEFLAGS:fflags}"
-            ",%{FILELINKTOS}"
-            "\n]"
-        )
+        self.assertDictEqual(manifest_specs, rpm_specs)
 
-        rpm_queryformat_fieldnames = [
-            "path",
-            "digest",
-            "user",
-            "group",
-            "mode",
-            "fflags",
-            "symlink",
-        ]
-
-        rpm_output = subprocess.check_output(
-            ["rpm", "-qp", "--queryformat", rpm_queryformat, self.test_rpm_path])
-
-        sio = io.StringIO(rpm_output.decode('utf-8'))
-        rpm_output_reader = csv.DictReader(
-            sio, fieldnames = rpm_queryformat_fieldnames)
-
-        rpm_output_specs = {r['path'] : r for r in rpm_output_reader}
-
-        self.assertDictEqual(manifest_specs, rpm_output_specs)
     def test_preamble_metadata(self):
         metadata_prefix = "rules_pkg/experimental/tests/rpm"
 
@@ -240,7 +206,6 @@ echo postun
         sio = io.StringIO(rpm_output.decode('utf-8'))
         actual_compressor = sio.read()
         self.assertEqual(actual_compressor, 'bzip2')
-
 
 if __name__ == "__main__":
     unittest.main()

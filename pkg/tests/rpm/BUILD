@@ -13,18 +13,6 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
 load(":toolchain_tests.bzl", "create_toolchain_analysis_tests")
-load("//:rpm.bzl", "pkg_rpm")
-
-pkg_rpm(
-    name = "test-rpm",
-    data = ["//tests:archive_testdata"],
-    debug = 1,
-    release = "0",
-    spec_file = "test_rpm.spec",
-    version = "1",
-)
 
 create_toolchain_analysis_tests()
