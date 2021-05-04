@@ -140,7 +140,7 @@ def _pkg_tar_impl(ctx):
             compression = ctx.attr.extension
         if compression == "tgz":
             compression = "gz"
-        if compression != "tar":
+        if compression and compression in SUPPORTED_TAR_COMPRESSIONS:
             args += ["--compression=%s" % compression]
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [

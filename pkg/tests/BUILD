@@ -31,8 +31,8 @@ filegroup(
         ":test_tar_package_dir_file",
     ],
     visibility = [
-        "//tests:__subpackages__",
         "//legacy/tests:__subpackages__",
+        "//tests:__subpackages__",
     ],
 )
 
@@ -102,9 +102,9 @@ py_binary(
 
 pkg_tar(
     name = "test_tar_compression",
-    deps = ["testdata/tar_test.tar"],
     compressor = ":compressor",
-    compressor_args = "-a -b -c"
+    compressor_args = "-a -b -c",
+    deps = ["testdata/tar_test.tar"],
 )
 
 #
@@ -535,4 +535,43 @@ filegroup(
         "testdata/loremipsum.txt",
     ],
     visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "test-tar-compression-from-extension-targz",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = ".tar.gz",
+)
+
+pkg_tar(
+    name = "test-tar-compression-from-extension-tgz",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = "tgz",
+)
+
+pkg_tar(
+    name = "test-tar-compression-from-extension-bz2",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = ".bz2",
+)
+
+py_test(
+    name = "is_compressed_test",
+    srcs = ["is_compressed_test.py"],
+    data = [
+        ":test-tar-compression-from-extension-bz2",
+        ":test-tar-compression-from-extension-targz",
+        ":test-tar-compression-from-extension-tgz",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
 )
