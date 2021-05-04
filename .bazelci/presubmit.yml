@@ -1,4 +1,12 @@
-imports:
-- tests.yml
-- examples.yml
-- integration.yml
+---
+platforms:
+  ubuntu1804:
+    shell_commands:
+    - bazel version
+    build_targets:
+    - "..."
+  centos7:
+    shell_commands:
+    - bazel version
+    build_targets:
+    - "..."
