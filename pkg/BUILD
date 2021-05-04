@@ -42,8 +42,8 @@ filegroup(
     ]) + [
         "BUILD",
         "LICENSE",
-        "//experimental:standard_package",
         "//legacy:standard_package",
+        "//rpm:standard_package",
     ],
     visibility = ["//distro:__pkg__"],
 )

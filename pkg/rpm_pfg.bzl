@@ -866,7 +866,7 @@ pkg_rpm = rule(
             In most cases, you should not need to override this attribute.
             """,
             allow_single_file = spec_filetype,
-            default = "//experimental:template.spec.in",
+            default = "//rpm:template.spec.in",
         ),
         "binary_payload_compression": attr.string(
             doc = """Compression mode used for this RPM
@@ -903,7 +903,7 @@ pkg_rpm = rule(
             allow_files = True,
         ),
         "_treeartifact_helper": attr.label(
-            default = Label("//experimental:augment_rpm_files_install"),
+            default = Label("//rpm:augment_rpm_files_install"),
             cfg = "exec",
             executable = True,
             allow_files = True,

@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(
-    "@rules_pkg//:mappings.bzl",
-    "pkg_filegroup",
-    "pkg_files",
-)
-load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
+load("//:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################
@@ -36,7 +32,7 @@ py_test(
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
     deps = [
-        "//experimental/tests/rpm:rpm_util",
+        "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -61,7 +57,7 @@ pkg_rpm(
     release = "2222",
     # Tue Mar 23 00:00:00 EDT 2021
     source_date_epoch = 1616472000,
-    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -102,7 +98,7 @@ py_test(
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
     deps = [
-        "//experimental/tests/rpm:rpm_util",
+        "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -127,7 +123,7 @@ pkg_rpm(
     release = "2222",
     # Tue Mar 23 00:00:00 EDT 2021
     source_date_epoch_file = "epoch.txt",
-    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
