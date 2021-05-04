@@ -38,7 +38,7 @@ class PkgRpmCompManifest(unittest.TestCase):
         # test.
         self.rpm_path = self.runfiles.Rlocation(os.path.join(
             os.environ["TEST_WORKSPACE"],
-            "experimental", "tests", "rpm", "tree_artifacts",
+            "tests", "rpm", "tree_artifacts",
             # The object behind os.environ is not a dict, and thus doesn't have
             # the "getdefault()" we'd otherwise use here.
             os.environ["TEST_RPM"] if "TEST_RPM" in os.environ else "treeartifact_ops_rpm.rpm",
