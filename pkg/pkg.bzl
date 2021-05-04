@@ -30,8 +30,7 @@ SUPPORTED_TAR_COMPRESSIONS = (
 )
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
-# Tricky way to get a proper reference to the stamp condition.
-_stamp_condition = "@" + Label("//:build_tar").workspace_name + "//private:private_stamp_detect"
+_stamp_condition = str(Label("//private:private_stamp_detect"))
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
