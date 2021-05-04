@@ -34,7 +34,7 @@ import textwrap
 
 
 def main(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 
     parser.add_argument("--strip_prefix", type=pathlib.Path, default=None,
                         help="directory prefix to strip from all incoming paths")
@@ -119,12 +119,17 @@ def main(argv):
         else:
             dest_dir = dir_out
 
-        # strip_prefix must apply to everything to overall surprise.  If this
-        # root contains files and is not under strip_prefix, record it and fail
-        # after this preprocessing stage.
+        # strip_prefix must apply to everything to reduce overall surprise.  If
+        # this root contains files and is not under strip_prefix, record it and
+        # fail after this preprocessing stage.
         #
         # This can be refined somewhat -- for example, if we descend into a
         # child directory, we don't need to mention it again.
+        #
+        # TODO(nacl): this does not make an attempt to tell if everything was
+        # rename'd out of the directory we're currently inspecting.  We could
+        # theoretically check if this was actually used, and if it was, then add
+        # it in.
         dest_rel_root = rel_root
         if len(files) != 0 and args.strip_prefix is not None:
             try:

@@ -29,14 +29,13 @@ from rules_python.python.runfiles import runfiles
 # better way to do this, but it works.
 
 rf = runfiles.Create()
-filter_directory_script = rf.Rlocation(os.path.join(
+filter_directory_script = rf.Rlocation('/'.join([
     os.environ["TEST_WORKSPACE"],
     "filter_directory"
-))
+]))
 
 sys.path.append(os.path.dirname(filter_directory_script))
-
-import filter_directory
+import filter_directory  # noqa: E402
 
 
 # TODO: These tests are largely to ensure that filter_directory fails, but it
@@ -71,8 +70,7 @@ class FilterDirectoryInternalTest(unittest.TestCase):
                             prefix=None,        # str
                             strip_prefix=None,  # str
                             renames=None,       # list of tuple
-                            exclusions=None,    # list
-    ):
+                            exclusions=None):    # list
         args = []
         if prefix:
             args.append("--prefix={}".format(prefix))

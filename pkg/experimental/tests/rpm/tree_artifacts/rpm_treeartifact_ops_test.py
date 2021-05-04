@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import csv
 import io
 import os
 import rpm_util
+import unittest
 from rules_python.python.runfiles import runfiles
 
 EXPECTED_RPM_MANIFEST_CSV = """

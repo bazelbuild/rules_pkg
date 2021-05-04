@@ -646,38 +646,38 @@ def _filter_directory_impl(ctx):
     return [DefaultInfo(files = depset([out_dir]))]
 
 filter_directory = rule(
-    doc = """
-    Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
+    doc = """Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
 
-    Order of operations:
+    Effective order of operations:
     
-    - Files are `exclude`d
-    - `strip_prefix` is applied
-    - `renames` is applied, overriding `strip_prefix`
-    - `prefix` is applied
+    1) Files are `exclude`d
+    2) `renames` _or_ `strip_prefix` is applied.
+    3) `prefix` is applied 
     
-    Each non-renamed path will look like this:
+    In particular, if a `rename` applies to an individual file, `strip_prefix`
+    will not be applied to that particular file.
+    
+    Each non-`rename``d path will look like this:
 
     ```
     $OUTPUT_DIR/$PREFIX/$FILE_WITHOUT_STRIP_PREFIX
     ```
 
-    Each renamed path will look like this:
+    Each `rename`d path will look like this:
     
     ```
     $OUTPUT_DIR/$PREFIX/$FILE_RENAMED
     ```
     
-    If an operation cannot be applied to any component in the directory, or if
-    one is unused, the underlying command will fail.
+    If an operation cannot be applied (`strip_prefix`) to any component in the
+    directory, or if one is unused (`exclude`, `rename`), the underlying command
+    will fail.  See the individual attributes for details.
     """,
     implementation = _filter_directory_impl,
     attrs = {
         # @unsorted-dict-items
         "src": attr.label(
-            doc = """
-            Directory (TreeArtifact) to process.
-            """,
+            doc = """Directory (TreeArtifact) to process.""",
             allow_single_file = True,
             mandatory = True,
         ),
@@ -687,7 +687,7 @@ filter_directory = rule(
         "strip_prefix": attr.string(
             doc = """Prefix to remove from all paths in the output directory.
 
-            Must apply to all paths in the directory.
+            Must apply to all paths in the directory, even those rename'd.
             """,
         ),
         "prefix": attr.string(
@@ -698,7 +698,7 @@ filter_directory = rule(
             """,
         ),
         "renames": attr.string_dict(
-            doc = """Files to rename in the output directory
+            doc = """Files to rename in the output directory.
             
             Keys are destinations, values are sources prior to any path
             modifications (e.g. via `prefix` or `strip_prefix`).  Files that are
@@ -711,9 +711,9 @@ filter_directory = rule(
             """,
         ),
         "excludes": attr.string_list(
-            doc = """Files to exclude from the output directory
+            doc = """Files to exclude from the output directory.
             
-            Each element must refer to an invidual file in `src`.
+            Each element must refer to an individual file in `src`.
 
             All exclusions must be used.
             """,
