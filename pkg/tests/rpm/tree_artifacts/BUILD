@@ -21,6 +21,7 @@ load(
     "pkg_files",
     "strip_prefix",
 )
+
 load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 

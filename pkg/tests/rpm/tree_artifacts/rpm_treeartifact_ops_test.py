@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import csv
 import io
 import os
 import rpm_util
+import unittest
 from rules_python.python.runfiles import runfiles
 
 EXPECTED_RPM_MANIFEST_CSV = """
@@ -36,13 +36,13 @@ class PkgRpmCompManifest(unittest.TestCase):
         self.maxDiff = None
         # Allow for parameterization of this test based on the desired RPM to
         # test.
-        self.rpm_path = self.runfiles.Rlocation("/".join([
+        self.rpm_path = self.runfiles.Rlocation(os.path.join(
             os.environ["TEST_WORKSPACE"],
             "tests", "rpm", "tree_artifacts",
             # The object behind os.environ is not a dict, and thus doesn't have
             # the "getdefault()" we'd otherwise use here.
             os.environ["TEST_RPM"] if "TEST_RPM" in os.environ else "treeartifact_ops_rpm.rpm",
-        ]))
+        ))
 
     def test_contents_match(self):
         sio = io.StringIO(EXPECTED_RPM_MANIFEST_CSV)
