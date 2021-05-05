@@ -37,6 +37,7 @@ tasks:
     test_targets:
     - "//tests:archive_test"
     - "//tests:helpers_test"
+    - "//tests:is_compressed_test"
     - "//tests:pkg_deb_test"
     - "//tests:pkg_tar_test"
     - "//tests:test_tar_compression"
