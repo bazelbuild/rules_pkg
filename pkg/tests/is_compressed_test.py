@@ -20,17 +20,15 @@ from bazel_tools.tools.python.runfiles import runfiles
 
 class IsCompressedTest(unittest.TestCase):
 
+  def setUp(self):
+    self.data_files = runfiles.Create()
+
   def get_file_under_test(self, file_name):
     """Get the file path to a generated archive in the runfiles."""
 
     return self.data_files.Rlocation(
         "rules_pkg/tests/" + file_name
     )
-
-  def setUp(self):
-    super(IsCompressedTest, self).setUp()
-    self.data_files = runfiles.Create()
-
 
   def is_zip_compressed(self, file_name):
     """Returns true if file_name is zip compressed."""
