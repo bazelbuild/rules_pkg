@@ -15,7 +15,7 @@
 """Tests for RPM generation analysis"""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("//experimental:rpm.bzl", "pkg_rpm")
+load("//:rpm.bzl", "pkg_rpm")
 load(
     "//:mappings.bzl",
     "pkg_filegroup",

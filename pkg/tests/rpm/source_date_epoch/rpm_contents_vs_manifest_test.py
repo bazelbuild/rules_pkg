@@ -68,13 +68,13 @@ class PkgRpmCompManifest(unittest.TestCase):
 
         # Allow for parameterization of this test based on the desired RPM to
         # test.
-        self.rpm_file_path = self.runfiles.Rlocation(os.path.join(
+        self.rpm_file_path = self.runfiles.Rlocation("/".join([
             os.environ["TEST_WORKSPACE"],
-            "experimental", "tests", "rpm", "source_date_epoch",
+            "tests", "rpm", "source_date_epoch",
             # The object behind os.environ is not a dict, and thus doesn't have
             # the "getdefault()" we'd otherwise use here.
             os.environ["TEST_RPM"],
-        ))
+        ]))
 
     def test_contents_match(self):
         sio = io.StringIO(EXPECTED_RPM_MANIFEST_CSV)

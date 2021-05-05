@@ -13,6 +13,9 @@
 # limitations under the License.
 """Rules to create RPM archives.
 
+NOTE: this module is deprecated in favor of pkg/rpm_pfg.bzl. For more
+information on the `pkg_filegroup` framework it uses, see pkg/mappings.bzl.
+
 pkg_rpm() depends on the existence of an rpmbuild toolchain. Many users will
 find to convenient to use the one provided with their system. To enable that
 toolchain add the following stanza to WORKSPACE:

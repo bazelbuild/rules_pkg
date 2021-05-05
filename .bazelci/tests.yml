@@ -4,7 +4,6 @@ common: &common
   - "..."
   # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
   - "-//tests/rpm/..."
-  - "-//experimental/tests/rpm/..."
   - "-//legacy/tests/rpm/..."
 
 
@@ -28,7 +27,6 @@ tasks:
     - "..."
     # rpmbuild(8) is not available by default on macOS
     - "-//tests/rpm/..."
-    - "-//experimental/tests/rpm/..."
     - "-//legacy/tests/rpm/..."
   windows:
     working_directory: ../pkg
