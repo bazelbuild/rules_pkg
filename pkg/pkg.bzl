@@ -131,7 +131,8 @@ def _pkg_tar_impl(ctx):
         args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
     if ctx.attr.empty_dirs:
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
-    if ctx.attr.extension and not ctx.executable.compressor:
+    extension = ctx.attr.extension
+    if extension and extension != 'tar' and not ctx.executable.compressor:
         compression = None
         dotPos = ctx.attr.extension.rfind(".")
         if dotPos >= 0:
@@ -140,8 +141,11 @@ def _pkg_tar_impl(ctx):
             compression = ctx.attr.extension
         if compression == "tgz":
             compression = "gz"
-        if compression and compression in SUPPORTED_TAR_COMPRESSIONS:
-            args += ["--compression=%s" % compression]
+        if compression:
+            if compression in SUPPORTED_TAR_COMPRESSIONS:
+                args += ["--compression=%s" % compression]
+            else:
+                fail("Unsupported compression: '%s'" % compression)
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
