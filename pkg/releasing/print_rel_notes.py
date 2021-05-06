@@ -74,6 +74,7 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
         !!!: Make sure to copy the file to the release notes.
         If you are using Google Cloud Storage, you might use a command like
         gsutil cp bazel-bin/distro/${file} gs://bazel-mirror/${path}
+        gsutil setmeta -h "Cache-Control: public, max-age=31536000" "gs://bazel-mirror/${path}"
         """).strip())
     print(mirroring_template.substitute({
         'org': org,
