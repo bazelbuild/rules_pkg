@@ -26,7 +26,7 @@ def get_timestamp(volatile_status_file):
   Returns:
     int: value of BUILD_TIMESTAMP
   Exceptions:
-    Exception: Raised if there is no BUILD_TIMESTAMP
+    Exception: Raised if there is no BUILD_TIMESTAMP or if it is not a number.
   """
   with open(volatile_status_file, 'r') as status_f:
     for line in status_f:

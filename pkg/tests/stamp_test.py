@@ -28,6 +28,11 @@ class PkgTarTest(unittest.TestCase):
   def assertTarFilesAreAlmostNew(self, file_name):
     """Assert that tarfile contains files with an mtime of roughly now.
 
+    This is used to prove that the test data was a file which was presumably:
+    built with 'stamp=1' or ('stamp=-1' and --stamp) contains files which
+    all have a fairly recent mtime, thus indicating they are "current" time
+    rather than the epoch or some other time.
+
     Args:
         file_name: the path to the TAR file to test.
     """
@@ -41,8 +46,9 @@ class PkgTarTest(unittest.TestCase):
                file_path, info.name))
         if ((info.mtime < target_mtime - 10000)
             or (info.mtime > target_mtime + 10000)):
-           self.fail('Archive %s contains file %s with mtime:%d, expected:%d' % (
-               file_path, info.name, info.mtime, target_mtime))
+           self.fail(
+               'Archive %s contains file %s with mtime:%d, expected:%d' % (
+                   file_path, info.name, info.mtime, target_mtime))
 
 
   def test_not_epoch_times(self):
