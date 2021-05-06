@@ -575,3 +575,22 @@ py_test(
         "@bazel_tools//tools/python/runfiles",
     ],
 )
+
+pkg_tar(
+    name = "stamped_tar",
+    srcs = ["BUILD"],
+    stamp = 1,
+)
+
+py_test(
+    name = "stamp_test",
+    srcs = [
+        "stamp_test.py",
+    ],
+    data = [
+        "stamped_tar.tar",
+    ],
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)

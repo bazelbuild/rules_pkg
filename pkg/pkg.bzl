@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("private/util.bzl", "setup_output_files", "substitute_package_variables")
+load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -30,6 +30,7 @@ SUPPORTED_TAR_COMPRESSIONS = (
 )
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
+_stamp_condition = str(Label("//private:private_stamp_detect"))
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -151,6 +152,10 @@ def _pkg_tar_impl(ctx):
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
         for k in ctx.attr.symlinks
     ]
+    if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
+                               ctx.attr.private_stamp_detect):
+        args.append("--stamp_from=%s" % ctx.version_file.path)
+        files.append(ctx.version_file)
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -337,6 +342,7 @@ def _pkg_deb_impl(ctx):
         ),
     ]
 
+
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
@@ -372,6 +378,10 @@ pkg_tar_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
+        "stamp": attr.int(default = 0),
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -413,6 +423,10 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
+        private_stamp_detect = select({
+            _stamp_condition: True,
+            "//conditions:default": False,
+        }),
         **kwargs
     )
 

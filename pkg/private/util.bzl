@@ -13,7 +13,7 @@
 # limitations under the License.
 """Internal utilities for rules_pkg."""
 
-load(":providers.bzl", "PackageVariablesInfo")
+load("//:providers.bzl", "PackageVariablesInfo")
 
 def setup_output_files(ctx, package_file_name = None, default_output_file = None):
     """Provide output file metadata for common packaging rules

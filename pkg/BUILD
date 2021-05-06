@@ -20,7 +20,6 @@ licenses(["notice"])
 exports_files(
     glob([
         "*.bzl",
-        "private/**",
     ]),
     visibility = ["//visibility:public"],
 )
@@ -88,6 +87,7 @@ py_binary(
     deps = [
         ":archive",
         ":helpers",
+        "//private:build_info",
     ],
 )
 
@@ -148,6 +148,6 @@ py_library(
 py_binary(
     name = "filter_directory",
     srcs = ["filter_directory.py"],
-    visibility = ["//visibility:public"],
     python_version = "PY3",
+    visibility = ["//visibility:public"],
 )
