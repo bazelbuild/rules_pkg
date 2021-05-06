@@ -19,6 +19,7 @@ import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
 
+# keep in sync with archive.py
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 class PkgTarTest(unittest.TestCase):
@@ -38,7 +39,8 @@ class PkgTarTest(unittest.TestCase):
         if info.mtime == PORTABLE_MTIME:
            self.fail('Archive %s contains file %s with portable mtime' % (
                file_path, info.name))
-        if (info.mtime < target_mtime - 100) or (info.mtime > target_mtime + 100):
+        if ((info.mtime < target_mtime - 10000)
+            or (info.mtime > target_mtime + 10000)):
            self.fail('Archive %s contains file %s with mtime:%d, expected:%d' % (
                file_path, info.name, info.mtime, target_mtime))
 

@@ -14,14 +14,15 @@
 
 load("//tests/util:defs.bzl", "directory")
 load(
-    "@rules_pkg//:mappings.bzl",
+    "//:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
-load("@rules_pkg//experimental:rpm.bzl", "pkg_rpm")
+
+load("//:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################
@@ -47,7 +48,7 @@ py_test(
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
     deps = [
-        "//experimental/tests/rpm:rpm_util",
+        "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -70,7 +71,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -156,7 +157,7 @@ py_test(
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
     deps = [
-        "//experimental/tests/rpm:rpm_util",
+        "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -178,7 +179,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -207,7 +208,7 @@ py_test(
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
     deps = [
-        "//experimental/tests/rpm:rpm_util",
+        "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -227,7 +228,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//experimental/tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.in",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )

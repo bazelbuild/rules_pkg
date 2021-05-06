@@ -538,6 +538,45 @@ filegroup(
 )
 
 pkg_tar(
+    name = "test-tar-compression-from-extension-targz",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = ".tar.gz",
+)
+
+pkg_tar(
+    name = "test-tar-compression-from-extension-tgz",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = "tgz",
+)
+
+pkg_tar(
+    name = "test-tar-compression-from-extension-bz2",
+    srcs = [
+        "testdata/loremipsum.txt",
+    ],
+    extension = ".bz2",
+)
+
+py_test(
+    name = "is_compressed_test",
+    srcs = ["is_compressed_test.py"],
+    data = [
+        ":test-tar-compression-from-extension-bz2",
+        ":test-tar-compression-from-extension-targz",
+        ":test-tar-compression-from-extension-tgz",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+pkg_tar(
     name = "stamped_tar",
     srcs = ["BUILD"],
     stamp = 1,

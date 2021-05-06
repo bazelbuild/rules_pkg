@@ -132,13 +132,21 @@ def _pkg_tar_impl(ctx):
         args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
     if ctx.attr.empty_dirs:
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
-    if ctx.attr.extension and not ctx.executable.compressor:
-        dotPos = ctx.attr.extension.find(".")
-        if dotPos > 0:
-            dotPos += 1
-            args += ["--compression=%s" % ctx.attr.extension[dotPos:]]
-        elif ctx.attr.extension == "tgz":
-            args += ["--compression=gz"]
+    extension = ctx.attr.extension
+    if extension and extension != 'tar' and not ctx.executable.compressor:
+        compression = None
+        dotPos = ctx.attr.extension.rfind(".")
+        if dotPos >= 0:
+            compression = ctx.attr.extension[dotPos+1:]
+        else:
+            compression = ctx.attr.extension
+        if compression == "tgz":
+            compression = "gz"
+        if compression:
+            if compression in SUPPORTED_TAR_COMPRESSIONS:
+                args += ["--compression=%s" % compression]
+            else:
+                fail("Unsupported compression: '%s'" % compression)
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
@@ -403,6 +411,8 @@ def pkg_tar(name, **kwargs):
                 kwargs["srcs"] = kwargs.pop("files")
     archive_name = kwargs.pop("archive_name", None)
     extension = kwargs.get("extension") or "tar"
+    if extension[0] == '.':
+      extension = extension[1:]
     if archive_name:
         if kwargs.get("package_file_name"):
             fail("You may not set both 'archive_name' and 'package_file_name'.")

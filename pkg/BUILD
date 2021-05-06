@@ -41,8 +41,8 @@ filegroup(
     ]) + [
         "BUILD",
         "LICENSE",
-        "//experimental:standard_package",
         "//legacy:standard_package",
+        "//rpm:standard_package",
     ],
     visibility = ["//distro:__pkg__"],
 )
@@ -144,4 +144,10 @@ py_library(
         ":helpers",
     ],
 )
-# limitations under the License.
+
+py_binary(
+    name = "filter_directory",
+    srcs = ["filter_directory.py"],
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)

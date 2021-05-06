@@ -14,21 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import csv
 import io
 import os
 import rpm_util
+import unittest
 from rules_python.python.runfiles import runfiles
 
 EXPECTED_RPM_MANIFEST_CSV = """
 path,digest,user,group,mode,fflags,symlink
-/test_dir/a,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
-/test_dir/b,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
-/test_dir/subdir/c,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
-/test_dir/subdir/d,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
-/test_dir/e,d41d8cd98f00b204e9800998ecf8427e,root,root,100644,,
-/test_dir/f,d41d8cd98f00b204e9800998ecf8427e,root,root,100644,,
+/a,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
+/b,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
+/subdir/c,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
+/subdir/d,dc35e5df50b75e25610e1aaaa29edaa4,root,root,100644,,
 """.strip()
 
 
@@ -38,16 +36,13 @@ class PkgRpmCompManifest(unittest.TestCase):
         self.maxDiff = None
         # Allow for parameterization of this test based on the desired RPM to
         # test.
-
-        # runfiles prefers Bazely (POSIX-style) relative paths, so we can't
-        # really use os.path.join() here.
-        self.rpm_path = self.runfiles.Rlocation('/'.join([
+        self.rpm_path = self.runfiles.Rlocation(os.path.join(
             os.environ["TEST_WORKSPACE"],
-            "experimental", "tests", "rpm", "tree_artifacts",
+            "tests", "rpm", "tree_artifacts",
             # The object behind os.environ is not a dict, and thus doesn't have
             # the "getdefault()" we'd otherwise use here.
-            os.environ["TEST_RPM"] if "TEST_RPM" in os.environ else "test_dirs_rpm.rpm",
-        ]))
+            os.environ["TEST_RPM"] if "TEST_RPM" in os.environ else "treeartifact_ops_rpm.rpm",
+        ))
 
     def test_contents_match(self):
         sio = io.StringIO(EXPECTED_RPM_MANIFEST_CSV)

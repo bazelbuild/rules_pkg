@@ -17,7 +17,7 @@
 This module provides a wrapper macro "pkg_rpm" that allows users to select
 between the two variants of `pkg_rpm`:
 
-- `pkg_rpm_experimental`, which arranges contents via the `pkg_filegroup`
+- `pkg_rpm_pfg`, which arranges contents via the `pkg_filegroup`
   framework defined in `:mappings.bzl`.
 
 - `pkg_rpm_legacy`, which arranges contents via a spec file template.
@@ -29,8 +29,8 @@ The mechanism for choosing between the two is documented in the function itself.
 
 """
 
-load("//experimental:rpm.bzl", pkg_rpm_experimental = "pkg_rpm")
 load("//legacy:rpm.bzl", pkg_rpm_legacy = "pkg_rpm")
+load("//:rpm_pfg.bzl", pkg_rpm_pfg = "pkg_rpm")
 
 def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
     """pkg_rpm wrapper
@@ -38,16 +38,16 @@ def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
     This rule selects between the two implementations of pkg_rpm as described in
     the module docstring.  In particular:
 
-    If `srcs` is provided, this macro will choose `pkg_rpm_experimental`.  If
+    If `srcs` is provided, this macro will choose `pkg_rpm_pfg`.  If
     `spec_file` is provided, it will choose `pkg_rpm_legacy`.
 
     If neither or both are provided, this will fail.
 
     Args:
       name: rule name
-      srcs: pkg_rpm_experimental `srcs` attribute
+      srcs: pkg_rpm_pfg `srcs` attribute
       spec_file: pkg_rpm_legacy `spec_file` attribute
-      **kwargs: arguments to eihter `pkg_rpm_experimental` or `pkg_rpm_legacy`,
+      **kwargs: arguments to eihter `pkg_rpm_pfg` or `pkg_rpm_legacy`,
                 depending on mode
 
     """
@@ -58,7 +58,7 @@ def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
         fail("Either `srcs` or `spec_file` must be provided.")
 
     if srcs:
-        pkg_rpm_experimental(
+        pkg_rpm_pfg(
             name = name,
             srcs = srcs,
             **kwargs
