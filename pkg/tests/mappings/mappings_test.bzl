@@ -46,12 +46,18 @@ def _pkg_files_contents_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     expected_dests = {e: None for e in ctx.attr.expected_dests}
+    n_found = 0
     for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
+        # skip .exe files because they are unexpected extra outputs of
+        # sh_binary on Windows.
         if got.endswith(".exe"):
             continue
         asserts.true(
             got in expected_dests,
             "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests))
+        n_found += 1
+    asserts.equals(env, len(expected_dests), n_found)
+
 
     # Simple equality checks for the others, if specified
     if ctx.attr.expected_attributes:
