@@ -40,7 +40,7 @@ tasks:
     - "//tests:is_compressed_test"
     - "//tests:pkg_deb_test"
     - "//tests:pkg_tar_test"
-    - "//tests:strip_test"
+    - "//tests:stamp_test"
     - "//tests:test_tar_compression"
     - "//tests:zip_test"
     - "//tests/mappings/..."
