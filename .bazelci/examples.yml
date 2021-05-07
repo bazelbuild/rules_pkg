@@ -7,10 +7,6 @@ tasks:
     platform: centos7
     working_directory: /workdir/examples/naming_package_files
     <<: *common
-  ubuntu1604:
-    platform: ubuntu1604
-    working_directory: /workdir/examples/naming_package_files
-    <<: *common
   ubuntu1804:
     platform: ubuntu1804
     working_directory: /workdir/examples/naming_package_files
