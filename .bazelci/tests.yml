@@ -32,7 +32,6 @@ tasks:
     - "-//distro/..."
     - "-//legacy/tests/rpm/..."
     - "-//tests:make_rpm_test"
-    - "-//tests:package_naming_aggregate_test"
     - "-//tests:path_test"
     - "-//tests/mappings/filter_directory/..."
     - "-//tests/rpm/..."
