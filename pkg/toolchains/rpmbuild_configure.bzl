@@ -39,6 +39,7 @@ _find_system_rpmbuild = repository_rule(
     implementation = _find_system_rpmbuild_impl,
     doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
     local = True,
+    environ = ["PATH"],
     attrs = {
         "verbose": attr.bool(
             doc = "If true, print status messages.",
