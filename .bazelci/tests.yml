@@ -43,6 +43,6 @@ tasks:
     - "//tests:strip_test"
     - "//tests:test_tar_compression"
     - "//tests:zip_test"
-    - "//tests:mappings/..."
-    - "-//tests:mappings/filter_directory/..."
+    - "//tests/mappings/..."
+    - "-//tests/mappings/filter_directory/..."
 
