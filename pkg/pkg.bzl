@@ -14,8 +14,9 @@
 """Rules for manipulation of various packaging."""
 
 load(":path.bzl", "compute_data_path", "dest_path")
-load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load(":providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageVariablesInfo")
 load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//private:pkg_files.bzl", "process_src", "write_manifest")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -103,8 +104,31 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.portable_mtime:
         args.append("--mtime=portable")
 
+    file_deps = []
+    out_spec = {}
+    plain_srcs = []
+    if '.' in ctx.attr.owner:
+        def_owner, def_group = ctx.attr.owner.split('.')
+    else:
+        def_owner = ctx.attr.owner if ctx.attr.owner else None
+        def_group = None
+    if ctx.attr.ownername and ctx.attr.ownername != '.':
+        def_owner = ctx.attr.ownername
+    for src in ctx.attr.srcs:
+        if DefaultInfo in src:
+            file_deps.append(src[DefaultInfo].files)
+        if not process_src(
+            out_spec,
+            src,
+            src.label,
+            default_mode = ctx.attr.mode,
+            default_owner = def_owner,
+            default_group = def_group,
+        ):
+            plain_srcs.append(src)
+    file_inputs = depset(transitive = file_deps)
+
     # Add runfiles if requested
-    file_inputs = []
     if ctx.attr.include_runfiles:
         runfiles_depsets = []
         for f in ctx.attr.srcs:
@@ -114,17 +138,29 @@ def _pkg_tar_impl(ctx):
 
         # deduplicates files in srcs attribute and their runfiles
         file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
-    else:
-        file_inputs = ctx.files.srcs[:]
+    #XXXelse:
+    #XXX    file_inputs = ctx.files.srcs[:]
 
-    args += [
-        "--file=%s=%s" % (_quote(f.path), _remap(
-            remap_paths,
-            dest_path(f, data_path, data_path_without_prefix),
-        ))
-        for f in file_inputs
-    ]
+    for s in plain_srcs:
+        for f in s.files.to_list():
+            print(f, f.is_directory)
+            dest = _remap(remap_paths,
+                          dest_path(f, data_path, data_path_without_prefix))
+            if f.is_directory:
+                args.append("--empty_dir=%s" % dest)
+            else:
+                args.append("--file=%s=%s" % (_quote(f.path), dest))
+
+    #args += [
+    #    "--file=%s=%s" % (_quote(f.path), _remap(
+    #        remap_paths,
+    #        dest_path(f, data_path, data_path_without_prefix),
+    #        ))
+    #    for s in plain_srcs
+    #    for f in s.files.to_list()
+    #]
     for target, f_dest_path in ctx.attr.files.items():
+        fail("NO HERE")
         target_files = target.files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
@@ -158,6 +194,12 @@ def _pkg_tar_impl(ctx):
                                ctx.attr.private_stamp_detect):
         args.append("--stamp_from=%s" % ctx.version_file.path)
         files.append(ctx.version_file)
+
+    content_spec_file = ctx.actions.declare_file(ctx.label.name + ".content")
+    files.append(content_spec_file)
+    write_manifest(ctx, content_spec_file, out_spec)
+    args.append("--manifest=%s" % content_spec_file.path)
+
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -165,7 +207,7 @@ def _pkg_tar_impl(ctx):
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
-        inputs = file_inputs + ctx.files.deps + files,
+        inputs = file_inputs.to_list() + ctx.files.deps + files,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],

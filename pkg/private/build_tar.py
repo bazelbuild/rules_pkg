@@ -197,6 +197,21 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
+  def add_manifest_entry(self, entry):
+    # TODO(aiuto): Allow for | in a file name
+    dest, src, mode, owner, group, link, is_dir = entry.strip().split('|')
+    mode = int(mode, 8)
+    print(dest, mode, is_dir, 7)
+    if link:
+      self.add_link(dest, link)
+    elif is_dir:
+      self.add_empty_dir(dest, mode=mode, names=(owner, group))
+    elif is_dir:
+      self.add_file(dest, mode=mode, names=(owner, group))
+    else:
+      self.add_file(src, dest, mode=mode, names=(owner, group))
+
+
 
 def main():
   parser = argparse.ArgumentParser(
@@ -207,6 +222,8 @@ def main():
   parser.add_argument('--file', action='append',
                       help='A file to add to the layer.')
   parser.add_argument('--manifest',
+                      help='manifest of contents to add to the layer.')
+  parser.add_argument('--legacy_manifest',
                       help='JSON manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
@@ -325,8 +342,8 @@ def main():
           'names': names_map.get(filename, default_ownername),
       }
 
-    if options.manifest:
-      with open(options.manifest, 'r') as manifest_fp:
+    if options.legacy_manifest:
+      with open(options.legacy_manifest, 'r') as manifest_fp:
         manifest = json.load(manifest_fp)
         for f in manifest.get('files', []):
           output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
@@ -342,6 +359,11 @@ def main():
           output.add_tar(tar)
         for deb in manifest.get('debs', []):
           output.add_deb(deb)
+
+    if options.manifest:
+      with open(options.manifest, 'r') as manifest_fp:
+        for entry in manifest_fp:
+          output.add_manifest_entry(entry)
 
     for f in options.file or []:
       (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
@@ -359,6 +381,7 @@ def main():
     for link in options.link or []:
       l = helpers.SplitNameValuePairAtSeparator(link, ':')
       output.add_link(l[0], l[1])
+
 
 
 if __name__ == '__main__':
