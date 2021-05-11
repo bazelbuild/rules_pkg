@@ -13,7 +13,7 @@
 # limitations under the License.
 """rules_pkg internal code.
 
-This is subject to change at any time.
+All interfaces are subject to change at any time.
 """
 
 load("@rules_python//python:defs.bzl", "py_library")
@@ -51,5 +51,58 @@ py_library(
     visibility = [
         "//:__pkg__",
         "//tests:__pkg__",
+    ],
+)
+
+py_library(
+    name = "archive",
+    srcs = [
+        "__init__.py",
+        "archive.py",
+    ],
+    srcs_version = "PY3",
+    visibility = [
+        "//:__pkg__",
+        "//experimental:__pkg__",
+        "//tests:__pkg__",
+    ],
+)
+
+py_library(
+    name = "helpers",
+    srcs = [
+        "__init__.py",
+        "helpers.py",
+    ],
+    srcs_version = "PY3",
+    visibility = [
+        "//:__pkg__",
+        "//experimental:__pkg__",
+        "//tests:__pkg__",
+    ],
+)
+
+py_binary(
+    name = "build_tar",
+    srcs = ["build_tar.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":archive",
+        ":build_info",
+        ":helpers",
+    ],
+)
+
+py_binary(
+    name = "build_zip",
+    srcs = ["build_zip.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":archive",
+        ":helpers",
     ],
 )

@@ -17,7 +17,7 @@ import tarfile
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from rules_pkg import archive
+from rules_pkg.private import archive
 
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 

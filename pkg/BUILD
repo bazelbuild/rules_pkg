@@ -37,7 +37,6 @@ filegroup(
         "*.bzl",
         "*.py",
         "*.md",
-        "private/**",
     ]) + [
         "BUILD",
         "LICENSE",
@@ -52,64 +51,13 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-py_library(
-    name = "archive",
-    srcs = [
-        "__init__.py",
-        "archive.py",
-    ],
-    srcs_version = "PY3",
-    visibility = [
-        "//experimental:__pkg__",
-        "//tests:__pkg__",
-    ],
-)
-
-py_library(
-    name = "helpers",
-    srcs = [
-        "__init__.py",
-        "helpers.py",
-    ],
-    srcs_version = "PY3",
-    visibility = [
-        "//experimental:__pkg__",
-        "//tests:__pkg__",
-    ],
-)
-
-py_binary(
-    name = "build_tar",
-    srcs = ["build_tar.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":archive",
-        ":helpers",
-        "//private:build_info",
-    ],
-)
-
-py_binary(
-    name = "build_zip",
-    srcs = ["build_zip.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":archive",
-        ":helpers",
-    ],
-)
-
 py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":helpers",
+        "//private:helpers",
     ],
 )
 
@@ -126,7 +74,7 @@ py_binary(
     #}),
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
+        "//private:archive",
         ":make_rpm_lib",
     ],
 )
@@ -140,8 +88,8 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        ":archive",
-        ":helpers",
+        "//private:archive",
+        "//private:helpers",
     ],
 )
 

@@ -29,7 +29,7 @@ import sys
 import tempfile
 from string import Template
 
-from helpers import GetFlagValue
+from rules_pkg.private.helpers import GetFlagValue
 
 
 # Setup to safely create a temporary directory and clean it up when done.

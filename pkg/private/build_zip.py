@@ -17,7 +17,7 @@ import argparse
 import datetime
 import zipfile
 
-from helpers import SplitNameValuePairAtSeparator
+from rules_pkg.private.helpers import SplitNameValuePairAtSeparator
 
 ZIP_EPOCH = 315532800
 

@@ -385,7 +385,7 @@ pkg_tar_impl = rule(
 
         # Implicit dependencies.
         "build_tar": attr.label(
-            default = Label("//:build_tar"),
+            default = Label("//private:build_tar"),
             cfg = "exec",
             executable = True,
             allow_files = True,
@@ -576,7 +576,7 @@ pkg_zip_impl = rule(
 
         # Implicit dependencies.
         "build_zip": attr.label(
-            default = Label("//:build_zip"),
+            default = Label("//private:build_zip"),
             cfg = "exec",
             executable = True,
             allow_files = True,
