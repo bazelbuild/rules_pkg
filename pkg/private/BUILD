@@ -63,7 +63,6 @@ py_library(
     srcs_version = "PY3",
     visibility = [
         "//:__pkg__",
-        "//experimental:__pkg__",
         "//tests:__pkg__",
     ],
 )
@@ -77,7 +76,6 @@ py_library(
     srcs_version = "PY3",
     visibility = [
         "//:__pkg__",
-        "//experimental:__pkg__",
         "//tests:__pkg__",
     ],
 )

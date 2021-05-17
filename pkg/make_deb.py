@@ -31,7 +31,7 @@ else:
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
-from rules_pkg.private.helpers import GetFlagValue
+from private.helpers import GetFlagValue
 
 DEBIAN_FIELDS = [
     ('Package', True, False),
