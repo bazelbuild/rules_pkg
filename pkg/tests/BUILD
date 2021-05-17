@@ -45,7 +45,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
-        "//:archive",
+        "//private:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -64,7 +64,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
-        "//:helpers",
+        "//private:helpers",
     ],
 )
 
@@ -316,7 +316,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "//:build_zip",
+        "//private:build_zip",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -368,7 +368,7 @@ pkg_deb(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "//:build_tar",
+    build_tar = "//private:build_tar",
     deps = [
         ":test-tar-basic-%s" % ext,
         ":test_tar_naming",
@@ -493,7 +493,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "//:archive",
+        "//private:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -510,7 +510,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "//:archive",
+        "//private:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
 )

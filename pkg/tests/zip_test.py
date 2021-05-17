@@ -17,7 +17,7 @@ import unittest
 import zipfile
 
 from bazel_tools.tools.python.runfiles import runfiles
-import build_zip
+from rules_pkg.private import build_zip
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
