@@ -15,9 +15,6 @@ tasks:
     # This includes the rpm tests, which are not (yet) supported in the below
     # cases.
     - "..."
-  ubuntu1604:
-    platform: ubuntu1604
-    <<: *common
   ubuntu1804:
     platform: ubuntu1804
     <<: *common
