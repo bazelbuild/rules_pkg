@@ -35,6 +35,14 @@ find_system_rpmbuild(
     verbose = True,
 )
 
+# Needed for making our release notes
+load("@rules_pkg//toolchains/git:git_configure.bzl", "experimental_find_system_git")
+
+experimental_find_system_git(
+    name = "rules_pkg_git",
+    verbose = True,
+)
+
 http_archive(
     name = "bazel_stardoc",
     sha256 = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a",

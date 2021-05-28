@@ -24,7 +24,8 @@ from releasing import release_tools
 
 
 def print_notes(org, repo, version, tarball_path, mirror_host=None,
-                deps_method=None, setup_file=None, toolchains_method=None):
+                deps_method=None, setup_file=None, toolchains_method=None,
+                changelog=''):
   file_name = release_tools.package_basename(repo, version)
   sha256 = release_tools.get_package_sha256(tarball_path)
 
@@ -42,6 +43,9 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
 
       **Incompatible Changes**
 
+      **Change Log**
+      ${changelog}
+
       **WORKSPACE setup**
 
       ```
@@ -55,6 +59,7 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
 
       """).strip())
   print(relnotes_template.substitute({
+      'changelog': changelog,
       'org': org,
       'repo': repo,
       'version': version,
@@ -99,7 +104,7 @@ def main():
       required=True, help='path to release tarball')
   parser.add_argument(
       '--mirror_host', default=None,
-      help='If provider, the hostname of a mirror for the download url.')
+      help='If provider, the hostname of a mirror for the download url')
   parser.add_argument(
       '--setup_file', default=None,
       help='Alternate name for setup file. Default: deps.bzl')
@@ -109,10 +114,20 @@ def main():
   parser.add_argument(
       '--toolchains_method', default=None,
       help='Alternate name for toolchains method. Default: {repo}_toolchains')
+  parser.add_argument(
+      '--changelog', default=None,
+      help='Pre-fill release notes with changes from this file')
 
   options = parser.parse_args()
+  if options.changelog:
+    with open(options.changelog, 'r', encoding='utf-8') as f:
+      changelog = f.read()
+  else:
+    changelog = 'TBD'
+
   print_notes(options.org, options.repo, options.version, options.tarball_path,
               deps_method=options.deps_method,
+              changelog=changelog,
               mirror_host=options.mirror_host,
               setup_file=options.setup_file,
               toolchains_method=options.toolchains_method)
