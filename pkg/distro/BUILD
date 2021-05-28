@@ -15,6 +15,7 @@
 load("//:pkg.bzl", "pkg_tar")
 load("//:version.bzl", "version")
 load("//releasing:defs.bzl", "print_rel_notes")
+load("//releasing:git.bzl", "git_changelog")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@rules_python//python:defs.bzl", "py_test")
@@ -59,11 +60,17 @@ genrule(
 print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
+    changelog = ":changelog",
     deps_method = "rules_pkg_dependencies",
     mirror_host = "mirror.bazel.build",
     org = "bazelbuild",
     repo = "rules_pkg",
     version = version,
+)
+
+git_changelog(
+    name = "changelog",
+    out = "changelog.txt",
 )
 
 py_test(
@@ -98,13 +105,13 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
-        "//private:util.bzl",
         "//:package_variables.bzl",
         "//:path.bzl",
         "//:pkg.bzl",
         "//:providers.bzl",
         "//:rpm.bzl",
         "//:version.bzl",
+        "//private:util.bzl",
     ],
     visibility = ["//visibility:private"],
 )
