@@ -197,6 +197,91 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
+  def add_tree(self, tree_top, destpath, mode=None, ids=None, names=None):
+    """Add a tree artifact to the tar file.
+
+    Args:
+       tree_top: the top of the tree to add
+       destpath: the path under which to place the files
+       mode: force to set the specified mode, by default the value from the
+         source is taken.
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership. `f` will be
+         copied to `self.directory/destfile` in the layer.
+    """
+    dest = destpath.strip('/')  # redundant, dests should never have / here
+    if self.directory and self.directory != '/':
+      dest = self.directory.lstrip('/') + '/' + dest
+
+    dest = os.path.normpath(dest).replace(os.path.sep, '/')
+    # If mode is unspecified, derive the mode from the file's mode.
+    if mode is None:
+      mode = 0o755 if os.access(f, os.X_OK) else 0o644
+    if ids is None:
+      ids = (0, 0)
+    if names is None:
+      names = ('', '')
+
+    to_write = {}
+    for root, dirs, files in os.walk(tree_top):
+      dirs = sorted(dirs)
+      rel_path_from_top = root[len(tree_top):].lstrip('/')
+      if rel_path_from_top:
+        dest_dir = dest + '/' + rel_path_from_top + '/'
+      else:
+        dest_dir = dest + '/'
+      for dir in dirs:
+        to_write[dest_dir + dir] = None
+      for file in sorted(files):
+        to_write[dest_dir + file] = os.path.join(root, file)
+
+    for path in sorted(to_write.keys()):
+      content_path = to_write[path]
+      if not content_path:
+        self.add_empty_file(
+            path,
+            mode=mode,
+            ids=ids,
+            names=names,
+            kind=tarfile.DIRTYPE)
+      else:
+        self.tarfile.add_file(
+            path,
+            file_content=content_path,
+            mode=mode,
+            uid=ids[0],
+            gid=ids[1],
+            uname=names[0],
+            gname=names[1])
+
+  def add_manifest_entry(self, entry, file_attributes):
+    dest, src, mode, user, group, link, is_dir = entry
+
+    # Use the pkg_tar mode/owner remaping as a fallback
+    non_abs_path = dest.strip('/')
+    if file_attributes:
+      attrs = file_attributes(non_abs_path)
+    else:
+      attrs = {}
+    # But any attributes from the manifest have higher precedence
+    if mode is not None and mode != '':
+      attrs['mode'] = int(mode, 8)
+    if user:
+      if group:
+        attrs['names'] = (user, group)
+      else:
+        # Use group that legacy tar process would assign
+        attrs['names'] = (user, attrs.get('names')[1])
+    if link:
+      self.add_link(dest, link)
+    elif is_dir == 1:
+      self.add_empty_dir(dest, **attrs)
+    elif is_dir == 2:
+      self.add_tree(src, dest, **attrs)
+    else:
+      self.add_file(src, dest, **attrs)
+
+
 
 def main():
   parser = argparse.ArgumentParser(
@@ -207,6 +292,8 @@ def main():
   parser.add_argument('--file', action='append',
                       help='A file to add to the layer.')
   parser.add_argument('--manifest',
+                      help='manifest of contents to add to the layer.')
+  parser.add_argument('--legacy_manifest',
                       help='JSON manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
@@ -325,8 +412,8 @@ def main():
           'names': names_map.get(filename, default_ownername),
       }
 
-    if options.manifest:
-      with open(options.manifest, 'r') as manifest_fp:
+    if options.legacy_manifest:
+      with open(options.legacy_manifest, 'r') as manifest_fp:
         manifest = json.load(manifest_fp)
         for f in manifest.get('files', []):
           output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
@@ -342,6 +429,12 @@ def main():
           output.add_tar(tar)
         for deb in manifest.get('debs', []):
           output.add_deb(deb)
+
+    if options.manifest:
+      with open(options.manifest, 'r') as manifest_fp:
+        manifest = json.load(manifest_fp)
+        for entry in manifest:
+          output.add_manifest_entry(entry, file_attributes)
 
     for f in options.file or []:
       (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')

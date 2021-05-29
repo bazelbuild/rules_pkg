@@ -14,8 +14,22 @@
 """Rules for manipulation of various packaging."""
 
 load(":path.bzl", "compute_data_path", "dest_path")
-load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load(
+    ":providers.bzl",
+    "PackageArtifactInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageVariablesInfo",
+)
 load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
+load(
+    "//private:pkg_files.bzl",
+    "add_directory",
+    "add_label_list",
+    "add_single_file",
+    "add_tree_artifact",
+    "process_src",
+    "write_manifest")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -103,33 +117,70 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.portable_mtime:
         args.append("--mtime=portable")
 
+    # Now we begin processing the files.
+    file_deps = []  # inputs we depend on
+    content_map = {}  # content handled in the manifest
+
+    # Start with all the pkg_* inputs
+    for src in ctx.attr.srcs:
+        # Gather the files for every srcs entry here, even if it is not from
+        # a pkg_* rule.
+        if DefaultInfo in src:
+            file_deps.append(src[DefaultInfo].files)
+        if not process_src(
+            content_map,
+            src,
+            src.label,
+            default_mode = None,
+            default_user = None,
+            default_group = None,
+        ):
+            # Add in the files of srcs which are not pkg_* types
+            for f in src.files.to_list():
+                d_path = dest_path(f, data_path, data_path_without_prefix)
+                if f.is_directory:
+                    # Tree artifacts need a name, but the name is never really
+                    # the important part. The likely behavior people want is
+                    # just the content, so we strip the directory name.
+                    dest = '/'.join(d_path.split('/')[0:-1])
+                    add_tree_artifact(content_map, dest, f, src.label)
+                else:
+                    # Note: This extra remap is the bottleneck preventing this
+                    # large block from being a utility method as shown below.
+                    # Should we disallow mixing pkg_files in srcs with remap?
+                    # I am fine with that if it makes the code more readable.
+                    dest = _remap(remap_paths, d_path)
+                    add_single_file(content_map, dest, f, src.label)
+    """
+    TODO(aiuto): I want the code to look like this, but we don't have lambdas.
+    transform_path = lambda f: _remap(
+        remap_paths, dest_path(f, data_path, data_path_without_prefix))
+    add_label_list(ctx, content_map, file_deps, ctx.attr.srcs, transform_path)
+    """
+
     # Add runfiles if requested
-    file_inputs = []
+    runfiles_depsets = []
     if ctx.attr.include_runfiles:
-        runfiles_depsets = []
+        # TODO(aiuto): Rethink this w.r.t. binaries in pkg_files() rules.
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles != None:
                 runfiles_depsets.append(default_runfiles.files)
 
-        # deduplicates files in srcs attribute and their runfiles
-        file_inputs = depset(ctx.files.srcs, transitive = runfiles_depsets).to_list()
-    else:
-        file_inputs = ctx.files.srcs[:]
-
-    args += [
-        "--file=%s=%s" % (_quote(f.path), _remap(
-            remap_paths,
-            dest_path(f, data_path, data_path_without_prefix),
-        ))
-        for f in file_inputs
-    ]
+    # The files attribute is a map of labels to destinations. We can add them
+    # directly to the content map.
     for target, f_dest_path in ctx.attr.files.items():
         target_files = target.files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
-        file_inputs += target_files
-        args += ["--file=%s=%s" % (_quote(target_files[0].path), f_dest_path)]
+        file_deps.append(depset([target_files[0]]))
+        add_single_file(
+            content_map,
+            f_dest_path,
+            target_files[0],
+            target.label,
+        )
+
     if ctx.attr.modes:
         args += [
             "--modes=%s=%s" % (_quote(key), ctx.attr.modes[key])
@@ -147,8 +198,8 @@ def _pkg_tar_impl(ctx):
         ]
     if ctx.attr.empty_files:
         args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
-    if ctx.attr.empty_dirs:
-        args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
+    for empty_dir in ctx.attr.empty_dirs or []:
+        add_directory(content_map, empty_dir, ctx.label)
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
@@ -158,6 +209,13 @@ def _pkg_tar_impl(ctx):
                                ctx.attr.private_stamp_detect):
         args.append("--stamp_from=%s" % ctx.version_file.path)
         files.append(ctx.version_file)
+
+    file_inputs = depset(transitive = file_deps + runfiles_depsets)
+    manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
+    files.append(manifest_file)
+    write_manifest(ctx, manifest_file, content_map)
+    args.append("--manifest=%s" % manifest_file.path)
+
     arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
@@ -165,7 +223,7 @@ def _pkg_tar_impl(ctx):
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
-        inputs = file_inputs + ctx.files.deps + files,
+        inputs = file_inputs.to_list() + ctx.files.deps + files,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
         executable = ctx.executable.build_tar,
         arguments = ["@" + arg_file.path],

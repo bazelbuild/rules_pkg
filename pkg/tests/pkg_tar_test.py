@@ -127,9 +127,9 @@ class PkgTarTest(unittest.TestCase):
   def test_empty_dirs(self):
     content = [
         {'name': '.'},
-        {'name': './tmp', 'isdir': True, 'size': 0, 'uid': 0,
-         'mtime': PORTABLE_MTIME},
         {'name': './pmt', 'isdir': True, 'size': 0, 'uid': 0,
+         'mtime': PORTABLE_MTIME},
+        {'name': './tmp', 'isdir': True, 'size': 0, 'uid': 0,
          'mtime': PORTABLE_MTIME},
     ]
     self.assertTarFileContent('test-tar-empty_dirs.tar', content)
@@ -205,6 +205,29 @@ class PkgTarTest(unittest.TestCase):
       {'name': './can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
     self.assertTarFileContent('test-tar-repackaging-long-filename.tar', content)
+
+  def test_tar_with_tree_artifact(self):
+    # (sorted) list of files:
+    #  "a/a"
+    #  "a/b/c"
+    #  "b/c/d"
+    #  "b/d"
+    #  "b/e"
+
+    content = [
+      {'name': '.'},
+      {'name': './a_tree', 'isdir': True},
+      {'name': './a_tree/a', 'isdir': True},
+      {'name': './a_tree/a/a'},
+      {'name': './a_tree/a/b', 'isdir': True},
+      {'name': './a_tree/a/b/c'},
+      {'name': './a_tree/b', 'isdir': True},
+      {'name': './a_tree/b/c', 'isdir': True},
+      {'name': './a_tree/b/c/d'},
+      {'name': './a_tree/b/d'},
+      {'name': './a_tree/b/e'},
+    ]
+    self.assertTarFileContent('test-tar-tree-artifact.tar', content)
 
 if __name__ == '__main__':
   unittest.main()

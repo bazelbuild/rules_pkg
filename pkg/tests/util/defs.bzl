@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//private:pkg_files.bzl", "add_label_list", "write_manifest")
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
@@ -58,6 +59,30 @@ Paths containing directories will also have the intermediate directories created
     },
 )
 
+def _write_content_manifest_impl(ctx):
+    content_map = {}  # content handled in the manifest
+    file_deps = []  # inputs we depend on
+    add_label_list(ctx, content_map, file_deps, ctx.attr.srcs)
+    write_manifest(ctx, ctx.outputs.out, content_map)
+
+_write_content_manifest = rule(
+    doc = """Helper rule to write the content manifest for a pkg_*.
+
+This is intended only for testing the manifest creation features.""",
+    implementation = _write_content_manifest_impl,
+    attrs = {
+        "srcs": attr.label_list(
+            doc = """List of source inputs.""",
+            allow_files = True,
+        ),
+        "out": attr.output(),
+    },
+)
+
+def write_content_manifest(name, srcs):
+    _write_content_manifest(name=name, srcs=srcs, out=name + ".manifest")
+
+
 ############################################################
 # Test boilerplate
 ############################################################
@@ -91,4 +116,3 @@ generic_negative_test = analysistest.make(
     },
     expect_failure = True,
 )
-
