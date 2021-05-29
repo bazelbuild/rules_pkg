@@ -79,6 +79,23 @@ def _pkg_tar_impl(ctx):
     ]
     if ctx.executable.compressor:
         args.append("--compressor=%s %s" % (ctx.executable.compressor.path, ctx.attr.compressor_args))
+    else:
+        extension = ctx.attr.extension
+        if extension and extension != "tar":
+            compression = None
+            dotPos = ctx.attr.extension.rfind(".")
+            if dotPos >= 0:
+                compression = ctx.attr.extension[dotPos + 1:]
+            else:
+                compression = ctx.attr.extension
+            if compression == "tgz":
+                compression = "gz"
+            if compression:
+                if compression in SUPPORTED_TAR_COMPRESSIONS:
+                    args += ["--compression=%s" % compression]
+                else:
+                    fail("Unsupported compression: '%s'" % compression)
+
     if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
@@ -132,21 +149,6 @@ def _pkg_tar_impl(ctx):
         args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
     if ctx.attr.empty_dirs:
         args += ["--empty_dir=%s" % empty_dir for empty_dir in ctx.attr.empty_dirs]
-    extension = ctx.attr.extension
-    if extension and extension != 'tar' and not ctx.executable.compressor:
-        compression = None
-        dotPos = ctx.attr.extension.rfind(".")
-        if dotPos >= 0:
-            compression = ctx.attr.extension[dotPos+1:]
-        else:
-            compression = ctx.attr.extension
-        if compression == "tgz":
-            compression = "gz"
-        if compression:
-            if compression in SUPPORTED_TAR_COMPRESSIONS:
-                args += ["--compression=%s" % compression]
-            else:
-                fail("Unsupported compression: '%s'" % compression)
     args += ["--tar=" + f.path for f in ctx.files.deps]
     args += [
         "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
@@ -342,7 +344,6 @@ def _pkg_deb_impl(ctx):
         ),
     ]
 
-
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
@@ -411,8 +412,8 @@ def pkg_tar(name, **kwargs):
                 kwargs["srcs"] = kwargs.pop("files")
     archive_name = kwargs.pop("archive_name", None)
     extension = kwargs.get("extension") or "tar"
-    if extension[0] == '.':
-      extension = extension[1:]
+    if extension[0] == ".":
+        extension = extension[1:]
     if archive_name:
         if kwargs.get("package_file_name"):
             fail("You may not set both 'archive_name' and 'package_file_name'.")
