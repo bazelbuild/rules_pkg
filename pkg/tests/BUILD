@@ -17,6 +17,7 @@ load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip"
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
+load(":path_test.bzl", "path_tests")
 
 licenses(["notice"])
 
@@ -594,3 +595,5 @@ py_test(
         "@bazel_tools//tools/python/runfiles",
     ],
 )
+
+path_tests()

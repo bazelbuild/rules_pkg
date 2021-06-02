@@ -52,8 +52,8 @@ def _pkg_tar_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
 
     # Compute the relative path
-    data_path = compute_data_path(output_file, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(output_file, ".")
+    data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(ctx, ".")
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -523,11 +523,9 @@ def _pkg_zip_impl(ctx):
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
 
+    data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
     for f in ctx.files.srcs:
-        arg = "%s=%s" % (
-            _quote(f.path),
-            dest_path(f, compute_data_path(output_file, ctx.attr.strip_prefix)),
-        )
+        arg = "%s=%s" % (_quote(f.path), dest_path(f, data_path))
         args.add(arg)
 
     args.set_param_file_format("multiline")
