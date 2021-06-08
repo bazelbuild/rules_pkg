@@ -205,17 +205,7 @@ def _pkg_deb_impl(ctx):
         package_file_name = package_file_name,
     )
 
-    # If the user does not provide the changes file, compute it.
-    # TODO(https://github.com/bazelbuild/rules_pkg/issues/289): Should the
-    # user even be allowed to provide it? That is, is there any value in
-    # ability to have the basename of the .deb and the .changes file be
-    # different?
-    if ctx.outputs.changes:
-        changes_file = ctx.outputs.changes
-    else:
-        changes_file = ctx.actions.declare_file(
-            output_name.split(".")[0] + ".changes",
-        )
+    changes_file = ctx.actions.declare_file(output_name.split(".")[0] + ".changes")
     outputs.append(changes_file)
 
     files = [ctx.file.data]
@@ -486,9 +476,6 @@ pkg_deb_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
-
-        # Outputs.
-        "changes": attr.output(mandatory = False),
 
         # Implicit dependencies.
         "make_deb": attr.label(
