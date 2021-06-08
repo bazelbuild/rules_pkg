@@ -29,7 +29,7 @@ import sys
 import tempfile
 from string import Template
 
-from rules_pkg.private.helpers import GetFlagValue
+from private import helpers
 
 
 # Setup to safely create a temporary directory and clean it up when done.
@@ -182,13 +182,13 @@ class RpmBuilder(object):
                source_date_epoch=None,
                debug=False):
     self.name = name
-    self.version = GetFlagValue(version)
-    self.release = GetFlagValue(release)
+    self.version = helpers.GetFlagValue(version)
+    self.release = helpers.GetFlagValue(release)
     self.arch = arch
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
-    self.source_date_epoch = GetFlagValue(source_date_epoch)
+    self.source_date_epoch = helpers.GetFlagValue(source_date_epoch)
     self.debug = debug
 
     # The below are initialized in SetupWorkdir()

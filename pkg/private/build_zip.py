@@ -17,7 +17,7 @@ import argparse
 import datetime
 import zipfile
 
-from rules_pkg.private.helpers import SplitNameValuePairAtSeparator
+from rules_pkg.private import helpers
 
 ZIP_EPOCH = 315532800
 
@@ -73,7 +73,7 @@ def main(args):
 
   with zipfile.ZipFile(args.output, 'w') as zip_file:
     for f in args.files or []:
-      (src_path, dst_path) = SplitNameValuePairAtSeparator(f, '=')
+      (src_path, dst_path) = helpers.SplitNameValuePairAtSeparator(f, '=')
 
       dst_path = _combine_paths(args.directory, dst_path)
 
