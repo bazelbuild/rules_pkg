@@ -60,7 +60,7 @@ class PackagingTest(unittest.TestCase):
     # have a BUILD file in testdata, which would create a package boundary.
     def CopyTestFile(source_name, dest_name):
       source_path = self.data_files.Rlocation(
-          os.path.join('rules_pkg', 'distro', 'testdata', source_name))
+          'rules_pkg/distro/testdata/' + source_name)
       with open(source_path) as inp:
         with open(os.path.join(tempdir, dest_name), 'w') as out:
           content = inp.read()
