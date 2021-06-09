@@ -136,27 +136,5 @@ class DestPathTest(unittest.TestCase):
     self.assertEqual('/bar/baz', path)
 
 
-class ComputeDataPathTest(unittest.TestCase):
-  """Testing for _data_path_out."""
-
-  def testComputeDataPath(self):
-    path = pkg_bzl.compute_data_path(File('foo/bar/baz.tar'), 'a/b/c')
-    self.assertEqual('foo/bar/a/b/c', path)
-
-  def testAbsolute(self):
-    path = pkg_bzl.compute_data_path(File('foo/bar/baz.tar'), '/a/b/c')
-    self.assertEqual('a/b/c', path)
-
-  def testRelative(self):
-    path = pkg_bzl.compute_data_path(File('foo/bar/baz.tar'), './a/b/c')
-    self.assertEqual('foo/bar/a/b/c', path)
-
-  def testEmpty(self):
-    path = pkg_bzl.compute_data_path(File('foo/bar/baz.tar'), './')
-    self.assertEqual('foo/bar', path)
-    path = pkg_bzl.compute_data_path(File('foo/bar/baz.tar'), './.')
-    self.assertEqual('foo/bar', path)
-
-
 if __name__ == '__main__':
   unittest.main()
