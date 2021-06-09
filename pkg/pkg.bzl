@@ -509,6 +509,11 @@ def _pkg_zip_impl(ctx):
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
+    inputs = []
+    if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
+                               ctx.attr.private_stamp_detect):
+        args.add("--stamp_from", ctx.version_file.path)
+        inputs.append(ctx.version_file)
 
     data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
     for f in ctx.files.srcs:
@@ -520,8 +525,8 @@ def _pkg_zip_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "PackageZip",
-        inputs = ctx.files.srcs,
-        executable = ctx.executable.build_zip,
+        inputs = ctx.files.srcs + inputs,
+        executable = ctx.executable._build_zip,
         arguments = [args],
         outputs = [output_file],
         env = {
@@ -559,9 +564,14 @@ pkg_zip_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
+        "stamp": attr.int(default = 0),
+
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
-        "build_zip": attr.label(
+        "_build_zip": attr.label(
             default = Label("//private:build_zip"),
             cfg = "exec",
             executable = True,
@@ -592,5 +602,9 @@ def pkg_zip(name, **kwargs):
     pkg_zip_impl(
         name = name,
         out = archive_name + "." + extension,
+        private_stamp_detect = select({
+            _stamp_condition: True,
+            "//conditions:default": False,
+        }),
         **kwargs
     )

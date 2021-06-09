@@ -17,6 +17,7 @@ import argparse
 import datetime
 import zipfile
 
+from rules_pkg.private import build_info
 from rules_pkg.private import helpers
 
 ZIP_EPOCH = 315532800
@@ -26,27 +27,23 @@ def _create_argument_parser():
   """Creates the command line arg parser."""
   parser = argparse.ArgumentParser(description='create a zip file',
                                    fromfile_prefix_chars='@')
-
   parser.add_argument('-o', '--output', type=str,
                       help='The output zip file path.')
-
   parser.add_argument(
       '-d', '--directory', type=str, default='/',
       help='An absolute path to use as a prefix for all files in the zip.')
-
   parser.add_argument(
       '-t', '--timestamp', type=int, default=ZIP_EPOCH,
       help='The unix time to use for files added into the zip. values prior to'
            ' Jan 1, 1980 are ignored.')
-
+  parser.add_argument('--stamp_from', default='',
+                      help='File to find BUILD_STAMP in')
   parser.add_argument(
       '-m', '--mode',
       help='The file system mode to use for files added into the zip.')
-
   parser.add_argument(
       'files', type=str, nargs='*',
       help='Files to be added to the zip, in the form of {srcpath}={dstpath}.')
-
   return parser
 
 
@@ -66,6 +63,8 @@ def parse_date(ts):
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
+  if args.stamp_from:
+    unix_ts = build_info.get_timestamp(args.stamp_from)
   ts = parse_date(unix_ts)
   default_mode = None
   if args.mode:

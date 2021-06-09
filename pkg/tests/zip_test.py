@@ -12,16 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import filecmp
 import unittest
 import zipfile
 
 from bazel_tools.tools.python.runfiles import runfiles
-from rules_pkg.private import build_zip
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
 EXECUTABLE_CRC = 342626072
+
+
+# The ZIP epoch date: (1980, 1, 1, 0, 0, 0)
+_ZIP_EPOCH_DT = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
+_ZIP_EPOCH_S = int(_ZIP_EPOCH_DT.timestamp())
+
+def seconds_to_ziptime(s):
+  dt = datetime.datetime.utcfromtimestamp(s)
+  return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 
 class ZipTest(unittest.TestCase):
@@ -57,8 +66,7 @@ class ZipContentsCase(ZipTest):
         self.assertEqual(info.filename, expected["filename"])
         self.assertEqual(info.CRC, expected["crc"])
 
-        ts = build_zip.parse_date(
-            expected.get("timestamp", build_zip.ZIP_EPOCH))
+        ts = seconds_to_ziptime(expected.get("timestamp", _ZIP_EPOCH_S))
         self.assertEqual(info.date_time, ts)
         self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
 
