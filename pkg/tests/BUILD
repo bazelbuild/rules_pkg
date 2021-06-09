@@ -596,4 +596,4 @@ py_test(
     ],
 )
 
-path_tests()
+path_tests(name="path_tests")

@@ -62,7 +62,12 @@ def dest_path(f, strip_prefix, data_path_without_prefix = ""):
     return f_short_path
 
 def compute_data_path(ctx, data_path):
-    """Compute the relative data path prefix from the data_path attribute."""
+    """Compute the relative data path prefix from the data_path attribute.
+
+    Args:
+      ctx: rule implementation ctx.
+      data_path: path to a file, relative to the package of the rule ctx.
+    """
     build_dir = ctx.label.package
     if data_path:
         # Strip ./ from the beginning if specified.

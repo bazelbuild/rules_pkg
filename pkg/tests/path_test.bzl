@@ -39,7 +39,7 @@ compute_data_path_test = analysistest.make(
     },
 )
 
-def _test_compute_data_path():
+def _test_compute_data_path(name):
     pkg_mkdirs(
         name = "dummy",
         dirs = [],
@@ -47,40 +47,40 @@ def _test_compute_data_path():
     )
 
     compute_data_path_test(
-        name = "compute_data_path_normal_test",
+        name = name + "_normal_test",
         target_under_test = ":dummy",
         in_path = "a/b/c",
         expected_path = "tests/a/b/c",
     )
 
     compute_data_path_test(
-        name = "compute_data_path_absolute_test",
+        name = name + "_absolute_test",
         target_under_test = ":dummy",
         in_path = "/a/b/c",
         expected_path = "a/b/c",
     )
 
     compute_data_path_test(
-        name = "compute_data_path_relative_test",
+        name = name + "_relative_test",
         target_under_test = ":dummy",
         in_path = "./a/b/c",
         expected_path = "tests/a/b/c",
     )
 
     compute_data_path_test(
-        name = "compute_data_path_empty_test",
+        name = name + "_empty_test",
         target_under_test = ":dummy",
         in_path = "./",
         expected_path = "tests",
     )
 
     compute_data_path_test(
-        name = "compute_data_path_empty2_test",
+        name = name + "_empty2_test",
         target_under_test = ":dummy",
         in_path = "./.",
         expected_path = "tests",
     )
 
-def path_tests():
+def path_tests(name):
     """Declare path.bzl analysis tests."""
-    _test_compute_data_path()
+    _test_compute_data_path(name=name + "_compute_data_path")
