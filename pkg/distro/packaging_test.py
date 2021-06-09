@@ -41,14 +41,15 @@ class PackagingTest(unittest.TestCase):
       os.makedirs(tempdir)
     with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
       file_name = release_tools.package_basename(self.source_repo, self.version)
+      # The code looks wrong, but here is why it is correct.
+      # - Rlocation requires '/' as path separators, not os.path.sep.
+      # - When we read the file, the path must use os.path.sep
       local_path = self.data_files.Rlocation(
           'rules_pkg/distro/' + file_name).replace('/', os.path.sep)
       sha256 = release_tools.get_package_sha256(local_path)
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
         release_tools.workspace_content(
-            # TODO(aiuto): This does not work on Windows. It fails in
-            # http_archive when we use a file:// URL.
             'file://%s' % local_path, self.source_repo, sha256,
             rename_repo=self.dest_repo,
             deps_method='rules_pkg_dependencies'
