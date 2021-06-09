@@ -31,7 +31,7 @@ else:
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
-from private.helpers import GetFlagValue
+from private import helpers
 
 DEBIAN_FIELDS = [
     ('Package', True, False),
@@ -295,7 +295,7 @@ def CreateChanges(output,
 
 def GetFlagValues(flagvalues):
   if flagvalues:
-    return [GetFlagValue(f, False) for f in flagvalues]
+    return [helpers.GetFlagValue(f, False) for f in flagvalues]
   else:
     return None
 
@@ -342,18 +342,18 @@ def main():
   CreateDeb(
       options.output,
       options.data,
-      preinst=GetFlagValue(options.preinst, False),
-      postinst=GetFlagValue(options.postinst, False),
-      prerm=GetFlagValue(options.prerm, False),
-      postrm=GetFlagValue(options.postrm, False),
-      config=GetFlagValue(options.config, False),
-      templates=GetFlagValue(options.templates, False),
-      triggers=GetFlagValue(options.triggers, False),
+      preinst=helpers.GetFlagValue(options.preinst, False),
+      postinst=helpers.GetFlagValue(options.postinst, False),
+      prerm=helpers.GetFlagValue(options.prerm, False),
+      postrm=helpers.GetFlagValue(options.postrm, False),
+      config=helpers.GetFlagValue(options.config, False),
+      templates=helpers.GetFlagValue(options.templates, False),
+      triggers=helpers.GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
       package=options.package,
-      version=GetFlagValue(options.version),
-      description=GetFlagValue(options.description),
-      maintainer=GetFlagValue(options.maintainer),
+      version=helpers.GetFlagValue(options.version),
+      description=helpers.GetFlagValue(options.description),
+      maintainer=helpers.GetFlagValue(options.maintainer),
       section=options.section,
       architecture=options.architecture,
       depends=GetFlagValues(options.depends),
@@ -363,19 +363,19 @@ def main():
       recommends=options.recommends,
       replaces=options.replaces,
       provides=options.provides,
-      homepage=GetFlagValue(options.homepage),
-      builtUsing=GetFlagValue(options.built_using),
+      homepage=helpers.GetFlagValue(options.homepage),
+      builtUsing=helpers.GetFlagValue(options.built_using),
       priority=options.priority,
       conflicts=options.conflicts,
       breaks=options.breaks,
-      installedSize=GetFlagValue(options.installed_size))
+      installedSize=helpers.GetFlagValue(options.installed_size))
   CreateChanges(
       output=options.changes,
       deb_file=options.output,
       architecture=options.architecture,
-      short_description=GetFlagValue(options.description).split('\n')[0],
-      maintainer=GetFlagValue(options.maintainer), package=options.package,
-      version=GetFlagValue(options.version), section=options.section,
+      short_description=helpers.GetFlagValue(options.description).split('\n')[0],
+      maintainer=helpers.GetFlagValue(options.maintainer), package=options.package,
+      version=helpers.GetFlagValue(options.version), section=options.section,
       priority=options.priority, distribution=options.distribution,
       urgency=options.urgency)
 
