@@ -83,9 +83,9 @@ def _pkg_tar_impl(ctx):
         extension = ctx.attr.extension
         if extension and extension != "tar":
             compression = None
-            dotPos = ctx.attr.extension.rfind(".")
-            if dotPos >= 0:
-                compression = ctx.attr.extension[dotPos + 1:]
+            dot_pos = ctx.attr.extension.rfind(".")
+            if dot_pos >= 0:
+                compression = ctx.attr.extension[dot_pos + 1:]
             else:
                 compression = ctx.attr.extension
             if compression == "tgz":

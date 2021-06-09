@@ -22,8 +22,9 @@ licenses(["notice"])
 
 filegroup(
     name = "standard_package",
-    srcs = glob([
+    srcs = [
         "BUILD",
+    ] + glob([
         "*.bzl",
         "*.py",
     ]),

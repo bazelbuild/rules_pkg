@@ -200,6 +200,7 @@ pkg_rpm = rule(
     toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
 
+# buildifier: disable=no-effect
 """Creates an RPM format package from the data files.
 
 This runs rpmbuild (and requires it to be installed beforehand) to generate
