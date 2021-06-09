@@ -27,19 +27,12 @@ tasks:
     - "-//legacy/tests/rpm/..."
   windows:
     working_directory: ../pkg
-    # We can not build any RPM files.
-    # Also, many other tests are simply broken on windows. So we start with the
-    # one that works and can add to the list as we fix the broken behavior or
-    # broken test.
     test_targets:
-    - "//tests:archive_test"
-    - "//tests:helpers_test"
-    - "//tests:is_compressed_test"
-    - "//tests:pkg_deb_test"
-    - "//tests:pkg_tar_test"
-    - "//tests:stamp_test"
-    - "//tests:test_tar_compression"
-    - "//tests:zip_test"
-    - "//tests/mappings/..."
+    - "..."
+    - "-//distro/..."
+    - "-//legacy/tests/rpm/..."
+    - "-//tests:make_rpm_test"
+    - "-//tests:package_naming_aggregate_test"
+    - "-//tests:path_test"
     - "-//tests/mappings/filter_directory/..."
-
+    - "-//tests/rpm/..."

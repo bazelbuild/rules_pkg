@@ -591,6 +591,7 @@ py_test(
     data = [
         "stamped_tar.tar",
     ],
+    python_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
     ],
