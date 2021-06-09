@@ -16,16 +16,22 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 
+licenses(["notice"])
+
 exports_files(["defs.bzl"])
 
 py_binary(
     name = "md5",
     srcs = ["md5.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
 
 py_binary(
     name = "create_directory_with_contents",
     srcs = ["create_directory_with_contents.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
