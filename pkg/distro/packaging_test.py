@@ -46,6 +46,8 @@ class PackagingTest(unittest.TestCase):
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
         release_tools.workspace_content(
+            # TODO(aiuto): This does not work on Windows. It fails in
+            # http_archive when we are givin a file URL.
             'file://%s' % local_path, self.source_repo, sha256,
             rename_repo=self.dest_repo,
             deps_method='rules_pkg_dependencies'
