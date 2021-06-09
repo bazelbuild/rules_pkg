@@ -41,7 +41,7 @@ class PackagingTest(unittest.TestCase):
       os.makedirs(tempdir)
     with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
       file_name = release_tools.package_basename(self.source_repo, self.version)
-      local_path = runfiles.Create().Rlocation('rules_pkg/distro/' + file_name)
+      local_path = self.data_files.Rlocation('rules_pkg/distro/' + file_name)
       sha256 = release_tools.get_package_sha256(local_path)
       workspace_content = '\n'.join((
         'workspace(name = "test_rules_pkg_packaging")',
