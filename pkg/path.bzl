@@ -61,8 +61,14 @@ def dest_path(f, strip_prefix, data_path_without_prefix = ""):
         return f_short_path[len(strip_prefix):]
     return f_short_path
 
-def compute_data_path(out, data_path):
-    """Compute the relative data path prefix from the data_path attribute."""
+def compute_data_path(ctx, data_path):
+    """Compute the relative data path prefix from the data_path attribute.
+
+    Args:
+      ctx: rule implementation ctx.
+      data_path: path to a file, relative to the package of the rule ctx.
+    """
+    build_dir = ctx.label.package
     if data_path:
         # Strip ./ from the beginning if specified.
         # There is no way to handle .// correctly (no function that would make
@@ -71,11 +77,11 @@ def compute_data_path(out, data_path):
         if len(data_path) >= 2 and data_path[0:2] == "./":
             data_path = data_path[2:]
         if not data_path or data_path == ".":  # Relative to current package
-            return _short_path_dirname(out)
+            return build_dir
         elif data_path[0] == "/":  # Absolute path
             return data_path[1:]
         else:  # Relative to a sub-directory
-            tmp_short_path_dirname = _short_path_dirname(out)
+            tmp_short_path_dirname = build_dir
             if tmp_short_path_dirname:
                 return tmp_short_path_dirname + "/" + data_path
             return data_path
