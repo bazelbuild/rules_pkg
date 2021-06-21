@@ -369,7 +369,13 @@ pkg_tar_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
-        "stamp": attr.int(default = 0),
+        "stamp": attr.int(
+            doc = """Enable file time stamping.  Possible values:<ul>
+<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
+<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
+<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
+</ul>""",
+            default = 0),
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
         "private_stamp_detect": attr.bool(default = False),
@@ -564,7 +570,13 @@ pkg_zip_impl = rule(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
-        "stamp": attr.int(default = 0),
+        "stamp": attr.int(
+            doc = """Enable file time stamping.  Possible values:<ul>
+<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
+<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
+<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
+</ul>""",
+            default = 0),
 
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.

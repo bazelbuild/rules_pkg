@@ -26,7 +26,7 @@ PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 
 class StampTest(unittest.TestCase):
-  """Test for time stamps in packages."""
+  """Test for non-epoch time stamps in packages."""
 
   target_mtime = int(time.time())
   zip_epoch_dt = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -40,7 +40,7 @@ class StampTest(unittest.TestCase):
     and that it is within some delta from the current time.
 
     Args:
-      mtime: timestamp in seconts
+      mtime: timestamp in seconds
       file_path: path to archive name
       file_name: file within archive
     """
