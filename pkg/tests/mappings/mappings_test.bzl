@@ -27,7 +27,12 @@ load(
     "strip_prefix",
     "REMOVE_BASE_DIRECTORY",
 )
-load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
+load("//tests/util:defs.bzl",
+     "directory",
+     "fake_artifact",
+     "generic_base_case_test",
+     "generic_negative_test"
+)
 
 ##########
 # Helpers
@@ -48,10 +53,6 @@ def _pkg_files_contents_test_impl(ctx):
     expected_dests = {e: None for e in ctx.attr.expected_dests}
     n_found = 0
     for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
-        # skip .exe files because they are unexpected extra outputs of
-        # sh_binary on Windows.
-        if got.endswith(".exe"):
-            continue
         asserts.true(
             got in expected_dests,
             "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests))
@@ -126,12 +127,9 @@ def _test_pkg_files_contents():
     )
 
     # Used in the following tests
-    #
-    # Note that since the pkg_files rule is never actually used in anything
-    # other than this test, nonexistent_script can be included with no ill effects. :P
-    native.sh_binary(
+    fake_artifact(
         name = "testdata/test_script",
-        srcs = ["testdata/nonexistent_script.sh"],
+        files = ["testdata/a_script.sh"],
         tags = ["manual"],
     )
 
@@ -153,7 +151,7 @@ def _test_pkg_files_contents():
             # Static file
             "hello.txt",
             # The script itself
-            "nonexistent_script.sh",
+            "a_script.sh",
             # The generated target output, in this case, a symlink
             "test_script",
         ],
@@ -177,7 +175,7 @@ def _test_pkg_files_contents():
         target_under_test = ":pf_from_root_g",
         expected_dests = [
             # The script itself
-            "testdata/nonexistent_script.sh",
+            "testdata/a_script.sh",
             # The generated target output, in this case, a symlink
             "testdata/test_script",
         ],
@@ -444,13 +442,9 @@ def _test_pkg_files_rename():
     )
 
     # Used in the following tests
-    #
-    # Note that since the pkg_files rule is never actually used in anything
-    # other than this test, nonexistent_script can be included with no ill
-    # effects. :P
-    native.sh_binary(
+    fake_artifact(
         name = "test_script_rename",
-        srcs = ["testdata/nonexistent_script.sh"],
+        files = ["testdata/a_script.sh"],
         tags = ["manual"],
     )
 
@@ -461,7 +455,7 @@ def _test_pkg_files_rename():
         name = "pf_rename_rule_with_multiple_outputs_g",
         srcs = ["test_script_rename"],
         renames = {
-            ":test_script_rename": "still_nonexistent_script",
+            ":test_script_rename": "still_a_script",
         },
         tags = ["manual"],
     )
@@ -477,7 +471,7 @@ def _test_pkg_files_rename():
         srcs = ["testdata/hello.txt"],
         prefix = "usr",
         renames = {
-            "nonexistent_script": "nonexistent_output_location",
+            "a_script": "an_output_location",
         },
         tags = ["manual"],
     )
