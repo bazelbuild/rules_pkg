@@ -31,6 +31,11 @@ class StampTest(unittest.TestCase):
   target_mtime = int(time.time())
   zip_epoch_dt = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
   ZIP_EPOCH = int(zip_epoch_dt.timestamp())
+  # We allow the stamp on the build file to be within this delta back in
+  # time from now. That allows for the test data to be built early in a clean
+  # CI run and have the test run a few seconds later. Ideally, this would
+  # be no greater than the expected total CI run time, but the extra margin
+  # does not hurt.
   ALLOWED_DELTA_FROM_NOW = 10000  # seconds
 
   def check_mtime(self, mtime, file_path, file_name):
@@ -54,7 +59,7 @@ class StampTest(unittest.TestCase):
        self.fail('Archive %s contains file %s with ZIP epoch' % (
            file_path, file_name))
     if ((mtime < self.target_mtime - StampTest.ALLOWED_DELTA_FROM_NOW)
-        or (mtime > self.target_mtime + StampTest.ALLOWED_DELTA_FROM_NOW)):
+        or (mtime > self.target_mtime)):
        self.fail(
            'Archive %s contains file %s with mtime:%d, expected:%d +/- %d' % (
                file_path, file_name, mtime, self.target_mtime,
