@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@//tests/util:defs.bzl", "fake_artifact")
 load("test.bzl", "test_referencing_remote_file")
 
 package(default_visibility = ["//visibility:public"])
@@ -21,9 +22,9 @@ exports_files(
     glob(["**"]),
 )
 
-sh_binary(
+fake_artifact(
     name = "dir/script",
-    srcs = ["dir/extproj.sh"],
+    files = ["dir/extproj.sh"],
     visibility = ["//visibility:public"],
 )
 
