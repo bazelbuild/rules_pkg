@@ -290,6 +290,18 @@ Creates a tar file from a list of inputs.
       </td>
     </tr>
     <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <code>Integer; optional; default is -1</code>
+        <p>Enable file time stamping.  Possible values:<ul>
+          <li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
+          <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
+          <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
+          </ul>
+        </p>
+      </td>
+    </tr>
+    <tr>
       <td><code>symlinks</code></td>
       <td>
         <code>Dictionary, optional</code>
@@ -386,6 +398,18 @@ Creates a zip file from a list of inputs.
         <p>File to add to the layer.</p>
         <p>
           A list of files that should be included in the archive.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>stamp</code></td>
+      <td>
+        <code>Integer; optional; default is -1</code>
+        <p>Enable file time stamping.  Possible values:<ul>
+          <li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
+          <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
+          <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
+          </ul>
         </p>
       </td>
     </tr>
