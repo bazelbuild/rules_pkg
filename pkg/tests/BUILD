@@ -583,6 +583,14 @@ pkg_tar(
     stamp = 1,
 )
 
+pkg_zip(
+    name = "stamped_zip",
+    srcs = ["BUILD"],
+    stamp = 1,
+)
+
+# Note that this only tests that stamping works. Other tests cover the case
+# of archive members having the default, epoch, time stamp.
 py_test(
     name = "stamp_test",
     srcs = [
@@ -590,6 +598,7 @@ py_test(
     ],
     data = [
         "stamped_tar.tar",
+        "stamped_zip.zip",
     ],
     python_version = "PY3",
     deps = [
