@@ -59,6 +59,48 @@ Paths containing directories will also have the intermediate directories created
     },
 )
 
+def _fake_artifact_impl(ctx):
+    out_file = ctx.actions.declare_file(ctx.attr.name)
+    content = ['echo ' + rf.path for rf in ctx.files.runfiles]
+    ctx.actions.write(
+        output = out_file,
+        content = '\r\n'.join(content),
+        is_executable = ctx.attr.executable,
+    )
+    return DefaultInfo(
+        files = depset([out_file] + ctx.files.files),
+        runfiles = ctx.runfiles(files = ctx.files.runfiles),
+        executable = out_file if ctx.attr.executable else None,
+    )
+
+fake_artifact = rule(
+    doc = """Rule to create a fake artifact that depends on its srcs.
+
+This rule creates a file that appears to depend on its srcs and passes along
+other targets in DefaultInfo as files and/or runfiles. It creates a script that
+echos all the file names. It is useful for building an object that is like a
+cc_binary in complexity, but does not depend on a large toolchain.""",
+    implementation = _fake_artifact_impl,
+    attrs = {
+        "deps": attr.label_list(
+            doc = "Dependencies to trigger other rules, but are then discarded.",
+            allow_files = True,
+        ),
+        "files": attr.label_list(
+            doc = "Deps which are passed in DefaultInfo as files.",
+            allow_files = True,
+        ),
+        "runfiles": attr.label_list(
+            doc = "Deps which are passed in DefaultInfo as runfiles.",
+            allow_files = True,
+        ),
+        "executable": attr.bool(
+            doc = "If True, the DefaultInfo will be marked as executable.",
+            default = False,
+        ),
+    },
+)
+
 def _write_content_manifest_impl(ctx):
     content_map = {}  # content handled in the manifest
     file_deps = []  # inputs we depend on
@@ -81,7 +123,6 @@ This is intended only for testing the manifest creation features.""",
 
 def write_content_manifest(name, srcs):
     _write_content_manifest(name=name, srcs=srcs, out=name + ".manifest")
-
 
 ############################################################
 # Test boilerplate
