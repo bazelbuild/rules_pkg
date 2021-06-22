@@ -15,7 +15,7 @@
 
 load(":path.bzl", "compute_data_path", "dest_path")
 load(":providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
