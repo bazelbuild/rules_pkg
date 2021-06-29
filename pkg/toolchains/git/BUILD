@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ load("//toolchains/git:git.bzl", "git_toolchain", "is_git_available")
 
 filegroup(
     name = "standard_package",
-    srcs = glob([
-        "*",
-    ]),
+    srcs = glob(["*"]),
     visibility = ["//distro:__pkg__"],
 )
 

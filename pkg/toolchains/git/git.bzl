@@ -25,7 +25,7 @@ GitInfo = provider(
     fields = {
         "name": "The name of the toolchain",
         "valid": "Is this toolchain valid and usable?",
-        "label": "The path to a target I will build",
+        "label": "Label of a target providing a git binary",
         "path": "The path to a pre-built git",
         "workspace_top": "The path to the top of the git workspace." +
                          " In reality, use the path to the WORKSPACE file as a proxy for" +
