@@ -90,8 +90,10 @@ _git_changelog = rule(
 def git_changelog(name, **kwargs):
     _git_changelog(
         name = name,
-        # TODO(aiuto): I want this to gracefully skip if git is not available.
-        # I need more work to figure out how to make this work.
-        # exec_compatible_with = ["//toolchains/git:is_git_available"],
+        # This requires bazel 4.x
+        target_compatible_with = select({
+            "//toolchains/git:have_git": [],
+            "//conditions:default": ["//:not_compatible"],
+        }),
         **kwargs,
     )
