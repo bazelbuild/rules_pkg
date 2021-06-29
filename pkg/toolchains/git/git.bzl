@@ -27,9 +27,9 @@ GitInfo = provider(
         "valid": "Is this toolchain valid and usable?",
         "label": "Label of a target providing a git binary",
         "path": "The path to a pre-built git",
-        "workspace_top": "The path to the top of the git workspace." +
-                         " In reality, use the path to the WORKSPACE file as a proxy for" +
-                         " a folder underneath the git workspace top.",
+        "client_top": "The path to the top of the git client." +
+                      " In reality, we use the path to the WORKSPACE file as" +
+                      " a proxy for a folder underneath the git client top.",
     },
 )
 
@@ -43,7 +43,7 @@ def _git_toolchain_impl(ctx):
             valid = valid,
             label = ctx.attr.label,
             path = ctx.attr.path,
-            workspace_top = ctx.attr.workspace_top,
+            client_top = ctx.attr.client_top,
         ),
     )
     return [toolchain_info]
@@ -60,8 +60,8 @@ git_toolchain = rule(
         "path": attr.string(
             doc = "The path to the git executable. Mutually exclusive with label.",
         ),
-        "workspace_top": attr.string(
-            doc = "The top of your git workspace.",
+        "client_top": attr.string(
+            doc = "The top of your git client.",
         ),
     },
 )
@@ -69,10 +69,9 @@ git_toolchain = rule(
 # Expose the presence of a git in the resolved toolchain as a flag.
 def _is_git_available_impl(ctx):
     toolchain = ctx.toolchains["@rules_pkg//toolchains/git:git_toolchain_type"]
-    if not toolchain:
-        return False
+    available = toolchain and toolchain.git.valid
     return [config_common.FeatureFlagInfo(
-        value = ("1" if toolchain.git.valid else "0"),
+        value = ("1" if available else "0"),
     )]
 
 is_git_available = rule(

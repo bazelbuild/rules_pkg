@@ -35,8 +35,8 @@ def _find_system_git_impl(rctx):
         else:
             print("No system git found.")  # buildifier: disable=print
 
-    # In a conventional setup the directory of the WORKSPACE file is under the git workspace.
-    # Thus, we can use the absolute path to WORKSPACE dir as a surrogate.
+    # In a conventional setup the directory of the WORKSPACE file is under the git client.
+    # So we use the absolute path to WORKSPACE dir as a surrogate for git-ness.
     ws_dir = str(rctx.path(rctx.attr.workspace_file).dirname.realpath)
     if rctx.attr.verbose:
         print("Found WORKSPACE in", ws_dir)  # buildifier: disable=print
@@ -61,7 +61,13 @@ _find_system_git = repository_rule(
 def experimental_find_system_git(name, workspace_file = None, verbose = False):
     """Create a toolchain that lets you run git.
 
-    This is experimental. The API and behavior are subject to change at any time.
+    WARNING: This is experimental. The API and behavior are subject to change
+    at any time.
+
+    This presumes that your Bazel WORKSPACE file is located under your git
+    client. That is often true, but might not be in a multi-repo where you
+    might weave together a Bazel workspace from several git repos that are
+    all rooted under the WORKSPACE file.
     """
     if not workspace_file:
         workspace_file = Label("//:WORKSPACE")

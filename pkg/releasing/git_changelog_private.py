@@ -20,6 +20,7 @@ import sys
 
 
 def guess_previous_release_tag(git_path, pattern=None):
+  assert git_path
   most_recent = None
   cmd = [git_path, 'tag']
   if pattern:
@@ -30,7 +31,7 @@ def guess_previous_release_tag(git_path, pattern=None):
   return most_recent
 
 
-def git_changelog(from_ref='_auto_', to_ref='HEAD', git_path=None):
+def git_changelog(from_ref, to_ref='HEAD', git_path=None):
   assert from_ref
   assert to_ref
   assert git_path
@@ -44,7 +45,7 @@ def main():
       description='Helper for extracting git changelog',
       fromfile_prefix_chars='@')
   parser.add_argument('--git_path', required=True, help='path to git binary')
-  parser.add_argument('--git_root', required=True, help='path to git workspace')
+  parser.add_argument('--git_root', required=True, help='path to git client')
   parser.add_argument('--out', required=True, help='output path')
   parser.add_argument('--from_ref', help='from REF')
   parser.add_argument('--to_ref', help='to REF')
@@ -55,7 +56,7 @@ def main():
   with open(options.out, 'w', encoding='utf-8') as out:
     os.chdir(options.git_root)
     from_ref = options.from_ref
-    if not from_ref or from_ref == '_auto_':
+    if not from_ref or from_ref == '_LATEST_TAG_':
       from_ref = guess_previous_release_tag(options.git_path)
     to_ref = options.to_ref or 'HEAD'
     if options.verbose:

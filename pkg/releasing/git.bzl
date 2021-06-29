@@ -30,7 +30,7 @@ def _git_changelog_impl(ctx):
         tools.append(executable)
         tools.append(toolchain.label.default_runfiles.files.to_list())
         args.add("--git_path", executable.path)
-    args.add("--git_root", toolchain.workspace_top)
+    args.add("--git_root", toolchain.client_top)
     args.add("--from_ref", ctx.attr.from_ref)
     args.add("--to_ref", ctx.attr.to_ref)
     args.add("--out", ctx.outputs.out.path)
@@ -59,14 +59,14 @@ def _git_changelog_impl(ctx):
 
 # Define the rule.
 _git_changelog = rule(
-    doc = "Extracts the git changelog between two tags.",
+    doc = "Extracts the git changelog between two refs.",
     attrs = {
         "from_ref": attr.string(
-            doc = "lower commit tag. The default is to use the latest tag",
-            default = "_auto_",
+            doc = "lower commit ref. The default is to use the latest tag",
+            default = "_LATEST_TAG_",
         ),
         "to_ref": attr.string(
-            doc = "upper commit tag. The default is HEAD",
+            doc = "upper commit ref. The default is HEAD",
             default = "HEAD",
         ),
         "out": attr.output(mandatory = True),
@@ -76,25 +76,22 @@ _git_changelog = rule(
         ),
         "_git_changelog": attr.label(
             default = Label("//releasing:git_changelog_private"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
-        # TODO(aiuto): Remove this when we graduate from experimental
-        # This does not work.
-        #"self": attr.label(
-        #    # default = Label("//releasing:git.bzl"),
-        #    cfg = "host",
-        #    allow_single_file = True,
-        #),
     },
     executable = False,
     implementation = _git_changelog_impl,
     toolchains = ["@rules_pkg//toolchains/git:git_toolchain_type"],
 )
 
+
 def git_changelog(name, **kwargs):
     _git_changelog(
         name = name,
-        **kwargs
+        # TODO(aiuto): I want this to gracefully skip if git is not available.
+        # I need more work to figure out how to make this work.
+        # exec_compatible_with = ["//toolchains/git:is_git_available"],
+        **kwargs,
     )
