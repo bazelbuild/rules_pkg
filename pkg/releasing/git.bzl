@@ -27,8 +27,8 @@ def _git_changelog_impl(ctx):
         args.add("--git_path", toolchain.path)
     else:
         executable = toolchain.label.files_to_run.executable
-        tools += [executable]
-        tools += toolchain.label.default_runfiles.files.to_list()
+        tools.append(executable)
+        tools.append(toolchain.label.default_runfiles.files.to_list())
         args.add("--git_path", executable.path)
     args.add("--git_root", toolchain.workspace_top)
     args.add("--from_ref", ctx.attr.from_ref)
@@ -36,17 +36,6 @@ def _git_changelog_impl(ctx):
     args.add("--out", ctx.outputs.out.path)
     if ctx.attr.verbose:
         args.add("--verbose")
-
-    # TODO(aiuto): Remove this when we graduate from experimental
-    # Here is the place where we would try to get the absolute path to self.
-    # What we need is a method to return a value of type path, but everything
-    # gives us strings.
-    # print(dir(ctx.file.self))
-    # print(dir(ctx.file.self.root))
-    # print(type(ctx.file.self.path))
-    # print(ctx.file.self.path)
-    # rctx has path(), but ctx does not :-(
-    # print(ctx.path(ctx.attr.self.label).dirname)
 
     ctx.actions.run(
         mnemonic = "GitChangelog",

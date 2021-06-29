@@ -157,3 +157,12 @@ stardoc(
 )
 
 # TODO(nacl): update this for the new RPM builder; pkg_filegroup
+
+print_rel_notes(
+    name = "relnotes2",
+    deps_method = "rules_pkg_dependencies",
+    mirror_host = "mirror.bazel.build",
+    org = "bazelbuild",
+    repo = "rules_pkg",
+    version = version,
+)

@@ -7,7 +7,7 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
-# WARNING: 2021-03-05. This is experimental and subject to change.
+# WARNING: 2021-06-28. This is experimental and subject to change.
 
 # Sample usage:
 # load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")

@@ -11,7 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""toolchain to provide an git binary."""
+"""toolchain to provide access to git from Bazel.
+
+A git toolchain is somewhat unusual compared to other toolchains.
+It not only provides a path to the git executable, but it also
+holds the absolute path to our workspace, which is presumed to
+be under revision control. This allows us to write helper tools
+that escape the Bazel sandbox and pop back to the workspace/repo.
+"""
 
 GitInfo = provider(
     doc = """Information needed to invoke git.""",
@@ -59,7 +66,7 @@ git_toolchain = rule(
     },
 )
 
-# Expose the presence of an git in the resolved toolchain as a flag.
+# Expose the presence of a git in the resolved toolchain as a flag.
 def _is_git_available_impl(ctx):
     toolchain = ctx.toolchains["@rules_pkg//toolchains/git:git_toolchain_type"]
     if not toolchain:
@@ -73,6 +80,3 @@ is_git_available = rule(
     attrs = {},
     toolchains = ["@rules_pkg//toolchains/git:git_toolchain_type"],
 )
-
-def git_register_toolchains():
-    native.register_toolchains("@rules_pkg//toolchains/git:git_missing_toolchain")
