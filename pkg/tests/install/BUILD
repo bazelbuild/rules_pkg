@@ -1,0 +1,69 @@
+# Copyright 2021 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_python//python:defs.bzl", "py_test")
+load("//tests/util:defs.bzl", "fake_artifact")
+load("//:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
+load("//:install.bzl", "pkg_install")
+
+py_test(
+    name = "install",
+    srcs = ["test.py"],
+    args = ["-v"],
+    data = [
+        ":test_installer",
+    ],
+    main = "test.py",
+    # TODO(nacl): consider enabling this for testing on Linux.
+    #tags = ["requires-fakeroot"],
+    deps = [
+        "//private:manifest",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+pkg_install(
+    name = "test_installer",
+    srcs = [
+        ":artifact-in-owned-dir",
+        ":artifact-in-unowned-dir",
+        ":dirs",
+    ],
+)
+
+fake_artifact(
+    name = "artifact",
+)
+
+pkg_files(
+    name = "artifact-in-owned-dir",
+    srcs = ["artifact"],
+    attributes = pkg_attributes(mode = "0700"),
+    prefix = "owned-dir",
+)
+
+pkg_files(
+    name = "artifact-in-unowned-dir",
+    srcs = ["artifact"],
+    attributes = pkg_attributes(mode = "0755"),
+    prefix = "unowned-dir",
+)
+
+pkg_mkdirs(
+    name = "dirs",
+    dirs = [
+        "empty-owned-dir",
+        "owned-dir",
+    ],
+)

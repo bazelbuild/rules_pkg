@@ -24,6 +24,7 @@ filegroup(
     name = "standard_package",
     srcs = [
         "BUILD",
+        "install.py.in",
     ] + glob([
         "*.bzl",
         "*.py",
@@ -36,6 +37,11 @@ exports_files(
         "*.bzl",
     ]),
     visibility = ["//distro:__pkg__"],
+)
+
+exports_files(
+    ["install.py.in"],
+    visibility = ["//visibility:public"],
 )
 
 config_setting(
@@ -115,4 +121,11 @@ py_binary(
     deps = [
         ":helpers",
     ],
+)
+
+py_library(
+    name = "manifest",
+    srcs = ["manifest.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
 )
