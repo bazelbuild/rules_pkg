@@ -151,12 +151,11 @@ def _pkg_tar_impl(ctx):
                     # I am fine with that if it makes the code more readable.
                     dest = _remap(remap_paths, d_path)
                     add_single_file(content_map, dest, f, src.label)
-    """
-    TODO(aiuto): I want the code to look like this, but we don't have lambdas.
-    transform_path = lambda f: _remap(
-        remap_paths, dest_path(f, data_path, data_path_without_prefix))
-    add_label_list(ctx, content_map, file_deps, ctx.attr.srcs, transform_path)
-    """
+
+    # TODO(aiuto): I want the code to look like this, but we don't have lambdas.
+    # transform_path = lambda f: _remap(
+    #    remap_paths, dest_path(f, data_path, data_path_without_prefix))
+    # add_label_list(ctx, content_map, file_deps, ctx.attr.srcs, transform_path)
 
     # Add runfiles if requested
     runfiles_depsets = []

@@ -42,9 +42,10 @@ load(
 )
 
 # Possible values for entry_type
-ENTRY_IS_FILE = 0  # Entry is a file -> take content from <src>
-ENTRY_IS_DIR = 1  # Entry is an emptry dir
-ENTRY_IS_TREE = 2  # Entry is a tree artifact -> take tree from <src>
+ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = 2  # Entry is an emptry dir
+ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
@@ -298,12 +299,20 @@ def write_manifest(ctx, manifest_file, content_map):
     )
 
 def _encode_manifest_entry(dest, df):
+    entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
+    if df.src:
+        src = df.src.path
+        entry_type = ENTRY_IS_FILE
+    elif hasattr(df, "link_to"):
+        src = df.link_to
+        entry_type = ENTRY_IS_LINK
+    else:
+        src = None
     return json.encode([
+        entry_type,
         dest.strip('/'),
-        df.src.path if df.src else None,
+        src,
         df.mode or "",
         df.user or None,
         df.group or None,
-        df.link_to if hasattr(df, "link_to") else "",
-        df.entry_type if hasattr(df, "entry_type") else 0,
         ])

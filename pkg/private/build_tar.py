@@ -24,9 +24,10 @@ import helpers
 import build_info
 
 # These must be kept in sync with the vlues from private/pkg_files.bzl
-ENTRY_IS_FILE = 0  # Entry is a file -> take content from <src>
-ENTRY_IS_DIR = 1  # Entry is an emptry dir
-ENTRY_IS_TREE = 2  # Entry is a tree artifact -> take tree from <src>
+ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = 2  # Entry is an emptry dir
+ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 
 
 class TarFile(object):
@@ -208,8 +209,8 @@ class TarFile(object):
     Args:
        tree_top: the top of the tree to add
        destpath: the path under which to place the files
-       mode: force to set the specified mode, by default the value from the
-         source is taken.
+       mode: (int) force to set the specified posix mode. The default is
+         derived from the source . Tip: Standard posix octal notation.
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.
@@ -219,9 +220,6 @@ class TarFile(object):
       dest = self.directory.lstrip('/') + '/' + dest
 
     dest = os.path.normpath(dest).replace(os.path.sep, '/')
-    # If mode is unspecified, derive the mode from the file's mode.
-    if mode is None:
-      mode = 0o755 if os.access(f, os.X_OK) else 0o644
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -242,10 +240,15 @@ class TarFile(object):
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
+      # If mode is unspecified, derive the mode from the file's mode.
+      if mode is None:
+        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+      else:
+        f_mode = mode
       if not content_path:
         self.add_empty_file(
             path,
-            mode=mode,
+            mode=f_mode,
             ids=ids,
             names=names,
             kind=tarfile.DIRTYPE)
@@ -253,14 +256,14 @@ class TarFile(object):
         self.tarfile.add_file(
             path,
             file_content=content_path,
-            mode=mode,
+            mode=f_mode,
             uid=ids[0],
             gid=ids[1],
             uname=names[0],
             gname=names[1])
 
   def add_manifest_entry(self, entry, file_attributes):
-    dest, src, mode, user, group, link, entry_type = entry
+    entry_type, dest, src, mode, user, group = entry
 
     # Use the pkg_tar mode/owner remaping as a fallback
     non_abs_path = dest.strip('/')
@@ -277,15 +280,14 @@ class TarFile(object):
       else:
         # Use group that legacy tar process would assign
         attrs['names'] = (user, attrs.get('names')[1])
-    if link:
-      self.add_link(dest, link)
+    if entry_type == ENTRY_IS_LINK:
+      self.add_link(dest, src)
     elif entry_type == ENTRY_IS_DIR:
       self.add_empty_dir(dest, **attrs)
     elif entry_type == ENTRY_IS_TREE:
       self.add_tree(src, dest, **attrs)
     else:
       self.add_file(src, dest, **attrs)
-
 
 
 def main():
