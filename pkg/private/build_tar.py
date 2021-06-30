@@ -23,6 +23,11 @@ import archive
 import helpers
 import build_info
 
+# These must be kept in sync with the vlues from private/pkg_files.bzl
+ENTRY_IS_FILE = 0  # Entry is a file -> take content from <src>
+ENTRY_IS_DIR = 1  # Entry is an emptry dir
+ENTRY_IS_TREE = 2  # Entry is a tree artifact -> take tree from <src>
+
 
 class TarFile(object):
   """A class to generates a TAR file."""
@@ -255,7 +260,7 @@ class TarFile(object):
             gname=names[1])
 
   def add_manifest_entry(self, entry, file_attributes):
-    dest, src, mode, user, group, link, is_dir = entry
+    dest, src, mode, user, group, link, entry_type = entry
 
     # Use the pkg_tar mode/owner remaping as a fallback
     non_abs_path = dest.strip('/')
@@ -274,9 +279,9 @@ class TarFile(object):
         attrs['names'] = (user, attrs.get('names')[1])
     if link:
       self.add_link(dest, link)
-    elif is_dir == 1:
+    elif entry_type == ENTRY_IS_DIR:
       self.add_empty_dir(dest, **attrs)
-    elif is_dir == 2:
+    elif entry_type == ENTRY_IS_TREE:
       self.add_tree(src, dest, **attrs)
     else:
       self.add_file(src, dest, **attrs)

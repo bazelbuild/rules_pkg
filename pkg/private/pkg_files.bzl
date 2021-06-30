@@ -41,6 +41,11 @@ load(
     "PackageSymlinkInfo",
 )
 
+# Possible values for entry_type
+ENTRY_IS_FILE = 0  # Entry is a file -> take content from <src>
+ENTRY_IS_DIR = 1  # Entry is an emptry dir
+ENTRY_IS_TREE = 2  # Entry is a tree artifact -> take tree from <src>
+
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
     fields = {
@@ -49,8 +54,7 @@ _DestFile = provider(
         "user": "user, or empty",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "is_dir": "int. if 1, create empty dir at dest. If 2 src" +
-                  " is a the top of a tree artifact to place at dest",
+        "entry_type": "int. See ENTRY_IS_* values above.",
         "origin": "target which added this",
     },
 )
@@ -78,7 +82,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
         _check_dest(content_map, dest, origin)
         content_map[dest] = _DestFile(
             src = None,
-            is_dir = 1,
+            entry_type = ENTRY_IS_DIR,
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
@@ -186,7 +190,7 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
     """
     content_map[dir_path.strip('/')] = _DestFile(
         src = None,
-        is_dir = 1,
+        entry_type = ENTRY_IS_DIR,
         origin = origin,
         mode = mode,
         user = user,
@@ -270,7 +274,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode=None, user=None,
     content_map[dest_path] = _DestFile(
         src = src,
         origin = origin,
-        is_dir = 2,
+        entry_type = ENTRY_IS_TREE,
         mode = mode,
         user = user,
         group = group,
@@ -301,5 +305,5 @@ def _encode_manifest_entry(dest, df):
         df.user or None,
         df.group or None,
         df.link_to if hasattr(df, "link_to") else "",
-        df.is_dir if hasattr(df, "is_dir") else 0,
+        df.entry_type if hasattr(df, "entry_type") else 0,
         ])
