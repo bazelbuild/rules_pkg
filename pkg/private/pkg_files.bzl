@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Internal methods for processing pkg_file* instances.
+"""Internal functions for processing pkg_file* instances.
 
 Concepts and terms:
 
   DestFile: A provider holding the source path, attributes and other
             information about a file that should appear in the package.
             When attributes are empty in DestFile, we let the package
-            tool decided their values.
+            tool decide their values.
 
   content map: The map of destination paths to DestFile instances. Note that
                several distinct destinations make share the same source path.
@@ -261,7 +261,7 @@ def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, g
     )
 
 def add_tree_artifact(content_map, dest_path, src, origin, mode=None, user=None, group=None):
-    """Add an single file to the content map.
+    """Add an tree artifact (directory output) to the content map.
 
     Args:
       content_map: The content map

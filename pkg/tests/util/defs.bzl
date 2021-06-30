@@ -122,7 +122,7 @@ This is intended only for testing the manifest creation features.""",
 )
 
 def write_content_manifest(name, srcs):
-    _write_content_manifest(name=name, srcs=srcs, out=name + ".manifest")
+    _write_content_manifest(name = name, srcs = srcs, out = name + ".manifest")
 
 ############################################################
 # Test boilerplate

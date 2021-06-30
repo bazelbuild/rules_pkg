@@ -21,17 +21,21 @@ from bazel_tools.tools.python.runfiles import runfiles
 class ContentManifestTest(unittest.TestCase):
   """Test harness to see if we wrote the content manifest correctly."""
 
+  run_files = runfiles.Create()
+
   def assertManifestsMatch(self, expected, got):
     """Check two manifest files for equality.
 
     Args:
         expected: The path to the content we expect.
-        go: The path to the content we got.
+        got: The path to the content we got.
     """
-    e_file = runfiles.Create().Rlocation('rules_pkg/tests/mappings/' + expected)
+    e_file = ContentManifestTest.run_files.Rlocation(
+        'rules_pkg/tests/mappings/' + expected)
     with open(e_file, 'r') as e_fp:
       expected = json.load(e_fp)
-    g_file = runfiles.Create().Rlocation('rules_pkg/tests/mappings/' + got)
+    g_file = ContentManifestTest.run_files.Rlocation(
+        'rules_pkg/tests/mappings/' + got)
     with open(g_file, 'r') as g_fp:
       got = json.load(g_fp)
     self.assertEquals(expected, got)

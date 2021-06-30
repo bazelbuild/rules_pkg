@@ -301,7 +301,7 @@ def main():
   parser.add_argument('--manifest',
                       help='manifest of contents to add to the layer.')
   parser.add_argument('--legacy_manifest',
-                      help='JSON manifest of contents to add to the layer.')
+                      help='DEPRECATED: JSON manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
   parser.add_argument(
@@ -419,6 +419,7 @@ def main():
           'names': names_map.get(filename, default_ownername),
       }
 
+    # TODO(aiuto): Make sure this is unused and remove the code.
     if options.legacy_manifest:
       with open(options.legacy_manifest, 'r') as manifest_fp:
         manifest = json.load(manifest_fp)
