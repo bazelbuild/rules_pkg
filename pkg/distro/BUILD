@@ -98,13 +98,14 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
-        "//private:util.bzl",
         "//:package_variables.bzl",
         "//:path.bzl",
         "//:pkg.bzl",
         "//:providers.bzl",
         "//:rpm.bzl",
         "//:version.bzl",
+        "//private:pkg_files.bzl",
+        "//private:util.bzl",
     ],
     visibility = ["//visibility:private"],
 )
