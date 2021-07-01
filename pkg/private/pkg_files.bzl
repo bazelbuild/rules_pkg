@@ -138,6 +138,7 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
     Returns:
       True if src was a Package*Info and added to content_map.
     """
+    found_info = False
     if PackageFilesInfo in src:
         _process_pkg_files(
             content_map,
@@ -147,7 +148,8 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             default_user,
             default_group,
         )
-    elif PackageFilegroupInfo in src:
+        found_info = True
+    if PackageFilegroupInfo in src:
         _process_pkg_filegroup(
             content_map,
             src[PackageFilegroupInfo],
@@ -156,7 +158,8 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             default_user,
             default_group,
         )
-    elif PackageSymlinkInfo in src:
+        found_info = True
+    if PackageSymlinkInfo in src:
         _process_pkg_symlink(
             content_map,
             src[PackageSymlinkInfo],
@@ -165,7 +168,8 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             default_user,
             default_group,
         )
-    elif PackageDirsInfo in src:
+        found_info = True
+    if PackageDirsInfo in src:
         _process_pkg_dirs(
             content_map,
             src[PackageDirsInfo],
@@ -174,9 +178,8 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             default_user,
             default_group,
         )
-    else:
-        return False
-    return True
+        found_info = True
+    return found_info
 
 def add_directory(content_map, dir_path, origin, mode=None, user=None, group=None):
     """Add an single file to the content map.
