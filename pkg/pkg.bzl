@@ -160,7 +160,7 @@ def _pkg_tar_impl(ctx):
     # Add runfiles if requested
     runfiles_depsets = []
     if ctx.attr.include_runfiles:
-        # TODO(aiuto): Rethink this w.r.t. binaries in pkg_files() rules.
+        # TODO(#339): Rethink this w.r.t. binaries in pkg_files() rules.
         for f in ctx.attr.srcs:
             default_runfiles = f[DefaultInfo].default_runfiles
             if default_runfiles != None:
