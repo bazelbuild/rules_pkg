@@ -19,7 +19,7 @@ import unittest
 
 import manifest_test_lib
 
-class MyTest(manifest_test_lib.ContentManifestTest):
+class ManifestAllTest(manifest_test_lib.ContentManifestTest):
 
   def test_match(self):
     self.assertManifestsMatch('all.manifest.golden', 'all.manifest')
