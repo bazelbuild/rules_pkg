@@ -28,6 +28,7 @@ ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = 2  # Entry is an empty dir
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
 
 
 class TarFile(object):
@@ -309,10 +310,6 @@ def main():
       help='Set mtime on tar file entries. May be an integer or the'
            ' value "portable", to get the value 2000-01-01, which is'
            ' is usable with non *nix OSes.')
-  parser.add_argument('--empty_file', action='append',
-                      help='An empty file to add to the layer.')
-  parser.add_argument('--empty_dir', action='append',
-                      help='An empty dir to add to the layer.')
   parser.add_argument('--empty_root_dir', action='append',
                       help='An empty dir to add to the layer.')
   parser.add_argument('--tar', action='append',
@@ -447,10 +444,6 @@ def main():
     for f in options.file or []:
       (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
       output.add_file(inf, tof, **file_attributes(tof))
-    for f in options.empty_file or []:
-      output.add_empty_file(f, **file_attributes(f))
-    for f in options.empty_dir or []:
-      output.add_empty_dir(f, **file_attributes(f))
     for f in options.empty_root_dir or []:
       output.add_empty_root_dir(f, **file_attributes(f))
     for tar in options.tar or []:
