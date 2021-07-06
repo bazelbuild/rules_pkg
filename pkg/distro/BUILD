@@ -111,6 +111,7 @@ bzl_library(
         "//:providers.bzl",
         "//:rpm.bzl",
         "//:version.bzl",
+        "//private:pkg_files.bzl",
         "//private:util.bzl",
     ],
     visibility = ["//visibility:private"],
