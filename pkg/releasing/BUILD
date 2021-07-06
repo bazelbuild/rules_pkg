@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("git.bzl", "git_changelog")
 
 licenses(["notice"])
 
@@ -6,7 +7,7 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
-# WARNING: 2019-08-05. This is experimental and subject to change.
+# WARNING: 2021-06-28. This is experimental and subject to change.
 
 # Sample usage:
 # load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
@@ -54,4 +55,15 @@ py_test(
     deps = [
         ":release_utils",
     ],
+)
+
+# This is an internal tool. Use at your own risk.
+py_binary(
+    name = "git_changelog_private",
+    srcs = [
+        "git_changelog_private.py",
+    ],
+    srcs_version = "PY3",
+    # TODO(https://github.com/bazelbuild/bazel/issues/7377): Make this private.
+    visibility = ["//visibility:public"],
 )
