@@ -23,10 +23,10 @@ import archive
 import helpers
 import build_info
 
-# These must be kept in sync with the vlues from private/pkg_files.bzl
+# These must be kept in sync with the values from private/pkg_files.bzl
 ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an emptry dir
+ENTRY_IS_DIR = 2  # Entry is an empty dir
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 
 
@@ -63,7 +63,7 @@ class TarFile(object):
     Args:
        f: the file to add to the layer
        destfile: the name of the file in the layer
-       mode: force to set the specified mode, by default the value from the
+       mode: (int) force to set the specified mode, by default the value from the
          source is taken.
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
@@ -209,8 +209,8 @@ class TarFile(object):
     Args:
        tree_top: the top of the tree to add
        destpath: the path under which to place the files
-       mode: (int) force to set the specified posix mode. The default is
-         derived from the source . Tip: Standard posix octal notation.
+       mode: (int) force to set the specified posix mode (e.g. 0o755). The
+         default is derived from the source
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.

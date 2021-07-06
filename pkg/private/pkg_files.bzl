@@ -42,9 +42,10 @@ load(
 )
 
 # Possible values for entry_type
+# These must be kept in sync with the declarations in private/build_*.py
 ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an emptry dir
+ENTRY_IS_DIR = 2  # Entry is an empty dir
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 
 _DestFile = provider(
