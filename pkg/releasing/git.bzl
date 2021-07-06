@@ -51,8 +51,6 @@ def _git_changelog_impl(ctx):
         },
         execution_requirements = {
             "local": "1",
-            "no-sandbox": "1",
-            "no-remote": "1",
         },
         tools = tools,
     )
@@ -81,7 +79,6 @@ _git_changelog = rule(
             allow_files = True,
         ),
     },
-    executable = False,
     implementation = _git_changelog_impl,
     toolchains = ["@rules_pkg//toolchains/git:git_toolchain_type"],
 )

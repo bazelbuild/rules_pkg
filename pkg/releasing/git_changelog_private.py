@@ -25,6 +25,8 @@ def guess_previous_release_tag(git_path, pattern=None):
   cmd = [git_path, 'tag']
   if pattern:
     cmd.extend(['--list', pattern])
+  # We are doing something dumb here for now. Grab the list of tags, and pick
+  # the last one.
   with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
     most_recent = proc.stdout.read().decode('utf-8')
     most_recent = most_recent.strip().replace('\n\n', '\n').split('\n')[-1]
