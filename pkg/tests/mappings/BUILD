@@ -13,7 +13,74 @@
 # limitations under the License.
 
 load(":mappings_test.bzl", "mappings_analysis_tests", "mappings_unit_tests")
+load(
+    "//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_filegroup",
+    "pkg_files",
+    "pkg_mkdirs",
+    "pkg_mklink",
+    "strip_prefix",
+)
+load("//tests/util:defs.bzl", "write_content_manifest")
+load("@rules_python//python:defs.bzl", "py_test")
 
 mappings_analysis_tests()
 
 mappings_unit_tests()
+
+pkg_mkdirs(
+    name = "dirs",
+    attributes = pkg_attributes(
+        group = "bar",
+        mode = "711",
+        user = "foo",
+    ),
+    dirs = [
+        "foodir",
+    ],
+)
+
+pkg_files(
+    name = "files",
+    srcs = [
+        "mappings_test.bzl",
+    ],
+)
+
+write_content_manifest(
+    name = "all",
+    srcs = [
+        "BUILD",
+        ":dirs",
+        ":files",
+    ],
+)
+
+# TODO(aiuto): This rule and the small srcs should be generated from just the
+# pair of write_content_manifest name and the golden file name.
+# We could even inline the golden data into a string which gets parsed as
+# json and written out.
+py_test(
+    name = "all_test",
+    srcs = [
+        "all_test.py",
+    ],
+    data = [
+        "all.manifest.golden",
+        ":all.manifest",
+    ],
+    python_version = "PY3",
+    deps = [
+        ":manifest_test_lib",
+    ],
+)
+
+py_library(
+    name = "manifest_test_lib",
+    srcs = ["manifest_test_lib.py"],
+    srcs_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)

@@ -23,6 +23,12 @@ import archive
 import helpers
 import build_info
 
+# These must be kept in sync with the values from private/pkg_files.bzl
+ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = 2  # Entry is an empty dir
+ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
+
 
 class TarFile(object):
   """A class to generates a TAR file."""
@@ -57,7 +63,7 @@ class TarFile(object):
     Args:
        f: the file to add to the layer
        destfile: the name of the file in the layer
-       mode: force to set the specified mode, by default the value from the
+       mode: (int) force to set the specified mode, by default the value from the
          source is taken.
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
@@ -197,6 +203,92 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
+  def add_tree(self, tree_top, destpath, mode=None, ids=None, names=None):
+    """Add a tree artifact to the tar file.
+
+    Args:
+       tree_top: the top of the tree to add
+       destpath: the path under which to place the files
+       mode: (int) force to set the specified posix mode (e.g. 0o755). The
+         default is derived from the source
+       ids: (uid, gid) for the file to set ownership
+       names: (username, groupname) for the file to set ownership. `f` will be
+         copied to `self.directory/destfile` in the layer.
+    """
+    dest = destpath.strip('/')  # redundant, dests should never have / here
+    if self.directory and self.directory != '/':
+      dest = self.directory.lstrip('/') + '/' + dest
+
+    dest = os.path.normpath(dest).replace(os.path.sep, '/')
+    if ids is None:
+      ids = (0, 0)
+    if names is None:
+      names = ('', '')
+
+    to_write = {}
+    for root, dirs, files in os.walk(tree_top):
+      dirs = sorted(dirs)
+      rel_path_from_top = root[len(tree_top):].lstrip('/')
+      if rel_path_from_top:
+        dest_dir = dest + '/' + rel_path_from_top + '/'
+      else:
+        dest_dir = dest + '/'
+      for dir in dirs:
+        to_write[dest_dir + dir] = None
+      for file in sorted(files):
+        to_write[dest_dir + file] = os.path.join(root, file)
+
+    for path in sorted(to_write.keys()):
+      content_path = to_write[path]
+      # If mode is unspecified, derive the mode from the file's mode.
+      if mode is None:
+        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+      else:
+        f_mode = mode
+      if not content_path:
+        self.add_empty_file(
+            path,
+            mode=f_mode,
+            ids=ids,
+            names=names,
+            kind=tarfile.DIRTYPE)
+      else:
+        self.tarfile.add_file(
+            path,
+            file_content=content_path,
+            mode=f_mode,
+            uid=ids[0],
+            gid=ids[1],
+            uname=names[0],
+            gname=names[1])
+
+  def add_manifest_entry(self, entry, file_attributes):
+    entry_type, dest, src, mode, user, group = entry
+
+    # Use the pkg_tar mode/owner remaping as a fallback
+    non_abs_path = dest.strip('/')
+    if file_attributes:
+      attrs = file_attributes(non_abs_path)
+    else:
+      attrs = {}
+    # But any attributes from the manifest have higher precedence
+    if mode is not None and mode != '':
+      attrs['mode'] = int(mode, 8)
+    if user:
+      if group:
+        attrs['names'] = (user, group)
+      else:
+        # Use group that legacy tar process would assign
+        attrs['names'] = (user, attrs.get('names')[1])
+    if entry_type == ENTRY_IS_LINK:
+      self.add_link(dest, src)
+    elif entry_type == ENTRY_IS_DIR:
+      self.add_empty_dir(dest, **attrs)
+    elif entry_type == ENTRY_IS_TREE:
+      self.add_tree(src, dest, **attrs)
+    else:
+      self.add_file(src, dest, **attrs)
+
 
 def main():
   parser = argparse.ArgumentParser(
@@ -207,7 +299,9 @@ def main():
   parser.add_argument('--file', action='append',
                       help='A file to add to the layer.')
   parser.add_argument('--manifest',
-                      help='JSON manifest of contents to add to the layer.')
+                      help='manifest of contents to add to the layer.')
+  parser.add_argument('--legacy_manifest',
+                      help='DEPRECATED: JSON manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
   parser.add_argument(
@@ -325,8 +419,9 @@ def main():
           'names': names_map.get(filename, default_ownername),
       }
 
-    if options.manifest:
-      with open(options.manifest, 'r') as manifest_fp:
+    # TODO(aiuto): Make sure this is unused and remove the code.
+    if options.legacy_manifest:
+      with open(options.legacy_manifest, 'r') as manifest_fp:
         manifest = json.load(manifest_fp)
         for f in manifest.get('files', []):
           output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
@@ -342,6 +437,12 @@ def main():
           output.add_tar(tar)
         for deb in manifest.get('debs', []):
           output.add_deb(deb)
+
+    if options.manifest:
+      with open(options.manifest, 'r') as manifest_fp:
+        manifest = json.load(manifest_fp)
+        for entry in manifest:
+          output.add_manifest_entry(entry, file_attributes)
 
     for f in options.file or []:
       (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')

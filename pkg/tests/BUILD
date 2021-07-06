@@ -14,6 +14,7 @@
 # -*- coding: utf-8 -*-
 
 load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
+load("//tests/util:defs.bzl", "directory")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
@@ -86,6 +87,19 @@ genrule(
         "usr/titi",
     ],
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
+)
+
+directory(
+    name = "generate_tree",
+    filenames = [
+        # buildifier: don't sort
+        "b/e",
+        "a/a",
+        "b/c/d",
+        "b/d",
+        "a/b/c",
+    ],
+    contents = "hello there",
 )
 
 copy_file(
@@ -466,6 +480,14 @@ pkg_tar(
     ],
 )
 
+pkg_tar(
+    name = "test-tar-tree-artifact",
+    package_dir = "a_tree",
+    srcs = [
+        ":generate_tree"
+    ],
+)
+
 py_test(
     name = "pkg_tar_test",
     size = "medium",
@@ -485,6 +507,7 @@ py_test(
         ":test_tar_package_dir_substitution.tar",
         ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
+        ":test-tar-tree-artifact",
     ] + [
         ":test-tar-basic-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS
