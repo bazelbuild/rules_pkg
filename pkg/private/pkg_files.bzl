@@ -80,7 +80,7 @@ def _merge_attributes(info, mode, user, group):
 def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
-        dest = dir.strip('/')
+        dest = dir.strip("/")
         _check_dest(content_map, dest, origin)
         content_map[dest] = _DestFile(
             src = None,
@@ -94,7 +94,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
 def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
-        dest = filename.strip('/')
+        dest = filename.strip("/")
         _check_dest(content_map, dest, origin)
         content_map[dest] = _DestFile(
             src = src,
@@ -105,7 +105,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
         )
 
 def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
-    dest = pkg_symlink_info.destination.strip('/')
+    dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
     _check_dest(content_map, dest, origin)
     content_map[dest] = _DestFile(
@@ -182,7 +182,7 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
         found_info = True
     return found_info
 
-def add_directory(content_map, dir_path, origin, mode=None, user=None, group=None):
+def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
 
     Args:
@@ -193,7 +193,7 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    content_map[dir_path.strip('/')] = _DestFile(
+    content_map[dir_path.strip("/")] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
         origin = origin,
@@ -211,10 +211,12 @@ def add_label_list(ctx, content_map, file_deps, srcs):
       file_deps: (r/w) The list of File objects srcs depend on.
       srcs: List of source objects.
     """
+
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
-        ctx.attr.strip_prefix if hasattr(ctx.attr, "strip_prefix") else "")
+        ctx.attr.strip_prefix if hasattr(ctx.attr, "strip_prefix") else "",
+    )
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     for src in srcs:
@@ -237,12 +239,12 @@ def add_label_list(ctx, content_map, file_deps, srcs):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
 
-def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, group=None):
+def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
 
     Args:
@@ -254,7 +256,7 @@ def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, g
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    dest = dest_path.strip('/')
+    dest = dest_path.strip("/")
     _check_dest(content_map, dest, origin)
     content_map[dest] = _DestFile(
         src = src,
@@ -264,7 +266,31 @@ def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, g
         group = group,
     )
 
-def add_tree_artifact(content_map, dest_path, src, origin, mode=None, user=None, group=None):
+def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, group = None):
+    """Add a symlink to the content map.
+
+    Args:
+      content_map: The content map
+      dest_path: Where to place the file in the package.
+      src: Path to link to.
+      origin: The rule instance adding this entry
+      mode: fallback mode to use for Package*Info elements without mode
+      user: fallback user to use for Package*Info elements without user
+      group: fallback mode to use for Package*Info elements without group
+    """
+    dest = dest_path.strip("/")
+    _check_dest(content_map, dest, origin)
+    content_map[dest] = _DestFile(
+        src = None,
+        link_to = src,
+        entry_type = ENTRY_IS_LINK,
+        origin = origin,
+        mode = mode,
+        user = user,
+        group = group,
+    )
+
+def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an tree artifact (directory output) to the content map.
 
     Args:
@@ -297,9 +323,11 @@ def write_manifest(ctx, manifest_file, content_map):
     ctx.actions.write(
         manifest_file,
         "[\n" + ",\n".join(
-            [_encode_manifest_entry(dst, content_map[dst])
-             for dst in sorted(content_map.keys())]
-            ) + "\n]\n"
+            [
+                _encode_manifest_entry(dst, content_map[dst])
+                for dst in sorted(content_map.keys())
+            ],
+        ) + "\n]\n",
     )
 
 def _encode_manifest_entry(dest, df):
@@ -314,9 +342,9 @@ def _encode_manifest_entry(dest, df):
         src = None
     return json.encode([
         entry_type,
-        dest.strip('/'),
+        dest.strip("/"),
         src,
         df.mode or "",
         df.user or None,
         df.group or None,
-        ])
+    ])

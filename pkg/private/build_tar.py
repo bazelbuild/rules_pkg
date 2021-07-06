@@ -168,15 +168,28 @@ class TarFile(object):
       root = self.directory
     self.tarfile.add_tar(tar, numeric=True, root=root)
 
-  def add_link(self, symlink, destination):
+  def add_link(self, symlink, destination, mode=None, ids=None, names=None):
     """Add a symbolic link pointing to `destination`.
 
     Args:
       symlink: the name of the symbolic link to add.
       destination: where the symbolic link point to.
+      mode: (int) force to set the specified posix mode (e.g. 0o755). The
+        default is derived from the source
+      ids: (uid, gid) for the file to set ownership
+      names: (username, groupname) for the file to set ownership.  An empty
+        file will be created as `destfile` in the layer.
     """
     symlink = os.path.normpath(symlink).replace(os.path.sep, '/')
-    self.tarfile.add_file(symlink, tarfile.SYMTYPE, link=destination)
+    self.tarfile.add_file(
+        symlink,
+        tarfile.SYMTYPE,
+        link=destination,
+        mode = mode,
+        uid=ids[0],
+        gid=ids[1],
+        uname=names[0],
+        gname=names[1])
 
   def add_deb(self, deb):
     """Extract a debian package in the output tar.
@@ -281,7 +294,7 @@ class TarFile(object):
         # Use group that legacy tar process would assign
         attrs['names'] = (user, attrs.get('names')[1])
     if entry_type == ENTRY_IS_LINK:
-      self.add_link(dest, src)
+      self.add_link(dest, src, **attrs)
     elif entry_type == ENTRY_IS_DIR:
       self.add_empty_dir(dest, **attrs)
     elif entry_type == ENTRY_IS_TREE:
@@ -296,8 +309,6 @@ def main():
       fromfile_prefix_chars='@')
   parser.add_argument('--output', required=True,
                       help='The output file, mandatory.')
-  parser.add_argument('--file', action='append',
-                      help='A file to add to the layer.')
   parser.add_argument('--manifest',
                       help='manifest of contents to add to the layer.')
   parser.add_argument('--legacy_manifest',
@@ -319,14 +330,6 @@ def main():
                       help='A tar file to add to the layer')
   parser.add_argument('--deb', action='append',
                       help='A debian package to add to the layer')
-  parser.add_argument(
-      '--link', action='append',
-      help='Add a symlink a inside the layer pointing to b if a:b is specified')
-  # TODO(aiuto): Add back in the validation
-  # flags.register_validator(
-  #   'link',
-  #   lambda l: all(value.find(':') > 0 for value in l),
-  #   message='--link value should contains a : separator')
   parser.add_argument(
       '--directory',
       help='Directory in which to store the file inside the layer')
@@ -444,9 +447,6 @@ def main():
         for entry in manifest:
           output.add_manifest_entry(entry, file_attributes)
 
-    for f in options.file or []:
-      (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
-      output.add_file(inf, tof, **file_attributes(tof))
     for f in options.empty_file or []:
       output.add_empty_file(f, **file_attributes(f))
     for f in options.empty_dir or []:
@@ -457,9 +457,6 @@ def main():
       output.add_tar(tar)
     for deb in options.deb or []:
       output.add_deb(deb)
-    for link in options.link or []:
-      l = helpers.SplitNameValuePairAtSeparator(link, ':')
-      output.add_link(l[0], l[1])
 
 
 if __name__ == '__main__':
