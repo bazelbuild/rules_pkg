@@ -7,6 +7,7 @@ def print_rel_notes(
         deps_method = "",
         toolchains_method = "",
         org = "bazelbuild",
+        changelog = None,
         mirror_host = None):
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
     cmd = [
@@ -16,23 +17,30 @@ def print_rel_notes(
         "--version=%s" % version,
         "--tarball=$(location %s)" % tarball_name,
     ]
+    tools = ["//releasing:print_rel_notes"]
     if setup_file:
         cmd.append("--setup_file=%s" % setup_file)
     if deps_method:
         cmd.append("--deps_method=%s" % deps_method)
     if toolchains_method:
         cmd.append("--toolchains_method=%s" % toolchains_method)
+    if changelog:
+        cmd.append("--changelog=$(location %s)" % changelog)
+        # We should depend on a changelog as a tool so that it is always built
+        # for the host configuration. If the changelog is generated on the fly,
+        # then we would have to run commands against our revision control
+        # system. That only makes sense locally on the host, because the
+        # revision history is never exported to a remote build system.
+        tools.append(changelog)
     if mirror_host:
         cmd.append("--mirror_host=%s" % mirror_host)
     cmd.append(">$@")
     native.genrule(
-        name = "relnotes",
+        name = name,
         srcs = [
             tarball_name,
         ],
-        outs = outs or ["relnotes.txt"],
+        outs = outs or [name + ".txt"],
         cmd = " ".join(cmd),
-        tools = [
-            "//releasing:print_rel_notes",
-        ],
+        tools = tools,
     )
