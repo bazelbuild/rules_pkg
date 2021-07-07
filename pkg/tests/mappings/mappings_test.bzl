@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load("@rules_python//python:defs.bzl", "py_test")
 load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load(
     "//:mappings.bzl",
@@ -973,4 +974,54 @@ def mappings_unit_tests():
     unittest.suite(
         "mappings_unit_tests",
         strip_prefix_test,
+    )
+
+def _gen_manifest_test_main_impl(ctx):
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = ctx.outputs.out,
+        substitutions = {
+            "${EXPECTED}": ctx.attr.expected,
+            "${TARGET}": ctx.attr.target,
+            "${TEST_NAME}": ctx.attr.test_name,
+        },
+    )
+    return [
+        DefaultInfo(files = depset([ctx.outputs.out])),
+    ]
+
+_gen_manifest_test_main = rule(
+    implementation = _gen_manifest_test_main_impl,
+    attrs = {
+        "_template": attr.label(
+            default = Label("//tests/mappings:manifest_test_main.tmpl"),
+            allow_single_file = True,
+        ),
+        "out": attr.output(mandatory = True),
+        "expected": attr.string(),
+        "target": attr.string(),
+        "test_name": attr.string(),
+    },
+)
+
+
+def manifest_golden_test(name, target, expected):
+    _gen_manifest_test_main(
+        name = name + "_main",
+        out = name + ".py",
+        expected = expected,
+        target = target + ".manifest",
+        test_name = target + "Test",
+    )
+    py_test(
+        name = name,
+        srcs = [":" + name + ".py"],
+        data = [
+            ":" + target + ".manifest",
+            expected,
+        ],
+        python_version = "PY3",
+        deps = [
+            ":manifest_test_lib",
+        ],
     )
