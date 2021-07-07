@@ -36,6 +36,6 @@ class ContentManifestTest(unittest.TestCase):
       expected = json.load(e_fp)
     g_file = ContentManifestTest.run_files.Rlocation(
         'rules_pkg/tests/mappings/' + got)
-    with open(g_file, 'r') as g_fp:
+    with open(g_file, mode='r', encoding='utf-8') as g_fp:
       got = json.load(g_fp)
     self.assertEquals(expected, got)
