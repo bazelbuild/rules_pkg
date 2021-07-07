@@ -47,7 +47,7 @@ pkg_filegroup(
 pkg_tar(
     name = "foo_tar",
     srcs = [
-        "readme.md",
+        "README.txt",
         ":manpages",
         ":share_doc",
         "//resources/l10n:all",
