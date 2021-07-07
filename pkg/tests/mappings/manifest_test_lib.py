@@ -32,10 +32,10 @@ class ContentManifestTest(unittest.TestCase):
     """
     e_file = ContentManifestTest.run_files.Rlocation(
         'rules_pkg/tests/mappings/' + expected)
-    with open(e_file, mode='r', encoding='utf-8') as e_fp:
+    with open(e_file, mode='rb') as e_fp:
       expected = json.load(e_fp)
     g_file = ContentManifestTest.run_files.Rlocation(
         'rules_pkg/tests/mappings/' + got)
-    with open(g_file, mode='r', encoding='utf-8') as g_fp:
+    with open(g_file, mode='rb') as g_fp:
       got = json.load(g_fp)
     self.assertEquals(expected, got)
