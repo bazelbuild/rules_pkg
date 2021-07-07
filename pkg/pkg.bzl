@@ -579,10 +579,43 @@ def _pkg_zip_impl(ctx):
         inputs.append(ctx.version_file)
 
     data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
-    for f in ctx.files.srcs:
-        arg = "%s=%s" % (_quote(f.path), dest_path(f, data_path))
-        args.add(arg)
+    data_path_without_prefix = compute_data_path(ctx, ".")
 
+    content_map = {}  # content handled in the manifest
+    for src in ctx.attr.srcs:
+        # Gather the files for every srcs entry here, even if it is not from
+        # a pkg_* rule.
+        if DefaultInfo in src:
+            inputs.extend(src[DefaultInfo].files.to_list())
+        if not process_src(
+            content_map,
+            src,
+            src.label,
+            default_mode = None,
+            default_user = None,
+            default_group = None,
+        ):
+            # Add in the files of srcs which are not pkg_* types
+            for f in src.files.to_list():
+                d_path = dest_path(f, data_path, data_path_without_prefix)
+                if f.is_directory:
+                    # Tree artifacts need a name, but the name is never really
+                    # the important part. The likely behavior people want is
+                    # just the content, so we strip the directory name.
+                    dest = '/'.join(d_path.split('/')[0:-1])
+                    add_tree_artifact(content_map, dest, f, src.label)
+                else:
+                    # Note: This extra remap is the bottleneck preventing this
+                    # large block from being a utility method as shown below.
+                    # Should we disallow mixing pkg_files in srcs with remap?
+                    # I am fine with that if it makes the code more readable.
+                    # dest = _remap(remap_paths, d_path)
+                    add_single_file(content_map, d_path, f, src.label)
+
+    manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
+    inputs.append(manifest_file)
+    write_manifest(ctx, manifest_file, content_map)
+    args.add("--manifest", manifest_file.path)
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
