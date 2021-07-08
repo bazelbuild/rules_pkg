@@ -34,5 +34,8 @@ tasks:
     - "-//tests:make_rpm_test"
     - "-//tests:package_naming_aggregate_test"
     - "-//tests:path_test"
+    # Bazel might be broken w.r.t. Unicode processing for windows
+    - "-//tests/mappings:utf8_manifest_test"
     - "-//tests/mappings/filter_directory/..."
+    # rpmbuild is not available on windows
     - "-//tests/rpm/..."
