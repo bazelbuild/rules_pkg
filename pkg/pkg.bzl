@@ -548,7 +548,7 @@ pkg_deb_impl = rule(
 
         # Implicit dependencies.
         "make_deb": attr.label(
-            default = Label("//:make_deb"),
+            default = Label("//private:make_deb"),
             cfg = "exec",
             executable = True,
             allow_files = True,
