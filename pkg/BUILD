@@ -52,16 +52,6 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-py_binary(
-    name = "make_deb",
-    srcs = ["make_deb.py"],
-    python_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//private:helpers",
-    ],
-)
-
 # Used by pkg_rpm in rpm.bzl.
 py_binary(
     name = "make_rpm",
