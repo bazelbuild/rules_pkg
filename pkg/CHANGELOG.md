@@ -1,3 +1,62 @@
+# Release 0.5.0
+
+## New Features
+
+- (experimental) Capability to gather the git commit log since the last release (#357)
+  This needs user feedback to discover the most pleasing mode.  For this
+  release, I did `blaze build distro:changelog.txt` then took the result to
+  update this file (CHANGELOG.md).  I would like to do better than that. Thoughts
+  from users are welcome.
+- Initial support for `pkg_*` rules as srcs of `pkg_tar` (#367)
+  Adds support for `pkg_mklink`, `pkg_mkdirs`, `pkg_files` and `pkg_filegroup` to `pkg_tar`.
+  - Provide `filter_directory` for basic TreeArtifact processing (#331)
+- `--stamp` support to `pkg_tar` (#288) and `pkg_zip` (#365)
+  Done in the style of cc_binary
+  - `stamp` attribute (1=stamp, 0=no stamp, -1=follow `--stamp`)
+  - `--stamp` command line option
+- Significant `pkg_rpm` changes
+  - Graduate experimental `pkg_rpm` to mainline (#338)
+  - Deprecate pkg/rpm.bzl and move it to pkg/legacy/rpm.bzl (#337)
+  - Make `find_system_rpmbuild` repo rule depend on `PATH` (#348)
+  - Support SOURCE_DATE_EPOCH in rpm.bzl; enable file clamping in make_rpm.py (#322)
+  - Allow runfiles to be used alongside the `rpmbuild` toolchain (#329)
+- `pkg_tar` support for custom compression program (#320)
+- Support long file names in `pkg_tar` by ignoring 'path' PAX header. (#250) (#326)
+
+## Internal changes
+
+- Add a rule to make artifacts that mimic binaries (#366)
+- Stop importing single methods from modules. Use the entire thing. (#361)
+- Fix some things that Google's strident buildifier warns about. (#363)
+- Enable more tests on windows (#364)
+  - Fix most mapping tests to work on windows. (#350)
+- refactor `path.bzl` and improve testing (#359)
+- Fix and refactor pkg_tar compression logic (#358) (#345)
+- Move `build_tar`, `build_zip` and helpers to //private (#353)
+
+## Incompatible changes
+
+- Remove the capability to have the Debian .changes file have a different (#342)
+
+## Contributors
+
+This release contains contributions and fixes from aiuto, Alex Eagle,
+Andrew Psaltis, Greg Bowyer, katre, Michael Hackner, and Rafael Marinheiro
+
+# Release 0.4.0
+
+## New Features
+
+- package_file_name &package_variables to allow dynamically named output files.
+- rpmbuild is now a toolchain allowing you better control using your own vs. the system one
+- Portions of the pkg_filegroup rule suite are available in @rules_pkg//:mappings.bzl, but there are no packaging rules that use it at this time. Rules that use it will be added in 1.0
+
+## Incompatible Changes
+- archive_name is now deprecated. To be remove before 1.0 WORKSPACE setup
+
+## Contributors
+This release contains contributions and fixes from Andrew Psaltis, dmayle, Konstantin Erman, Martin Medler, Motiejus Jakštys, Thi Doãn, Thomas Gish, and Xavier Bonaventura.
+
 # Release 0.3.0
 
 This release features contributions by the Bazel team and
