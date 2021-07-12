@@ -2,18 +2,13 @@
 
 ## New Features
 
-- (experimental) Capability to gather the git commit log since the last release (#357)
-  This needs user feedback to discover the most pleasing mode.  For this
-  release, I did `blaze build distro:changelog.txt` then took the result to
-  update this file (CHANGELOG.md).  I would like to do better than that. Thoughts
-  from users are welcome.
 - Initial support for `pkg_*` rules as srcs of `pkg_tar` (#367)
   Adds support for `pkg_mklink`, `pkg_mkdirs`, `pkg_files` and `pkg_filegroup` to `pkg_tar`.
   - Provide `filter_directory` for basic TreeArtifact processing (#331)
-- `--stamp` support to `pkg_tar` (#288) and `pkg_zip` (#365)
+- `stamp` support to `pkg_tar` (#288) and `pkg_zip` (#365)
   Done in the style of cc_binary
   - `stamp` attribute (1=stamp, 0=no stamp, -1=follow `--stamp`)
-  - `--stamp` command line option
+  - Use existing `--stamp` command line option
 - Significant `pkg_rpm` changes
   - Graduate experimental `pkg_rpm` to mainline (#338)
   - Deprecate pkg/rpm.bzl and move it to pkg/legacy/rpm.bzl (#337)
@@ -22,6 +17,11 @@
   - Allow runfiles to be used alongside the `rpmbuild` toolchain (#329)
 - `pkg_tar` support for custom compression program (#320)
 - Support long file names in `pkg_tar` by ignoring 'path' PAX header. (#250) (#326)
+- (experimental) Capability to gather the git commit log since the last release (#357)
+  This needs user feedback to discover the most pleasing mode.  For this
+  release, I did `blaze build distro:changelog.txt` then took the result to
+  update this file (CHANGELOG.md).  I would like to do better than that. Thoughts
+  from users are welcome.
 
 ## Internal changes
 
@@ -47,12 +47,12 @@ Andrew Psaltis, Greg Bowyer, katre, Michael Hackner, and Rafael Marinheiro
 
 ## New Features
 
-- package_file_name &package_variables to allow dynamically named output files.
-- rpmbuild is now a toolchain allowing you better control using your own vs. the system one
-- Portions of the pkg_filegroup rule suite are available in @rules_pkg//:mappings.bzl, but there are no packaging rules that use it at this time. Rules that use it will be added in 1.0
+- `package_file_name` & `package_variables` to allow dynamically named output files.
+- `rpmbuild` is now a toolchain allowing you better control using your own vs. the system one
+- Portions of the `pkg_filegroup` rule suite are available in @rules_pkg//:mappings.bzl, but there are no packaging rules that use it at this time. Rules that use it will be added in 1.0
 
 ## Incompatible Changes
-- archive_name is now deprecated. To be remove before 1.0 WORKSPACE setup
+- `archive_name` is now deprecated. To be removed before 1.0 `WORKSPACE` setup
 
 ## Contributors
 This release contains contributions and fixes from Andrew Psaltis, dmayle, Konstantin Erman, Martin Medler, Motiejus Jakštys, Thi Doãn, Thomas Gish, and Xavier Bonaventura.
