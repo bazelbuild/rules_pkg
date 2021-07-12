@@ -4,7 +4,7 @@
 -   [Overview](#overview)
 -   [Roadmap](#roadmap)
 -   [Reference](docs/reference.md)
--   [Examples](examples/readme.md)
+-   [Examples](/examples/readme.md)
 
 <a name="notes"></a>
 ## Release Notes
@@ -21,21 +21,10 @@ and debian package.
 <a name="workspace-setup"></a>
 ### WORKSPACE setup
 
-```python
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
-    name = "rules_pkg",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-        "https://github.com/bazelbuild/rules_pkg/releases/download/0.4.0/rules_pkg-0.4.0.tar.gz",
-    ],
-    sha256 = "038f1caa773a7e35b3663865ffb003169c6a71dc995e39bf4815792f385d837d",
-)
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-rules_pkg_dependencies()
-```
+See [releases](https://github.com/bazelbuild/rules_pkg/releases) for the release
+specific notes.
 
-If you want to use `pkg_rpm()` (either from `rpm.bzl` or `experimental/rpm.bzl`)
+If you want to use `pkg_rpm()` (either from `rpm.bzl` or `legacy/rpm.bzl`)
 you must instantiate a toolchain to provide the `rpmbuild` tool.  Add this to
 WORKSPACE to use one installed on your system:
 
