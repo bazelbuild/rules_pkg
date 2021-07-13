@@ -13,6 +13,8 @@ CI:
 
 *   [pkg](https://github.com/bazelbuild/rules_pkg/tree/main/pkg) - Rules for
     building packages of various types.
+*   [examples](https://github.com/bazelbuild/rules_pkg/tree/main/examples) -
+    Cookbook examples for using the rules.
 
 Bazel now uses this rule set for packaging its distribution. Bazel
 still contains a limited version of `pkg_tar` but its feature set is frozen.
