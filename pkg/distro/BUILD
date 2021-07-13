@@ -114,6 +114,7 @@ bzl_library(
         "//:version.bzl",
         "//private:pkg_files.bzl",
         "//private:util.bzl",
+        "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:private"],
 )
@@ -156,6 +157,15 @@ stardoc(
     out = "legacy_pkg_rpm.md",
     input = "//legacy:rpm.bzl",
     deps = [":rules_pkg_lib"],
+)
+
+stardoc(
+    name = "mappings",
+    out = "mappings.md",
+    input = "//:mappings.bzl",
+    deps = [
+        ":rules_pkg_lib",
+    ],
 )
 
 # TODO(nacl): update this for the new RPM builder; pkg_filegroup
