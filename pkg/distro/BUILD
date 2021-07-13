@@ -19,8 +19,6 @@ load("//releasing:git.bzl", "git_changelog")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@rules_python//python:defs.bzl", "py_test")
-load("//:install.bzl", "pkg_install")
-load("//:mappings.bzl", "pkg_files", "pkg_filegroup", "pkg_mkdirs", "pkg_attributes")
 
 licenses(["notice"])
 
