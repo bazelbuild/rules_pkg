@@ -71,7 +71,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -179,7 +179,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -228,7 +228,7 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     release = "2222",
-    spec_template = "//tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
