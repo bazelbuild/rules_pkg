@@ -18,7 +18,7 @@ def _write_build(rctx, path, workspace_dir):
         path = ""
     rctx.template(
         "BUILD",
-        Label("//toolchains/git:BUILD.tmpl"),
+        Label("//toolchains/git:BUILD.tpl"),
         substitutions = {
             "{GENERATOR}": "@rules_pkg//toolchains/git/git_configure.bzl%find_system_git",
             "{GIT_PATH}": str(path),
