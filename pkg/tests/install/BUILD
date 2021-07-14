@@ -18,7 +18,7 @@ load("//:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
 load("//:install.bzl", "pkg_install")
 
 py_test(
-    name = "install",
+    name = "install_test",
     srcs = ["test.py"],
     args = ["-v"],
     data = [
