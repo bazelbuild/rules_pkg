@@ -994,7 +994,7 @@ _gen_manifest_test_main = rule(
     implementation = _gen_manifest_test_main_impl,
     attrs = {
         "_template": attr.label(
-            default = Label("//tests/mappings:manifest_test_main.tmpl"),
+            default = Label("//tests/mappings:manifest_test_main.py.tpl"),
             allow_single_file = True,
         ),
         "out": attr.output(mandatory = True),
