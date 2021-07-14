@@ -25,8 +25,13 @@ py_test(
         ":test_installer",
     ],
     main = "test.py",
-    # TODO(nacl): consider enabling this for testing on Linux.
-    #tags = ["requires-fakeroot"],
+    tags = [
+        # TODO(nacl): investigate this.  See also
+        # https://buildkite.com/bazel/rules-pkg/builds/961#992dbe09-7e4b-4e34-91b6-491120476ed3
+        "no-windows",
+        # TODO(nacl): consider enabling this for testing on Linux.
+        #"requires-fakeroot"
+    ],
     deps = [
         "//private:manifest",
         "@rules_python//python/runfiles",
