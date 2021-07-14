@@ -18,7 +18,7 @@ def _write_build(rctx, path):
         path = ""
     rctx.template(
         "BUILD",
-        Label("//toolchains:BUILD.tmpl"),
+        Label("//toolchains:BUILD.tpl"),
         substitutions = {
             "{GENERATOR}": "@rules_pkg//toolchains/rpmbuild_configure.bzl%find_system_rpmbuild",
             "{RPMBUILD_PATH}": str(path),

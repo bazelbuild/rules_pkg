@@ -81,7 +81,7 @@ py_test(
         ":release_version.py",
     ],
     data = [
-        "testdata/BUILD.tmpl",
+        "testdata/BUILD.tpl",
         ":distro",
     ],
     local = True,

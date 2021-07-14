@@ -57,7 +57,7 @@ pkg_rpm(
     release = "2222",
     # Tue Mar 23 00:00:00 EDT 2021
     source_date_epoch = 1616472000,
-    spec_template = "//tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -123,7 +123,7 @@ pkg_rpm(
     release = "2222",
     # Tue Mar 23 00:00:00 EDT 2021
     source_date_epoch_file = "epoch.txt",
-    spec_template = "//tests/rpm:template-test.spec.in",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )

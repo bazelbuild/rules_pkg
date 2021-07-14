@@ -21,7 +21,7 @@
 
 # Hey!
 #
-# Keep the below in sync with pkg/experimental/template.spec.in!
+# Keep the below in sync with pkg/rpm/template.spec.tpl!
 
 ################################################################################
 
