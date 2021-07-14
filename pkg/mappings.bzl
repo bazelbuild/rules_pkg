@@ -75,12 +75,6 @@ strip_prefix = struct(
 def pkg_attributes(mode = None, user = None, group = None, **kwargs):
     """Format attributes for use in package mapping rules.
 
-    Args:
-      mode: string: UNIXy octal permissions, as a string.
-      user: string: Filesystem owning user.
-      group: string: Filesystem owning group.
-      **kwargs: any other desired attributes.
-
     If "mode" is not provided, it will default to the mapping rule's default
     mode.  These vary per mapping rule; consult the respective documentation for
     more details.
@@ -93,6 +87,12 @@ def pkg_attributes(mode = None, user = None, group = None, **kwargs):
 
     This is the only supported means of passing in attributes to package mapping
     rules (e.g. `pkg_files`).
+
+    Args:
+      mode: string: UNIXy octal permissions, as a string.
+      user: string: Filesystem owning user.
+      group: string: Filesystem owning group.
+      **kwargs: any other desired attributes.
 
     Returns:
       A value usable in the "attributes" attribute in package mapping rules.
