@@ -30,7 +30,7 @@ load("//:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "Package
 
 rpm_filetype = [".rpm"]
 
-spec_filetype = [".spec", ".spec.in"]
+spec_filetype = [".spec", ".spec.in", ".spec.tpl"]
 
 # TODO(nacl): __install, __cp
 # {0} is the source, {1} is the dest
@@ -866,7 +866,7 @@ pkg_rpm = rule(
             In most cases, you should not need to override this attribute.
             """,
             allow_single_file = spec_filetype,
-            default = "//rpm:template.spec.in",
+            default = "//rpm:template.spec.tpl",
         ),
         "binary_payload_compression": attr.string(
             doc = """Compression mode used for this RPM
