@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//:mappings.bzl", "pkg_files", "strip_prefix")
 
 exports_files(
     glob([
@@ -42,11 +41,4 @@ py_binary(
     name = "augment_rpm_files_install",
     srcs = ["augment_rpm_files_install.py"],
     visibility = ["//visibility:public"],
-)
-
-pkg_files(
-    name = "standard_pf",
-    srcs = [":standard_package"],
-    strip_prefix = strip_prefix.from_root(),
-    visibility = ["//distro:__pkg__"],
 )
