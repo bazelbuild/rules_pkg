@@ -108,7 +108,7 @@ _pkg_install_script = rule(
         # scripts and expected interfaces.
         "_script_template": attr.label(
             allow_single_file = True,
-            default = "//private:install.py.in",
+            default = "//private:install.py.tpl",
         ),
     },
     executable = True,
