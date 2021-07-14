@@ -41,7 +41,7 @@ _inspect_directory_script = rule(
             mandatory = True,
         ),
         "_inspector_template": attr.label(
-            default = ":inspect_directory.py.in",
+            default = ":inspect_directory.py.tpl",
             allow_single_file = True,
         ),
     },

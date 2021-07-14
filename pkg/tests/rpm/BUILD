@@ -36,7 +36,7 @@ analysis_tests(name = "analysis_tests")
 create_toolchain_analysis_tests()
 
 exports_files(
-    ["template-test.spec.in"],
+    ["template-test.spec.tpl"],
     visibility = [":__subpackages__"],
 )
 
@@ -139,7 +139,7 @@ pkg_rpm(
     release = "2222",
     requires = ["test-lib > 1.0"],
     requires_contextual = {"preun": ["bash"]},
-    spec_template = "template-test.spec.in",
+    spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
@@ -163,7 +163,7 @@ pkg_rpm(
     release = "2222",
     requires = ["test-lib > 1.0"],
     requires_contextual = {"preun": ["bash"]},
-    spec_template = "template-test.spec.in",
+    spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version = "1.1.1",
 )
