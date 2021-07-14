@@ -22,12 +22,7 @@ import tempfile
 import archive
 import helpers
 import build_info
-
-# These must be kept in sync with the values from private/pkg_files.bzl
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an empty dir
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
+import manifest
 
 
 class TarFile(object):
@@ -262,32 +257,32 @@ class TarFile(object):
             uname=names[0],
             gname=names[1])
 
-  def add_manifest_entry(self, entry, file_attributes):
-    entry_type, dest, src, mode, user, group = entry
+  def add_manifest_entry(self, entry_list, file_attributes):
+    entry = manifest.ManifestEntry(*entry_list)
 
     # Use the pkg_tar mode/owner remaping as a fallback
-    non_abs_path = dest.strip('/')
+    non_abs_path = entry.dest.strip('/')
     if file_attributes:
       attrs = file_attributes(non_abs_path)
     else:
       attrs = {}
     # But any attributes from the manifest have higher precedence
-    if mode is not None and mode != '':
-      attrs['mode'] = int(mode, 8)
-    if user:
-      if group:
-        attrs['names'] = (user, group)
+    if entry.mode is not None and entry.mode != '':
+      attrs['mode'] = int(entry.mode, 8)
+    if entry.user:
+      if entry.group:
+        attrs['names'] = (entry.user, entry.group)
       else:
         # Use group that legacy tar process would assign
-        attrs['names'] = (user, attrs.get('names')[1])
-    if entry_type == ENTRY_IS_LINK:
-      self.add_link(dest, src)
-    elif entry_type == ENTRY_IS_DIR:
-      self.add_empty_dir(dest, **attrs)
-    elif entry_type == ENTRY_IS_TREE:
-      self.add_tree(src, dest, **attrs)
+        attrs['names'] = (entry.user, attrs.get('names')[1])
+    if entry.entry_type == manifest.ENTRY_IS_LINK:
+      self.add_link(entry.dest, entry.src)
+    elif entry.entry_type == manifest.ENTRY_IS_DIR:
+      self.add_empty_dir(entry.dest, **attrs)
+    elif entry.entry_type == manifest.ENTRY_IS_TREE:
+      self.add_tree(entry.src, entry.dest, **attrs)
     else:
-      self.add_file(src, dest, **attrs)
+      self.add_file(entry.src, entry.dest, **attrs)
 
 
 def main():

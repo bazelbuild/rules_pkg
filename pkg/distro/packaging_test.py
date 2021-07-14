@@ -60,7 +60,7 @@ class PackagingTest(unittest.TestCase):
         print('=== WORKSPACE ===')
         print(workspace_content)
 
-    # We do a little dance of renaming *.tmpl to *, mostly so that we do not
+    # We do a little dance of renaming *.tpl to *, mostly so that we do not
     # have a BUILD file in testdata, which would create a package boundary.
     def CopyTestFile(source_name, dest_name):
       source_path = self.data_files.Rlocation(
@@ -70,7 +70,7 @@ class PackagingTest(unittest.TestCase):
           content = inp.read()
           out.write(content)
 
-    CopyTestFile('BUILD.tmpl', 'BUILD')
+    CopyTestFile('BUILD.tpl', 'BUILD')
 
     os.chdir(tempdir)
     build_result = subprocess.check_output(['bazel', 'build', ':dummy_tar'])

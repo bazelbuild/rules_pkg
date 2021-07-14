@@ -17,9 +17,8 @@ load("@rules_python//python:defs.bzl", "py_binary")
 exports_files(
     glob([
         "*.bzl",
-    ]) + [
-        "template.spec.in",
-    ],
+        "*.tpl",
+    ]),
     visibility = ["//visibility:public"],
 )
 
@@ -28,9 +27,9 @@ filegroup(
     srcs = glob([
         "*.bzl",
         "*.py",
+        "*.tpl",
     ]) + [
         "BUILD",
-        "template.spec.in",
     ],
     visibility = ["//:__pkg__"],
 )

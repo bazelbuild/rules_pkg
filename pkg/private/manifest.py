@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common package builder manfiest helpers
+"""Common package builder manifest helpers
 """
 
 import collections
 
-# TODO(nacl): have other parts of the build consume these structures
-#
-# In the meantime, these must be kept in sync with the declarations in private/build_*.py
+# These must be kept in sync with the declarations in private/pkg_files.bzl
 ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = 2  # Entry is an owned dir, possibly empty
@@ -30,6 +28,7 @@ ManifestEntry = collections.namedtuple("ManifestEntry",
 
 
 def entry_type_to_string(et):
+    """Entry type stringifier"""
     if et == ENTRY_IS_FILE:
         return "file"
     elif et == ENTRY_IS_LINK:
