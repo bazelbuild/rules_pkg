@@ -160,23 +160,28 @@ def main(args):
     )
     parser.add_argument('-v', '--verbose', action='count', default=0,
                         help="Be verbose.  Specify multiple times to increase verbosity further")
-    parser.add_argument('-q', '--quiet', action='count', default=0,
-                        help="Be quieter.  Specify multiple times to be more quiet")
-    # TODO(nacl): consider supporting DESTDIR=/whatever syntax, like "make install"
+    parser.add_argument('-q', '--quiet', action='store_true', default=False,
+                        help="Be silent, except for errors")
+    # TODO(nacl): consider supporting DESTDIR=/whatever syntax, like "make
+    # install".
+    #
+    # TODO(nacl): consider removing absolute path restriction, perhaps using
+    # BUILD_WORKING_DIRECTORY.
     parser.add_argument('--destdir', action='store', default=os.getenv("DESTDIR"),
-                        help="Installation root directory (defaults to DESTDIR environment variable)")
+                        help="Installation root directory (defaults to DESTDIR "
+                             "environment variable).  Must be an absolute path.")
 
     args = parser.parse_args()
 
     loudness = args.verbose - args.quiet
 
-    if loudness == -1:
+    if args.quiet:
         logging.getLogger().setLevel(logging.ERROR)
-    if loudness == 0:
+    elif loudness == 0:
         logging.getLogger().setLevel(logging.WARNING)
-    if loudness == 1:
+    elif loudness == 1:
         logging.getLogger().setLevel(logging.INFO)
-    if loudness == 2:
+    else: # loudness >= 2:
         logging.getLogger().setLevel(logging.DEBUG)
 
     installer = NativeInstaller(destdir=args.destdir)
