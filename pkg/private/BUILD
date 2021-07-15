@@ -105,6 +105,7 @@ py_binary(
         ":archive",
         ":build_info",
         ":helpers",
+        ":manifest",
     ],
 )
 
