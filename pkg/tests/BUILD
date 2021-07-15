@@ -13,6 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("//:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink",)
 load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
 load("//tests/util:defs.bzl", "directory")
 load("@rules_python//python:defs.bzl", "py_test")
@@ -87,6 +88,18 @@ genrule(
         "usr/titi",
     ],
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
+)
+
+pkg_mkdirs(
+    name = "dirs",
+    attributes = pkg_attributes(
+        group = "bar",
+        mode = "711",
+        user = "foo",
+    ),
+    dirs = [
+        "foodir",
+    ],
 )
 
 directory(
@@ -219,6 +232,7 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic",
     srcs = [
+        ":dirs",
         "testdata/hello.txt",
         "testdata/loremipsum.txt",
     ],
@@ -246,6 +260,7 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic_timestamp_before_epoch",
     srcs = [
+        ":dirs",
         "testdata/hello.txt",
         "testdata/loremipsum.txt",
     ],
