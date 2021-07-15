@@ -20,14 +20,9 @@ import zipfile
 
 from rules_pkg.private import build_info
 from rules_pkg.private import helpers
+from rules_pkg.private import manifest
 
 ZIP_EPOCH = 315532800
-
-# These must be kept in sync with the values from private/pkg_files.bzl
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an empty dir
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 
 # Unix dir bit and Windows dir bit. Magic from zip spec
 UNIX_DIR_BIT = 0o40000
@@ -88,7 +83,7 @@ def _add_manifest_entry(options, zip_file, entry, default_mode, ts):
   # Use the pkg_tar mode/owner remaping as a fallback
   non_abs_path = dest.strip('/')
   dst_path = _combine_paths(options.directory, non_abs_path)
-  if entry_type == ENTRY_IS_DIR and not dst_path.endswith('/'):
+  if entry_type == manifest.ENTRY_IS_DIR and not dst_path.endswith('/'):
     dst_path += '/'
   entry_info = zipfile.ZipInfo(filename=dst_path, date_time=ts)
   # See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
@@ -104,17 +99,16 @@ def _add_manifest_entry(options, zip_file, entry, default_mode, ts):
   # permission and file type bits, while the low order two contain MS-DOS FAT file
   # attributes.
   entry_info.external_attr = f_mode << 16
-
-  if entry_type == ENTRY_IS_FILE:
+  if entry_type == manifest.ENTRY_IS_FILE:
     entry_info.compress_type = zipfile.ZIP_DEFLATED
     with open(src, 'rb') as src:
       zip_file.writestr(entry_info, src.read())
-  elif entry_type == ENTRY_IS_DIR:
+  elif entry_type == manifest.ENTRY_IS_DIR:
     entry_info.compress_type = zipfile.ZIP_STORED
     # Set directory bits
     entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
     zip_file.writestr(entry_info, '')
-  # TODO(aiuto): All the rest
+  # TODO(#309): All the rest
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)

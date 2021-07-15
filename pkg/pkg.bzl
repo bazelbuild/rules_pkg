@@ -582,6 +582,8 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+    # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
+    # that both can use.
     for src in ctx.attr.srcs:
         # Gather the files for every srcs entry here, even if it is not from
         # a pkg_* rule.
@@ -605,11 +607,6 @@ def _pkg_zip_impl(ctx):
                     dest = '/'.join(d_path.split('/')[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
-                    # Note: This extra remap is the bottleneck preventing this
-                    # large block from being a utility method as shown below.
-                    # Should we disallow mixing pkg_files in srcs with remap?
-                    # I am fine with that if it makes the code more readable.
-                    # dest = _remap(remap_paths, d_path)
                     add_single_file(content_map, d_path, f, src.label)
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
