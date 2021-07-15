@@ -91,6 +91,7 @@ py_binary(
         ":archive",
         ":build_info",
         ":helpers",
+        ":manifest",
     ],
 )
 
@@ -115,4 +116,11 @@ py_binary(
     deps = [
         ":helpers",
     ],
+)
+
+py_library(
+    name = "manifest",
+    srcs = ["manifest.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
 )
