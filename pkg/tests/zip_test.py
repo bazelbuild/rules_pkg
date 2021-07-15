@@ -23,6 +23,9 @@ HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
 EXECUTABLE_CRC = 342626072
 
+# Unix dir bit and Windows dir bit. Magic from zip spec
+UNIX_DIR_BIT = 0o40000
+MSDOS_DIR_BIT = 0x10
 
 # The ZIP epoch date: (1980, 1, 1, 0, 0, 0)
 _ZIP_EPOCH_DT = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -64,17 +67,24 @@ class ZipContentsCase(ZipTest):
 
       for info, expected in zip(infos, content):
         self.assertEqual(info.filename, expected["filename"])
-        self.assertEqual(info.CRC, expected["crc"])
+        if "crc" in expected:
+          self.assertEqual(info.CRC, expected["crc"])
 
         ts = seconds_to_ziptime(expected.get("timestamp", _ZIP_EPOCH_S))
         self.assertEqual(info.date_time, ts)
-        self.assertEqual(info.external_attr >> 16, expected.get("attr", 0o555))
+        if "isdir" in expected:
+          expect_dir_bits = UNIX_DIR_BIT << 16 | MSDOS_DIR_BIT
+          self.assertEqual(info.external_attr & expect_dir_bits,
+                           expect_dir_bits)
+        self.assertEqual(info.external_attr >> 16 & ~UNIX_DIR_BIT,
+                         expected.get("attr", 0o555))
 
   def test_empty(self):
     self.assertZipFileContent("test_zip_empty.zip", [])
 
   def test_basic(self):
     self.assertZipFileContent("test_zip_basic.zip", [
+        {"filename": "foodir/", "isdir": True, "attr": 0o711},
         {"filename": "hello.txt", "crc": HELLO_CRC},
         {"filename": "loremipsum.txt", "crc": LOREM_CRC},
     ])
