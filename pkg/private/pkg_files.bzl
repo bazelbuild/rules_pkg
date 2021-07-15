@@ -42,7 +42,7 @@ load(
 )
 
 # Possible values for entry_type
-# These must be kept in sync with the declarations in private/build_*.py
+# These must be kept in sync with the declarations in private/manifest.py.
 ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = 2  # Entry is an empty dir
