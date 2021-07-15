@@ -281,6 +281,8 @@ class TarFile(object):
       self.add_empty_dir(entry.dest, **attrs)
     elif entry.entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(entry.src, entry.dest, **attrs)
+    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+      self.add_empty_file(entry.dest, **attrs)
     else:
       self.add_file(entry.src, entry.dest, **attrs)
 

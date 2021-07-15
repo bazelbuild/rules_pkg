@@ -196,8 +196,6 @@ def _pkg_tar_impl(ctx):
             "--owner_names=%s=%s" % (_quote(key), ctx.attr.ownernames[key])
             for key in ctx.attr.ownernames
         ]
-    #XX if ctx.attr.empty_files:
-    #XX     args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
     for empty_file in ctx.attr.empty_files:
         add_empty_file(content_map, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
