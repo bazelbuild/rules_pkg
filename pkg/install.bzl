@@ -62,11 +62,11 @@ def _pkg_install_script_impl(ctx):
         template = ctx.file._script_template,
         output = script_file,
         substitutions = {
-            "##MANIFEST_INCLUSION##": manifest_file.short_path,
+            "@MANIFEST_INCLUSION@": manifest_file.short_path,
             # This is used to extend the manifest paths when the script is run
             # inside a build.
-            "##WORKSPACE_NAME##": ctx.workspace_name,
-            "##TARGET_LABEL##": str(Label(binary_label_str)),
+            "@WORKSPACE_NAME@": ctx.workspace_name,
+            "@TARGET_LABEL@": str(Label(binary_label_str)),
         },
         is_executable = True,
     )
