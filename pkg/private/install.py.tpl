@@ -153,8 +153,8 @@ class NativeInstaller(object):
 
 def main(args):
     parser = argparse.ArgumentParser(
-        prog="bazel run -- @TARGET_LABEL@",
-        description='Installer for bazel target @TARGET_LABEL@',
+        prog="bazel run -- {TARGET_LABEL}",
+        description='Installer for bazel target {TARGET_LABEL}',
         fromfile_prefix_chars='@',
     )
     parser.add_argument('-v', '--verbose', action='count', default=0,
@@ -185,7 +185,7 @@ def main(args):
 
     installer = NativeInstaller(destdir=args.destdir)
 
-    for f in ["@MANIFEST_INCLUSION@"]:
+    for f in ["{MANIFEST_INCLUSION}"]:
         if CALLED_FROM_BAZEL_RUN:
             installer.include_manifest_path(f)
         else:
