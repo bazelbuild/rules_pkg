@@ -143,11 +143,25 @@ def pkg_install(name, srcs, **kwargs):
     ```
     bazel run -- //path/to:install --help
     ```
+    
+    WARNING: While this rule does function when being run from within a bazel
+    rule, such use is not recommended.  If you do, **always** use the
+    `--destdir` argument to specify the desired location for the installation to
+    occur.  Not doing so can lead the outputs going to an unexpected location,
+    or in some cases, failing.  Run the script command with `--help`, as
+    mentioned above, for more details.
+
+    One such use would be to run the script created by `pkg_install` to produce
+    a directory output in the build root.  This may not function as expected or
+    may suffer from poorly tested edge cases.  A purpose-written rule that would
+    allow for creation of such directories is discussed in
+    https://github.com/bazelbuild/rules_pkg/issues/388.
 
     Args:
       name: rule name
       srcs: pkg_filegroup framework mapping or grouping targets
       **kwargs: common rule attributes
+
     """
 
     _pkg_install_script(
