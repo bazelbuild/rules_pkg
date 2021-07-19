@@ -182,10 +182,15 @@ def main(args):
         logging.getLogger().setLevel(logging.WARNING)
     elif loudness == 1:
         logging.getLogger().setLevel(logging.INFO)
-    else: # loudness >= 2:
+    else:  # loudness >= 2:
         logging.getLogger().setLevel(logging.DEBUG)
 
     installer = NativeInstaller(destdir=args.destdir)
+
+    if not CALLED_FROM_BAZEL_RUN and RUNFILE_PREFIX is None:
+        logging.critical("RUNFILES_DIR must be set in your enviornment when this is run as a bazel build tool.")
+        logging.critical("This is most likely an issue on Windows.  See https://github.com/bazelbuild/rules_pkg/issues/387.")
+        return 1
 
     for f in ["{MANIFEST_INCLUSION}"]:
         if CALLED_FROM_BAZEL_RUN:
