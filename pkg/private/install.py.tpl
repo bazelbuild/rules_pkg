@@ -37,7 +37,7 @@ import private.manifest as manifest
 CALLED_FROM_BAZEL_RUN = bool(os.getenv("BUILD_WORKSPACE_DIRECTORY") and
                              os.getenv("BUILD_WORKING_DIRECTORY"))
 
-WORKSPACE_NAME = "@WORKSPACE_NAME@"
+WORKSPACE_NAME = "{WORKSPACE_NAME}"
 RUNFILE_PREFIX = os.path.join(os.getenv("RUNFILES_DIR"), WORKSPACE_NAME) if os.getenv("RUNFILES_DIR") else None
 
 
