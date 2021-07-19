@@ -21,7 +21,7 @@ import stat
 import subprocess
 
 from rules_python.python.runfiles import runfiles
-from private.manifest import ENTRY_IS_FILE, ENTRY_IS_LINK, ENTRY_IS_DIR, ManifestEntry, entry_type_to_string
+import private.manifest as manifest
 
 
 class PkgInstallTest(unittest.TestCase):
@@ -35,7 +35,7 @@ class PkgInstallTest(unittest.TestCase):
             manifest_data_raw = json.load(fh)
             cls.manifest_data = {}
             for entry in manifest_data_raw:
-                entry_struct = ManifestEntry(*entry)
+                entry_struct = manifest.ManifestEntry(*entry)
                 cls.manifest_data[entry_struct.dest] = entry_struct
         cls.installdir = os.path.join(os.getenv("TEST_TMPDIR"), "installdir")
         env = {}
@@ -49,11 +49,11 @@ class PkgInstallTest(unittest.TestCase):
 
     def entity_type_at_path(self, path):
         if os.path.islink(path):
-            return ENTRY_IS_LINK
+            return manifest.ENTRY_IS_LINK
         elif os.path.isfile(path):
-            return ENTRY_IS_FILE
+            return manifest.ENTRY_IS_FILE
         elif os.path.isdir(path):
-            return ENTRY_IS_DIR
+            return manifest.ENTRY_IS_DIR
         else:
             # We can't infer what TreeArtifacts are by looking at them -- the
             # build system is not aware of their contents.
@@ -64,8 +64,8 @@ class PkgInstallTest(unittest.TestCase):
         self.assertEqual(actual_entry_type, entry.entry_type,
                         "Entity {} should be a {}, but was actually {}".format(
                             entry.dest,
-                            entry_type_to_string(entry.entry_type),
-                            entry_type_to_string(actual_entry_type),
+                            manifest.entry_type_to_string(entry.entry_type),
+                            manifest.entry_type_to_string(actual_entry_type),
                         ))
 
     def assertEntryModeMatches(self, entry, actual_path):
