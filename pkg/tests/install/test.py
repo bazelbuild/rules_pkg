@@ -150,6 +150,16 @@ class PkgInstallTest(unittest.TestCase):
 
             for f in files:
                 # The path on the filesystem in which the file actually exists.
+
+                # TODO(#382): This part of the test assumes that the path
+                # separator is '/', which is not the case in Windows.  However,
+                # paths emitted in the JSON manifests may also be using
+                # '/'-separated paths.
+                #
+                # Confirm the degree to which this is a problem, and remedy as
+                # needed.  It maybe worth setting the keys in the manifest_data
+                # dictionary to pathlib.Path or otherwise converting them to
+                # native paths.
                 fpath = os.path.normpath("/".join([root, f]))
                 # The path inside the manifest (relative to the install
                 # destdir).
