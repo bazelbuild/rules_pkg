@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
 import json
 import os
 import unittest
@@ -82,10 +83,42 @@ class PkgInstallTest(unittest.TestCase):
                         ))
 
     def test_manifest_matches(self):
+        unowned_dirs = set()
+        owned_dirs = set()
+
+        # Figure out what directories we are supposed to own, and which ones we
+        # aren't.
+        #
+        # Unowned directories are created implicitly by requesting other
+        # elements be created or installed.
+        #
+        # Owned directories are created explicitly with the pkg_mkdirs rule.
+        for dest, data in self.manifest_data.items():
+            if data.entry_type == manifest.ENTRY_IS_DIR:
+                owned_dirs.add(dest)
+
+            # TODO(nacl): The initial stage of the accumulation returns an empty string,
+            # which end up in the set representing the root of the manifest.
+            # This may not be the best thing.
+            unowned_dirs.update([p for p in itertools.accumulate(os.path.dirname(dest).split('/'),
+                                             func=lambda accum, new: accum + '/' + new)])
+
+        # In the above loop, unowned_dirs contains all possible directories that
+        # are in the manifest.  Prune them here.
+        unowned_dirs -= owned_dirs
+
         # TODO: check for ownership (user, group)
         found_entries = {dest: False for dest in self.manifest_data.keys()}
         for root, dirs, files in os.walk(self.installdir):
             rel_root_path = os.path.relpath(root, self.installdir)
+
+            # The rest of this uses string comparison.  To reduce potential
+            # confusion, ensure that the "." doesn't show up elsewhere.
+            #
+            # TODO(nacl) consider using pathlib here, which will reduce the
+            # need for path cleverness.
+            if rel_root_path == '.':
+                rel_root_path = ''
 
             # TODO(nacl): check for treeartifacts here.  If so, prune `dirs`,
             # and set the rest aside for future processing.
@@ -111,7 +144,9 @@ class PkgInstallTest(unittest.TestCase):
 
                     found_entries[rel_root_path] = True
                 else:
-                    print("{} is unowned".format(rel_root_path))
+                    # If any unowned directories are here, they must be the
+                    # prefix of some entity in the manifest.
+                    self.assertIn(rel_root_path, unowned_dirs)
 
             for f in files:
                 # The path on the filesystem in which the file actually exists.
