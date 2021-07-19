@@ -38,6 +38,8 @@ CALLED_FROM_BAZEL_RUN = bool(os.getenv("BUILD_WORKSPACE_DIRECTORY") and
                              os.getenv("BUILD_WORKING_DIRECTORY"))
 
 WORKSPACE_NAME = "{WORKSPACE_NAME}"
+# This seems to be set when running in `bazel build` or `bazel test`
+# TODO(#382): This may not be the case in Windows.
 RUNFILE_PREFIX = os.path.join(os.getenv("RUNFILES_DIR"), WORKSPACE_NAME) if os.getenv("RUNFILES_DIR") else None
 
 
