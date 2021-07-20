@@ -50,13 +50,10 @@ def _pkg_install_script_impl(ctx):
     # This is super brittle, but I don't know how to otherwise get this
     # information without creating a circular dependency given the current state
     # of rules_python.
-    binary_label_str = "{}//{}:{}".format(
-        ctx.label.workspace_name,
-        ctx.label.package,
-        # The name of the binary is the name of this target, minus
-        # "_install_script".
-        ctx.label.name[:-len("_install_script")],
-    )
+    
+    # The name of the binary is the name of this target, minus
+    # "_install_script".
+    label_str = str(ctx.label)[:-len("_install_script")]
 
     ctx.actions.expand_template(
         template = ctx.file._script_template,
@@ -66,7 +63,8 @@ def _pkg_install_script_impl(ctx):
             # This is used to extend the manifest paths when the script is run
             # inside a build.
             "{WORKSPACE_NAME}": ctx.workspace_name,
-            "{TARGET_LABEL}": str(Label(binary_label_str)),
+            # Used to annotate --help with "bazel run //path/to/your:installer"
+            "{TARGET_LABEL}": label_str,
         },
         is_executable = True,
     )
