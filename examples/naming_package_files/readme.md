@@ -64,3 +64,41 @@ names_from_toolchains = rule(
 bazel build :example2
 ls -l bazel-bin/example2*.tar
 ```
+
+### Debian package names
+
+Debian package names are of the form `<pkg>_<version>-<revision>_<arch>.deb`.
+
+One way you might do that is shown in this snipped from the `BUILD` file.
+
+```
+VERSION = "1"
+REVISION = "2"
+
+basic_naming(
+    name = "my_naming_vars",
+
+    version = VERSION,
+    revision = REVISION,
+    ...
+)
+
+pkg_deb(
+    name = "a_deb_package",
+    package = "foo-tools",
+    ...
+    # Note: target_cpu comes from the --cpu on the command line, and dows not
+    # have to be stated in the BUILD file.
+    package_file_name = "foo-tools_{version}-{revision}_{target_cpu}.deb",
+    package_variables = ":my_naming_vars",
+    version = VERSION,
+)
+```
+Try building 'bazel build :a_deb_package` then examine the results. Note that
+the .deb out file has the correctly formed name, while the target itself is
+a symlink to that file.
+```
+$ ls -l bazel-bin/a_deb_package.deb bazel-bin/foo-tools_1-2_k8.deb
+lrwxrwxrwx 1 user primarygroup   163 Jul 26 12:56 bazel-bin/a_deb_package.deb -> /home/user/.cache/bazel/_bazel_user/a0b9ea1736d1a8f9dc04ef4fb4366fbb/execroot/rules_pkg_examples/bazel-out/k8-fastbuild/bin/foo-tools_1-2_k8.deb
+-r-xr-xr-x 1 user primarygroup 10662 Jul 26 12:56 bazel-bin/foo-tools_1-2_k8.deb
+```
