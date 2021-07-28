@@ -13,16 +13,14 @@
 # limitations under the License.
 """Tests for generated content manifest."""
 
-# TODO(aiuto): Generate this file.
-
 import unittest
 
-import manifest_test_lib
+from rules_pkg.tests.mappings import manifest_test_lib
 
-class ManifestAllTest(manifest_test_lib.ContentManifestTest):
+class ${TEST_NAME}(manifest_test_lib.ContentManifestTest):
 
   def test_match(self):
-    self.assertManifestsMatch('all.manifest.golden', 'all.manifest')
+    self.assertManifestsMatch('${EXPECTED}', '${TARGET}')
 
 
 if __name__ == '__main__':
