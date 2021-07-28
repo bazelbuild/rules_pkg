@@ -135,8 +135,14 @@ def _pkg_tar_impl(ctx):
             default_user = None,
             default_group = None,
         ):
+            src_files = src[DefaultInfo].files.to_list()
+            if ctx.attr.include_runfiles:
+                runfiles = src[DefaultInfo].default_runfiles
+                if runfiles:
+                     file_deps.append(runfiles.files)
+                     src_files.extend(runfiles.files.to_list())
             # Add in the files of srcs which are not pkg_* types
-            for f in src.files.to_list():
+            for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
                 if f.is_directory:
                     # Tree artifacts need a name, but the name is never really
@@ -156,15 +162,6 @@ def _pkg_tar_impl(ctx):
     # transform_path = lambda f: _remap(
     #    remap_paths, dest_path(f, data_path, data_path_without_prefix))
     # add_label_list(ctx, content_map, file_deps, ctx.attr.srcs, transform_path)
-
-    # Add runfiles if requested
-    runfiles_depsets = []
-    if ctx.attr.include_runfiles:
-        # TODO(#339): Rethink this w.r.t. binaries in pkg_files() rules.
-        for f in ctx.attr.srcs:
-            default_runfiles = f[DefaultInfo].default_runfiles
-            if default_runfiles != None:
-                runfiles_depsets.append(default_runfiles.files)
 
     # The files attribute is a map of labels to destinations. We can add them
     # directly to the content map.
@@ -209,7 +206,7 @@ def _pkg_tar_impl(ctx):
         args.append("--stamp_from=%s" % ctx.version_file.path)
         files.append(ctx.version_file)
 
-    file_inputs = depset(transitive = file_deps + runfiles_depsets)
+    file_inputs = depset(transitive = file_deps)
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     files.append(manifest_file)
     write_manifest(ctx, manifest_file, content_map)

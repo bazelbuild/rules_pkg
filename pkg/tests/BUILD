@@ -13,9 +13,9 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink",)
+load("//:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
 load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
-load("//tests/util:defs.bzl", "directory")
+load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
@@ -104,6 +104,7 @@ pkg_mkdirs(
 
 directory(
     name = "generate_tree",
+    contents = "hello there",
     filenames = [
         # buildifier: don't sort
         "b/e",
@@ -112,7 +113,6 @@ directory(
         "b/d",
         "a/b/c",
     ],
-    contents = "hello there",
 )
 
 copy_file(
@@ -232,9 +232,9 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic",
     srcs = [
-        ":dirs",
         "testdata/hello.txt",
         "testdata/loremipsum.txt",
+        ":dirs",
     ],
 )
 
@@ -260,9 +260,9 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic_timestamp_before_epoch",
     srcs = [
-        ":dirs",
         "testdata/hello.txt",
         "testdata/loremipsum.txt",
+        ":dirs",
     ],
     timestamp = 0,
 )
@@ -497,10 +497,10 @@ pkg_tar(
 
 pkg_tar(
     name = "test-tar-tree-artifact",
-    package_dir = "a_tree",
     srcs = [
-        ":generate_tree"
+        ":generate_tree",
     ],
+    package_dir = "a_tree",
 )
 
 py_test(
@@ -523,6 +523,7 @@ py_test(
         ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
         ":test-tar-tree-artifact",
+        ":test-tar-with-runfiles",
     ] + [
         ":test-tar-basic-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS
@@ -600,6 +601,20 @@ pkg_tar(
     extension = ".bz2",
 )
 
+fake_artifact(
+    name = "a_program",
+    files = ["//tests:testdata/executable.sh"],
+    runfiles = [":BUILD"],
+)
+
+pkg_tar(
+    name = "test-tar-with-runfiles",
+    srcs = [
+        ":a_program",
+    ],
+    include_runfiles = True,
+)
+
 py_test(
     name = "is_compressed_test",
     srcs = ["is_compressed_test.py"],
@@ -644,4 +659,4 @@ py_test(
     ],
 )
 
-path_tests(name="path_tests")
+path_tests(name = "path_tests")

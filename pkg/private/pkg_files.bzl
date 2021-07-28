@@ -61,9 +61,14 @@ _DestFile = provider(
     },
 )
 
-def _check_dest(content_map, dest, origin):
-    if dest in content_map:
-        fail("Duplicate output path: <%s>, declared in %s and %s" % (
+def _check_dest(content_map, dest, src, origin):
+    old_entry = content_map.get(dest)
+    # TODO(aiuto): This is insufficient but good enough for now. We should
+    # compare over all the attributes too. That will detect problems where
+    # people specify the owner in one place, but another overly broad glob
+    # brings in the file with a different owner.
+    if old_entry and old_entry.src != src:
+        print("Duplicate output path: <%s>, declared in %s and %s" % (
             dest,
             origin,
             content_map[dest].origin,
@@ -81,7 +86,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip('/')
-        _check_dest(content_map, dest, origin)
+        _check_dest(content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
             entry_type = ENTRY_IS_DIR,
@@ -95,7 +100,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip('/')
-        _check_dest(content_map, dest, origin)
+        _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
             mode = attrs[0],
@@ -107,7 +112,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
 def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
     dest = pkg_symlink_info.destination.strip('/')
     attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
-    _check_dest(content_map, dest, origin)
+    _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
         mode = attrs[0],
@@ -255,7 +260,7 @@ def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, g
       group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip('/')
-    _check_dest(content_map, dest, origin)
+    _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
         origin = origin,
