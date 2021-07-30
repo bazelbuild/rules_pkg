@@ -36,3 +36,4 @@ tasks:
     - "-//tests:path_test"
     - "-//tests/mappings/filter_directory/..."
     - "-//tests/rpm/..."
+    - "-//tests/install/..."
