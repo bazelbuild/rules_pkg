@@ -285,7 +285,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode=None, user=None,
         group = group,
     )
 
-def write_manifest(ctx, manifest_file, content_map):
+def write_manifest(ctx, manifest_file, content_map, use_short_path=False):
     """Write a content map to a manifest file.
 
     The format of this file is currently undocumented, as it is a private
@@ -293,19 +293,25 @@ def write_manifest(ctx, manifest_file, content_map):
     become a published interface in a future release.
 
     For reproducibility, the manifest file must be ordered consistently.
+
+    Args:
+      ctx: rule context
+      manifest_file: File object used as the output destination
+      content_map: content_map (see concepts at top of file)
+      use_short_path: write out the manifest file destinations in terms of "short" paths, suitable for `bazel run`.
     """
     ctx.actions.write(
         manifest_file,
         "[\n" + ",\n".join(
-            [_encode_manifest_entry(dst, content_map[dst])
+            [_encode_manifest_entry(dst, content_map[dst], use_short_path)
              for dst in sorted(content_map.keys())]
             ) + "\n]\n"
     )
 
-def _encode_manifest_entry(dest, df):
+def _encode_manifest_entry(dest, df, use_short_path):
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     if df.src:
-        src = df.src.path
+        src = df.src.short_path if use_short_path else df.src.path
         entry_type = ENTRY_IS_FILE
     elif hasattr(df, "link_to"):
         src = df.link_to
