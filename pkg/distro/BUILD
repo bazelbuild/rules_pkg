@@ -167,5 +167,3 @@ stardoc(
         ":rules_pkg_lib",
     ],
 )
-
-# TODO(nacl): update this for the new RPM builder; pkg_filegroup
