@@ -39,3 +39,4 @@ tasks:
     - "-//tests/mappings/filter_directory/..."
     # rpmbuild is not available on windows
     - "-//tests/rpm/..."
+    - "-//tests/install/..."
