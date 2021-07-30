@@ -24,6 +24,7 @@ filegroup(
     name = "standard_package",
     srcs = [
         "BUILD",
+        "install.py.tpl",
     ] + glob([
         "*.bzl",
         "*.py",
@@ -36,6 +37,12 @@ exports_files(
         "*.bzl",
     ]),
     visibility = ["//distro:__pkg__"],
+)
+
+# pkg_install's template script file
+exports_files(
+    ["install.py.tpl"],
+    visibility = ["//visibility:public"],
 )
 
 config_setting(
