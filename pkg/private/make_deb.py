@@ -355,7 +355,7 @@ def main():
       description=helpers.GetFlagValue(options.description),
       maintainer=helpers.GetFlagValue(options.maintainer),
       section=options.section,
-      architecture=options.architecture,
+      architecture=helpers.GetFlagValue(options.architecture),
       depends=GetFlagValues(options.depends),
       suggests=options.suggests,
       enhances=options.enhances,
