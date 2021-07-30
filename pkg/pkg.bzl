@@ -276,9 +276,18 @@ def _pkg_deb_impl(ctx):
         "--changes=" + changes_file.path,
         "--data=" + ctx.file.data.path,
         "--package=" + ctx.attr.package,
-        "--architecture=" + ctx.attr.architecture,
         "--maintainer=" + ctx.attr.maintainer,
     ]
+
+    # Version and description can be specified by a file or inlined
+    if ctx.attr.architecture_file:
+        if ctx.attr.architecture != "all":
+            fail("Both architecture and architecture_file attributes were specified")
+        args += ["--architecture=@" + ctx.file.architecture_file.path]
+        files += [ctx.file.architecture_file]
+    else:
+        args += ["--architecture=" + ctx.attr.architecture]
+
     if ctx.attr.preinst:
         args += ["--preinst=@" + ctx.file.preinst.path]
         files += [ctx.file.preinst]
@@ -499,7 +508,15 @@ pkg_deb_impl = rule(
             doc = "Package name",
             mandatory = True,
         ),
-        "architecture": attr.string(default = "all"),
+        "architecture_file": attr.label(
+            doc = """File that contains the package architecture.
+            Must not be used with architecture.""",
+            allow_single_file = True,
+        ),
+        "architecture": attr.string(
+            default = "all",
+            doc = """Package architecture. Must not be used with architecture_file.""",
+        ),
         "distribution": attr.string(default = "unstable"),
         "urgency": attr.string(default = "medium"),
         "maintainer": attr.string(mandatory = True),
