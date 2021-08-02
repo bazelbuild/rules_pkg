@@ -94,11 +94,14 @@ pkg_deb(
     version = VERSION,
 )
 ```
+
 Try building `bazel build :a_deb_package` then examine the results. Note that
 the .deb out file has the correctly formed name, while the target itself is
 a symlink to that file.
-```shell
+
+```console
 $ ls -l bazel-bin/a_deb_package.deb bazel-bin/foo-tools_1-2_k8.deb
 lrwxrwxrwx 1 user primarygroup   163 Jul 26 12:56 bazel-bin/a_deb_package.deb -> /home/user/.cache/bazel/_bazel_user/.../execroot/rules_pkg_examples/bazel-out/k8-fastbuild/bin/foo-tools_1-2_k8.deb
 -r-xr-xr-x 1 user primarygroup 10662 Jul 26 12:56 bazel-bin/foo-tools_1-2_k8.deb
 ```
+
