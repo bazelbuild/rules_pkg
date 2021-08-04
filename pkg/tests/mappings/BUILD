@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load(":mappings_test.bzl", "mappings_analysis_tests", "mappings_unit_tests")
+load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
 load(
     "//:mappings.bzl",
     "pkg_attributes",
@@ -25,9 +26,11 @@ load(
 load("//tests/util:defs.bzl", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
 
+mappings_unit_tests()
+
 mappings_analysis_tests()
 
-mappings_unit_tests()
+mappings_external_repo_analysis_tests()
 
 pkg_mkdirs(
     name = "dirs",
