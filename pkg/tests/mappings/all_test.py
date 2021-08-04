@@ -17,7 +17,7 @@
 
 import unittest
 
-import manifest_test_lib
+from tests.mappings import manifest_test_lib
 
 class ManifestAllTest(manifest_test_lib.ContentManifestTest):
 
