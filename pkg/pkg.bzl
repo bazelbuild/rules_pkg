@@ -25,6 +25,7 @@ load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
 load(
     "//private:pkg_files.bzl",
     "add_directory",
+    "add_empty_file",
     "add_label_list",
     "add_single_file",
     "add_tree_artifact",
@@ -195,8 +196,8 @@ def _pkg_tar_impl(ctx):
             "--owner_names=%s=%s" % (_quote(key), ctx.attr.ownernames[key])
             for key in ctx.attr.ownernames
         ]
-    if ctx.attr.empty_files:
-        args += ["--empty_file=%s" % empty_file for empty_file in ctx.attr.empty_files]
+    for empty_file in ctx.attr.empty_files:
+        add_empty_file(content_map, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(content_map, empty_dir, ctx.label)
     args += ["--tar=" + f.path for f in ctx.files.deps]

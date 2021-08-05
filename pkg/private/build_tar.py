@@ -281,6 +281,8 @@ class TarFile(object):
       self.add_empty_dir(entry.dest, **attrs)
     elif entry.entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(entry.src, entry.dest, **attrs)
+    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+      self.add_empty_file(entry.dest, **attrs)
     else:
       self.add_file(entry.src, entry.dest, **attrs)
 
@@ -304,10 +306,6 @@ def main():
       help='Set mtime on tar file entries. May be an integer or the'
            ' value "portable", to get the value 2000-01-01, which is'
            ' is usable with non *nix OSes.')
-  parser.add_argument('--empty_file', action='append',
-                      help='An empty file to add to the layer.')
-  parser.add_argument('--empty_dir', action='append',
-                      help='An empty dir to add to the layer.')
   parser.add_argument('--empty_root_dir', action='append',
                       help='An empty dir to add to the layer.')
   parser.add_argument('--tar', action='append',
@@ -442,10 +440,6 @@ def main():
     for f in options.file or []:
       (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
       output.add_file(inf, tof, **file_attributes(tof))
-    for f in options.empty_file or []:
-      output.add_empty_file(f, **file_attributes(f))
-    for f in options.empty_dir or []:
-      output.add_empty_dir(f, **file_attributes(f))
     for f in options.empty_root_dir or []:
       output.add_empty_root_dir(f, **file_attributes(f))
     for tar in options.tar or []:
