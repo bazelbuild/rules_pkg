@@ -22,6 +22,8 @@ def _basic_naming_impl(ctx):
 
     # Copy attributes from the rule to the provider
     values["product_name"] = ctx.attr.product_name
+    values["version"] = ctx.attr.version
+    values["revision"] = ctx.attr.revision
     values["special_build"] = ctx.attr.special_build
 
     # Add some well known variables from the rule context.
@@ -38,6 +40,12 @@ basic_naming = rule(
     attrs = {
         "product_name": attr.string(
             doc = "Placeholder for our final product name.",
+        ),
+        "revision": attr.string(
+            doc = "Placeholder for our release revision.",
+        ),
+        "version": attr.string(
+            doc = "Placeholder for our release version.",
         ),
         "special_build": attr.string(
             doc = "Indicates that we have built with a 'special' option.",
