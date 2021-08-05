@@ -154,11 +154,11 @@ class PkgTarTest(unittest.TestCase):
          },
         {'name': './usr',
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/bin'},
+        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
         {'name': './usr/titi',
          'mode': 0o755,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
-        {'name': './usr/bin'},
-        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
     ]
     for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
       with self.subTest(ext=ext):
@@ -171,9 +171,9 @@ class PkgTarTest(unittest.TestCase):
         {'name': './etc', 'uid': 24, 'gid': 42},
         {'name': './etc/nsswitch.conf', 'mode': 0o644, 'uid': 24, 'gid': 42},
         {'name': './usr', 'uid': 42, 'gid': 24},
-        {'name': './usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
         {'name': './usr/bin'},
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
+        {'name': './usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
         {'name': './BUILD'},
     ]
     for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
