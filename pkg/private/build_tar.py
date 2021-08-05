@@ -440,9 +440,6 @@ def main():
         for entry in manifest:
           output.add_manifest_entry(entry, file_attributes)
 
-    for f in options.file or []:
-      (inf, tof) = helpers.SplitNameValuePairAtSeparator(f, '=')
-      output.add_file(inf, tof, **file_attributes(tof))
     for f in options.empty_root_dir or []:
       output.add_empty_root_dir(f, **file_attributes(f))
     for tar in options.tar or []:
