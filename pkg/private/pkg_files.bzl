@@ -47,6 +47,7 @@ ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = 2  # Entry is an empty dir
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
 
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
@@ -183,7 +184,7 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
     return found_info
 
 def add_directory(content_map, dir_path, origin, mode=None, user=None, group=None):
-    """Add an single file to the content map.
+    """Add an empty directory to the content map.
 
     Args:
       content_map: The content map
@@ -196,6 +197,28 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
     content_map[dir_path.strip('/')] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
+        origin = origin,
+        mode = mode,
+        user = user,
+        group = group,
+    )
+
+def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=None):
+    """Add a single file to the content map.
+
+    Args:
+      content_map: The content map
+      dest_path: Where to place the file in the package.
+      origin: The rule instance adding this entry
+      mode: fallback mode to use for Package*Info elements without mode
+      user: fallback user to use for Package*Info elements without user
+      group: fallback mode to use for Package*Info elements without group
+    """
+    dest = dest_path.strip('/')
+    _check_dest(content_map, dest, origin)
+    content_map[dest] = _DestFile(
+        src = None,
+        entry_type = ENTRY_IS_EMPTY_FILE,
         origin = origin,
         mode = mode,
         user = user,
