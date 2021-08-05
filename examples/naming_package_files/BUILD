@@ -24,15 +24,21 @@ config_setting(
     values = {"define": "SPECIAL=1"},
 )
 
+VERSION = "1"
+REVISION = "2"
+
 # Exposes the value of the compilation mode to the package naming.
 basic_naming(
     name = "my_naming_vars",
 
-    # An explicit value.
+    # Explicit values to use in all package names
+    version = VERSION,
+    revision = REVISION,
+
+    # We make the product name a variable rather than put it in every rule.
     # This technique can be useful if you need to create packages in many
     # different formats but have not decided on the final naming yet. You
     # can use a placeholder and change it on one location.
-    #
     product_name = "RulesPkgExamples",
 
     # Use a config_setting flag to specify part of the package name.
@@ -96,11 +102,11 @@ pkg_deb(
     data = ":example1",
     description = "what it does",
     maintainer = "someone@somewhere.com",
-    package = "foo_tools",
+    package = "foo-tools",
     # Note: We could not know target_cpu at the time I write this rule.
-    package_file_name = "foo_tools-1-{target_cpu}.deb",
+    package_file_name = "foo-tools_{version}-{revision}_{target_cpu}.deb",
     package_variables = ":my_naming_vars",
-    version = "1",
+    version = VERSION,
 )
 
 # This does not actually build anything. It writes a skelaton of a script that
