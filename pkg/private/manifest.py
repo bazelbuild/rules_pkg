@@ -22,6 +22,7 @@ ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = 2  # Entry is an owned dir, possibly empty
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
 
 ManifestEntry = collections.namedtuple("ManifestEntry",
                                        ['entry_type', 'dest', 'src', 'mode', 'user', 'group'])
@@ -37,5 +38,7 @@ def entry_type_to_string(et):
         return "directory"
     elif et == ENTRY_IS_TREE:
         return "tree"
+    elif et == ENTRY_IS_EMPTY_FILE:
+        return "empty_file"
     else:
         raise ValueError("Invalid entry id {}".format(et))
