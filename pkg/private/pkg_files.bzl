@@ -183,7 +183,7 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
     return found_info
 
 def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None):
-    """Add an single file to the content map.
+    """Add an empty file to the content map.
 
     Args:
       content_map: The content map
