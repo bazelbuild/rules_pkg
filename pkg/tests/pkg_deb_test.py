@@ -142,11 +142,11 @@ class PkgDebTest(unittest.TestCase):
          },
         {'name': './usr', 'isdir': True,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+        {'name': './usr/bin', 'isdir': True},
+        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
         {'name': './usr/titi',
          'mode': 0o755,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
-        {'name': './usr/bin', 'isdir': True},
-        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
     ]
     self.assert_data_content(expected)
 
