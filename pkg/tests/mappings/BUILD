@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":mappings_test.bzl", "mappings_analysis_tests", "mappings_unit_tests")
+load(
+    ":mappings_test.bzl",
+     "manifest_golden_test",
+     "mappings_analysis_tests",
+     "mappings_unit_tests",
+)
 load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
 load(
     "//:mappings.bzl",
@@ -25,6 +30,15 @@ load(
 )
 load("//tests/util:defs.bzl", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
+
+py_library(
+    name = "manifest_test_lib",
+    srcs = ["manifest_test_lib.py"],
+    srcs_version = "PY3",
+    deps = [
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
 
 mappings_unit_tests()
 
@@ -60,30 +74,8 @@ write_content_manifest(
     ],
 )
 
-# TODO(aiuto): This rule and the small srcs should be generated from just the
-# pair of write_content_manifest name and the golden file name.
-# We could even inline the golden data into a string which gets parsed as
-# json and written out.
-py_test(
+manifest_golden_test(
     name = "all_test",
-    srcs = [
-        "all_test.py",
-    ],
-    data = [
-        "all.manifest.golden",
-        ":all.manifest",
-    ],
-    python_version = "PY3",
-    deps = [
-        ":manifest_test_lib",
-    ],
-)
-
-py_library(
-    name = "manifest_test_lib",
-    srcs = ["manifest_test_lib.py"],
-    srcs_version = "PY3",
-    deps = [
-        "@bazel_tools//tools/python/runfiles",
-    ],
+    target = "all",
+    expected = "all.manifest.golden",
 )
