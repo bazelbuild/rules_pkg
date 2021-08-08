@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load("@rules_python//python:defs.bzl", "py_test")
 load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load(
     "//:mappings.bzl",
@@ -973,4 +974,64 @@ def mappings_unit_tests():
     unittest.suite(
         "mappings_unit_tests",
         strip_prefix_test,
+    )
+
+def _gen_manifest_test_main_impl(ctx):
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = ctx.outputs.out,
+        substitutions = {
+            "${EXPECTED}": ctx.attr.expected,
+            "${TARGET}": ctx.attr.target,
+            "${TEST_NAME}": ctx.attr.test_name,
+        },
+    )
+    return [
+        DefaultInfo(files = depset([ctx.outputs.out])),
+    ]
+
+_gen_manifest_test_main = rule(
+    implementation = _gen_manifest_test_main_impl,
+    attrs = {
+        "out": attr.output(mandatory = True),
+        "expected": attr.string(mandatory = True),
+        "target": attr.string(mandatory = True),
+        "test_name": attr.string(mandatory = True),
+        "_template": attr.label(
+            default = Label("//tests/mappings:manifest_test_main.py.tpl"),
+            allow_single_file = True,
+        ),
+    },
+)
+
+
+def manifest_golden_test(name, target, expected):
+    """Tests that a content manifest file matches a golden copy.
+
+    This test is used to verify that a generated manifest file matches the
+    expected content.
+
+    Args:
+      target: A target which produces a content manifest with the name
+          <target> + ".manifest"
+      expected: label of a file containing the expected content.
+    """
+    _gen_manifest_test_main(
+        name = name + "_main",
+        out = name + ".py",
+        expected = expected,
+        target = target + ".manifest",
+        test_name = target + "Test",
+    )
+    py_test(
+        name = name,
+        srcs = [":" + name + ".py"],
+        data = [
+            ":" + target + ".manifest",
+            expected,
+        ],
+        python_version = "PY3",
+        deps = [
+            ":manifest_test_lib",
+        ],
     )
