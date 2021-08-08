@@ -28,9 +28,11 @@ load(
     "add_empty_file",
     "add_label_list",
     "add_single_file",
+    "add_symlink",
     "add_tree_artifact",
     "process_src",
-    "write_manifest")
+    "write_manifest",
+)
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -149,7 +151,7 @@ def _pkg_tar_impl(ctx):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     # Note: This extra remap is the bottleneck preventing this
@@ -198,10 +200,13 @@ def _pkg_tar_impl(ctx):
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(content_map, empty_dir, ctx.label)
     args += ["--tar=" + f.path for f in ctx.files.deps]
-    args += [
-        "--link=%s:%s" % (_quote(k, protect = ":"), ctx.attr.symlinks[k])
-        for k in ctx.attr.symlinks
-    ]
+    for link in ctx.attr.symlinks:
+        add_symlink(
+            content_map,
+            link,
+            ctx.attr.symlinks[link],
+            ctx.label,
+        )
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
         args.append("--stamp_from=%s" % ctx.version_file.path)
@@ -439,7 +444,8 @@ pkg_tar_impl = rule(
 <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
 <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
 </ul>""",
-            default = 0),
+            default = 0,
+        ),
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
         "private_stamp_detect": attr.bool(default = False),
@@ -678,7 +684,8 @@ pkg_zip_impl = rule(
 <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
 <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
 </ul>""",
-            default = 0),
+            default = 0,
+        ),
 
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.

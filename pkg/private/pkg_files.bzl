@@ -111,7 +111,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
         )
 
 def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
-    dest = pkg_symlink_info.destination.strip('/')
+    dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
@@ -199,7 +199,7 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    content_map[dir_path.strip('/')] = _DestFile(
+    content_map[dir_path.strip("/")] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
         origin = origin,
@@ -220,7 +220,7 @@ def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=N
       group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip('/')
-    _check_dest(content_map, dest, origin)
+    _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_EMPTY_FILE,
@@ -239,10 +239,12 @@ def add_label_list(ctx, content_map, file_deps, srcs):
       file_deps: (r/w) The list of File objects srcs depend on.
       srcs: List of source objects.
     """
+
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
-        ctx.attr.strip_prefix if hasattr(ctx.attr, "strip_prefix") else "")
+        ctx.attr.strip_prefix if hasattr(ctx.attr, "strip_prefix") else "",
+    )
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     for src in srcs:
@@ -265,12 +267,12 @@ def add_label_list(ctx, content_map, file_deps, srcs):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
 
-def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, group=None):
+def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
 
     Args:
@@ -292,7 +294,31 @@ def add_single_file(content_map, dest_path, src, origin, mode=None, user=None, g
         group = group,
     )
 
-def add_tree_artifact(content_map, dest_path, src, origin, mode=None, user=None, group=None):
+def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, group = None):
+    """Add a symlink to the content map.
+
+    Args:
+      content_map: The content map
+      dest_path: Where to place the file in the package.
+      src: Path to link to.
+      origin: The rule instance adding this entry
+      mode: fallback mode to use for Package*Info elements without mode
+      user: fallback user to use for Package*Info elements without user
+      group: fallback mode to use for Package*Info elements without group
+    """
+    dest = dest_path.strip("/")
+    _check_dest(content_map, dest, None, origin)
+    content_map[dest] = _DestFile(
+        src = None,
+        link_to = src,
+        entry_type = ENTRY_IS_LINK,
+        origin = origin,
+        mode = mode,
+        user = user,
+        group = group,
+    )
+
+def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an tree artifact (directory output) to the content map.
 
     Args:
@@ -348,9 +374,9 @@ def _encode_manifest_entry(dest, df, use_short_path):
         src = None
     return json.encode([
         entry_type,
-        dest.strip('/'),
+        dest.strip("/"),
         src,
         df.mode or "",
         df.user or None,
         df.group or None,
-        ])
+    ])
