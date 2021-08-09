@@ -64,7 +64,7 @@ _DestFile = provider(
 
 def _check_dest(content_map, dest, src, origin):
     old_entry = content_map.get(dest)
-    # TODO(aiuto): This is insufficient but good enough for now. We should
+    # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob
     # brings in the file with a different owner.

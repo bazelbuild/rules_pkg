@@ -18,6 +18,7 @@ load(
      "mappings_analysis_tests",
      "mappings_unit_tests",
 )
+load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
 load(
     "//:mappings.bzl",
     "pkg_attributes",
@@ -39,9 +40,11 @@ py_library(
     ],
 )
 
+mappings_unit_tests()
+
 mappings_analysis_tests()
 
-mappings_unit_tests()
+mappings_external_repo_analysis_tests()
 
 pkg_mkdirs(
     name = "dirs",

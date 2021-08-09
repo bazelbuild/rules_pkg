@@ -604,7 +604,7 @@ pkg_tar(
 fake_artifact(
     name = "a_program",
     files = ["//tests:testdata/executable.sh"],
-    runfiles = [":BUILD"],
+    runfiles = ["BUILD"],
 )
 
 pkg_tar(
