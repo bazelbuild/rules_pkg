@@ -26,13 +26,6 @@ pkg_files(
     prefix = "usr/share/doc/foo",
 )
 
-pkg_zip(
-    name = "foo_zip",
-    srcs = [
-        ":share_doc",
-    ],
-)
-
 pkg_filegroup(
     name = "manpages",
     srcs = [
@@ -42,8 +35,21 @@ pkg_filegroup(
     prefix = "/usr/share",
 )
 
+
 pkg_tar(
     name = "foo_tar",
+    srcs = [
+        "README.txt",
+        ":manpages",
+        ":share_doc",
+        "//resources/l10n:all",
+        "//src/client:arch",
+        "//src/server:arch",
+    ],
+)
+
+pkg_zip(
+    name = "foo_zip",
     srcs = [
         "README.txt",
         ":manpages",
