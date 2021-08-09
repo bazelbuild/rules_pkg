@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])
-
 load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mklink")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//:foo_defs.bzl", "shared_object_path_selector")
@@ -34,6 +32,7 @@ cc_binary(
         "foo.cc",
     ],
     # TODO(aiuto): How to we get the data to be in /usr/share/foo?
+    # See #153 as a starting point for runfiles discussions.
     data = [
         "bar.rules",
         "baz.rules",

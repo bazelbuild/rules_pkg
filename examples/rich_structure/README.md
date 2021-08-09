@@ -3,7 +3,7 @@
 ## Use case
 
 Our use case is building a distribution package that represents a typical \*nix tool.
-That would include elements such as
+That would include elements such as:
 
 - A main program that requires runtime support files
 - Associated documentation
