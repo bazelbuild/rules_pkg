@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""Shared bzl constants and methods for building the Foo product."""
 
 shared_object_path_selector = {
     "@platforms//os:linux": "/usr/share/foo",

@@ -42,7 +42,7 @@ var/tmp/foo
 var/tmp/foo/queue
 ```
 
-For Macos, it would be mostly the same, but files under `usr/share/foo` would
+For macOS, it would be mostly the same, but files under `usr/share/foo` would
 move to `Library/Foo`.
 
 To emulate reality better, the source tree is organized in a way that is
