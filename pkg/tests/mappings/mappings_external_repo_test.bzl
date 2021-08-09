@@ -18,57 +18,11 @@ load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load("//:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
 load("//:mappings.bzl", "pkg_files", "strip_prefix")
+load("mappings_test.bzl", "pkg_files_contents_test")
 
 ##########
-# Helpers
+# pkg_files tests involving external repositories
 ##########
-
-def _flatten(list_of_lists):
-    """Transform a list of lists into a single list, preserving relative order."""
-    return [item for sublist in list_of_lists for item in sublist]
-
-##########
-# pkg_files tests
-##########
-
-def _pkg_files_contents_test_impl(ctx):
-    env = analysistest.begin(ctx)
-    target_under_test = analysistest.target_under_test(env)
-
-    expected_dests = {e: None for e in ctx.attr.expected_dests}
-    n_found = 0
-    for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
-        asserts.true(
-            got in expected_dests,
-            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests))
-        n_found += 1
-    asserts.equals(env, len(expected_dests), n_found)
-
-
-    # Simple equality checks for the others, if specified
-    if ctx.attr.expected_attributes:
-        asserts.equals(
-            env,
-            json.decode(ctx.attr.expected_attributes),
-            target_under_test[PackageFilesInfo].attributes,
-            "pkg_files attributes do not match expectations",
-        )
-
-    # TODO(nacl): verify DefaultInfo propagation
-
-    return analysistest.end(env)
-
-pkg_files_contents_test = analysistest.make(
-    _pkg_files_contents_test_impl,
-    attrs = {
-        # Other attributes can be tested here, but the most important one is the
-        # destinations.
-        "expected_dests": attr.string_list(
-            mandatory = True,
-        ),
-        "expected_attributes": attr.string(),
-    },
-)
 
 # Tests involving external repositories
 def _test_pkg_files_extrepo():
@@ -78,6 +32,7 @@ def _test_pkg_files_extrepo():
         srcs = ["@mappings_test_external_repo//pkg:dir/script"],
         tags = ["manual"],
     )
+
     pkg_files_contents_test(
         name = "pf_extrepo_strip_all",
         target_under_test = ":pf_extrepo_strip_all_g",
