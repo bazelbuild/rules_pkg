@@ -229,5 +229,15 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-tree-artifact.tar', content)
 
+  def test_tar_with_runfiles(self):
+    content = [
+      {'name': '.'},
+      {'name': './BUILD' },
+      {'name': './a_program' },
+      {'name': './executable.sh' },
+    ]
+    self.assertTarFileContent('test-tar-with-runfiles.tar', content)
+
+
 if __name__ == '__main__':
   unittest.main()
