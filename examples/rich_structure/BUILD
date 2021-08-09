@@ -15,6 +15,14 @@
 load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_zip")
 
+# This is the top level BUILD for a hypothetical project Foo.  It has a client,
+# a server, docs, and runtime directories needed by the server.
+# We want to ship it for Linux, macOS, and Windows.
+#
+# This example shows various techniques for specifying how your source tree
+# transforms into the installation tree. As such, it favors using a lot of
+# distict features, at the expense of uniformity.
+
 pkg_files(
     name = "share_doc",
     srcs = [

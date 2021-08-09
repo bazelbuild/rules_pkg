@@ -16,16 +16,26 @@ load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files"
 load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_zip")
 load("//:foo_defs.bzl", "shared_object_path_selector")
 
+# There are localized message catalogs for all the components.
+
+# Typically, you would have a lot of these and drop them in, so using a glob
+# to gather them is appropriate.
 pkg_files(
     name = "messages",
     srcs = glob(["**/msg.cat"]),
     attributes = pkg_attributes(
+        # We know they should be read only. We don't know who should own them.
         mode = "0444",
     ),
     strip_prefix = strip_prefix.from_pkg(),
 )
 
 # Use the English catalog again under a different name.
+# This is a trick for reusing a single source file or files in multiple places
+# in the output tree. Here we place foo/en/msg.cat under foo/en_GB/msg.cat.
+# This is more efficient than having a rule copy the files to a new location.
+# The final package builder is passed just the information that the original
+# srcs should be placed in the output archive under this other name.
 pkg_files(
     name = "extra_messages",
     srcs = ["foo/en/msg.cat"],
@@ -36,6 +46,8 @@ pkg_files(
     strip_prefix = strip_prefix.from_pkg(),
 )
 
+# This gathers together all our message catalogs, and adds a prefix based
+# on the target OS
 pkg_filegroup(
     name = "all",
     srcs = [
