@@ -5,15 +5,15 @@ common: &common
 tasks:
   centos7:
     platform: centos7
-    working_directory: /workdir/examples/stamping
+    working_directory: /workdir/examples/time_stamping
     <<: *common
   ubuntu1804:
     platform: ubuntu1804
-    working_directory: /workdir/examples/stamping
+    working_directory: /workdir/examples/time_stamping
     <<: *common
   macos:
-    working_directory: ../examples/stamping
+    working_directory: ../examples/time_stamping
     <<: *common
   windows:
-    working_directory: ../examples/stamping
+    working_directory: ../examples/time_stamping
     <<: *common
