@@ -9,5 +9,6 @@ Use rules-pkg-discuss@googlegroups.com for discussion.
 
 ## Reference
 
-*   [HEAD](https://github.com/bazelbuild/rules_pkg/tree/main/pkg)
-*   [0.5.0](/0.5.0/ref)
+*   [HEAD](https://github.com/bazelbuild/rules_pkg/blob/main/pkg/docs/reference.md)
+*   [Version 0.5.0](https://github.com/bazelbuild/rules_pkg/blob/0.5.0/pkg/docs/reference.md)
+*   [Version 0.4.0](https://github.com/bazelbuild/rules_pkg/blob/0.4.0/pkg/docs/reference.md)
