@@ -1,3 +1,4 @@
+<meta name="robots"   content="noindex,nofollow"   >
 # rules_pkg - reference
 
 <div class="toc">
