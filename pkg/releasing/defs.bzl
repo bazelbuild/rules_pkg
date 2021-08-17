@@ -19,7 +19,7 @@ def print_rel_notes(
         "--version=%s" % version,
         "--tarball=$(location %s)" % tarball_name,
     ]
-    tools = ["//releasing:print_rel_notes"]
+    tools = ["@rules_pkg//releasing:print_rel_notes"]
     if setup_file:
         cmd.append("--setup_file=%s" % setup_file)
     if deps_method:
