@@ -11,7 +11,9 @@ def print_rel_notes(
         mirror_host = None):
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
     cmd = [
-        "$(location //releasing:print_rel_notes)",
+        # TODO(aiuto): Turn this into a rule, so we can use a label that is
+        # relative to this repo, not the enclusing repo.
+        "$(location @rules_pkg//releasing:print_rel_notes)",
         "--org=%s" % org,
         "--repo=%s" % repo,
         "--version=%s" % version,
