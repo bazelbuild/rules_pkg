@@ -1,5 +1,5 @@
 <meta name="robots" content="noindex,nofollow">
-# rules_pkg - reference
+# rules_pkg - 0.4.0
 
 <div class="toc">
   <h2>Rules</h2>
