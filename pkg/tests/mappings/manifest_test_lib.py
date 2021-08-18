@@ -38,4 +38,4 @@ class ContentManifestTest(unittest.TestCase):
         'rules_pkg/tests/mappings/' + got)
     with open(g_file, mode='rb') as g_fp:
       got = json.load(g_fp)
-    self.assertEquals(expected, got)
+    self.assertEqual(expected, got)

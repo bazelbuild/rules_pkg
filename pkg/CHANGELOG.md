@@ -1,3 +1,16 @@
+# Release 0.5.1
+
+## New features
+- Add `pkg_deb(architecture_file)` to provide a way to set the Debian package architecture from the content of a file created at build time.  (#390)
+- Provide `pkg_install` for a "make install"-like experience in Bazel (#380)
+  - Note: This feature is still in development. Read the PR for more information.
+- Initial support for the `pkg_filegroup` framework in `pkg_zip` (#373)
+
+## Closed bugs
+
+- Change the Debian example to reflect standard Debian naming. (#389)
+- pkg_tar(include_runfiles) now works again (#392)
+
 # Release 0.5.0
 
 ## New Features
