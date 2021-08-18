@@ -10,14 +10,17 @@ def print_rel_notes(
         changelog = None,
         mirror_host = None):
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
+    # Must use Label to get a path relative to the rules_pkg repository,
+    # instead of the calling BUILD file.
+    print_rel_notes_helper = Label("//releasing:print_rel_notes")
+    tools = [print_rel_notes_helper]
     cmd = [
-        "$(location //releasing:print_rel_notes)",
+        "$(location %s)" % str(print_rel_notes_helper),
         "--org=%s" % org,
         "--repo=%s" % repo,
         "--version=%s" % version,
         "--tarball=$(location %s)" % tarball_name,
     ]
-    tools = ["//releasing:print_rel_notes"]
     if setup_file:
         cmd.append("--setup_file=%s" % setup_file)
     if deps_method:
