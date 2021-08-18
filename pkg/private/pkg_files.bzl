@@ -69,6 +69,7 @@ def _check_dest(content_map, dest, src, origin):
     # people specify the owner in one place, but another overly broad glob
     # brings in the file with a different owner.
     if old_entry and old_entry.src != src:
+        # buildifier: disable=print
         print("Duplicate output path: <%s>, declared in %s and %s" % (
             dest,
             origin,
