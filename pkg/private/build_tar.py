@@ -19,10 +19,10 @@ import os
 import tarfile
 import tempfile
 
-import archive
-import helpers
-import build_info
-import manifest
+from private import archive
+from private import helpers
+from private import build_info
+from private import manifest
 
 
 class TarFile(object):

@@ -18,8 +18,9 @@ import unittest
 import csv
 import io
 import os
-import rpm_util
+
 from rules_python.python.runfiles import runfiles
+from tests.rpm import rpm_util
 
 EXPECTED_RPM_MANIFEST_CSV = """
 path,digest,user,group,mode,fflags,symlink
