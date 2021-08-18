@@ -1,4 +1,4 @@
-* @aiuto
-# Alternate reviewers: @philwo @fwe
+* @aiuto @nacl
 
 /deb_packages/  @MarkusTeufelberger @adragomir
+/pkg/rpm/ @nacl
