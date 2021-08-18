@@ -16,7 +16,7 @@ import os
 import tempfile
 import unittest
 
-from rules_pkg.private import helpers
+from private import helpers
 
 
 class GetFlagValueTestCase(unittest.TestCase):
