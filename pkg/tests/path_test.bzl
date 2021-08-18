@@ -24,9 +24,14 @@ load("//:path.bzl", "compute_data_path")
 def _compute_data_path_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
+    # Subtle: This allows you to vendor the library into your own repo at some
+    # arbitrary path.
+    expect = ctx.attr.expected_path
+    if expect.startswith('tests'):
+      expect = ctx.label.package + expect[5:]
     asserts.equals(
         env,
-        ctx.attr.expected_path,
+        expect, 
         compute_data_path(ctx, ctx.attr.in_path),
     )
     return analysistest.end(env)

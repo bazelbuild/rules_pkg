@@ -15,7 +15,7 @@
 
 import unittest
 
-from rules_pkg.tests.mappings import manifest_test_lib
+from tests.mappings import manifest_test_lib
 
 class ${TEST_NAME}(manifest_test_lib.ContentManifestTest):
 
