@@ -25,6 +25,6 @@ Any new capabilities will be added here.
 patching.md
 README.md
 
-*   [contributors agreement](CONTRIBUTING.md)
-*   [patch process](patching.md)
-*   [coding guidelines](developers.md)
+*   [Contributor information](CONTRIBUTING.md) (including contributor license agreements)
+*   [Patch process](patching.md)
+*   [Coding guidelines](developers.md) and other developer information

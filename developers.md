@@ -1,6 +1,8 @@
-# rules_pkg - Information for developers
+# rules_pkg - Information for Developers
 
-Introduction ...
+NOTE: This is a work in progress. It is only an outline at this point.
+
+TBD: Introduction
 
 ## General
 
