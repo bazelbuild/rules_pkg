@@ -16,6 +16,15 @@ CI:
 *   [examples](https://github.com/bazelbuild/rules_pkg/tree/main/examples) -
     Cookbook examples for using the rules.
 
-Bazel now uses this rule set for packaging its distribution. Bazel
+As of Bazel 4.x, Bazel uses this rule set for packaging its distribution. Bazel
 still contains a limited version of `pkg_tar` but its feature set is frozen.
 Any new capabilities will be added here.
+
+### For developers
+
+patching.md
+README.md
+
+*   [Contributor information](CONTRIBUTING.md) (including contributor license agreements)
+*   [Patch process](patching.md)
+*   [Coding guidelines](developers.md) and other developer information
