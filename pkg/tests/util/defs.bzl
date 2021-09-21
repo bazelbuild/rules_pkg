@@ -105,7 +105,7 @@ def _write_content_manifest_impl(ctx):
     content_map = {}  # content handled in the manifest
     file_deps = []  # inputs we depend on
     add_label_list(ctx, content_map, file_deps, ctx.attr.srcs)
-    write_manifest(ctx, ctx.outputs.out, content_map)
+    write_manifest(ctx, ctx.outputs.out, content_map, use_short_path = ctx.attr.use_short_path)
 
 _write_content_manifest = rule(
     doc = """Helper rule to write the content manifest for a pkg_*.
@@ -118,11 +118,23 @@ This is intended only for testing the manifest creation features.""",
             allow_files = True,
         ),
         "out": attr.output(),
+        "use_short_path": attr.bool(
+            doc = """Use the rootless path in the manifest.  Useful to ensure that the platform-specific prefix is removed.
+
+            See also https://docs.bazel.build/versions/main/skylark/lib/File.html#path
+            """,
+            default = True,
+        ),
     },
 )
 
 def write_content_manifest(name, srcs):
-    _write_content_manifest(name = name, srcs = srcs, out = name + ".manifest")
+    _write_content_manifest(
+        name = name,
+        srcs = srcs,
+        use_short_path = True,
+        out = name + ".manifest"
+    )
 
 ############################################################
 # Test boilerplate

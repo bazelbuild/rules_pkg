@@ -28,7 +28,7 @@ load(
     "pkg_mklink",
     "strip_prefix",
 )
-load("//tests/util:defs.bzl", "write_content_manifest")
+load("//tests/util:defs.bzl", "directory", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
 
 py_library(
@@ -45,6 +45,21 @@ mappings_unit_tests()
 mappings_analysis_tests()
 
 mappings_external_repo_analysis_tests()
+
+################################################################################
+# Packaging rule manifest tests
+################################################################################
+
+directory(
+    name = "treeartifact",
+    filenames = ["artifact_in_tree1", "artifact_in_tree2"],
+)
+
+pkg_files(
+    name = "directory-with-contents",
+    srcs = ["treeartifact"],
+    attributes = pkg_attributes(mode = "0644"),
+)
 
 pkg_mkdirs(
     name = "dirs",
@@ -65,12 +80,15 @@ pkg_files(
     ],
 )
 
+# TODO: this seems to write the JSON in a particular order; regardless of input
+# order.  Investigate when opportune, or make the test order-agnostic.
 write_content_manifest(
     name = "all",
     srcs = [
         "BUILD",
         ":dirs",
         ":files",
+        ":directory-with-contents",
     ],
 )
 
