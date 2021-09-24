@@ -739,6 +739,12 @@ def _test_pkg_filegroup(name):
         tags = ["manual"],
     )
 
+    pkg_filegroup(
+        name = "{}_pfg_nested".format(name),
+        srcs = [":{}_pfg".format(name)],
+        tags = ["manual"],
+    )
+
     # Base case: confirm that basic data translation is working
     pkg_filegroup_contents_test(
         name = "{}_contents_valid".format(name),
@@ -746,6 +752,17 @@ def _test_pkg_filegroup(name):
         expected_pkg_files = ["{}_pkg_files".format(name)],
         expected_pkg_dirs = ["{}_pkg_dirs".format(name)],
         expected_pkg_symlinks = ["{}_pkg_symlink".format(name)],
+    )
+
+    # Base case': ditto for nested `pkg_filegroup`s.
+    pkg_filegroup_contents_test(
+        name = "{}_nested_contents_valid".format(name),
+        target_under_test = "{}_pfg_nested".format(name),
+        expected_pkg_files = ["{}_pkg_files".format(name)],
+        expected_pkg_dirs = ["{}_pkg_dirs".format(name)],
+        expected_pkg_symlinks = ["{}_pkg_symlink".format(name)],
+        # See below re: "The origins for everything will be wrong here...".
+        verify_origins = False,
     )
 
     ##################################################
@@ -794,13 +811,53 @@ def _test_pkg_filegroup(name):
         verify_origins = False,
     )
 
+    # Now do the same for a nested `pkg_filegroup`.
+    pkg_files(
+        name = "{}_pkg_files_nested_prefixed".format(name),
+        srcs = ["foo", "bar"],
+        prefix = "nest/prefix/bin",
+        tags = ["manual"],
+    )
+
+    pkg_mkdirs(
+        name = "{}_pkg_dirs_nested_prefixed".format(name),
+        dirs = ["nest/prefix/etc"],
+        tags = ["manual"],
+    )
+
+    pkg_mklink(
+        name = "{}_pkg_symlink_nested_prefixed".format(name),
+        src = "src",
+        dest = "nest/prefix/dest",
+        tags = ["manual"],
+    )
+
+    pkg_filegroup(
+        name = "{}_nested_prefixed_pfg".format(name),
+        srcs = [":{}_prefixed_pfg".format(name)],
+        prefix = "nest",
+        tags = ["manual"],
+    )
+
+    pkg_filegroup_contents_test(
+        name = "{}_contents_nested_prefix_translated".format(name),
+        target_under_test = "{}_nested_prefixed_pfg".format(name),
+        expected_pkg_files = ["{}_pkg_files_nested_prefixed".format(name)],
+        expected_pkg_dirs = ["{}_pkg_dirs_nested_prefixed".format(name)],
+        expected_pkg_symlinks = ["{}_pkg_symlink_nested_prefixed".format(name)],
+        # See above re: "The origins for everything will be wrong here...".
+        verify_origins = False,
+    )
+
     native.test_suite(
         name = name,
         tests = [
             t.format(name)
             for t in [
                 "{}_contents_valid",
+                "{}_nested_contents_valid",
                 "{}_contents_prefix_translated",
+                "{}_contents_nested_prefix_translated",
             ]
         ],
     )
