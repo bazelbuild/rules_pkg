@@ -250,10 +250,11 @@ def _pkg_files_impl(ctx):
                     "REMOVE_BASE_DIRECTORY as a renaming target for non-directories is disallowed.",
                     "renames",
                 )
+
             # REMOVE_BASE_DIRECTORY results in the contents being dropped into
             # place directly in the prefix path.
             src_dest_paths_map[src_file] = ctx.attr.prefix
-            
+
         else:
             src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
 
@@ -545,6 +546,46 @@ def _pkg_filegroup_impl(ctx):
     if ctx.attr.prefix:
         # If "prefix" is provided, we need to manipulate the incoming providers.
         for s in ctx.attr.srcs:
+            if PackageFilegroupInfo in s:
+                old_pfgi, old_di = s[PackageFilegroupInfo], s[DefaultInfo]
+
+                files += [
+                    (
+                        PackageFilesInfo(
+                            dest_src_map = {
+                                paths.join(ctx.attr.prefix, dest): src
+                                for dest, src in pfi.dest_src_map.items()
+                            },
+                            attributes = pfi.attributes,
+                        ),
+                        origin,
+                    )
+                    for (pfi, origin) in old_pfgi.pkg_files
+                ]
+                dirs += [
+                    (
+                        PackageDirsInfo(
+                            dirs = [paths.join(ctx.attr.prefix, d) for d in pdi.dirs],
+                            attributes = pdi.attributes,
+                        ),
+                        origin,
+                    )
+                    for (pdi, origin) in old_pfgi.pkg_dirs
+                ]
+                links += [
+                    (
+                        PackageSymlinkInfo(
+                            source = psi.source,
+                            destination = paths.join(ctx.attr.prefix, psi.destination),
+                            attributes = psi.attributes,
+                        ),
+                        origin,
+                    )
+                    for (psi, origin) in old_pfgi.pkg_symlinks
+                ]
+
+                mapped_files_depsets.append(old_di.files)
+
             if PackageFilesInfo in s:
                 new_pfi = PackageFilesInfo(
                     dest_src_map = {
@@ -575,6 +616,12 @@ def _pkg_filegroup_impl(ctx):
     else:
         # Otherwise, everything is pretty much direct copies
         for s in ctx.attr.srcs:
+            if PackageFilegroupInfo in s:
+                files += s[PackageFilegroupInfo].pkg_files
+                mapped_files_depsets.append(s[DefaultInfo].files)
+                dirs += s[PackageFilegroupInfo].pkg_dirs
+                links += s[PackageFilegroupInfo].pkg_symlinks
+
             if PackageFilesInfo in s:
                 files.append((s[PackageFilesInfo], s.label))
 
@@ -612,6 +659,7 @@ pkg_filegroup = rule(
             doc = """A list of packaging specifications to be grouped together.""",
             mandatory = True,
             providers = [
+                [PackageFilegroupInfo, DefaultInfo],
                 [PackageFilesInfo, DefaultInfo],
                 [PackageDirsInfo],
                 [PackageSymlinkInfo],
@@ -691,8 +739,8 @@ filter_directory = rule(
     will fail.  See the individual attributes for details.
     """,
     implementation = _filter_directory_impl,
+    # @unsorted-dict-items
     attrs = {
-        # @unsorted-dict-items
         "src": attr.label(
             doc = """Directory (TreeArtifact) to process.""",
             allow_single_file = True,
