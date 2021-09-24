@@ -177,7 +177,8 @@ class TarFileWriter(object):
     self.root_directory = root_directory.rstrip('/').rstrip('\\')
     self.root_directory = self.root_directory.replace('\\', '/')
 
-    self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
+    self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
+                            format=tarfile.GNU_FORMAT)
     self.members = set([])
     self.directories = set([])
 
