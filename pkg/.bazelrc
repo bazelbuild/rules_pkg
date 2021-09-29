@@ -1,0 +1,3 @@
+build --action_env="LANG=C.UTF-8"
+run --action_env="LANG=C.UTF-8"
+test --action_env="LANG=C.UTF-8"
