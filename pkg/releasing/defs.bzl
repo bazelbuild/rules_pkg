@@ -15,6 +15,7 @@ def print_rel_notes(
     print_rel_notes_helper = Label("//releasing:print_rel_notes")
     tools = [print_rel_notes_helper]
     cmd = [
+        "exec env LC_ALL=C.UTF-8",
         "$(location %s)" % str(print_rel_notes_helper),
         "--org=%s" % org,
         "--repo=%s" % repo,
