@@ -64,7 +64,7 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
       'repo': repo,
       'version': version,
       'workspace_stanza': workspace_stanza,
-  }))
+  }).encode('utf8'))
   if mirror_url:
     file = os.path.basename(tarball_path)
     path = 'github.com/{org}/{repo}/releases/download/{version}/{file}'.format(
