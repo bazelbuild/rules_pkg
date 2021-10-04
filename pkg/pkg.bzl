@@ -593,6 +593,8 @@ def _pkg_zip_impl(ctx):
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
+    if ctx.attr.recurse:
+        args.add("-r")
     inputs = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
@@ -670,6 +672,7 @@ pkg_zip_impl = rule(
         "srcs": attr.label_list(allow_files = True),
         "strip_prefix": attr.string(),
         "timestamp": attr.int(default = 315532800),
+        "recurse": attr.bool(default = False),
 
         # Common attributes
         "out": attr.output(mandatory = True),

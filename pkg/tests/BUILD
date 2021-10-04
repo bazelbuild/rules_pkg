@@ -322,6 +322,23 @@ filegroup(
     "/abc/def/",
 ])]
 
+pkg_zip(
+    name = "test_zip_recurse",
+    srcs = glob(
+        ["testdata/**/*.txt"]
+    ),
+    recurse = True
+)
+
+pkg_zip(
+    name = "test_zip_recurse_package_dir",
+    srcs = glob(
+        ["testdata/**/*.txt"]
+    ),
+    recurse = True,
+    package_dir = "abc/def"
+)
+
 py_test(
     name = "zip_test",
     srcs = [

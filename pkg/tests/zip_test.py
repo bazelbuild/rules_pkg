@@ -21,6 +21,7 @@ from bazel_tools.tools.python.runfiles import runfiles
 
 HELLO_CRC = 2069210904
 LOREM_CRC = 2178844372
+NESTED_CRC = 143981220
 EXECUTABLE_CRC = 342626072
 
 # Unix dir bit and Windows dir bit. Magic from zip spec
@@ -87,6 +88,22 @@ class ZipContentsCase(ZipTest):
         {"filename": "foodir/", "isdir": True, "attr": 0o711},
         {"filename": "hello.txt", "crc": HELLO_CRC},
         {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
+
+  def test_recurse(self):
+    self.assertZipFileContent("test_zip_recurse.zip", [
+        {"filename": "nested/", "isdir": True, "attr": 0o711},
+        {"filename": "nested/nested.txt", "crc": NESTED_CRC},
+        {"filename": "hello.txt", "crc": HELLO_CRC},
+        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+    ])
+
+  def test_recurse_package_dir(self):
+    self.assertZipFileContent("test_zip_recurse.zip", [
+        {"filename": "abc/def/nested/", "isdir": True, "attr": 0o711},
+        {"filename": "abc/def/nested/nested.txt", "crc": NESTED_CRC},
+        {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
+        {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
   def test_timestamp(self):
