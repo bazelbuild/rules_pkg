@@ -92,18 +92,16 @@ class ZipContentsCase(ZipTest):
 
   def test_recurse(self):
     self.assertZipFileContent("test_zip_recurse.zip", [
-        {"filename": "nested/", "isdir": True, "attr": 0o711},
-        {"filename": "nested/nested.txt", "crc": NESTED_CRC},
-        {"filename": "hello.txt", "crc": HELLO_CRC},
-        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+        {"filename": "testdata/hello.txt", "crc": HELLO_CRC},
+        {"filename": "testdata/loremipsum.txt", "crc": LOREM_CRC},
+        {"filename": "testdata/nested/nested.txt", "crc": NESTED_CRC},
     ])
 
   def test_recurse_package_dir(self):
-    self.assertZipFileContent("test_zip_recurse.zip", [
-        {"filename": "abc/def/nested/", "isdir": True, "attr": 0o711},
-        {"filename": "abc/def/nested/nested.txt", "crc": NESTED_CRC},
-        {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
-        {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
+    self.assertZipFileContent("test_zip_recurse_package_dir.zip", [
+        {"filename": "abc/def/testdata/hello.txt", "crc": HELLO_CRC},
+        {"filename": "abc/def/testdata/loremipsum.txt", "crc": LOREM_CRC},
+        {"filename": "abc/def/testdata/nested/nested.txt", "crc": NESTED_CRC},
     ])
 
   def test_timestamp(self):

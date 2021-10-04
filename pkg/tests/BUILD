@@ -324,17 +324,21 @@ filegroup(
 
 pkg_zip(
     name = "test_zip_recurse",
-    srcs = glob(
-        ["testdata/**/*.txt"]
-    ),
+    srcs = glob([
+        "testdata/nested/*.txt",
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ]),
     recurse = True
 )
 
 pkg_zip(
     name = "test_zip_recurse_package_dir",
-    srcs = glob(
-        ["testdata/**/*.txt"]
-    ),
+    srcs = glob([
+        "testdata/nested/*.txt",
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ]),
     recurse = True,
     package_dir = "abc/def"
 )
@@ -354,6 +358,8 @@ py_test(
         "test-zip-strip_prefix-none.zip",
         "test-zip-strip_prefix-zipcontent.zip",
         "test-zip-strip_prefix-dot.zip",
+        "test_zip_recurse.zip",
+        "test_zip_recurse_package_dir.zip",
 
         # these could be replaced with diff_test() rules (from skylib)
         "test_zip_basic_timestamp_before_epoch.zip",

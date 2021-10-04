@@ -593,8 +593,6 @@ def _pkg_zip_impl(ctx):
     args.add("-d", ctx.attr.package_dir)
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
-    if ctx.attr.recurse:
-        args.add("-r")
     inputs = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
@@ -622,7 +620,7 @@ def _pkg_zip_impl(ctx):
         ):
             # Add in the files of srcs which are not pkg_* types
             for f in src.files.to_list():
-                d_path = dest_path(f, data_path, data_path_without_prefix)
+                d_path = dest_path(f, data_path, data_path_without_prefix) if not ctx.attr.recurse else dest_path(f, data_path_without_prefix, data_path_without_prefix)
                 if f.is_directory:
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
