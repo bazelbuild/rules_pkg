@@ -2,9 +2,10 @@ common: &common
   working_directory: /workdir/pkg
 
 default_tests: &default_tests
-  - "..."
-  - "-//tests/rpm/..."
-  - "-//legacy/tests/rpm/..."
+  test_targets:
+    - "..."
+    - "-//tests/rpm/..."
+    - "-//legacy/tests/rpm/..."
 
 
 # rpmbuild(8) is not available on most platforms
@@ -23,7 +24,6 @@ win_tests: &win_tests
     - "-//tests/mappings/filter_directory/..."
     - "-//tests/rpm/..."
     - "-//tests/install/..."
-
 
 tasks:
   lts_centos7:
