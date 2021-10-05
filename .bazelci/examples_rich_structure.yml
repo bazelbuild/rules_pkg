@@ -1,19 +1,16 @@
 common: &common
+  working_directory: ../examples/rich_structure
   build_targets:
   - "..."
 
 tasks:
   centos7:
     platform: centos7
-    working_directory: /workdir/examples/rich_structure
     <<: *common
   ubuntu1804:
     platform: ubuntu1804
-    working_directory: /workdir/examples/rich_structure
     <<: *common
   macos:
-    working_directory: ../examples/rich_structure
     <<: *common
   windows:
-    working_directory: ../examples/rich_structure
     <<: *common
