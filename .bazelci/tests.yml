@@ -15,32 +15,38 @@ win_tests: &win_tests
   - "-//tests/rpm/..."
   - "-//tests/install/..."
 
+
+# rpmbuild(8) is not available on most platforms
 skip_rpm: &skip_rpm
-  # rpmbuild(8) is not available on anything but some linuxes
   - "-//tests/rpm/..."
   - "-//legacy/tests/rpm/..."
 
 
 tasks:
-  centos7:
+  lts_centos7:
     platform: centos7
     <<: *common
     test_targets:
-    <<: *default_tests
-    <<: *skip_rpm
-  ubuntu1804:
+      <<: *default_tests
+      <<: *skip_rpm
+  lts_ubuntu1804:
     platform: ubuntu1804
     <<: *common
     test_targets:
-    <<: *default_tests
-    <<: *skip_rpm
-  macos:
+      <<: *default_tests
+      <<: *skip_rpm
+    build_targets:
+      - "//distro:distro"
+      - "//distro:relnotes"
+  lts_macos:
+    platform: macos
     <<: *common
     test_targets:
-    <<: *default_tests
-    <<: *skip_rpm
-  windows:
+      <<: *default_tests
+      <<: *skip_rpm
+  lts_windows:
+    platform: windows
     <<: *common
     test_targets:
-    <<: *win_tests
-    <<: *skip_rpm
+      <<: *win_tests
+      <<: *skip_rpm
