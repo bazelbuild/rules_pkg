@@ -2,6 +2,12 @@
 common: &common
   working_directory: ../pkg
 
+lts: &lts
+  bazel: latest
+
+rolling: &rolling
+  bazel: rolling
+
 default_tests: &default_tests
   test_targets:
     - "..."
@@ -26,55 +32,56 @@ win_tests: &win_tests
     - "-//tests/rpm/..."
     - "-//tests/install/..."
 
-tasks:
-  rolling_ubuntu1804:
-    name: rolling_ubuntu
-    bazel: rolling
-    platform: ubuntu1804
-    <<: *common
-    <<: *default_tests
-    build_targets:
-      - "//distro:distro"
-      - "//distro:relnotes"
-  rolling_macos:
-    name: rolling_macos
-    bazel: latest
-    platform: macos
-    <<: *common
-    <<: *default_tests
-  rolling_windows:
-    bazel: rolling
-    platform: windows
-    <<: *common
-    <<: *win_tests
-  rolling_centos7:
-    name: roll_centos7
-    platform: centos7
-    <<: *common
-    <<: *default_tests
+#
+# Commmon features by platform
+# 
+ubuntu: &ubuntu
+  platform: ubuntu1804
+  <<: *common
+  <<: *default_tests
+  build_targets:
+    - "//distro:distro"
+    - "//distro:relnotes"
 
-  lts_ubuntu1804:
-    name: lts_ubuntu
-    bazel: latest
-    platform: ubuntu1804
-    <<: *common
-    <<: *default_tests
-    build_targets:
-      - "//distro:distro"
-      - "//distro:relnotes"
+centos: &centos
+  platform: centos7
+  <<: *common
+  <<: *default_tests
+
+macos: &macos
+  platform: macos
+  <<: *common
+  <<: *default_tests
+
+windows: &windows
+  platform: windows
+  <<: *common
+  <<: *win_tests
+
+tasks:
+  rolling_ubuntu:
+    name: rolling_ubuntu
+    <<: *ubuntu
+    <<: *rolling
+  rolling_windows:
+    name: rolling_windows
+    <<: *windows
+    <<: *rolling
+  lts_centos:
+    #name: lts_centos
+    <<: *centos
+    <<: *lts
+    name: "{{bazel}}_{{platform}}"
   lts_macos:
-    bazel: latest
-    platform: macos
-    <<: *common
-    <<: *default_tests
+    name: lts_macos
+    <<: *macos
+    <<: *lts
+  lts_ubuntu:
+    name: lts_ubuntu
+    <<: *ubuntu
+    <<: *lts
   lts_windows:
-    bazel: latest
+    name: lts_windows
     platform: windows
-    <<: *common
-    <<: *win_tests
-  lts_centos7:
-    name: lts_centos7
-    bazel: latest
-    platform: centos7
-    <<: *common
-    <<: *default_tests
+    <<: *windows
+    <<: *lts
