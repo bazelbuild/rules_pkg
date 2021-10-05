@@ -38,7 +38,7 @@ tasks:
       - "//distro:relnotes"
   rolling_macos:
     name: rolling_macos
-    bazel: rolling
+    bazel: latest
     platform: macos
     <<: *common
     <<: *default_tests
