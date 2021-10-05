@@ -3,17 +3,8 @@ common: &common
 
 default_tests: &default_tests
   - "..."
-
-win_tests: &win_tests
-  - "..."
-  - "-//distro/..."
-  - "-//legacy/tests/rpm/..."
-  - "-//tests:make_rpm_test"
-  - "-//tests:package_naming_aggregate_test"
-  - "-//tests:path_test"
-  - "-//tests/mappings/filter_directory/..."
   - "-//tests/rpm/..."
-  - "-//tests/install/..."
+  - "-//legacy/tests/rpm/..."
 
 
 # rpmbuild(8) is not available on most platforms
@@ -21,32 +12,36 @@ skip_rpm: &skip_rpm
   - "-//tests/rpm/..."
   - "-//legacy/tests/rpm/..."
 
+win_tests: &win_tests
+  test_targets:
+    - "..."
+    - "-//distro/..."
+    - "-//legacy/tests/rpm/..."
+    - "-//tests:make_rpm_test"
+    - "-//tests:package_naming_aggregate_test"
+    - "-//tests:path_test"
+    - "-//tests/mappings/filter_directory/..."
+    - "-//tests/rpm/..."
+    - "-//tests/install/..."
+
 
 tasks:
   lts_centos7:
     platform: centos7
     <<: *common
-    test_targets:
-      <<: *default_tests
-      <<: *skip_rpm
+    <<: *default_tests
   lts_ubuntu1804:
     platform: ubuntu1804
     <<: *common
-    test_targets:
-      <<: *default_tests
-      <<: *skip_rpm
+    <<: *default_tests
     build_targets:
       - "//distro:distro"
       - "//distro:relnotes"
   lts_macos:
     platform: macos
     <<: *common
-    test_targets:
-      <<: *default_tests
-      <<: *skip_rpm
+    <<: *default_tests
   lts_windows:
     platform: windows
     <<: *common
-    test_targets:
-      <<: *win_tests
-      <<: *skip_rpm
+    <<: *win_tests
