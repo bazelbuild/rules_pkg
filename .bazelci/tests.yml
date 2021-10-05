@@ -1,5 +1,7 @@
+#hiXworking_directory: /workdir/pkg
+
 common: &common
-  working_directory: workdir/pkg
+  working_directory: ../pkg
 
 default_tests: &default_tests
   test_targets:
