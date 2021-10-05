@@ -40,8 +40,10 @@ tasks:
   lts_macos:
     platform: macos
     <<: *common
+    working_directory: ../pkg
     <<: *default_tests
   lts_windows:
     platform: windows
+    working_directory: workdir/pkg
     <<: *common
     <<: *win_tests
