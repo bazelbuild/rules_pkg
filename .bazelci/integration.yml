@@ -16,8 +16,6 @@ tasks:
     name: rolling_distro
     <<: *rolling
     <<: *common
-  artifact_paths:
-    - "bazel-bin/**/*"
   lts_ubuntu:
     name: lts_distro
     platform: ubuntu1804
