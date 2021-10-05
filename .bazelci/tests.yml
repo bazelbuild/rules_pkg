@@ -63,15 +63,18 @@ tasks:
     name: rolling_ubuntu
     <<: *ubuntu
     <<: *rolling
+  rolling_macos:
+    name: rolling_macos
+    <<: *macos
+    <<: *rolling
   rolling_windows:
     name: rolling_windows
     <<: *windows
     <<: *rolling
   lts_centos:
-    #name: lts_centos
+    name: lts_centos
     <<: *centos
     <<: *lts
-    name: "{{bazel}}_{{platform}}"
   lts_macos:
     name: lts_macos
     <<: *macos

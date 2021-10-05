@@ -1,19 +1,16 @@
 common: &common
+  working_directory: ../examples/naming_package_files
   build_targets:
   - "..."
 
 tasks:
-  centos7:
+  centos:
     platform: centos7
-    working_directory: /workdir/examples/naming_package_files
     <<: *common
-  ubuntu1804:
+  ubuntu:
     platform: ubuntu1804
-    working_directory: /workdir/examples/naming_package_files
     <<: *common
   macos:
-    working_directory: ../examples/naming_package_files
     <<: *common
   windows:
-    working_directory: ../examples/naming_package_files
     <<: *common
