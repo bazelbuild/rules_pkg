@@ -1,4 +1,3 @@
-#hiXworking_directory: /workdir/pkg
 
 common: &common
   working_directory: ../pkg
@@ -28,12 +27,32 @@ win_tests: &win_tests
     - "-//tests/install/..."
 
 tasks:
-  lts_centos7:
-    name: lts_centos7
-    bazel: latest
+  rolling_ubuntu1804:
+    name: rolling_ubuntu
+    bazel: rolling
+    platform: ubuntu1804
+    <<: *common
+    <<: *default_tests
+    build_targets:
+      - "//distro:distro"
+      - "//distro:relnotes"
+  rolling_macos:
+    name: rolling_macos
+    bazel: rolling
+    platform: macos
+    <<: *common
+    <<: *default_tests
+  rolling_windows:
+    bazel: rolling
+    platform: windows
+    <<: *common
+    <<: *win_tests
+  rolling_centos7:
+    name: roll_centos7
     platform: centos7
     <<: *common
     <<: *default_tests
+
   lts_ubuntu1804:
     name: lts_ubuntu
     bazel: latest
@@ -44,11 +63,18 @@ tasks:
       - "//distro:distro"
       - "//distro:relnotes"
   lts_macos:
+    bazel: latest
     platform: macos
     <<: *common
-    working_directory: ../pkg
     <<: *default_tests
   lts_windows:
+    bazel: latest
     platform: windows
     <<: *common
     <<: *win_tests
+  lts_centos7:
+    name: lts_centos7
+    bazel: latest
+    platform: centos7
+    <<: *common
+    <<: *default_tests
