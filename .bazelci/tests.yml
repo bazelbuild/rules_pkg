@@ -1,8 +1,22 @@
 common: &common
   working_directory: /workdir/pkg
-  test_targets:
+
+default_tests: &default_tests
   - "..."
-  # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
+
+win_tests: &win_tests
+  - "..."
+  - "-//distro/..."
+  - "-//legacy/tests/rpm/..."
+  - "-//tests:make_rpm_test"
+  - "-//tests:package_naming_aggregate_test"
+  - "-//tests:path_test"
+  - "-//tests/mappings/filter_directory/..."
+  - "-//tests/rpm/..."
+  - "-//tests/install/..."
+
+skip_rpm: &skip_rpm
+  # rpmbuild(8) is not available on anything but some linuxes
   - "-//tests/rpm/..."
   - "-//legacy/tests/rpm/..."
 
@@ -10,30 +24,23 @@ common: &common
 tasks:
   centos7:
     platform: centos7
-    working_directory: /workdir/pkg
+    <<: *common
     test_targets:
-    # This includes the rpm tests, which are not (yet) supported in the below
-    # cases.
-    - "..."
+    <<: *default_tests
+    <<: *skip_rpm
   ubuntu1804:
     platform: ubuntu1804
     <<: *common
+    test_targets:
+    <<: *default_tests
+    <<: *skip_rpm
   macos:
-    working_directory: ../pkg
+    <<: *common
     test_targets:
-    - "..."
-    # rpmbuild(8) is not available by default on macOS
-    - "-//tests/rpm/..."
-    - "-//legacy/tests/rpm/..."
+    <<: *default_tests
+    <<: *skip_rpm
   windows:
-    working_directory: ../pkg
+    <<: *common
     test_targets:
-    - "..."
-    - "-//distro/..."
-    - "-//legacy/tests/rpm/..."
-    - "-//tests:make_rpm_test"
-    - "-//tests:package_naming_aggregate_test"
-    - "-//tests:path_test"
-    - "-//tests/mappings/filter_directory/..."
-    - "-//tests/rpm/..."
-    - "-//tests/install/..."
+    <<: *win_tests
+    <<: *skip_rpm
