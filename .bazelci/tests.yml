@@ -1,5 +1,5 @@
 common: &common
-  working_directory: /workdir/pkg
+  working_directory: workdir/pkg
 
 default_tests: &default_tests
   test_targets:
@@ -27,10 +27,14 @@ win_tests: &win_tests
 
 tasks:
   lts_centos7:
+    name: lts_centos7
+    bazel: latest
     platform: centos7
     <<: *common
     <<: *default_tests
   lts_ubuntu1804:
+    name: lts_ubuntu
+    bazel: latest
     platform: ubuntu1804
     <<: *common
     <<: *default_tests
@@ -44,6 +48,5 @@ tasks:
     <<: *default_tests
   lts_windows:
     platform: windows
-    working_directory: workdir/pkg
     <<: *common
     <<: *win_tests
