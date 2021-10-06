@@ -63,7 +63,11 @@ tasks:
     name: rolling_ubuntu
     <<: *ubuntu
     <<: *rolling
-  # It seems there is no rolling Bazel for macos.
+  rolling_macos:
+    name: rolling_macos
+    <<: *macos
+    # It seems there is no rolling Bazel for macos.
+    bazel: last_green
   rolling_windows:
     name: rolling_windows
     <<: *windows
