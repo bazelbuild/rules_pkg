@@ -3,16 +3,18 @@
 ## Finding the exact path to the files created by a target.
 
 Most of the time, Bazel users do not need to know the path to the artifacts
-created for any given target. A notable exception is for most users of packaging
+created for any given target. A notable exception is for users of packaging
 rules. You typically create an RPM or Debian packaged file for the explicit
 purpose of taking it from your machine and giving it to someon else.
 
 Users often create scripts to push `bazel build` outputs to other places and
 need to know the path to those outputs. This can be a challenge for rules which
-may use dynamic file naming to put, for example, a time stamp or CPU
-architecture in the file name.
+may create the file name by combining a base part with a version number,
+and maybe a CPU architecture. We don't do find them with shell wildcards
+like `bazel-bin/my-pkg/pkg-*.deb`. That is brittle. Fortunately, Bazel
+provide all the tools we need to get the pricise path to an output.
 
-## Using cquery to find the exact path to the files created for a target.
+## Using cquery to find the exact path to the outputs created for a target.
 
 We can use Bazel's cquery command to find information about a target.
 Specifically we use
@@ -46,8 +48,18 @@ them.
 ```
 def format(target):
   provider_map = providers(target)
+  output_group_info = provider_map["OutputGroupInfo"]
+  # Extract the depset of files for the .deb output and return the first
+  deb_file = output_group_info.deb.to_list()[0]
+  # Do the same for the changes file.
+  changes_file = output_group_info.deb.to_list()[0]
+  # Return a nicely formatted string showing their paths
   return '\n'.join([
-      'deb: ' + provider_map["OutputGroupInfo"].deb.to_list()[0].path,
-      'changes: ' + provider_map["OutputGroupInfo"].changes.to_list()[0].path,
+      'deb: ' + deb_file.path,
+      'changes: ' + changes_file.path,
       ])
 ```
+
+A full explanation of why this works is beyond the scope of this example. It
+requires some knowledge of how to write custom Bazel rules. See the Bazel
+documenation for more information.
