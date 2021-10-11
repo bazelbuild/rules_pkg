@@ -578,6 +578,7 @@ def _pkg_rpm_impl(ctx):
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
+            file = output_file,
             file_name = output_name,
         ),
     ]
