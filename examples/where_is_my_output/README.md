@@ -12,7 +12,7 @@ need to know the path to those outputs. This can be a challenge for rules which
 may create the file name by combining a base part with a version number,
 and maybe a CPU architecture. We don't do find them with shell wildcards
 like `bazel-bin/my-pkg/pkg-*.deb`. That is brittle. Fortunately, Bazel
-provide all the tools we need to get the pricise path to an output.
+provide all the tools we need to get the precise path of an output.
 
 ## Using cquery to find the exact path to the outputs created for a target.
 
@@ -28,7 +28,7 @@ bazel cquery :deb --output=starlark --starlark:file=show_deb_outputs.bzl 2>/dev/
 
 That should produce something like
 
-```
+```python
 deb: bazel-out/k8-fastbuild/bin/mwp_3.14_all.deb
 changes: bazel-out/k8-fastbuild/bin/mwp_3.changes
 ```
@@ -42,10 +42,10 @@ writing a custom rule. We can inspect its providers and print them in a useful
 way.
 
 For pkg_deb, there are two files, the .deb file and the .changes, and both are
-passed along in the rule's OutputGroupInfo provider. This snippet below prints
-them.
+passed along in the rule's OutputGroupInfo provider. This snippet below (from
+show_deb_outputs.bzl) prints them.
 
-```
+```python
 def format(target):
     provider_map = providers(target)
     output_group_info = provider_map["OutputGroupInfo"]
@@ -63,4 +63,4 @@ def format(target):
 
 A full explanation of why this works is beyond the scope of this example. It
 requires some knowledge of how to write custom Bazel rules. See the Bazel
-documenation for more information.
+documentation for more information.
