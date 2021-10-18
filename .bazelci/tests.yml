@@ -35,7 +35,7 @@ win_tests: &win_tests
 #
 # Commmon features by platform
 # 
-ubuntu: &ubuntu
+ubuntu1804: &ubuntu
   platform: ubuntu1804
   <<: *common
   <<: *default_tests
@@ -43,7 +43,7 @@ ubuntu: &ubuntu
     - "//distro:distro"
     - "//distro:relnotes"
 
-centos: &centos
+centos7: &centos
   platform: centos7
   <<: *common
   <<: *default_tests
