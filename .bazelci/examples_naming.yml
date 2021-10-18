@@ -4,7 +4,7 @@ common: &common
   - "..."
 
 tasks:
-  centos:
+  centos7:
     platform: centos7
     <<: *common
   ubuntu:
