@@ -2,18 +2,23 @@
 common: &common
   working_directory: ../pkg
 
+#
+# Bazel releases
+#
 lts: &lts
   bazel: latest
 
 rolling: &rolling
   bazel: rolling
 
+#
+# Groups of tests, by platform
+#
 default_tests: &default_tests
   test_targets:
     - "..."
     - "-//tests/rpm/..."
     - "-//legacy/tests/rpm/..."
-
 
 # rpmbuild(8) is not available on most platforms
 skip_rpm: &skip_rpm
@@ -58,6 +63,9 @@ windows: &windows
   <<: *common
   <<: *win_tests
 
+#
+# Finally, the cross product of bazel releases X platforms
+#
 tasks:
   rolling_ubuntu:
     name: rolling_ubuntu
