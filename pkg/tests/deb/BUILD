@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2021 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,16 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# -*- coding: utf-8 -*-
 
 # Tests for pkg_deb specific behavior
 
 load("//:mappings.bzl", "pkg_mklink")
 load("//:pkg.bzl", "pkg_deb", "pkg_tar")
-load("@rules_python//python:defs.bzl", "py_test")
 load("//tests:my_package_name.bzl", "my_package_naming")
-
-licenses(["notice"])
+load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
     name = "generate_files",
@@ -38,18 +36,18 @@ my_package_naming(
 
 pkg_mklink(
     name = "java_link",
+    src = "/path/to/bin/java",
     dest = "usr/bin/java",
-    src = "/path/to/bin/java"
 )
 
 pkg_tar(
     name = "tar_input",
-    extension = "tar.gz",
     srcs = [
         ":etc/nsswitch.conf",
-        ":usr/titi",
         ":java_link",
+        ":usr/titi",
     ],
+    extension = "tar.gz",
     mode = "0644",
     modes = {"usr/titi": "0755"},
     owner = "42.24",
@@ -86,7 +84,6 @@ pkg_deb(
     urgency = "low",
     version = "test",
 )
-
 
 py_test(
     name = "pkg_deb_test",
