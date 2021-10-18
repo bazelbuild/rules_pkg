@@ -79,3 +79,27 @@ manifest_golden_test(
     target = "all",
     expected = "all.manifest.golden",
 )
+
+#
+# Unicode handling tests
+#
+pkg_files(
+    name = "utf8_files",
+    srcs = [
+        "//tests/testdata/utf8:files",
+    ],
+    strip_prefix = strip_prefix.from_pkg(),
+)
+
+write_content_manifest(
+    name = "utf8",
+    srcs = [
+        ":utf8_files",
+    ],
+)
+
+manifest_golden_test(
+    name = "utf8_manifest_test",
+    target = "utf8",
+    expected = "utf8_manifest.golden",
+)

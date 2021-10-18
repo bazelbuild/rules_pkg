@@ -1,0 +1,8 @@
+[
+[0,"1-a","tests/testdata/utf8/1-a","0644",null,null],
+[0,"2-λ","tests/testdata/utf8/2-λ","0644",null,null],
+[0,"3-世","tests/testdata/utf8/3-世","0644",null,null],
+[0,"BUILD","tests/testdata/utf8/BUILD","0644",null,null],
+[0,"sübdir/2-λ","tests/testdata/utf8/sübdir/2-λ","0644",null,null],
+[0,"sübdir/hello","tests/testdata/utf8/sübdir/hello","0644",null,null]
+]
