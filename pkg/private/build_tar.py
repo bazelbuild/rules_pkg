@@ -223,10 +223,14 @@ class TarFile(object):
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.
     """
+    # We expect /-style paths.
+    tree_top = os.path.normpath(tree_top).replace(os.path.sep, '/')
+
     dest = destpath.strip('/')  # redundant, dests should never have / here
     if self.directory and self.directory != '/':
       dest = self.directory.lstrip('/') + '/' + dest
 
+    # Again, we expect /-style paths.
     dest = os.path.normpath(dest).replace(os.path.sep, '/')
     if ids is None:
       ids = (0, 0)
@@ -235,6 +239,10 @@ class TarFile(object):
 
     to_write = {}
     for root, dirs, files in os.walk(tree_top):
+      # While `tree_top` uses '/' as a path separator, results returned by
+      # `os.walk` and `os.path.join` on Windows may not.
+      root = os.path.normpath(root).replace(os.path.sep, '/')
+
       dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
       if rel_path_from_top:
@@ -244,7 +252,7 @@ class TarFile(object):
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
-        to_write[dest_dir + file] = os.path.join(root, file)
+        to_write[dest_dir + file] = os.path.join(root, file).replace(os.path.sep, '/')
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
