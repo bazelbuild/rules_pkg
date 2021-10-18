@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""showyml.py - read .yml and dump as json.
+"""expand_yml.py - read .yml and dump as json.
 
 This is a debugging tool to expand a Yaml file and print the full expansion in
 a more readable form.
 
 Usage:
-  python showym.py [file ...]
+  python expand_ym.py [file ...]
 
   It no input files a provided, use tests.yml
 """
