@@ -63,7 +63,7 @@ class PkgDebTest(unittest.TestCase):
     super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
-    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/titi_test_all.deb')
+    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/titi_test_all.deb')
     self.deb_file = DebInspect(self.deb_path)
 
   def assert_control_content(self, expected, match_order=False):
@@ -215,7 +215,7 @@ class PkgDebTest(unittest.TestCase):
 
   def test_changes(self):
     changes_path = self.runfiles.Rlocation(
-        'rules_pkg/tests/titi_test_all.changes')
+        'rules_pkg/tests/deb/titi_test_all.changes')
     with open(changes_path, 'r', encoding='utf-8') as f:
       content = f.read()
       for field in (
