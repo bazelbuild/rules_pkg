@@ -351,33 +351,6 @@ py_test(
     ],
 )
 
-pkg_deb(
-    name = "test-deb",
-    breaks = ["oldbrokenpkg"],
-    built_using = "some_test_data (0.1.2)",
-    conffiles = [
-        "/etc/nsswitch.conf",
-        "/etc/other",
-    ],
-    config = ":testdata/config",
-    data = ":test-tar-basic-gz.tar.gz",
-    depends = [
-        "dep1",
-        "dep2",
-    ],
-    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
-    distribution = "trusty",
-    maintainer = "soméone@somewhere.com",
-    package = "titi",
-    preinst = "testdata/deb_preinst",
-    provides = ["hello"],
-    replaces = ["oldpkg"],
-    templates = ":testdata/templates",
-    triggers = ":testdata/deb_triggers",
-    urgency = "low",
-    version = "test",
-)
-
 [pkg_tar(
     name = "test-tar-basic-%s" % ext,
     srcs = [
@@ -530,23 +503,6 @@ py_test(
     ] + [
         ":test-tar-inclusion-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS
-    ],
-    python_version = "PY3",
-    deps = [
-        "//private:archive",
-        "@bazel_tools//tools/python/runfiles",
-    ],
-)
-
-py_test(
-    name = "pkg_deb_test",
-    size = "medium",
-    srcs = [
-        "pkg_deb_test.py",
-    ],
-    data = [
-        # The target includes both the .deb and .changes files in DefaultInfo
-        ":test-deb",
     ],
     python_version = "PY3",
     deps = [
