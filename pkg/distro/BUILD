@@ -40,6 +40,7 @@ pkg_tar(
         "//private:standard_package",
         "//releasing:standard_package",
         "//toolchains:standard_package",
+        "//toolchains/git:standard_package",
     ],
     extension = "tar.gz",
     # It is all source code, so make it read-only.
