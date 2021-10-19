@@ -89,7 +89,8 @@ def git_changelog(name, **kwargs):
         name = name,
         # This requires bazel 4.x
         target_compatible_with = select({
-            "//toolchains/git:have_git": [],
+            # Force label resolution to be rules_pkg, instead of my repo.
+            str(Label("//toolchains/git:have_git")): [],
             "//conditions:default": ["//:not_compatible"],
         }),
         **kwargs,
