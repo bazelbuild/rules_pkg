@@ -1,10 +1,23 @@
+lts: &lts
+  bazel: latest
+
+rolling: &rolling
+  bazel: rolling
+
+
 common: &common
-  name: distribution
+  platform: ubuntu1804
   working_directory: /workdir/pkg
   build_targets:
   - "distro:*"
 
 tasks:
-  ubuntu1804:
+  rolling_ubuntu:
+    name: rolling_distro
+    <<: *rolling
+    <<: *common
+  lts_ubuntu:
+    name: lts_distro
     platform: ubuntu1804
+    <<: *lts
     <<: *common

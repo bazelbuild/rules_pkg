@@ -1,33 +1,32 @@
+
 common: &common
-  working_directory: /workdir/pkg
+  working_directory: ../pkg
+
+#
+# Bazel releases
+#
+lts: &lts
+  bazel: latest
+
+rolling: &rolling
+  bazel: rolling
+
+#
+# Groups of tests, by platform
+#
+default_tests: &default_tests
   test_targets:
-  - "..."
-  # Cannot run until #183 is resolved; none of the CI images have rpmbuild(8)
+    - "..."
+    - "-//tests/rpm/..."
+    - "-//legacy/tests/rpm/..."
+
+# rpmbuild(8) is not available on most platforms
+skip_rpm: &skip_rpm
   - "-//tests/rpm/..."
   - "-//legacy/tests/rpm/..."
 
-
-tasks:
-  centos7:
-    platform: centos7
-    working_directory: /workdir/pkg
-    test_targets:
-    # This includes the rpm tests, which are not (yet) supported in the below
-    # cases.
-    - "..."
-  ubuntu1804:
-    platform: ubuntu1804
-    <<: *common
-  macos:
-    working_directory: ../pkg
-    test_targets:
-    - "..."
-    # rpmbuild(8) is not available by default on macOS
-    - "-//tests/rpm/..."
-    - "-//legacy/tests/rpm/..."
-  windows:
-    working_directory: ../pkg
-    test_targets:
+win_tests: &win_tests
+  test_targets:
     - "..."
     - "-//distro/..."
     - "-//legacy/tests/rpm/..."
@@ -41,3 +40,63 @@ tasks:
     # rpmbuild is not available on windows
     - "-//tests/rpm/..."
     - "-//tests/install/..."
+
+#
+# Commmon features by platform
+# 
+ubuntu1804: &ubuntu
+  platform: ubuntu1804
+  <<: *common
+  <<: *default_tests
+  build_targets:
+    - "//distro:distro"
+    - "//distro:relnotes"
+
+centos7: &centos
+  platform: centos7
+  <<: *common
+  <<: *default_tests
+
+macos: &macos
+  platform: macos
+  <<: *common
+  <<: *default_tests
+
+windows: &windows
+  platform: windows
+  <<: *common
+  <<: *win_tests
+
+#
+# Finally, the cross product of bazel releases X platforms
+#
+tasks:
+  rolling_ubuntu:
+    name: rolling_ubuntu
+    <<: *ubuntu
+    <<: *rolling
+  rolling_macos:
+    name: rolling_macos
+    <<: *macos
+    # It seems there is no rolling Bazel for macos.
+    bazel: last_green
+  rolling_windows:
+    name: rolling_windows
+    <<: *windows
+    <<: *rolling
+  lts_centos:
+    name: lts_centos
+    <<: *centos
+    <<: *lts
+  lts_macos:
+    name: lts_macos
+    <<: *macos
+    <<: *lts
+  lts_ubuntu:
+    name: lts_ubuntu
+    <<: *ubuntu
+    <<: *lts
+  lts_windows:
+    name: lts_windows
+    <<: *windows
+    <<: *lts
