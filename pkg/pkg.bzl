@@ -245,6 +245,7 @@ def _pkg_tar_impl(ctx):
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
+            file = output_file,
             file_name = output_name,
         ),
     ]
@@ -399,6 +400,7 @@ def _pkg_deb_impl(ctx):
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
+            file = output_file,
             file_name = output_name,
         ),
     ]
@@ -658,6 +660,7 @@ def _pkg_zip_impl(ctx):
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
+            file = output_file,
             file_name = output_name,
         ),
     ]
