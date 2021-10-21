@@ -1,6 +1,6 @@
 
 common: &common
-  working_directory: ../pkg
+  # working_directory: ../pkg
 
 #
 # Bazel releases
@@ -23,13 +23,13 @@ default_tests: &default_tests
 # rpmbuild(8) is not available on most platforms
 skip_rpm: &skip_rpm
   - "-//tests/rpm/..."
-  - "-//legacy/tests/rpm/..."
+  - "-//pkg/legacy/tests/rpm/..."
 
 win_tests: &win_tests
   test_targets:
     - "..."
     - "-//distro/..."
-    - "-//legacy/tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
     - "-//tests:make_rpm_test"
     - "-//tests:package_naming_aggregate_test"
     - "-//tests:path_test"

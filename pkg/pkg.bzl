@@ -21,9 +21,9 @@ load(
     "PackageFilesInfo",
     "PackageVariablesInfo",
 )
-load("//private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 load(
-    "//private:pkg_files.bzl",
+    "//pkg/private:pkg_files.bzl",
     "add_directory",
     "add_empty_file",
     "add_label_list",
@@ -47,7 +47,7 @@ SUPPORTED_TAR_COMPRESSIONS = (
 )
 deb_filetype = [".deb", ".udeb"]
 _DEFAULT_MTIME = -1
-_stamp_condition = str(Label("//private:private_stamp_detect"))
+_stamp_condition = str(Label("//pkg/private:private_stamp_detect"))
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -452,7 +452,7 @@ pkg_tar_impl = rule(
 
         # Implicit dependencies.
         "build_tar": attr.label(
-            default = Label("//private:build_tar"),
+            default = Label("//pkg/private:build_tar"),
             cfg = "exec",
             executable = True,
             allow_files = True,
@@ -563,7 +563,7 @@ pkg_deb_impl = rule(
 
         # Implicit dependencies.
         "make_deb": attr.label(
-            default = Label("//private:make_deb"),
+            default = Label("//pkg/private:make_deb"),
             cfg = "exec",
             executable = True,
             allow_files = True,
@@ -693,7 +693,7 @@ pkg_zip_impl = rule(
 
         # Implicit dependencies.
         "_build_zip": attr.label(
-            default = Label("//private:build_zip"),
+            default = Label("//pkg/private:build_zip"),
             cfg = "exec",
             executable = True,
             allow_files = True,
