@@ -31,6 +31,7 @@ def setup_output_files(ctx, package_file_name = None, default_output_file = None
        - add `outputs` to their returned `DefaultInfo(files)` provider
        - return a `PackageArtifactInfo` provider of the form:
             label: `ctx.label.name`
+            file: `output_file`
             file_name: `output_name`
 
     Args:
