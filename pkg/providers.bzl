@@ -17,7 +17,8 @@
 PackageArtifactInfo = provider(
     doc = """Metadata about a package artifact.""",
     fields = {
-        "file_name": "The file name of the artifact.",
+        "file": "File object for said artifact",
+        "file_name": "DEPRECATED (use fields of file instead): The file name of the artifact.",
         "label": "Label which produced it",
     },
 )

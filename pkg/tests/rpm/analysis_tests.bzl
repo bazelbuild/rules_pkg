@@ -169,6 +169,7 @@ def _package_naming_test_impl(ctx):
 
     pai = target_under_test[PackageArtifactInfo]
 
+    pai_file = pai.file
     pai_name = pai.file_name
     asserts.equals(
         env,
@@ -180,17 +181,27 @@ def _package_naming_test_impl(ctx):
     # Try to find the expected files in the DefaultInfo.  We have to look for
     # them; PackageArtifactInfo only gives a file name, not a File structure.
     packaged_file = None
+    packaged_file_found = False
     default_name_found = False
     for f in target_under_test[DefaultInfo].files.to_list():
+        if f == pai.file:
+            packaged_file_found = True
         if f.basename == pai_name:
             packaged_file = f
         elif f.basename == ctx.attr.expected_default_name and not default_name_found:
             default_name_found = True
 
+
     asserts.true(
         env,
         packaged_file != None,
-        "File mentioned in PackageArtifactInfo '{}' is not in DefaultInfo".format(pai_name),
+        "File name mentioned in PackageArtifactInfo '{}' is not in DefaultInfo".format(pai_name),
+    )
+
+    asserts.true(
+        env,
+        packaged_file_found,
+        "File object mentioned in PackageArtifactInfo '{}' missing from DefaultInfo".format(pai_name),
     )
 
     asserts.true(
