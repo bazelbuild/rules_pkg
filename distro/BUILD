@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
-load("@rules_pkg//pkg:version.bzl", "version")
-load("@rules_pkg//pkg/releasing:defs.bzl", "print_rel_notes")
-load("@rules_pkg//pkg/releasing:git.bzl", "git_changelog")
+load("//:version.bzl", "version")
+load("//pkg:pkg.bzl", "pkg_tar")
+load("//pkg/releasing:defs.bzl", "print_rel_notes")
+load("//pkg/releasing:git.bzl", "git_changelog")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
@@ -107,13 +107,13 @@ genrule(
 bzl_library(
     name = "rules_pkg_lib",
     srcs = [
+        "//:version.bzl",
         "//pkg:mappings.bzl",
         "//pkg:package_variables.bzl",
         "//pkg:path.bzl",
         "//pkg:pkg.bzl",
         "//pkg:providers.bzl",
         "//pkg:rpm.bzl",
-        "//pkg:version.bzl",
         "//pkg/private:pkg_files.bzl",
         "//pkg/private:util.bzl",
         "@bazel_skylib//lib:paths",
