@@ -1,6 +1,6 @@
 
 common: &common
-  working_directory: /workdir
+  working_directory: ..
 
 #
 # Bazel releases
