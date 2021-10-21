@@ -16,8 +16,10 @@ rolling: &rolling
 #
 default_tests: &default_tests
   test_targets:
-    - "..."
-    - "-//deb_packages/..."
+    - "//distro/..."
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
     - "-//pkg/legacy/tests/rpm/..."
     - "-//tests/rpm/..."
 
@@ -28,9 +30,9 @@ skip_rpm: &skip_rpm
 
 win_tests: &win_tests
   test_targets:
-    - "..."
-    - "-//deb_packages/..."
-    - "-//distro/..."
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
     - "-//pkg/legacy/tests/rpm/..."
     - "-//tests:make_rpm_test"
     - "-//tests:package_naming_aggregate_test"
