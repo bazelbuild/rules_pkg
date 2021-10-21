@@ -14,7 +14,7 @@
 
 """Rules to aid testing"""
 
-load("@//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
+load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@rules_python//python:defs.bzl", "py_binary")
 

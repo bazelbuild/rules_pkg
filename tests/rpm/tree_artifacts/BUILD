@@ -13,15 +13,15 @@
 # limitations under the License.
 
 load(
-    "@//pkg:mappings.bzl",
+    "//pkg:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
-load("@//pkg:rpm.bzl", "pkg_rpm")
-load("@//tests/util:defs.bzl", "directory")
+load("//pkg:rpm.bzl", "pkg_rpm")
+load("//tests/util:defs.bzl", "directory")
 load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################

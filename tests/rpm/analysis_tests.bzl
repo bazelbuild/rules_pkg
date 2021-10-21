@@ -15,15 +15,15 @@
 """Tests for RPM generation analysis"""
 
 load(
-    "@//pkg:mappings.bzl",
+    "//pkg:mappings.bzl",
     "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
     "pkg_mklink",
 )
-load("@//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("@//pkg:rpm.bzl", "pkg_rpm")
-load("@//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
+load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:rpm.bzl", "pkg_rpm")
+load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 
 def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):

@@ -16,13 +16,13 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load(
-    "@//pkg:providers.bzl",
+    "//pkg:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
     "PackageSymlinkInfo",)
 load(
-    "@//pkg:mappings.bzl",
+    "//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
@@ -31,11 +31,12 @@ load(
     "strip_prefix",
     "REMOVE_BASE_DIRECTORY",
 )
-load("@//tests/util:defs.bzl",
-     "directory",
-     "fake_artifact",
-     "generic_base_case_test",
-     "generic_negative_test"
+load(
+    "//tests/util:defs.bzl",
+    "directory",
+    "fake_artifact",
+    "generic_base_case_test",
+    "generic_negative_test"
 )
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@rules_python//python:defs.bzl", "py_test")

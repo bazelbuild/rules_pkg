@@ -14,7 +14,7 @@
 
 """Sample rule to show package naming."""
 
-load("@//pkg:providers.bzl", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 
 def _my_package_naming_impl(ctx):
     values = {}
