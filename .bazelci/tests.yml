@@ -18,7 +18,7 @@ default_tests: &default_tests
   test_targets:
     - "..."
     - "-//tests/rpm/..."
-    - "-//legacy/tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
 
 # rpmbuild(8) is not available on most platforms
 skip_rpm: &skip_rpm
