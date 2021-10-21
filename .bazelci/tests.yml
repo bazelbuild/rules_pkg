@@ -1,6 +1,6 @@
 
 common: &common
-  # working_directory: ../pkg
+  working_directory: /workdir
 
 #
 # Bazel releases
