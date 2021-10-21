@@ -17,8 +17,9 @@ rolling: &rolling
 default_tests: &default_tests
   test_targets:
     - "..."
-    - "-//tests/rpm/..."
+    - "-//deb_packages/..."
     - "-//pkg/legacy/tests/rpm/..."
+    - "-//tests/rpm/..."
 
 # rpmbuild(8) is not available on most platforms
 skip_rpm: &skip_rpm
@@ -28,6 +29,7 @@ skip_rpm: &skip_rpm
 win_tests: &win_tests
   test_targets:
     - "..."
+    - "-//deb_packages/..."
     - "-//distro/..."
     - "-//pkg/legacy/tests/rpm/..."
     - "-//tests:make_rpm_test"
