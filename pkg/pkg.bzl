@@ -266,7 +266,7 @@ def _pkg_deb_impl(ctx):
         package_file_name = package_file_name,
     )
 
-    changes_file = ctx.actions.declare_file(output_name.split(".")[0] + ".changes")
+    changes_file = ctx.actions.declare_file(output_name.rsplit(".", 1)[0] + ".changes")
     outputs.append(changes_file)
 
     files = [ctx.file.data]
