@@ -154,18 +154,6 @@ pkg_deb(
     version = "1",
 )
 
-[
-    pkg_deb(
-        name = "test_deb_multiarch-{}".format(arch),
-        architecture = arch,
-        data = ":test_tar_out",
-        description = "desc",
-        maintainer = "Nobody <motiejus@example.org>",
-        package = "test_deb_multiarch",
-        version = "1.0",
-    ) for arch in ("amd64", "arm64")
-]
-
 pkg_tar(
     name = "test_tar_naming",
     srcs = [
