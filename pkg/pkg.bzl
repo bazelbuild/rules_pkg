@@ -377,7 +377,7 @@ def _pkg_deb_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
-        executable = ctx.executable.make_deb,
+        executable = ctx.executable._make_deb,
         arguments = args,
         inputs = files,
         outputs = [output_file, changes_file],
@@ -534,8 +534,6 @@ pkg_deb_impl = rule(
             Must not be used with `version`.""",
             allow_single_file = True,
         ),
-
-
         "config": attr.label(
             doc = """config file used for debconf integration.
             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
@@ -549,11 +547,11 @@ pkg_deb_impl = rule(
             allow_single_file = True
         ),
         "distribution": attr.string(
-            doc = "XXX",
+            doc = "TBD",
             default = "unstable",
         ),
         "urgency": attr.string(
-            doc = "XXX",
+            doc = "TBD",
             default = "medium",
         ),
         "preinst": attr.label(
@@ -586,22 +584,22 @@ pkg_deb_impl = rule(
             See https://wiki.debian.org/DpkgTriggers.""",
             allow_single_file = True,
         ),
-        "conffiles_file": attr.label(
-            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
-See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
-            allow_single_file = True,
+        "built_using": attr.string(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file)."""
+        ),
+        "built_using_file": attr.label(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
+            allow_single_file = True
         ),
         "conffiles": attr.string_list(
             doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
 See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             default = [],
         ),
-        "built_using_file": attr.label(
-            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
-            allow_single_file = True
-        ),
-        "built_using": attr.string(
-            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file)."""
+        "conffiles_file": attr.label(
+            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
+See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
+            allow_single_file = True,
         ),
         "priority": attr.string(
             doc = """The priority of the package.
@@ -656,7 +654,10 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         ),
 
         # Common attributes
-        "out": attr.output(mandatory = True),
+        "out": attr.output(
+            doc = """See Common Attributes""",
+            mandatory = True
+        ),
         "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
             doc = "See Common Attributes",
@@ -664,7 +665,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         ),
 
         # Implicit dependencies.
-        "make_deb": attr.label(
+        "_make_deb": attr.label(
             default = Label("//private:make_deb"),
             cfg = "exec",
             executable = True,
