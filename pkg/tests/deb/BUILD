@@ -16,7 +16,8 @@
 # Tests for pkg_deb specific behavior
 
 load("//:mappings.bzl", "pkg_mklink")
-load("//:pkg.bzl", "pkg_deb", "pkg_tar")
+load("//:pkg.bzl", "pkg_tar")
+load("//:pkg_deb.bzl", "pkg_deb")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("@rules_python//python:defs.bzl", "py_test")
 

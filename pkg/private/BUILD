@@ -83,7 +83,7 @@ py_library(
     ],
     srcs_version = "PY3",
     visibility = [
-        "//:__pkg__",
+        "//:__subpackages__",
         "//tests:__pkg__",
     ],
 )
@@ -113,16 +113,6 @@ py_binary(
         ":build_info",
         ":helpers",
         ":manifest",
-    ],
-)
-
-py_binary(
-    name = "make_deb",
-    srcs = ["make_deb.py"],
-    python_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":helpers",
     ],
 )
 

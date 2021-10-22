@@ -38,6 +38,7 @@ pkg_tar(
         ":small_workspace",
         "//:standard_package",
         "//private:standard_package",
+        "//private/deb:standard_package",
         "//releasing:standard_package",
         "//toolchains:standard_package",
         "//toolchains/git:standard_package",
@@ -115,6 +116,7 @@ bzl_library(
         "//:version.bzl",
         "//private:pkg_files.bzl",
         "//private:util.bzl",
+        "//private/deb:pkg_deb.bzl",
         "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:private"],
@@ -123,7 +125,7 @@ bzl_library(
 stardoc(
     name = "docs_deb",
     out = "pkg_deb.md",
-    input = "//:pkg.bzl",
+    input = "//private/deb:pkg_deb.bzl",
     symbol_names = [
         "pkg_deb",
         "pkg_deb_impl",

@@ -14,7 +14,8 @@
 # -*- coding: utf-8 -*-
 
 load("//:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
-load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_deb", "pkg_tar", "pkg_zip")
+load("//:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar", "pkg_zip")
+load("//:pkg_deb.bzl", "pkg_deb")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
