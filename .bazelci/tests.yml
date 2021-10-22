@@ -55,6 +55,7 @@ ubuntu1804: &ubuntu
   build_targets:
     - "//distro:distro"
     - "//distro:relnotes"
+    - "//docs:*"
 
 centos7: &centos
   platform: centos7

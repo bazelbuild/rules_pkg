@@ -36,7 +36,10 @@ exports_files(
     glob([
         "*.bzl",
     ]),
-    visibility = ["//distro:__pkg__"],
+    visibility = [
+        "//distro:__pkg__",
+        "//doc_build:__pkg__",
+    ],
 )
 
 # pkg_install's template script file
