@@ -655,15 +655,15 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
 
         # Common attributes
         "out": attr.output(
-            doc = """See <a href="#common">Common Attributes</a>""",
+            doc = """See [Common Attributes](#common)""",
             mandatory = True
         ),
         "package_file_name": attr.string(
-            doc = """See <a href="#common">Common Attributes</a>.
+            doc = """See [Common Attributes](#common).
             Default: "%{package}-%{version}-%{architecture}.deb""",
         ),
         "package_variables": attr.label(
-            doc = """See <a href="#common">Common Attributes</a>""",
+            doc = """See [Common Attributes](#common)""",
             providers = [PackageVariablesInfo],
         ),
 
