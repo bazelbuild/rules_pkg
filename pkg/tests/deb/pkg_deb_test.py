@@ -63,7 +63,7 @@ class PkgDebTest(unittest.TestCase):
     super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
-    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/titi_test_all.deb')
+    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/fizzbuzz_test_all.deb')
     self.deb_file = DebInspect(self.deb_path)
 
   def assert_control_content(self, expected, match_order=False):
@@ -135,25 +135,25 @@ class PkgDebTest(unittest.TestCase):
     expected = [
         {'name': '.', 'isdir': True},
         {'name': './etc', 'isdir': True,
-         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
+         'uid': 24, 'gid': 42, 'uname': 'foobar', 'gname': 'fizzbuzz'},
         {'name': './etc/nsswitch.conf',
          'mode': 0o644,
-         'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'
+         'uid': 24, 'gid': 42, 'uname': 'foobar', 'gname': 'fizzbuzz'
          },
         {'name': './usr', 'isdir': True,
-         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+         'uid': 42, 'gid': 24, 'uname': 'fizzbuzz', 'gname': 'foobar'},
         {'name': './usr/bin', 'isdir': True},
         {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
-        {'name': './usr/titi',
+        {'name': './usr/fizzbuzz',
          'mode': 0o755,
-         'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
+         'uid': 42, 'gid': 24, 'uname': 'fizzbuzz', 'gname': 'foobar'},
     ]
     self.assert_data_content(expected)
 
   def test_description(self):
     control = self.deb_file.get_deb_ctl_file('control')
     fields = [
-	'Package: titi',
+	'Package: fizzbuzz',
 	'Depends: dep1, dep2',
 	'Built-Using: some_test_data',
 	'Replaces: oldpkg',
@@ -202,7 +202,7 @@ class PkgDebTest(unittest.TestCase):
 
   def test_templates(self):
     templates = self.deb_file.get_deb_ctl_file('templates')
-    for field in ('Template: titi/test', 'Type: string'):
+    for field in ('Template: deb/test', 'Type: string'):
       if templates.find(field) < 0:
         self.fail('Missing template field: <%s> in <%s>' % (field, templates))
 
@@ -215,7 +215,7 @@ class PkgDebTest(unittest.TestCase):
 
   def test_changes(self):
     changes_path = self.runfiles.Rlocation(
-        'rules_pkg/tests/deb/titi_test_all.changes')
+        'rules_pkg/tests/deb/fizzbuzz_test_all.changes')
     with open(changes_path, 'r', encoding='utf-8') as f:
       content = f.read()
       for field in (

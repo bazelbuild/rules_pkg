@@ -1,4 +1,4 @@
-Template: titi/test
+Template: deb/test
 Type: string
 Default:
 Description: test question
