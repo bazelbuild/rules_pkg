@@ -557,42 +557,62 @@ pkg_deb_impl = rule(
             default = "medium",
         ),
         "preinst": attr.label(
-            doc = "XXX",
+            doc = """"The pre-install script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
             allow_single_file = True,
         ),
         "postinst": attr.label(
-            doc = "XXX",
+            doc = """The post-install script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
             allow_single_file = True,
         ),
         "prerm": attr.label(
-            doc = "XXX",
+            doc = """The pre-remove script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
             allow_single_file = True,
         ),
         "postrm": attr.label(
-            doc = "XXX",
+            doc = """The post-remove script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
             allow_single_file = True,
         ),
         "templates": attr.label(
-            doc = "XXX",
+            doc = """templates file used for debconf integration.
+            See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
             allow_single_file = True,
         ),
         "triggers": attr.label(
-            doc = "XXX",
+            doc = """triggers file for configuring installation events exchanged by packages.
+            See https://wiki.debian.org/DpkgTriggers.""",
             allow_single_file = True,
         ),
         "conffiles_file": attr.label(
-            doc = "XXX",
+            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
+See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             allow_single_file = True,
         ),
         "conffiles": attr.string_list(
-            doc = "XXX",
+            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
+See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             default = [],
         ),
-        "built_using_file": attr.label(allow_single_file = True),
-        "built_using": attr.string(),
-        "priority": attr.string(),
-        "section": attr.string(),
+        "built_using_file": attr.label(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
+            allow_single_file = True
+        ),
+        "built_using": attr.string(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file)."""
+        ),
+        "priority": attr.string(
+            doc = """The priority of the package.
+            See http://www.debian.org/doc/debian-policy/ch-archive.html#s-priorities.""",
+        ),
+        "section": attr.string(
+            doc = """The section of the package.
+            See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.""",
+        ),
         "homepage": attr.string(doc = """The homepage of the project."""),
+
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],

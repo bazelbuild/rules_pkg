@@ -24,10 +24,10 @@ pkg_deb_impl(<a href="#pkg_deb_impl-name">name</a>, <a href="#pkg_deb_impl-archi
 | architecture |  Package architecture. Must not be used with architecture_file.   | String | optional | "all" |
 | architecture_file |  File that contains the package architecture.             Must not be used with architecture.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | breaks |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| built_using |  -   | String | optional | "" |
-| built_using_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| conffiles |  XXX   | List of strings | optional | [] |
-| conffiles_file |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| built_using |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | String | optional | "" |
+| built_using_file |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| conffiles |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | List of strings | optional | [] |
+| conffiles_file |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | config |  config file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | conflicts |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | data |  A tar file that contains the data for the debian package.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
@@ -44,19 +44,19 @@ pkg_deb_impl(<a href="#pkg_deb_impl-name">name</a>, <a href="#pkg_deb_impl-archi
 | package |  The name of the package   | String | required |  |
 | package_file_name |  See Common Attributes   | String | optional | "" |
 | package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| postinst |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| postrm |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| postinst |  The post-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| postrm |  The post-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | predepends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| preinst |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| prerm |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| priority |  -   | String | optional | "" |
+| preinst |  "The pre-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| prerm |  The pre-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| priority |  The priority of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-priorities.   | String | optional | "" |
 | provides |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | recommends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | replaces |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| section |  -   | String | optional | "" |
+| section |  The section of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.   | String | optional | "" |
 | suggests |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| templates |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| triggers |  XXX   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| templates |  templates file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| triggers |  triggers file for configuring installation events exchanged by packages.             See https://wiki.debian.org/DpkgTriggers.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | urgency |  XXX   | String | optional | "medium" |
 | version |  Package version. Must not be used with <code>version_file</code>.   | String | optional | "" |
 | version_file |  File that contains the package version.             Must not be used with <code>version</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
