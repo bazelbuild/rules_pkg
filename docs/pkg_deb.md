@@ -39,10 +39,10 @@ pkg_deb_impl(<a href="#pkg_deb_impl-name">name</a>, <a href="#pkg_deb_impl-archi
 | enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | homepage |  The homepage of the project.   | String | optional | "" |
 | maintainer |  The maintainer of the package.   | String | required |  |
-| out |  See [Common Attributes](#common)   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| out |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | package |  The name of the package   | String | required |  |
-| package_file_name |  See [Common Attributes](#common).             Default: "%{package}-%{version}-%{architecture}.deb   | String | optional | "" |
-| package_variables |  See [Common Attributes](#common)   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| package_file_name |  See Common Attributes.             Default: "%{package}-%{version}-%{architecture}.deb   | String | optional | "" |
+| package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | postinst |  The post-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | postrm |  The post-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | predepends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
