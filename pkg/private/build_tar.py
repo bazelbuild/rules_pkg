@@ -252,7 +252,7 @@ class TarFile(object):
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
-        to_write[dest_dir + file] = os.path.join(root, file).replace(os.path.sep, '/')
+        to_write[dest_dir + file] = root + '/' + file
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]

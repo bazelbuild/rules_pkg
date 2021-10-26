@@ -119,7 +119,11 @@ This is intended only for testing the manifest creation features.""",
         ),
         "out": attr.output(),
         "use_short_path": attr.bool(
-            doc = """Use the rootless path in the manifest.  Useful to ensure that the platform-specific prefix is removed.
+            doc = """Use the rootless path in the manifest.
+
+            Useful to ensure that the platform-specific prefix (i.e. parts
+            including something like "x64_windows-fastbuild") isn't present in
+            paths in the manifest.
 
             See also https://docs.bazel.build/versions/main/skylark/lib/File.html#path
             """,
