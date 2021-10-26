@@ -331,6 +331,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
+    _check_dest(content_map, dest_path, None, origin)
     content_map[dest_path] = _DestFile(
         src = src,
         origin = origin,
