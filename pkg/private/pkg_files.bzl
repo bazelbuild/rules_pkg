@@ -105,6 +105,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
         _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
+            entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
@@ -367,7 +368,7 @@ def _encode_manifest_entry(dest, df, use_short_path):
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
-        entry_type = ENTRY_IS_FILE
+        # entry_type is left as-is
     elif hasattr(df, "link_to"):
         src = df.link_to
         entry_type = ENTRY_IS_LINK
