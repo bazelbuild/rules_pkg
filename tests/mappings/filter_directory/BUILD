@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_test")
 load(":defs.bzl", "inspect_directory_test")
 load("//pkg:mappings.bzl", "filter_directory")
 load("//tests/util:defs.bzl", "directory")
-load("@rules_python//python:defs.bzl", "py_test")
 
 # TODO: the below tests only check for rule success and confirmation that
 # directory structure matches expectations.  A more thorough test implementation

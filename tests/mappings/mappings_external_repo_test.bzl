@@ -14,11 +14,11 @@
 
 """Tests for file mapping routines in pkg/mappings.bzl"""
 
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load(":mappings_test.bzl", "pkg_files_contents_test")
 load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
 load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@bazel_skylib//lib:new_sets.bzl", "sets")
-load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 
 ##########
 # pkg_files tests involving external repositories

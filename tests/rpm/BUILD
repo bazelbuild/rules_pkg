@@ -13,6 +13,8 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("analysis_tests.bzl", "analysis_tests")
 load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 load(
@@ -24,8 +26,6 @@ load(
     "pkg_mklink",
 )
 load("//pkg:rpm.bzl", "pkg_rpm")
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 ############################################################################
 # analysis tests

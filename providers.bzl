@@ -20,6 +20,7 @@ load("//pkg:providers.bzl",
     _PackageSymlinkInfo = "PackageSymlinkInfo",
     _PackageVariablesInfo = "PackageVariablesInfo",
 )
+
 PackageArtifactInfo = _PackageArtifactInfo
 PackageDirsInfo = _PackageDirsInfo
 PackageFilegroupInfo = _PackageFilegroupInfo

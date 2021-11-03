@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_test")
 load("//pkg:install.bzl", "pkg_install")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
 load("//tests/util:defs.bzl", "fake_artifact")
-load("@rules_python//python:defs.bzl", "py_test")
 
 py_test(
     name = "install_test",

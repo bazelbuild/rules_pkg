@@ -21,10 +21,10 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
 )
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 load("//pkg:rpm.bzl", "pkg_rpm")
 load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
-load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 
 def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):
     pfg_name = "{}_pfg".format(name)

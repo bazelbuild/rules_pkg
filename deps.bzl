@@ -13,6 +13,9 @@
 # limitations under the License.
 
 # Workspace dependencies for rules_pkg/pkg
+# This is for backwards compatibility with existing usage.  Please use
+#     load("//pkg:deps.bzl", "rules_pkg_dependencies")
+# going forward.
 
 load("//pkg:deps.bzl", _rules_pkg_dependencies = "rules_pkg_dependencies")
 
