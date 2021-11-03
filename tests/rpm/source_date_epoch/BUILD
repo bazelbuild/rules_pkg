@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
-load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
 load("@rules_python//python:defs.bzl", "py_test")
+load("//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//pkg:rpm.bzl", "pkg_rpm")
 
 ############################################################################
 # Test handling the source_date_epoch attribute
