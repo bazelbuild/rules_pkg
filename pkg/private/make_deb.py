@@ -28,7 +28,7 @@ if sys.version_info < (3, 7):
 else:
   OrderedDict = dict
 
-from private import helpers
+from pkg.private import helpers
 
 # list of debian fields : (name, mandatory, wrap[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html

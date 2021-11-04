@@ -29,8 +29,8 @@ The mechanism for choosing between the two is documented in the function itself.
 
 """
 
-load("//legacy:rpm.bzl", pkg_rpm_legacy = "pkg_rpm")
-load("//:rpm_pfg.bzl", pkg_rpm_pfg = "pkg_rpm")
+load("//pkg/legacy:rpm.bzl", pkg_rpm_legacy = "pkg_rpm")
+load("//pkg:rpm_pfg.bzl", pkg_rpm_pfg = "pkg_rpm")
 
 def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
     """pkg_rpm wrapper

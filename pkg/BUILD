@@ -40,16 +40,10 @@ filegroup(
         "*.md",
     ]) + [
         "BUILD",
-        "LICENSE",
-        "//legacy:standard_package",
-        "//rpm:standard_package",
+        "//pkg/legacy:standard_package",
+        "//pkg/rpm:standard_package",
     ],
     visibility = ["//distro:__pkg__"],
-)
-
-exports_files(
-    ["WORKSPACE"],
-    visibility = ["//visibility:public"],
 )
 
 # Used by pkg_rpm in rpm.bzl.
@@ -65,8 +59,8 @@ py_binary(
     #}),
     visibility = ["//visibility:public"],
     deps = [
-        "//private:archive",
-        ":make_rpm_lib",
+        "//pkg/private:archive",
+        "//pkg:make_rpm_lib",
     ],
 )
 
@@ -79,8 +73,8 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        "//private:archive",
-        "//private:helpers",
+        "//pkg/private:archive",
+        "//pkg/private:helpers",
     ],
 )
 
