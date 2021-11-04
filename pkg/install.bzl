@@ -19,8 +19,8 @@ run`-able installation script.
 
 """
 
-load("//:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
-load("//private:pkg_files.bzl", "process_src", "write_manifest")
+load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
+load("//pkg/private:pkg_files.bzl", "process_src", "write_manifest")
 load("@rules_python//python:defs.bzl", "py_binary")
 
 def _pkg_install_script_impl(ctx):
@@ -106,7 +106,7 @@ _pkg_install_script = rule(
         # scripts and expected interfaces.
         "_script_template": attr.label(
             allow_single_file = True,
-            default = "//private:install.py.tpl",
+            default = "//pkg/private:install.py.tpl",
         ),
     },
     executable = True,
@@ -172,7 +172,7 @@ def pkg_install(name, srcs, **kwargs):
         name = name,
         srcs = [":" + name + "_install_script"],
         main = name + "_install_script.py",
-        deps = ["@rules_pkg//private:manifest"],
+        deps = ["//pkg/private:manifest"],
         srcs_version = "PY3",
         python_version = "PY3",
         **kwargs

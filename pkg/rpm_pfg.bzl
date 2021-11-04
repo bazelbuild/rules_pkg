@@ -25,8 +25,8 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 """
 
-load("//private:util.bzl", "setup_output_files")
-load("//:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageVariablesInfo")
+load("//pkg/private:util.bzl", "setup_output_files")
+load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageVariablesInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -867,7 +867,7 @@ pkg_rpm = rule(
             In most cases, you should not need to override this attribute.
             """,
             allow_single_file = spec_filetype,
-            default = "//rpm:template.spec.tpl",
+            default = "//pkg/rpm:template.spec.tpl",
         ),
         "binary_payload_compression": attr.string(
             doc = """Compression mode used for this RPM
@@ -898,13 +898,13 @@ pkg_rpm = rule(
         ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
-            default = Label("//:make_rpm"),
+            default = Label("//pkg:make_rpm"),
             cfg = "exec",
             executable = True,
             allow_files = True,
         ),
         "_treeartifact_helper": attr.label(
-            default = Label("//rpm:augment_rpm_files_install"),
+            default = Label("//pkg/rpm:augment_rpm_files_install"),
             cfg = "exec",
             executable = True,
             allow_files = True,

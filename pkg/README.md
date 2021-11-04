@@ -40,7 +40,7 @@ find_system_rpmbuild(name = "rules_pkg_rpmbuild")
 This example is a simplification of the debian packaging of Bazel:
 
 ```python
-load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//pkg:pkg.bzl", "pkg_tar", "pkg_deb")
 
 
 pkg_tar(

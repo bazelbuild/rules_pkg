@@ -188,7 +188,7 @@ pkg_rpm = rule(
         # Implicit dependencies.
         "rpmbuild_path": attr.string(),  # deprecated
         "_make_rpm": attr.label(
-            default = Label("//:make_rpm"),
+            default = Label("//pkg:make_rpm"),
             cfg = "exec",
             executable = True,
             allow_files = True,

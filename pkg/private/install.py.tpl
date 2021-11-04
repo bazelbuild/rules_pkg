@@ -24,7 +24,7 @@ import os
 import shutil
 import sys
 
-import private.manifest as manifest
+from pkg.private import manifest
 
 # Globals used for runfile path manipulation.
 #
