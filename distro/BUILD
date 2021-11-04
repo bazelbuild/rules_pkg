@@ -117,7 +117,7 @@ bzl_library(
         "//pkg:rpm.bzl",
         "//pkg/private:pkg_files.bzl",
         "//pkg/private:util.bzl",
-        "//pkg/private/deb:pkg_deb.bzl",
+        "//pkg/private/deb:deb.bzl",
         "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:private"],

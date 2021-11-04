@@ -33,7 +33,7 @@ load(
     "write_manifest",
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
-load("//pkg/private/deb:pkg_deb.bzl", _pkg_deb = "pkg_deb")
+load("//pkg/private/deb:deb.bzl", _pkg_deb = "pkg_deb")
 
 pkg_deb = _pkg_deb
 

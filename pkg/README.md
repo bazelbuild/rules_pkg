@@ -41,7 +41,7 @@ This example is a simplification of the debian packaging of Bazel:
 
 ```python
 load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
-load("@rules_pkg//pkg:pkg_deb.bzl", "pkg_deb")
+load("@rules_pkg//pkg:deb.bzl", "pkg_deb")
 
 pkg_tar(
     name = "bazel-bin",
