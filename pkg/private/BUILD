@@ -83,8 +83,7 @@ py_library(
     ],
     srcs_version = "PY3",
     visibility = [
-        "//pkg:__pkg__",
-        "//pkg/private:__subpackages__",
+        "//:__subpackages__",
         "//tests:__pkg__",
     ],
 )
