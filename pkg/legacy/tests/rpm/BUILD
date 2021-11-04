@@ -13,7 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//:rpm.bzl", "pkg_rpm")
+load("//pkg:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(
     name = "test-rpm",

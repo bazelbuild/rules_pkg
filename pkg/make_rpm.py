@@ -29,7 +29,7 @@ import sys
 import tempfile
 from string import Template
 
-from private import helpers
+from pkg.private import helpers
 
 
 # Setup to safely create a temporary directory and clean it up when done.
