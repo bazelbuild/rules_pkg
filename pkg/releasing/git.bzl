@@ -73,7 +73,7 @@ _git_changelog = rule(
             default = False,
         ),
         "_git_changelog": attr.label(
-            default = Label("//releasing:git_changelog_private"),
+            default = Label("//pkg/releasing:git_changelog_private"),
             cfg = "exec",
             executable = True,
             allow_files = True,
