@@ -503,6 +503,7 @@ def pkg_tar(name, **kwargs):
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
+    # @unsorted-dict-items
     attrs = {
         "data": attr.label(
             doc = """A tar file that contains the data for the debian package.""",
@@ -547,11 +548,11 @@ pkg_deb_impl = rule(
             allow_single_file = True
         ),
         "distribution": attr.string(
-            doc = "TBD",
+            doc = """"distribution: See http://www.debian.org/doc/debian-policy.""",
             default = "unstable",
         ),
         "urgency": attr.string(
-            doc = "TBD",
+            doc = """"urgency: See http://www.debian.org/doc/debian-policy.""",
             default = "medium",
         ),
         "preinst": attr.label(
@@ -660,7 +661,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         ),
         "package_file_name": attr.string(
             doc = """See Common Attributes.
-            Default: "%{package}-%{version}-%{architecture}.deb""",
+            Default: "{package}-{version}-{architecture}.deb""",
         ),
         "package_variables": attr.label(
             doc = """See Common Attributes""",
