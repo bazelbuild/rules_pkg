@@ -145,8 +145,9 @@ def _pkg_tar_impl(ctx):
             if ctx.attr.include_runfiles:
                 runfiles = src[DefaultInfo].default_runfiles
                 if runfiles:
-                     file_deps.append(runfiles.files)
-                     src_files.extend(runfiles.files.to_list())
+                    file_deps.append(runfiles.files)
+                    src_files.extend(runfiles.files.to_list())
+
             # Add in the files of srcs which are not pkg_* types
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
@@ -347,6 +348,7 @@ def pkg_tar(name, **kwargs):
         **kwargs
     )
 
+
 def _pkg_zip_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
 
@@ -365,6 +367,7 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+
     # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
     # that both can use.
     for src in ctx.attr.srcs:
@@ -387,7 +390,7 @@ def _pkg_zip_impl(ctx):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
