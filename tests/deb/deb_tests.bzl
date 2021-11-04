@@ -47,7 +47,6 @@ def _package_naming_test_impl(ctx):
 package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {
-        # "target": attr.label(mandatory = True),
         "expected_name": attr.string(),
     },
 )
