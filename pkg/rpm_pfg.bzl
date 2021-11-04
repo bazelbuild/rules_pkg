@@ -354,57 +354,12 @@ def _pkg_rpm_impl(ctx):
 
     files += ctx.files.srcs
 
-    #### Consistency checking
+    #### Consistency checking; input processing
 
     # Ensure that no destinations collide.  RPMs that fail this check may be
     # correct, but the output may also create hard-to-debug issues.  Better to
     # err on the side of correctness here.
     dest_check_map = {}
-    for dep in ctx.attr.srcs:
-        # TODO(nacl, #191): This loop should be consolidated with the install
-        # script-generating loop below, as they're iterating on the same data.
-
-        # NOTE: This does not detect cases where directories are not named
-        # consistently.  For example, all of these may collide in reality, but
-        # won't be detected by the below:
-        #
-        # 1) usr/lib/libfoo.a
-        # 2) /usr/lib/libfoo.a
-        # 3) %{_libdir}/libfoo.a
-        #
-        # The rule of thumb, regardless of how these checks below are done, is
-        # to be consistent with path naming conventions.
-        #
-        # There is also an unsolved question of determining how to handle
-        # subdirectories of "PackageFilesInfo" targets that are actually
-        # directories.
-
-        # d is a Target
-        pfg_info = dep[PackageFilegroupInfo]
-        for entry, origin in pfg_info.pkg_files:
-            for dest, src in entry.dest_src_map.items():
-                metadata = _package_contents_metadata(origin, dep.label)
-                if dest in dest_check_map:
-                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
-                else:
-                    dest_check_map[dest] = metadata
-
-        for entry, origin in pfg_info.pkg_dirs:
-            for dest in entry.dirs:
-                metadata = _package_contents_metadata(origin, dep.label)
-                if dest in dest_check_map:
-                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
-                else:
-                    dest_check_map[dest] = metadata
-
-        for entry, origin in pfg_info.pkg_symlinks:
-            metadata = _package_contents_metadata(origin, dep.label)
-            if entry.destination in dest_check_map:
-                _conflicting_contents_error(entry.destination, metadata, dest_check_map[entry.destination])
-            else:
-                dest_check_map[entry.destination] = metadata
-
-    #### Procedurally-generated scripts/lists (%install, %files)
 
     # The contents of the "%install" scriptlet
     install_script_pieces = []
@@ -420,20 +375,41 @@ def _pkg_rpm_impl(ctx):
     # _treeartifact_helper script used later on.
     packaged_directories = []
 
-    # Iterate over all incoming data, creating datasets as we go from the
-    # actual contents of the RPM.
+    # Iterate over all incoming data, checking for conflicts and creating
+    # datasets as we go from the actual contents of the RPM.
     #
     # This is a naive approach to script creation is almost guaranteed to
     # produce an installation script that is longer than necessary.  A better
     # implementation would track directories that are created and ensure that
     # they aren't unnecessarily recreated.
     for dep in ctx.attr.srcs:
-        pfg_info = dep[PackageFilegroupInfo]
-        for entry, _ in pfg_info.pkg_files:
-            file_base = _make_filetags(entry.attributes)
+        # NOTE: This does not detect cases where directories are not named
+        # consistently.  For example, all of these may collide in reality, but
+        # won't be detected by the below:
+        #
+        # 1) usr/lib/libfoo.a
+        # 2) /usr/lib/libfoo.a
+        # 3) %{_libdir}/libfoo.a
+        #
+        # The most important thing, regardless of how these checks below are
+        # done, is to be consistent with path naming conventions.
+        #
+        # There is also an unsolved question of determining how to handle
+        # subdirectories of "PackageFilesInfo" targets that are actually
+        # directories.
 
+        # dep is a Target
+        pfg_info = dep[PackageFilegroupInfo]
+        for entry, origin in pfg_info.pkg_files:
+            file_base = _make_filetags(entry.attributes)
             for dest, src in entry.dest_src_map.items():
-                dest = _make_absolute_if_not_already_or_is_macro(dest)
+                metadata = _package_contents_metadata(origin, dep.label)
+                if dest in dest_check_map:
+                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+                else:
+                    dest_check_map[dest] = metadata
+
+                abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
 
                 if src.is_directory:
                     # Set aside TreeArtifact information for external processing
@@ -442,7 +418,7 @@ def _pkg_rpm_impl(ctx):
                     # processes TreeArtifacts instead?
                     packaged_directories.append({
                         "src": src,
-                        "dest": dest,
+                        "dest": abs_dest,
                         # This doesn't exactly make it extensible, but it saves
                         # us from having to having to maintain tag processing
                         # code in multiple places.
@@ -450,22 +426,35 @@ def _pkg_rpm_impl(ctx):
                     })
                 else:
                     # Files are well-known.  Take care of them right here.
-                    rpm_files_list.append(file_base + " " + dest)
+                    rpm_files_list.append(file_base + " " + abs_dest)
                     install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
                         src.path,
-                        dest,
+                        abs_dest,
                     ))
 
-        for entry, _ in pfg_info.pkg_dirs:
+        for entry, origin in pfg_info.pkg_dirs:
             file_base = _make_filetags(entry.attributes, "%dir")
-            for d in entry.dirs:
-                abs_dirname = _make_absolute_if_not_already_or_is_macro(d)
+            for dest in entry.dirs:
+                metadata = _package_contents_metadata(origin, dep.label)
+                if dest in dest_check_map:
+                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+                else:
+                    dest_check_map[dest] = metadata
+
+                abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
                 rpm_files_list.append(file_base + " " + abs_dirname)
 
                 install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
                     abs_dirname,
                 ))
-        for entry, _ in pfg_info.pkg_symlinks:
+
+        for entry, origin in pfg_info.pkg_symlinks:
+            metadata = _package_contents_metadata(origin, dep.label)
+            if entry.destination in dest_check_map:
+                _conflicting_contents_error(entry.destination, metadata, dest_check_map[entry.destination])
+            else:
+                dest_check_map[entry.destination] = metadata
+
             abs_dest = _make_absolute_if_not_already_or_is_macro(entry.destination)
             file_base = _make_filetags(entry.attributes)
             rpm_files_list.append(file_base + " " + abs_dest)
@@ -474,6 +463,8 @@ def _pkg_rpm_impl(ctx):
                 entry.source,
                 entry.attributes["mode"],
             ))
+
+    #### Procedurally-generated scripts/lists (%install, %files)
 
     # We need to write these out regardless of whether we are using
     # TreeArtifacts.  That stage will use these files as inputs.
