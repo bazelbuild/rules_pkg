@@ -20,7 +20,7 @@ import os
 import string
 import textwrap
 
-from releasing import release_tools
+from pkg.releasing import release_tools
 
 
 def print_notes(org, repo, version, tarball_path, mirror_host=None,

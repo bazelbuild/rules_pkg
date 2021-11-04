@@ -18,9 +18,9 @@ import datetime
 import json
 import zipfile
 
-from private import build_info
-from private import helpers
-from private import manifest
+from pkg.private import build_info
+from pkg.private import helpers
+from pkg.private import manifest
 
 ZIP_EPOCH = 315532800
 

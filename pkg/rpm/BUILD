@@ -31,7 +31,7 @@ filegroup(
     ]) + [
         "BUILD",
     ],
-    visibility = ["//:__pkg__"],
+    visibility = ["//pkg:__pkg__"],
 )
 
 # Helper script used to augment the %install scriptlet and %files list with

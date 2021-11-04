@@ -42,6 +42,6 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "//private:helpers",
+        "//pkg/private:helpers",
     ],
 )

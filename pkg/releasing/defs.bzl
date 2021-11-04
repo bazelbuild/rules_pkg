@@ -12,7 +12,7 @@ def print_rel_notes(
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
     # Must use Label to get a path relative to the rules_pkg repository,
     # instead of the calling BUILD file.
-    print_rel_notes_helper = Label("//releasing:print_rel_notes")
+    print_rel_notes_helper = Label("//pkg/releasing:print_rel_notes")
     tools = [print_rel_notes_helper]
     cmd = [
         "LC_ALL=C.UTF-8 $(location %s)" % str(print_rel_notes_helper),

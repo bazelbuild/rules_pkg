@@ -13,8 +13,8 @@
 # limitations under the License.
 """Rule for creating Debian packages."""
 
-load("//:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("//private:util.bzl", "setup_output_files")
+load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg/private:util.bzl", "setup_output_files")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
 
@@ -242,7 +242,7 @@ pkg_deb_impl = rule(
 
         # Implicit dependencies.
         "_make_deb": attr.label(
-            default = Label("//private/deb:make_deb"),
+            default = Label("//pkg/private/deb:make_deb"),
             cfg = "exec",
             executable = True,
             allow_files = True,

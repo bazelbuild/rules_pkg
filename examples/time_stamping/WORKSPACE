@@ -16,7 +16,7 @@ workspace(name = "rules_pkg_examples")
 
 local_repository(
     name = "rules_pkg",
-    path = "../../pkg",
+    path = "../..",
 )
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")

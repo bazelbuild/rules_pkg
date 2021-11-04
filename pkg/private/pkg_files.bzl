@@ -31,9 +31,9 @@ Concepts and terms:
             by rule implementations and passed to the build_*.py helpers.
 """
 
-load("//:path.bzl", "compute_data_path", "dest_path")
+load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
-    "//:providers.bzl",
+    "//pkg:providers.bzl",
     "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
