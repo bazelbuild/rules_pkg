@@ -57,7 +57,7 @@ py_library(
     ],
     srcs_version = "PY3",
     visibility = [
-        "//pkg:__pkg__",
+        "//:__subpackages__",
         "//tests:__pkg__",
     ],
 )
@@ -70,7 +70,7 @@ py_library(
     ],
     srcs_version = "PY3",
     visibility = [
-        "//pkg:__pkg__",
+        "//:__subpackages__",
         "//tests:__subpackages__",
     ],
 )
@@ -83,7 +83,7 @@ py_library(
     ],
     srcs_version = "PY3",
     visibility = [
-        "//pkg:__pkg__",
+        "//:__subpackages__",
         "//tests:__pkg__",
     ],
 )
@@ -91,20 +91,6 @@ py_library(
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":archive",
-        ":build_info",
-        ":helpers",
-        ":manifest",
-    ],
-)
-
-py_binary(
-    name = "build_zip",
-    srcs = ["build_zip.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
