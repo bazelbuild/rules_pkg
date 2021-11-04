@@ -15,17 +15,18 @@
 
 # Tests for pkg_deb specific behavior
 
+load("@rules_python//python:defs.bzl", "py_test")
+load(":deb_tests.bzl", "package_naming_test")
 load("//pkg:mappings.bzl", "pkg_mklink")
 load("//pkg:pkg.bzl", "pkg_deb", "pkg_tar")
 load("//pkg:pkg_deb.bzl", "pkg_deb")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("@rules_python//python:defs.bzl", "py_test")
 
 genrule(
     name = "generate_files",
     outs = [
         "etc/nsswitch.conf",
-        "usr/titi",
+        "usr/fizzbuzz",
     ],
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
 )
@@ -46,28 +47,28 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
         ":java_link",
-        ":usr/titi",
+        ":usr/fizzbuzz",
     ],
     extension = "tar.gz",
     mode = "0644",
-    modes = {"usr/titi": "0755"},
+    modes = {"usr/fizzbuzz": "0755"},
     owner = "42.24",
-    ownername = "titi.tata",
-    ownernames = {"etc/nsswitch.conf": "tata.titi"},
+    ownername = "fizzbuzz.foobar",
+    ownernames = {"etc/nsswitch.conf": "foobar.fizzbuzz"},
     owners = {"etc/nsswitch.conf": "24.42"},
     package_dir = "/",
     strip_prefix = ".",
 )
 
 pkg_deb(
-    name = "test-deb",
+    name = "test_deb",
     breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
     conffiles = [
         "/etc/nsswitch.conf",
         "/etc/other",
     ],
-    config = "//tests:testdata/config",
+    config = "config",
     data = ":tar_input",
     depends = [
         "dep1",
@@ -76,12 +77,12 @@ pkg_deb(
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
-    package = "titi",
-    preinst = "//tests:testdata/deb_preinst",
+    package = "fizzbuzz",
+    preinst = "deb_preinst",
     provides = ["hello"],
     replaces = ["oldpkg"],
-    templates = "//tests:testdata/templates",
-    triggers = "//tests:testdata/deb_triggers",
+    templates = "templates",
+    triggers = "deb_triggers",
     urgency = "low",
     version = "test",
 )
@@ -94,11 +95,17 @@ py_test(
     ],
     data = [
         # The target includes both the .deb and .changes files in DefaultInfo
-        ":test-deb",
+        ":test_deb",
     ],
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",
         "@bazel_tools//tools/python/runfiles",
     ],
+)
+
+package_naming_test(
+    name = "naming_test",
+    target_under_test = ":test_deb",
+    expected_name = "fizzbuzz_test_all.deb",
 )
