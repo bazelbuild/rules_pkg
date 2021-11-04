@@ -142,8 +142,9 @@ def _pkg_tar_impl(ctx):
             if ctx.attr.include_runfiles:
                 runfiles = src[DefaultInfo].default_runfiles
                 if runfiles:
-                     file_deps.append(runfiles.files)
-                     src_files.extend(runfiles.files.to_list())
+                    file_deps.append(runfiles.files)
+                    src_files.extend(runfiles.files.to_list())
+
             # Add in the files of srcs which are not pkg_* types
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
@@ -376,7 +377,7 @@ def _pkg_deb_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "MakeDeb",
-        executable = ctx.executable.make_deb,
+        executable = ctx.executable._make_deb,
         arguments = args,
         inputs = files,
         outputs = [output_file, changes_file],
@@ -502,69 +503,173 @@ def pkg_tar(name, **kwargs):
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
+    # @unsorted-dict-items
     attrs = {
-        "data": attr.label(mandatory = True, allow_single_file = tar_filetype),
-        "package": attr.string(
-            doc = "Package name",
+        "data": attr.label(
+            doc = """A tar file that contains the data for the debian package.""",
             mandatory = True,
+            allow_single_file = tar_filetype,
+        ),
+        "package": attr.string(
+            doc = "The name of the package",
+            mandatory = True,
+        ),
+        "architecture": attr.string(
+            default = "all",
+            doc = """Package architecture. Must not be used with architecture_file.""",
         ),
         "architecture_file": attr.label(
             doc = """File that contains the package architecture.
             Must not be used with architecture.""",
             allow_single_file = True,
         ),
-        "architecture": attr.string(
-            default = "all",
-            doc = """Package architecture. Must not be used with architecture_file.""",
-        ),
-        "distribution": attr.string(default = "unstable"),
-        "urgency": attr.string(default = "medium"),
-        "maintainer": attr.string(mandatory = True),
-        "preinst": attr.label(allow_single_file = True),
-        "postinst": attr.label(allow_single_file = True),
-        "prerm": attr.label(allow_single_file = True),
-        "postrm": attr.label(allow_single_file = True),
-        "config": attr.label(allow_single_file = True),
-        "templates": attr.label(allow_single_file = True),
-        "triggers": attr.label(allow_single_file = True),
-        "conffiles_file": attr.label(allow_single_file = True),
-        "conffiles": attr.string_list(default = []),
-        "version_file": attr.label(
-            doc = """File that contains the package version.
-            Must not be used with version.""",
-            allow_single_file = True,
+        "maintainer": attr.string(
+            doc = "The maintainer of the package.",
+            mandatory = True,
         ),
         "version": attr.string(
-            doc = """Package version. Must not be used with version_file.""",
+            doc = """Package version. Must not be used with `version_file`.""",
         ),
-        "description_file": attr.label(allow_single_file = True),
-        "description": attr.string(),
-        "built_using_file": attr.label(allow_single_file = True),
-        "built_using": attr.string(),
-        "priority": attr.string(),
-        "section": attr.string(),
-        "homepage": attr.string(),
-        "depends": attr.string_list(default = []),
-        "depends_file": attr.label(allow_single_file = True),
-        "suggests": attr.string_list(default = []),
-        "enhances": attr.string_list(default = []),
-        "breaks": attr.string_list(default = []),
-        "conflicts": attr.string_list(default = []),
-        "predepends": attr.string_list(default = []),
-        "recommends": attr.string_list(default = []),
-        "replaces": attr.string_list(default = []),
-        "provides": attr.string_list(default = []),
+        "version_file": attr.label(
+            doc = """File that contains the package version.
+            Must not be used with `version`.""",
+            allow_single_file = True,
+        ),
+        "config": attr.label(
+            doc = """config file used for debconf integration.
+            See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
+            allow_single_file = True,
+        ),
+        "description": attr.string(
+            doc = """The package description. Must not be used with `description_file`.""",
+        ),
+        "description_file": attr.label(
+            doc = """The package description. Must not be used with `description`.""",
+            allow_single_file = True
+        ),
+        "distribution": attr.string(
+            doc = """"distribution: See http://www.debian.org/doc/debian-policy.""",
+            default = "unstable",
+        ),
+        "urgency": attr.string(
+            doc = """"urgency: See http://www.debian.org/doc/debian-policy.""",
+            default = "medium",
+        ),
+        "preinst": attr.label(
+            doc = """"The pre-install script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
+            allow_single_file = True,
+        ),
+        "postinst": attr.label(
+            doc = """The post-install script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
+            allow_single_file = True,
+        ),
+        "prerm": attr.label(
+            doc = """The pre-remove script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
+            allow_single_file = True,
+        ),
+        "postrm": attr.label(
+            doc = """The post-remove script for the package.
+            See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.""",
+            allow_single_file = True,
+        ),
+        "templates": attr.label(
+            doc = """templates file used for debconf integration.
+            See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
+            allow_single_file = True,
+        ),
+        "triggers": attr.label(
+            doc = """triggers file for configuring installation events exchanged by packages.
+            See https://wiki.debian.org/DpkgTriggers.""",
+            allow_single_file = True,
+        ),
+        "built_using": attr.string(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file)."""
+        ),
+        "built_using_file": attr.label(
+            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
+            allow_single_file = True
+        ),
+        "conffiles": attr.string_list(
+            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
+See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
+            default = [],
+        ),
+        "conffiles_file": attr.label(
+            doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
+See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
+            allow_single_file = True,
+        ),
+        "priority": attr.string(
+            doc = """The priority of the package.
+            See http://www.debian.org/doc/debian-policy/ch-archive.html#s-priorities.""",
+        ),
+        "section": attr.string(
+            doc = """The section of the package.
+            See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.""",
+        ),
+        "homepage": attr.string(doc = """The homepage of the project."""),
+
+        "breaks": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "conflicts": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "depends": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "depends_file": attr.label(
+            doc = """File that contains a list of package dependencies. Must not be used with `depends`.
+            See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            allow_single_file = True,
+        ),
+        "enhances": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "provides": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "predepends": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "recommends": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "replaces": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
+        "suggests": attr.string_list(
+            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            default = [],
+        ),
 
         # Common attributes
-        "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "out": attr.output(
+            doc = """See Common Attributes""",
+            mandatory = True
+        ),
+        "package_file_name": attr.string(
+            doc = """See Common Attributes.
+            Default: "{package}-{version}-{architecture}.deb""",
+        ),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = """See Common Attributes""",
             providers = [PackageVariablesInfo],
         ),
 
         # Implicit dependencies.
-        "make_deb": attr.label(
+        "_make_deb": attr.label(
             default = Label("//pkg/private:make_deb"),
             cfg = "exec",
             executable = True,
@@ -605,6 +710,7 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+
     # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
     # that both can use.
     for src in ctx.attr.srcs:
@@ -627,7 +733,7 @@ def _pkg_zip_impl(ctx):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
