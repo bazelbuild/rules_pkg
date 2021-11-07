@@ -89,6 +89,7 @@ names_from_toolchains = rule(
         ),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 #
@@ -96,7 +97,6 @@ names_from_toolchains = rule(
 #
 def _name_part_from_command_line_naming_impl(ctx):
     values = {"name_part": ctx.build_setting_value}
-
     # Just pass the value from the command line through. An implementation
     # could also perform validation, such as done in
     # https://github.com/bazelbuild/bazel-skylib/blob/master/rules/common_settings.bzl
