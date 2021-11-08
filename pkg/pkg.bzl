@@ -21,7 +21,6 @@ load(
     "PackageFilesInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
@@ -33,6 +32,10 @@ load(
     "process_src",
     "write_manifest",
 )
+load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private/deb:deb.bzl", _pkg_deb = "pkg_deb")
+
+pkg_deb = _pkg_deb
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -142,8 +145,9 @@ def _pkg_tar_impl(ctx):
             if ctx.attr.include_runfiles:
                 runfiles = src[DefaultInfo].default_runfiles
                 if runfiles:
-                     file_deps.append(runfiles.files)
-                     src_files.extend(runfiles.files.to_list())
+                    file_deps.append(runfiles.files)
+                    src_files.extend(runfiles.files.to_list())
+
             # Add in the files of srcs which are not pkg_* types
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
@@ -250,161 +254,6 @@ def _pkg_tar_impl(ctx):
         ),
     ]
 
-def _pkg_deb_impl(ctx):
-    """The implementation for the pkg_deb rule."""
-
-    package_file_name = ctx.attr.package_file_name
-    if not package_file_name:
-        package_file_name = "%s_%s_%s.deb" % (
-            ctx.attr.package,
-            ctx.attr.version,
-            ctx.attr.architecture,
-        )
-
-    outputs, output_file, output_name = setup_output_files(
-        ctx,
-        package_file_name = package_file_name,
-    )
-
-    changes_file = ctx.actions.declare_file(output_name.rsplit(".", 1)[0] + ".changes")
-    outputs.append(changes_file)
-
-    files = [ctx.file.data]
-    args = [
-        "--output=" + output_file.path,
-        "--changes=" + changes_file.path,
-        "--data=" + ctx.file.data.path,
-        "--package=" + ctx.attr.package,
-        "--maintainer=" + ctx.attr.maintainer,
-    ]
-
-    # Version and description can be specified by a file or inlined
-    if ctx.attr.architecture_file:
-        if ctx.attr.architecture != "all":
-            fail("Both architecture and architecture_file attributes were specified")
-        args += ["--architecture=@" + ctx.file.architecture_file.path]
-        files += [ctx.file.architecture_file]
-    else:
-        args += ["--architecture=" + ctx.attr.architecture]
-
-    if ctx.attr.preinst:
-        args += ["--preinst=@" + ctx.file.preinst.path]
-        files += [ctx.file.preinst]
-    if ctx.attr.postinst:
-        args += ["--postinst=@" + ctx.file.postinst.path]
-        files += [ctx.file.postinst]
-    if ctx.attr.prerm:
-        args += ["--prerm=@" + ctx.file.prerm.path]
-        files += [ctx.file.prerm]
-    if ctx.attr.postrm:
-        args += ["--postrm=@" + ctx.file.postrm.path]
-        files += [ctx.file.postrm]
-    if ctx.attr.config:
-        args += ["--config=@" + ctx.file.config.path]
-        files += [ctx.file.config]
-    if ctx.attr.templates:
-        args += ["--templates=@" + ctx.file.templates.path]
-        files += [ctx.file.templates]
-    if ctx.attr.triggers:
-        args += ["--triggers=@" + ctx.file.triggers.path]
-        files += [ctx.file.triggers]
-
-    # Conffiles can be specified by a file or a string list
-    if ctx.attr.conffiles_file:
-        if ctx.attr.conffiles:
-            fail("Both conffiles and conffiles_file attributes were specified")
-        args += ["--conffile=@" + ctx.file.conffiles_file.path]
-        files += [ctx.file.conffiles_file]
-    elif ctx.attr.conffiles:
-        args += ["--conffile=%s" % cf for cf in ctx.attr.conffiles]
-
-    # Version and description can be specified by a file or inlined
-    if ctx.attr.version_file:
-        if ctx.attr.version:
-            fail("Both version and version_file attributes were specified")
-        args += ["--version=@" + ctx.file.version_file.path]
-        files += [ctx.file.version_file]
-    elif ctx.attr.version:
-        args += ["--version=" + ctx.attr.version]
-    else:
-        fail("Neither version_file nor version attribute was specified")
-
-    if ctx.attr.description_file:
-        if ctx.attr.description:
-            fail("Both description and description_file attributes were specified")
-        args += ["--description=@" + ctx.file.description_file.path]
-        files += [ctx.file.description_file]
-    elif ctx.attr.description:
-        args += ["--description=" + ctx.attr.description]
-    else:
-        fail("Neither description_file nor description attribute was specified")
-
-    # Built using can also be specified by a file or inlined (but is not mandatory)
-    if ctx.attr.built_using_file:
-        if ctx.attr.built_using:
-            fail("Both build_using and built_using_file attributes were specified")
-        args += ["--built_using=@" + ctx.file.built_using_file.path]
-        files += [ctx.file.built_using_file]
-    elif ctx.attr.built_using:
-        args += ["--built_using=" + ctx.attr.built_using]
-
-    if ctx.attr.depends_file:
-        if ctx.attr.depends:
-            fail("Both depends and depends_file attributes were specified")
-        args += ["--depends=@" + ctx.file.depends_file.path]
-        files += [ctx.file.depends_file]
-    elif ctx.attr.depends:
-        args += ["--depends=" + d for d in ctx.attr.depends]
-
-    if ctx.attr.priority:
-        args += ["--priority=" + ctx.attr.priority]
-    if ctx.attr.section:
-        args += ["--section=" + ctx.attr.section]
-    if ctx.attr.homepage:
-        args += ["--homepage=" + ctx.attr.homepage]
-
-    args += ["--distribution=" + ctx.attr.distribution]
-    args += ["--urgency=" + ctx.attr.urgency]
-    args += ["--suggests=" + d for d in ctx.attr.suggests]
-    args += ["--enhances=" + d for d in ctx.attr.enhances]
-    args += ["--conflicts=" + d for d in ctx.attr.conflicts]
-    args += ["--breaks=" + d for d in ctx.attr.breaks]
-    args += ["--pre_depends=" + d for d in ctx.attr.predepends]
-    args += ["--recommends=" + d for d in ctx.attr.recommends]
-    args += ["--replaces=" + d for d in ctx.attr.replaces]
-    args += ["--provides=" + d for d in ctx.attr.provides]
-
-    ctx.actions.run(
-        mnemonic = "MakeDeb",
-        executable = ctx.executable.make_deb,
-        arguments = args,
-        inputs = files,
-        outputs = [output_file, changes_file],
-        env = {
-            "LANG": "en_US.UTF-8",
-            "LC_CTYPE": "UTF-8",
-            "PYTHONIOENCODING": "UTF-8",
-            "PYTHONUTF8": "1",
-        },
-    )
-    output_groups = {
-        "out": [ctx.outputs.out],
-        "deb": [output_file],
-        "changes": [changes_file],
-    }
-    return [
-        OutputGroupInfo(**output_groups),
-        DefaultInfo(
-            files = depset([output_file]),
-            runfiles = ctx.runfiles(files = outputs),
-        ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
-    ]
-
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
@@ -499,93 +348,6 @@ def pkg_tar(name, **kwargs):
         **kwargs
     )
 
-# A rule for creating a deb file, see README.md
-pkg_deb_impl = rule(
-    implementation = _pkg_deb_impl,
-    attrs = {
-        "data": attr.label(mandatory = True, allow_single_file = tar_filetype),
-        "package": attr.string(
-            doc = "Package name",
-            mandatory = True,
-        ),
-        "architecture_file": attr.label(
-            doc = """File that contains the package architecture.
-            Must not be used with architecture.""",
-            allow_single_file = True,
-        ),
-        "architecture": attr.string(
-            default = "all",
-            doc = """Package architecture. Must not be used with architecture_file.""",
-        ),
-        "distribution": attr.string(default = "unstable"),
-        "urgency": attr.string(default = "medium"),
-        "maintainer": attr.string(mandatory = True),
-        "preinst": attr.label(allow_single_file = True),
-        "postinst": attr.label(allow_single_file = True),
-        "prerm": attr.label(allow_single_file = True),
-        "postrm": attr.label(allow_single_file = True),
-        "config": attr.label(allow_single_file = True),
-        "templates": attr.label(allow_single_file = True),
-        "triggers": attr.label(allow_single_file = True),
-        "conffiles_file": attr.label(allow_single_file = True),
-        "conffiles": attr.string_list(default = []),
-        "version_file": attr.label(
-            doc = """File that contains the package version.
-            Must not be used with version.""",
-            allow_single_file = True,
-        ),
-        "version": attr.string(
-            doc = """Package version. Must not be used with version_file.""",
-        ),
-        "description_file": attr.label(allow_single_file = True),
-        "description": attr.string(),
-        "built_using_file": attr.label(allow_single_file = True),
-        "built_using": attr.string(),
-        "priority": attr.string(),
-        "section": attr.string(),
-        "homepage": attr.string(),
-        "depends": attr.string_list(default = []),
-        "depends_file": attr.label(allow_single_file = True),
-        "suggests": attr.string_list(default = []),
-        "enhances": attr.string_list(default = []),
-        "breaks": attr.string_list(default = []),
-        "conflicts": attr.string_list(default = []),
-        "predepends": attr.string_list(default = []),
-        "recommends": attr.string_list(default = []),
-        "replaces": attr.string_list(default = []),
-        "provides": attr.string_list(default = []),
-
-        # Common attributes
-        "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
-        "package_variables": attr.label(
-            doc = "See Common Attributes",
-            providers = [PackageVariablesInfo],
-        ),
-
-        # Implicit dependencies.
-        "make_deb": attr.label(
-            default = Label("//pkg/private:make_deb"),
-            cfg = "exec",
-            executable = True,
-            allow_files = True,
-        ),
-    },
-    provides = [PackageArtifactInfo],
-)
-
-def pkg_deb(name, archive_name = None, **kwargs):
-    """Creates a deb file. See pkg_deb_impl."""
-    if archive_name:
-        # buildifier: disable=print
-        print("'archive_name' is deprecated. Use 'package_file_name' or 'out' to name the output.")
-        if kwargs.get("package_file_name"):
-            fail("You may not set both 'archive_name' and 'package_file_name'.")
-    pkg_deb_impl(
-        name = name,
-        out = (archive_name or name) + ".deb",
-        **kwargs
-    )
 
 def _pkg_zip_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
@@ -605,6 +367,7 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+
     # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
     # that both can use.
     for src in ctx.attr.srcs:
@@ -627,7 +390,7 @@ def _pkg_zip_impl(ctx):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
