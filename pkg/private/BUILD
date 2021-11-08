@@ -102,16 +102,6 @@ py_binary(
     ],
 )
 
-py_binary(
-    name = "make_deb",
-    srcs = ["make_deb.py"],
-    python_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":helpers",
-    ],
-)
-
 py_library(
     name = "manifest",
     srcs = ["manifest.py"],

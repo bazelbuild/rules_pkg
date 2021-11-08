@@ -30,7 +30,6 @@ load(
 
 _stamp_condition = str(Label("//pkg/private:private_stamp_detect"))
 
-
 def _pkg_zip_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
 
@@ -49,6 +48,7 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+
     # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
     # that both can use.
     for src in ctx.attr.srcs:
@@ -71,7 +71,7 @@ def _pkg_zip_impl(ctx):
                     # Tree artifacts need a name, but the name is never really
                     # the important part. The likely behavior people want is
                     # just the content, so we strip the directory name.
-                    dest = '/'.join(d_path.split('/')[0:-1])
+                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
@@ -111,12 +111,31 @@ def _pkg_zip_impl(ctx):
 
 pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
+    # @unsorted-dict-items
     attrs = {
-        "mode": attr.string(default = "0555"),
-        "package_dir": attr.string(default = "/"),
-        "srcs": attr.label_list(allow_files = True),
+        "srcs": attr.label_list(
+            doc = """List of files that should be included in the archive.""",
+            allow_files = True,
+        ),
+        "mode": attr.string(
+            doc = """The default mode for all files in the archive.""",
+            default = "0555",
+        ),
+        "package_dir": attr.string(
+            doc = """The prefix to add to all all paths in the archive.""",
+            default = "/",
+        ),
         "strip_prefix": attr.string(),
-        "timestamp": attr.int(default = 315532800),
+        "timestamp": attr.int(
+            doc = """Time stamp to place on all files in the archive, expressed
+as seconds since the Unix Epoch, as per RFC 3339.  The default is January 01,
+1980, 00:00 UTC.
+
+Due to limitations in the format of zip files, values before
+Jan 1, 1980 will be rounded up and the precision in the zip file is
+limited to a granularity of 2 seconds.""",
+            default = 315532800,
+        ),
 
         # Common attributes
         "out": attr.output(mandatory = True),
