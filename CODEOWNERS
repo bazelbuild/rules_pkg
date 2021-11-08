@@ -1,4 +1,11 @@
 * @aiuto @nacl
 
-/deb_packages/  @MarkusTeufelberger @adragomir
-/pkg/rpm/ @nacl
+/deb_packages/  @aiuto
+/docs		@aiuto @nacl @floriographygoth
+
+/pkg/rpm/	@nacl
+/pkg/tests/rpm/	@nacl
+legacy/tests/rpm	@nacl
+
+/pkg/private/make_deb.py	@aiuto @dannysullivan
+/pkg/tests/deb/			@aiuto @dannysullivan
