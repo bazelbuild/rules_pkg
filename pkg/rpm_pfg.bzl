@@ -25,8 +25,16 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 """
 
+load(
+    "//pkg:providers.bzl",
+    "PackageArtifactInfo",
+    "PackageDirsInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageSymlinkInfo",
+    "PackageVariablesInfo",
+)
 load("//pkg/private:util.bzl", "setup_output_files")
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageFilegroupInfo", "PackageVariablesInfo")
 
 rpm_filetype = [".rpm"]
 
@@ -81,16 +89,21 @@ def _package_contents_metadata(origin_label, grouping_label):
     )
 
 def _conflicting_contents_error(destination, from1, from2, attr_name = "srcs"):
-    message = """Destination {destination} is provided by both (1) {from1_origin} and (2) {from2_origin}; please sensure that each destination is provided by exactly one input.
+    real_from1_origin = "<UNKNOWN>" if not from1.origin else from1.origin
+    real_from1_group = "directly" if not from1.group else "from group {}".format(from1.group)
+    real_from2_origin = "<UNKNOWN>" if not from2.origin else from2.origin
+    real_from2_group = "directly" if not from2.group else "from group {}".format(from2.group)
 
-    (1) {from1_origin} is provided from group {from1_group}
-    (2) {from2_origin} is provided from group {from2_group}
+    message = """Destination {destination} is provided by both (1) {from1_origin} and (2) {from2_origin}; please ensure that each destination is provided by exactly one input.
+
+    (1) {from1_origin} is provided {from1_group}
+    (2) {from2_origin} is provided {from2_group}
     """.format(
         destination = destination,
-        from1_origin = from1.origin,
-        from1_group = from1.group,
-        from2_origin = from2.origin,
-        from2_group = from2.group,
+        from1_origin = real_from1_origin,
+        from1_group = real_from1_group,
+        from2_origin = real_from2_origin,
+        from2_group = real_from2_group,
     )
 
     fail(message, attr_name)
@@ -128,6 +141,72 @@ def _make_absolute_if_not_already_or_is_macro(path):
     # This may not be the fastest way to do this, but if it becomes a problem
     # this can be inlined easily.
     return path if path.startswith(("/", "%")) else "/" + path
+
+#### Input processing helper functons.
+
+# TODO(nacl, #459): These are redundant with functions and structures in
+# pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
+# there, but as of writing, it's not quite ready.
+def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+    for dest, src in pfi.dest_src_map.items():
+        metadata = _package_contents_metadata(origin_label, grouping_label)
+        if dest in dest_check_map:
+            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        else:
+            dest_check_map[dest] = metadata
+
+        abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
+        if src.is_directory:
+            # Set aside TreeArtifact information for external processing
+            #
+            # @unsorted-dict-items
+            packaged_directories.append({
+                "src": src,
+                "dest": abs_dest,
+                # This doesn't exactly make it extensible, but it saves
+                # us from having to having to maintain tag processing
+                # code in multiple places.
+                "tags": file_base,
+            })
+        else:
+            # Files are well-known.  Take care of them right here.
+            rpm_files_list.append(file_base + " " + abs_dest)
+            install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
+                src.path,
+                abs_dest,
+            ))
+
+def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+    for dest in pdi.dirs:
+        metadata = _package_contents_metadata(origin_label, grouping_label)
+        if dest in dest_check_map:
+            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        else:
+            dest_check_map[dest] = metadata
+
+        abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
+        rpm_files_list.append(file_base + " " + abs_dirname)
+
+        install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
+            abs_dirname,
+        ))
+
+def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+    metadata = _package_contents_metadata(origin_label, grouping_label)
+    if psi.destination in dest_check_map:
+        _conflicting_contents_error(psi.destination, metadata, dest_check_map[psi.destination])
+    else:
+        dest_check_map[psi.destination] = metadata
+
+    abs_dest = _make_absolute_if_not_already_or_is_macro(psi.destination)
+    rpm_files_list.append(file_base + " " + abs_dest)
+    install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
+        abs_dest,
+        psi.source,
+        psi.attributes["mode"],
+    ))
+
+#### Rule implementation
 
 def _pkg_rpm_impl(ctx):
     """Implements the pkg_rpm rule."""
@@ -399,70 +478,81 @@ def _pkg_rpm_impl(ctx):
         # directories.
 
         # dep is a Target
-        pfg_info = dep[PackageFilegroupInfo]
-        for entry, origin in pfg_info.pkg_files:
-            file_base = _make_filetags(entry.attributes)
-            for dest, src in entry.dest_src_map.items():
-                metadata = _package_contents_metadata(origin, dep.label)
-                if dest in dest_check_map:
-                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
-                else:
-                    dest_check_map[dest] = metadata
+        if PackageFilesInfo in dep:
+            _process_files(
+                dep[PackageFilesInfo],
+                dep.label,  # origin label
+                None,  # group label
+                _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
+                dest_check_map,
+                packaged_directories,
+                rpm_files_list,
+                install_script_pieces,
+            )
 
-                abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
+        if PackageDirsInfo in dep:
+            _process_dirs(
+                dep[PackageDirsInfo],
+                dep.label,  # origin label
+                None,  # group label
+                _make_filetags(dep[PackageDirsInfo].attributes),  # file_base
+                dest_check_map,
+                packaged_directories,
+                rpm_files_list,
+                install_script_pieces,
+            )
 
-                if src.is_directory:
-                    # Set aside TreeArtifact information for external processing
-                    #
-                    # TODO: Should we do all processing in the helper script that
-                    # processes TreeArtifacts instead?
-                    packaged_directories.append({
-                        "src": src,
-                        "dest": abs_dest,
-                        # This doesn't exactly make it extensible, but it saves
-                        # us from having to having to maintain tag processing
-                        # code in multiple places.
-                        "tags": file_base,
-                    })
-                else:
-                    # Files are well-known.  Take care of them right here.
-                    rpm_files_list.append(file_base + " " + abs_dest)
-                    install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
-                        src.path,
-                        abs_dest,
-                    ))
+        if PackageSymlinkInfo in dep:
+            _process_symlink(
+                dep[PackageSymlinkInfo],
+                dep.label,  # origin label
+                None,  # group label
+                _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
+                dest_check_map,
+                packaged_directories,
+                rpm_files_list,
+                install_script_pieces,
+            )
 
-        for entry, origin in pfg_info.pkg_dirs:
-            file_base = _make_filetags(entry.attributes, "%dir")
-            for dest in entry.dirs:
-                metadata = _package_contents_metadata(origin, dep.label)
-                if dest in dest_check_map:
-                    _conflicting_contents_error(dest, metadata, dest_check_map[dest])
-                else:
-                    dest_check_map[dest] = metadata
+        if PackageFilegroupInfo in dep:
+            pfg_info = dep[PackageFilegroupInfo]
+            for entry, origin in pfg_info.pkg_files:
+                file_base = _make_filetags(entry.attributes)
+                _process_files(
+                    entry,
+                    origin,
+                    dep.label,
+                    file_base,
+                    dest_check_map,
+                    packaged_directories,
+                    rpm_files_list,
+                    install_script_pieces,
+                )
+            for entry, origin in pfg_info.pkg_dirs:
+                file_base = _make_filetags(entry.attributes, "%dir")
+                _process_dirs(
+                    entry,
+                    origin,
+                    dep.label,
+                    file_base,
+                    dest_check_map,
+                    packaged_directories,
+                    rpm_files_list,
+                    install_script_pieces,
+                )
 
-                abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
-                rpm_files_list.append(file_base + " " + abs_dirname)
-
-                install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
-                    abs_dirname,
-                ))
-
-        for entry, origin in pfg_info.pkg_symlinks:
-            metadata = _package_contents_metadata(origin, dep.label)
-            if entry.destination in dest_check_map:
-                _conflicting_contents_error(entry.destination, metadata, dest_check_map[entry.destination])
-            else:
-                dest_check_map[entry.destination] = metadata
-
-            abs_dest = _make_absolute_if_not_already_or_is_macro(entry.destination)
-            file_base = _make_filetags(entry.attributes)
-            rpm_files_list.append(file_base + " " + abs_dest)
-            install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
-                abs_dest,
-                entry.source,
-                entry.attributes["mode"],
-            ))
+            for entry, origin in pfg_info.pkg_symlinks:
+                file_base = _make_filetags(entry.attributes)
+                _process_symlink(
+                    entry,
+                    origin,
+                    dep.label,
+                    file_base,
+                    dest_check_map,
+                    packaged_directories,
+                    rpm_files_list,
+                    install_script_pieces,
+                )
 
     #### Procedurally-generated scripts/lists (%install, %files)
 
@@ -741,7 +831,12 @@ pkg_rpm = rule(
             These are typically brought into life as `pkg_filegroup`s.
             """,
             mandatory = True,
-            providers = [PackageFilegroupInfo],
+            providers = [
+                [PackageDirsInfo],
+                [PackageFilesInfo],
+                [PackageFilegroupInfo],
+                [PackageSymlinkInfo],
+            ],
         ),
         "debug": attr.bool(
             doc = """Debug the RPM helper script and RPM generation""",
