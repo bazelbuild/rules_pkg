@@ -111,3 +111,12 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]) + [
+        "//pkg/private/deb:bzl_srcs",
+        "//pkg/private/zip:bzl_srcs",
+    ],
+    visibility = ["//:__subpackages__"],
+)

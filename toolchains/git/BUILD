@@ -71,3 +71,9 @@ toolchain(
     toolchain = ":no_git",
     toolchain_type = ":git_toolchain_type",
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//:__subpackages__"],
+)

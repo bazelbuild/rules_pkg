@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 exports_files(
     ["WORKSPACE"],
     visibility = ["//visibility:public"],
@@ -33,4 +35,21 @@ filegroup(
         "LICENSE",
     ],
     visibility = ["//distro:__pkg__"],
+)
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]) + [
+        "//pkg:bzl_srcs",
+        "//toolchains:bzl_srcs",
+    ],
+)
+
+bzl_library(
+    name = "bzl_lib",
+    srcs = [
+        ":bzl_srcs",
+        "@bazel_skylib//lib:paths",
+    ],
+    visibility = ["//visibility:public"],
 )

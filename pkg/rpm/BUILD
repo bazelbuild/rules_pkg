@@ -41,3 +41,9 @@ py_binary(
     srcs = ["augment_rpm_files_install.py"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//:__subpackages__"],
+)

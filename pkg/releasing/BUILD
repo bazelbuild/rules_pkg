@@ -67,3 +67,9 @@ py_binary(
     # TODO(https://github.com/bazelbuild/bazel/issues/7377): Make this private.
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//visibility:public"],
+)

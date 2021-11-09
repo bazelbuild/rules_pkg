@@ -74,3 +74,11 @@ toolchain(
     toolchain = ":no_rpmbuild",
     toolchain_type = ":rpmbuild_toolchain_type",
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]) + [
+        "//toolchains/git:bzl_srcs",
+    ],
+    visibility = ["//:__subpackages__"],
+)

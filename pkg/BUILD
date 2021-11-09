@@ -83,3 +83,14 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]) + [
+        "//pkg/legacy:bzl_srcs",
+        "//pkg/private:bzl_srcs",
+        "//pkg/releasing:bzl_srcs",
+        "//pkg/rpm:bzl_srcs",
+    ],
+    visibility = ["//:__subpackages__"],
+)
