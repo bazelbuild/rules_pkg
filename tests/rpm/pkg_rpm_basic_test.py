@@ -43,6 +43,8 @@ class PkgRpmBasicTest(unittest.TestCase):
         self.runfiles = runfiles.Create()
         self.test_rpm_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm.rpm")
+        self.test_rpm_direct_path = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_direct.rpm")
         self.test_rpm_bzip2_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm-bzip2.rpm")
         self.maxDiff = None
@@ -94,6 +96,10 @@ echo postun
         rpm_specs = rpm_util.read_rpm_filedata(self.test_rpm_path)
 
         self.assertDictEqual(manifest_specs, rpm_specs)
+        # Transitively, this one should work too -- doesn't use pkg_filegroup
+        # directly.
+        rpm_direct_specs = rpm_util.read_rpm_filedata(self.test_rpm_direct_path)
+        self.assertDictEqual(rpm_specs, rpm_direct_specs)
 
     def test_preamble_metadata(self):
         metadata_prefix = "rules_pkg/tests/rpm"

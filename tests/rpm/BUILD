@@ -15,8 +15,6 @@
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
-load("analysis_tests.bzl", "analysis_tests")
-load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 load(
     "//pkg:mappings.bzl",
     "pkg_attributes",
@@ -26,6 +24,8 @@ load(
     "pkg_mklink",
 )
 load("//pkg:rpm.bzl", "pkg_rpm")
+load("analysis_tests.bzl", "analysis_tests")
+load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 
 ############################################################################
 # analysis tests
@@ -110,6 +110,8 @@ pkg_mklink(
 
 pkg_filegroup(
     name = "test_pfg",
+    # Keep this list in sync with the values of "srcs" in "test_rpm_direct",
+    # below
     srcs = [
         ":ars_pf",
         ":config_file",
@@ -152,6 +154,33 @@ pkg_rpm(
     ],
     architecture = "noarch",
     binary_payload_compression = "w2.bzdio",
+    conflicts = ["not-a-test"],
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    post_scriptlet = """echo post""",
+    postun_scriptlet = """echo postun""",
+    pre_scriptlet = """echo pre""",
+    preun_scriptlet = """echo preun""",
+    provides = ["test"],
+    release = "2222",
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
+    spec_template = "template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+)
+
+# Like the first one, except `srcs` is now passed in without using a
+# pkg_filegroup.
+pkg_rpm(
+    name = "test_rpm_direct",
+    srcs = [
+        ":ars_pf",
+        ":config_file",
+        ":test_links",
+        ":var_log_foo",
+    ],
+    architecture = "noarch",
     conflicts = ["not-a-test"],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
@@ -274,6 +303,7 @@ sh_library(
     srcs = [
         ":test_rpm",
         ":test_rpm-bzip2",
+        ":test_rpm_direct",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
     ],
