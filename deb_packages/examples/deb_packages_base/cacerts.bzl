@@ -2,15 +2,16 @@
 
 def _impl(ctx):
     args = "%s %s %s" % (ctx.executable._extract.path, ctx.file.deb.path, ctx.outputs.out.path)
-    ctx.action(command = args,
-            inputs = [ctx.executable._extract, ctx.file.deb],
-            outputs = [ctx.outputs.out])
+    ctx.actions.run_shell(
+        command = args,
+        inputs = [ctx.executable._extract, ctx.file.deb],
+        outputs = [ctx.outputs.out],
+    )
 
 cacerts = rule(
     attrs = {
         "deb": attr.label(
-            allow_files = [".deb"],
-            single_file = True,
+            allow_single_file = [".deb"],
             mandatory = True,
         ),
         # Implicit dependencies.

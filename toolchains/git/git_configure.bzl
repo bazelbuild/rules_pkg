@@ -47,17 +47,18 @@ _find_system_git = repository_rule(
     doc = """Create a repository that defines an git toolchain based on the system git.""",
     local = True,
     attrs = {
+        "verbose": attr.bool(
+            doc = "If true, print status messages.",
+        ),
         "workspace_file": attr.label(
             doc = "Referece to calling repository WORKSPACE file.",
             allow_single_file = True,
             mandatory = True,
         ),
-        "verbose": attr.bool(
-            doc = "If true, print status messages.",
-        ),
     },
 )
 
+# buildifier: disable=function-docstring-args
 def experimental_find_system_git(name, workspace_file = None, verbose = False):
     """Create a toolchain that lets you run git.
 

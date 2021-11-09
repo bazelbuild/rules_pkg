@@ -32,7 +32,7 @@ def _find_system_rpmbuild_impl(rctx):
         if rpmbuild_path:
             print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
-          print("No system rpmbuild found.")  # buildifier: disable=print
+            print("No system rpmbuild found.")  # buildifier: disable=print
     _write_build(rctx = rctx, path = rpmbuild_path)
 
 _find_system_rpmbuild = repository_rule(
@@ -47,8 +47,9 @@ _find_system_rpmbuild = repository_rule(
     },
 )
 
-def find_system_rpmbuild(name, verbose=False):
-    _find_system_rpmbuild(name=name, verbose=verbose)
+def find_system_rpmbuild(name, verbose = False):
+    _find_system_rpmbuild(name = name, verbose = verbose)
     native.register_toolchains(
         "@%s//:rpmbuild_auto_toolchain" % name,
-        "@rules_pkg//toolchains:rpmbuild_missing_toolchain")
+        "@rules_pkg//toolchains:rpmbuild_missing_toolchain",
+    )

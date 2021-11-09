@@ -59,8 +59,8 @@ py_binary(
     #}),
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/private:archive",
         "//pkg:make_rpm_lib",
+        "//pkg/private:archive",
     ],
 )
 

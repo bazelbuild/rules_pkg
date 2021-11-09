@@ -14,8 +14,8 @@
 
 """Example rules to show package naming techniques."""
 
-load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
 
 def _basic_naming_impl(ctx):
     values = {}
@@ -44,11 +44,11 @@ basic_naming = rule(
         "revision": attr.string(
             doc = "Placeholder for our release revision.",
         ),
-        "version": attr.string(
-            doc = "Placeholder for our release version.",
-        ),
         "special_build": attr.string(
             doc = "Indicates that we have built with a 'special' option.",
+        ),
+        "version": attr.string(
+            doc = "Placeholder for our release version.",
         ),
     },
 )
@@ -97,6 +97,7 @@ names_from_toolchains = rule(
 #
 def _name_part_from_command_line_naming_impl(ctx):
     values = {"name_part": ctx.build_setting_value}
+
     # Just pass the value from the command line through. An implementation
     # could also perform validation, such as done in
     # https://github.com/bazelbuild/bazel-skylib/blob/master/rules/common_settings.bzl

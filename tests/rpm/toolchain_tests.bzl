@@ -58,13 +58,13 @@ def _toolchain_contents_test_impl(ctx):
 toolchain_contents_test = analysistest.make(
     _toolchain_contents_test_impl,
     attrs = {
-        "expect_valid": attr.bool(default = True),
         "expect_label": attr.label(
             cfg = "exec",
             executable = True,
             allow_files = True,
         ),
         "expect_path": attr.string(),
+        "expect_valid": attr.bool(default = True),
     },
 )
 
@@ -119,5 +119,6 @@ def _create_toolchain_creation_tests():
         expect_path = "/usr/bin/foo",
     )
 
+# buildifier: disable=unnamed-macro
 def create_toolchain_analysis_tests():
     _create_toolchain_creation_tests()

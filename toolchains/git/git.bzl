@@ -23,13 +23,13 @@ that escape the Bazel sandbox and pop back to the workspace/repo.
 GitInfo = provider(
     doc = """Information needed to invoke git.""",
     fields = {
-        "name": "The name of the toolchain",
-        "valid": "Is this toolchain valid and usable?",
-        "label": "Label of a target providing a git binary",
-        "path": "The path to a pre-built git",
         "client_top": "The path to the top of the git client." +
                       " In reality, we use the path to the WORKSPACE file as" +
                       " a proxy for a folder underneath the git client top.",
+        "label": "Label of a target providing a git binary",
+        "name": "The name of the toolchain",
+        "path": "The path to a pre-built git",
+        "valid": "Is this toolchain valid and usable?",
     },
 )
 
@@ -51,6 +51,9 @@ def _git_toolchain_impl(ctx):
 git_toolchain = rule(
     implementation = _git_toolchain_impl,
     attrs = {
+        "client_top": attr.string(
+            doc = "The top of your git client.",
+        ),
         "label": attr.label(
             doc = "A valid label of a target to build or a prebuilt binary. Mutually exclusive with path.",
             cfg = "exec",
@@ -59,9 +62,6 @@ git_toolchain = rule(
         ),
         "path": attr.string(
             doc = "The path to the git executable. Mutually exclusive with label.",
-        ),
-        "client_top": attr.string(
-            doc = "The top of your git client.",
         ),
     },
 )

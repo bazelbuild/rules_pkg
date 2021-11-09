@@ -14,9 +14,10 @@
 
 """Rules to aid testing"""
 
-load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("@rules_python//python:defs.bzl", "py_binary")
+
+# buildifier: disable=bzl-visibility
+load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
@@ -44,12 +45,12 @@ creation capabilities are "unsound".
     """,
     implementation = _directory_impl,
     attrs = {
+        "contents": attr.string(),
         "filenames": attr.string_list(
             doc = """Paths to create in the directory.
 
 Paths containing directories will also have the intermediate directories created too.""",
         ),
-        "contents": attr.string(),
         "outdir": attr.string(),
         "_dir_creator": attr.label(
             default = ":create_directory_with_contents",
@@ -61,10 +62,10 @@ Paths containing directories will also have the intermediate directories created
 
 def _fake_artifact_impl(ctx):
     out_file = ctx.actions.declare_file(ctx.attr.name)
-    content = ['echo ' + rf.path for rf in ctx.files.runfiles]
+    content = ["echo " + rf.path for rf in ctx.files.runfiles]
     ctx.actions.write(
         output = out_file,
-        content = '\r\n'.join(content),
+        content = "\r\n".join(content),
         is_executable = ctx.attr.executable,
     )
     return DefaultInfo(
@@ -86,6 +87,10 @@ cc_binary in complexity, but does not depend on a large toolchain.""",
             doc = "Dependencies to trigger other rules, but are then discarded.",
             allow_files = True,
         ),
+        "executable": attr.bool(
+            doc = "If True, the DefaultInfo will be marked as executable.",
+            default = False,
+        ),
         "files": attr.label_list(
             doc = "Deps which are passed in DefaultInfo as files.",
             allow_files = True,
@@ -93,10 +98,6 @@ cc_binary in complexity, but does not depend on a large toolchain.""",
         "runfiles": attr.label_list(
             doc = "Deps which are passed in DefaultInfo as runfiles.",
             allow_files = True,
-        ),
-        "executable": attr.bool(
-            doc = "If True, the DefaultInfo will be marked as executable.",
-            default = False,
         ),
     },
 )
@@ -113,11 +114,11 @@ _write_content_manifest = rule(
 This is intended only for testing the manifest creation features.""",
     implementation = _write_content_manifest_impl,
     attrs = {
+        "out": attr.output(),
         "srcs": attr.label_list(
             doc = """List of source inputs.""",
             allow_files = True,
         ),
-        "out": attr.output(),
         "use_short_path": attr.bool(
             doc = """Use the rootless path in the manifest.
 
@@ -137,7 +138,7 @@ def write_content_manifest(name, srcs):
         name = name,
         srcs = srcs,
         use_short_path = True,
-        out = name + ".manifest"
+        out = name + ".manifest",
     )
 
 ############################################################

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_zip")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//:foo_defs.bzl", "shared_object_path_selector")
 
 # There are localized message catalogs for all the components.

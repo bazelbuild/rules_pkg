@@ -13,9 +13,9 @@
 # limitations under the License.
 
 load("@rules_python//python:defs.bzl", "py_test")
-load(":defs.bzl", "inspect_directory_test")
 load("//pkg:mappings.bzl", "filter_directory")
 load("//tests/util:defs.bzl", "directory")
+load(":defs.bzl", "inspect_directory_test")
 
 # TODO: the below tests only check for rule success and confirmation that
 # directory structure matches expectations.  A more thorough test implementation
@@ -55,8 +55,8 @@ filter_directory(
     name = "renames_in",
     src = ":test_directory",
     renames = {
-        "subdir/a": "a",
         "c": "subdir/c",
+        "subdir/a": "a",
     },
 )
 
@@ -75,8 +75,8 @@ filter_directory(
     name = "renames_loop_in",
     src = ":test_directory",
     renames = {
-        "subdir/c": "a",
         "a": "subdir/c",
+        "subdir/c": "a",
     },
 )
 

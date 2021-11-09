@@ -14,32 +14,33 @@
 
 """Tests for file mapping routines in pkg/mappings.bzl"""
 
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
-load(
-    "//pkg:providers.bzl",
-    "PackageDirsInfo",
-    "PackageFilegroupInfo",
-    "PackageFilesInfo",
-    "PackageSymlinkInfo",)
+load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
+    "REMOVE_BASE_DIRECTORY",
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
     "pkg_mklink",
     "strip_prefix",
-    "REMOVE_BASE_DIRECTORY",
+)
+load(
+    "//pkg:providers.bzl",
+    "PackageDirsInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageSymlinkInfo",
 )
 load(
     "//tests/util:defs.bzl",
     "directory",
     "fake_artifact",
     "generic_base_case_test",
-    "generic_negative_test"
+    "generic_negative_test",
 )
-load("@bazel_skylib//lib:new_sets.bzl", "sets")
-load("@rules_python//python:defs.bzl", "py_test")
 
 ##########
 # Helpers
@@ -62,10 +63,10 @@ def _pkg_files_contents_test_impl(ctx):
     for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
         asserts.true(
             got in expected_dests,
-            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests))
+            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests),
+        )
         n_found += 1
     asserts.equals(env, len(expected_dests), n_found)
-
 
     # Simple equality checks for the others, if specified
     if ctx.attr.expected_attributes:
@@ -83,12 +84,12 @@ def _pkg_files_contents_test_impl(ctx):
 pkg_files_contents_test = analysistest.make(
     _pkg_files_contents_test_impl,
     attrs = {
+        "expected_attributes": attr.string(),
         # Other attributes can be tested here, but the most important one is the
         # destinations.
         "expected_dests": attr.string_list(
             mandatory = True,
         ),
-        "expected_attributes": attr.string(),
     },
 )
 
@@ -468,7 +469,6 @@ def _test_pkg_files_rename():
         target_under_test = ":pf_directory_rename_to_empty_g",
     )
 
-
 ##########
 # Test pkg_mkdirs
 ##########
@@ -583,9 +583,9 @@ def _pkg_mklink_contents_test_impl(ctx):
 pkg_mklink_contents_test = analysistest.make(
     _pkg_mklink_contents_test_impl,
     attrs = {
-        "expected_src": attr.string(mandatory = True),
-        "expected_dest": attr.string(mandatory = True),
         "expected_attributes": attr.string(),
+        "expected_dest": attr.string(mandatory = True),
+        "expected_src": attr.string(mandatory = True),
     },
 )
 
@@ -700,12 +700,12 @@ def _pkg_filegroup_contents_test_impl(ctx):
 pkg_filegroup_contents_test = analysistest.make(
     _pkg_filegroup_contents_test_impl,
     attrs = {
-        "expected_pkg_files": attr.label_list(
-            providers = [PackageFilesInfo],
-            default = [],
-        ),
         "expected_pkg_dirs": attr.label_list(
             providers = [PackageDirsInfo],
+            default = [],
+        ),
+        "expected_pkg_files": attr.label_list(
+            providers = [PackageFilesInfo],
             default = [],
         ),
         "expected_pkg_symlinks": attr.label_list(
@@ -883,6 +883,7 @@ def _strip_prefix_test_impl(ctx):
 
 strip_prefix_test = unittest.make(_strip_prefix_test_impl)
 
+# buildifier: disable=unnamed-macro
 def mappings_analysis_tests():
     """Declare mappings.bzl analysis tests"""
     _test_pkg_files_contents()
@@ -958,8 +959,8 @@ def _gen_manifest_test_main_impl(ctx):
 _gen_manifest_test_main = rule(
     implementation = _gen_manifest_test_main_impl,
     attrs = {
-        "out": attr.output(mandatory = True),
         "expected": attr.string(mandatory = True),
+        "out": attr.output(mandatory = True),
         "target": attr.string(mandatory = True),
         "test_name": attr.string(mandatory = True),
         "_template": attr.label(
@@ -969,7 +970,6 @@ _gen_manifest_test_main = rule(
     },
 )
 
-
 def manifest_golden_test(name, target, expected):
     """Tests that a content manifest file matches a golden copy.
 
@@ -977,9 +977,10 @@ def manifest_golden_test(name, target, expected):
     expected content.
 
     Args:
-      target: A target which produces a content manifest with the name
-          <target> + ".manifest"
-      expected: label of a file containing the expected content.
+        name: The name of this target
+        target: A target which produces a content manifest with the name
+            <target> + ".manifest"
+        expected: label of a file containing the expected content.
     """
     _gen_manifest_test_main(
         name = name + "_main",

@@ -16,10 +16,10 @@
 RpmbuildInfo = provider(
     doc = """Platform inde artifact.""",
     fields = {
-        "name": "The name of the toolchain",
-        "valid": "Is this toolchain valid and usable?",
         "label": "The path to a target I will build",
+        "name": "The name of the toolchain",
         "path": "The path to a pre-built rpmbuild",
+        "valid": "Is this toolchain valid and usable?",
     },
 )
 
@@ -65,5 +65,6 @@ is_rpmbuild_available = rule(
     toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
 )
 
+# buildifier: disable=unnamed-macro
 def rpmbuild_register_toolchains():
     native.register_toolchains("@rules_pkg//toolchains:rpmbuild_missing_toolchain")

@@ -33,11 +33,6 @@ debian_upload = rule(
     implementation = _debian_upload_impl,
     doc = """A demonstraion of consuming PackageArtifactInfo to get a file name.""",
     attrs = {
-        "package": attr.label(
-            doc = "Package to upload",
-            mandatory = True,
-            providers = [PackageArtifactInfo],
-        ),
         "host": attr.string(
             doc = "Host to upload to",
             mandatory = True,
@@ -45,6 +40,11 @@ debian_upload = rule(
         "out": attr.output(
             doc = "Script file to create.",
             mandatory = True,
+        ),
+        "package": attr.label(
+            doc = "Package to upload",
+            mandatory = True,
+            providers = [PackageArtifactInfo],
         ),
     },
 )

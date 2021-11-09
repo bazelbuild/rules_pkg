@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# buildifier: disable=module-docstring
 _script_content = """
 BASE=$(pwd)
 WORKSPACE=$(dirname $(readlink WORKSPACE))
@@ -20,14 +21,14 @@ $BASE/{update_deb_packages} {args} $@
 """
 
 def _update_deb_packages_script_impl(ctx):
-  args = ctx.attr.args
-  script_content = _script_content.format(update_deb_packages=ctx.file._update_deb_packages.short_path, args=" ".join(args))
-  script_file = ctx.new_file(ctx.label.name+".bash")
-  ctx.file_action(output=script_file, executable=True, content=script_content)
-  return struct(
-    files = depset([script_file]),
-    runfiles = ctx.runfiles([ctx.file._update_deb_packages])
-  )
+    args = ctx.attr.args
+    script_content = _script_content.format(update_deb_packages = ctx.file._update_deb_packages.short_path, args = " ".join(args))
+    script_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    ctx.actions.write(output = script_file, is_executable = True, content = script_content)
+    return DefaultInfo(
+        files = depset([script_file]),
+        runfiles = ctx.runfiles([ctx.file._update_deb_packages]),
+    )
 
 _update_deb_packages_script = rule(
     _update_deb_packages_script_impl,
@@ -44,15 +45,15 @@ _update_deb_packages_script = rule(
 )
 
 def update_deb_packages(name, pgp_keys, **kwargs):
-  script_name = name+"_script"
-  _update_deb_packages_script(
-      name = script_name,
-      tags = ["manual"],
-      **kwargs
-  )
-  native.sh_binary(
-      name = name,
-      srcs = [script_name],
-      data = ["//:WORKSPACE"] + pgp_keys,
-      tags = ["manual"],
-  )
+    script_name = name + "_script"
+    _update_deb_packages_script(
+        name = script_name,
+        tags = ["manual"],
+        **kwargs
+    )
+    native.sh_binary(
+        name = name,
+        srcs = [script_name],
+        data = ["//:WORKSPACE"] + pgp_keys,
+        tags = ["manual"],
+    )

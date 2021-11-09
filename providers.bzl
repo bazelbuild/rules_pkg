@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//pkg:providers.bzl",
+# buildifier: disable=module-docstring
+load(
+    "//pkg:providers.bzl",
     _PackageArtifactInfo = "PackageArtifactInfo",
     _PackageDirsInfo = "PackageDirsInfo",
     _PackageFilegroupInfo = "PackageFilegroupInfo",

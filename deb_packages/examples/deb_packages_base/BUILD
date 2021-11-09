@@ -1,3 +1,12 @@
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@debian_jessie_amd64//debs:deb_packages.bzl", "debian_jessie_amd64")
+load("@debian_stretch_amd64//debs:deb_packages.bzl", "debian_stretch_amd64")
+load("@io_bazel_rules_docker//contrib:passwd.bzl", "passwd_file")
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
+load("//examples/deb_packages/deb_packages_base:cacerts.bzl", "cacerts")
+
 package(default_visibility = ["//visibility:public"])
 
 # Extracting the ca-certificates deb package
@@ -20,12 +29,6 @@ genrule(
            tar -cf $@ busybox",
 )
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
-load("@io_bazel_rules_docker//contrib:passwd.bzl", "passwd_file")
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-
 # Create a default passwd_file rule and put it in a tarball.
 
 passwd_file(
@@ -42,10 +45,6 @@ pkg_tar(
     mode = "0644",
     package_dir = "etc",
 )
-
-load("//examples/deb_packages/deb_packages_base:cacerts.bzl", "cacerts")
-load("@debian_jessie_amd64//debs:deb_packages.bzl", "debian_jessie_amd64")
-load("@debian_stretch_amd64//debs:deb_packages.bzl", "debian_stretch_amd64")
 
 cacerts(
     name = "cacerts_jessie",

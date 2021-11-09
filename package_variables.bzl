@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//pkg/package_variables.bzl",
+# buildifier: disable=module-docstring
+load(
+    "//pkg/package_variables.bzl",
     _add_ctx_variables = "add_ctx_variables",
 )
+
 add_ctx_variables = _add_ctx_variables

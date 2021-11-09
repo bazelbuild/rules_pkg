@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//pkg:rpm.bzl",
+# buildifier: disable=module-docstring
+load(
+    "//pkg:rpm.bzl",
     _pkg_rpm = "pkg_rpm",
 )
+
 pkg_rpm = _pkg_rpm

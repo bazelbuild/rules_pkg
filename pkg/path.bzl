@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions that don't depend on Skylark, so can be unit tested."""
+"""Helper functions that don't depend on Starlark, so can be unit tested."""
 
+# buildifier: disable=function-docstring-return
+# buildifier: disable=function-docstring-args
 def safe_short_path(file_):
     """Like `File.short_path` but safe for use with files from external repositories.
     """
@@ -27,7 +29,7 @@ def safe_short_path(file_):
     # Beginning with `file_.path`, remove optional `F.root.path`.
     working_path = file_.path
     if not file_.is_source:
-        working_path = working_path[len(file_.root.path)+1:]
+        working_path = working_path[len(file_.root.path) + 1:]
     return working_path
 
 def _short_path_dirname(path):
@@ -39,6 +41,8 @@ def _short_path_dirname(path):
         return ""
     return sp[:last_pkg]
 
+# buildifier: disable=function-docstring-args
+# buildifier: disable=function-docstring-return
 def dest_path(f, strip_prefix, data_path_without_prefix = ""):
     """Returns the short path of f, stripped of strip_prefix."""
     f_short_path = safe_short_path(f)
@@ -56,23 +60,24 @@ def dest_path(f, strip_prefix, data_path_without_prefix = ""):
 
         # Avoid stripping prefix if final directory is incomplete
         if prefix_last_dir not in f_short_path.split("/"):
-          strip_prefix = data_path_without_prefix
+            strip_prefix = data_path_without_prefix
 
         return f_short_path[len(strip_prefix):]
     return f_short_path
 
+# buildifier: disable=function-docstring-return
 def compute_data_path(ctx, data_path):
     """Compute the relative data path prefix from the data_path attribute.
 
     Args:
-      ctx: rule implementation ctx.
-      data_path: path to a file, relative to the package of the rule ctx.
+        ctx: rule implementation ctx.
+        data_path: path to a file, relative to the package of the rule ctx.
     """
     build_dir = ctx.label.package
     if data_path:
         # Strip ./ from the beginning if specified.
         # There is no way to handle .// correctly (no function that would make
-        # that possible and Skylark is not turing complete) so just consider it
+        # that possible and Starlark is not turing complete) so just consider it
         # as an absolute path.
         if len(data_path) >= 2 and data_path[0:2] == "./":
             data_path = data_path[2:]

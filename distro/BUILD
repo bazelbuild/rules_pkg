@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_python//python:defs.bzl", "py_test")
 load("//:version.bzl", "version")
 load("//pkg:pkg.bzl", "pkg_tar")
 load("//pkg/releasing:defs.bzl", "print_rel_notes")
 load("//pkg/releasing:git.bzl", "git_changelog")
-load("@rules_python//python:defs.bzl", "py_test")
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 licenses(["notice"])
 

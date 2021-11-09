@@ -14,6 +14,7 @@
 
 """Tests for RPM generation analysis"""
 
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load(
     "//pkg:mappings.bzl",
     "pkg_filegroup",
@@ -21,10 +22,9 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
 )
-load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 load("//pkg:rpm.bzl", "pkg_rpm")
-load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
+load("//tests/util:defs.bzl", "generic_base_case_test", "generic_negative_test")
 
 def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):
     pfg_name = "{}_pfg".format(name)
@@ -191,7 +191,6 @@ def _package_naming_test_impl(ctx):
         elif f.basename == ctx.attr.expected_default_name and not default_name_found:
             default_name_found = True
 
-
     asserts.true(
         env,
         packaged_file != None,
@@ -215,8 +214,8 @@ def _package_naming_test_impl(ctx):
 package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {
-        "expected_name": attr.string(),
         "expected_default_name": attr.string(),
+        "expected_name": attr.string(),
     },
 )
 
@@ -225,8 +224,8 @@ def _dummy_pkg_variables_impl(ctx):
     return [
         PackageVariablesInfo(
             values = {
-                "FOO": "foo",
                 "BAR": "bar",
+                "FOO": "foo",
             },
         ),
     ]

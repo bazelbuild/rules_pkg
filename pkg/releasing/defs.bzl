@@ -1,3 +1,5 @@
+# buildifier: disable=module-docstring
+# buildifier: disable=function-docstring
 def print_rel_notes(
         name,
         repo,
@@ -10,6 +12,7 @@ def print_rel_notes(
         changelog = None,
         mirror_host = None):
     tarball_name = ":%s-%s.tar.gz" % (repo, version)
+
     # Must use Label to get a path relative to the rules_pkg repository,
     # instead of the calling BUILD file.
     print_rel_notes_helper = Label("//pkg/releasing:print_rel_notes")
@@ -29,6 +32,7 @@ def print_rel_notes(
         cmd.append("--toolchains_method=%s" % toolchains_method)
     if changelog:
         cmd.append("--changelog=$(location %s)" % changelog)
+
         # We should depend on a changelog as a tool so that it is always built
         # for the host configuration. If the changelog is generated on the fly,
         # then we would have to run commands against our revision control

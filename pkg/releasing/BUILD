@@ -1,5 +1,4 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
-load("git.bzl", "git_changelog")
 
 licenses(["notice"])
 
@@ -21,10 +20,11 @@ package(
 filegroup(
     name = "standard_package",
     srcs = glob([
-        "BUILD",
         "*.bzl",
         "*.py",
-    ]),
+    ]) + [
+        "BUILD",
+    ],
     visibility = ["//distro:__pkg__"],
 )
 

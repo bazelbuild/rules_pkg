@@ -13,14 +13,14 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("my_package_name.bzl", "my_package_naming")
-load("path_test.bzl", "path_tests")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("//pkg:deb.bzl", "pkg_deb")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 load("//pkg:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar", "pkg_zip")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
-load("@rules_python//python:defs.bzl", "py_test")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("my_package_name.bzl", "my_package_naming")
+load("path_test.bzl", "path_tests")
 
 licenses(["notice"])
 

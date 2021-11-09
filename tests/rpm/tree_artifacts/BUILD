@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
@@ -22,7 +23,6 @@ load(
 )
 load("//pkg:rpm.bzl", "pkg_rpm")
 load("//tests/util:defs.bzl", "directory")
-load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################
 # Test handling of directory outputs

@@ -13,19 +13,10 @@
 # limitations under the License.
 """Rules for manipulation of various packaging."""
 
-load(":path.bzl", "compute_data_path", "dest_path")
-load(
-    ":providers.bzl",
-    "PackageArtifactInfo",
-    "PackageFilegroupInfo",
-    "PackageFilesInfo",
-    "PackageVariablesInfo",
-)
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
     "add_empty_file",
-    "add_label_list",
     "add_single_file",
     "add_symlink",
     "add_tree_artifact",
@@ -34,6 +25,12 @@ load(
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 load("//pkg/private/deb:deb.bzl", _pkg_deb = "pkg_deb")
+load(":path.bzl", "compute_data_path", "dest_path")
+load(
+    ":providers.bzl",
+    "PackageArtifactInfo",
+    "PackageVariablesInfo",
+)
 
 pkg_deb = _pkg_deb
 
@@ -112,7 +109,7 @@ def _pkg_tar_impl(ctx):
                 compression = "gz"
             if compression:
                 if compression in SUPPORTED_TAR_COMPRESSIONS:
-                    args += ["--compression=%s" % compression]
+                    args.append("--compression=%s" % compression)
                 else:
                     fail("Unsupported compression: '%s'" % compression)
 
@@ -258,48 +255,6 @@ def _pkg_tar_impl(ctx):
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
-        "strip_prefix": attr.string(),
-        "package_base": attr.string(default = "./"),
-        "package_dir": attr.string(),
-        "package_dir_file": attr.label(allow_single_file = True),
-        "deps": attr.label_list(allow_files = tar_filetype),
-        "srcs": attr.label_list(allow_files = True),
-        "files": attr.label_keyed_string_dict(allow_files = True),
-        "mode": attr.string(default = "0555"),
-        "modes": attr.string_dict(),
-        "mtime": attr.int(default = _DEFAULT_MTIME),
-        "portable_mtime": attr.bool(default = True),
-        "owner": attr.string(default = "0.0"),
-        "ownername": attr.string(default = "."),
-        "owners": attr.string_dict(),
-        "ownernames": attr.string_dict(),
-        "extension": attr.string(default = "tar"),
-        "symlinks": attr.string_dict(),
-        "empty_files": attr.string_list(),
-        "include_runfiles": attr.bool(),
-        "empty_dirs": attr.string_list(),
-        "remap_paths": attr.string_dict(),
-        "compressor": attr.label(executable = True, cfg = "exec"),
-        "compressor_args": attr.string(),
-
-        # Common attributes
-        "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
-        "package_variables": attr.label(
-            doc = "See Common Attributes",
-            providers = [PackageVariablesInfo],
-        ),
-        "stamp": attr.int(
-            doc = """Enable file time stamping.  Possible values:<ul>
-<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
-<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
-<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
-</ul>""",
-            default = 0,
-        ),
-        # Is --stamp set on the command line?
-        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
-        "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
         "build_tar": attr.label(
@@ -308,10 +263,53 @@ pkg_tar_impl = rule(
             executable = True,
             allow_files = True,
         ),
+        "compressor": attr.label(executable = True, cfg = "exec"),
+        "compressor_args": attr.string(),
+        "deps": attr.label_list(allow_files = tar_filetype),
+        "empty_dirs": attr.string_list(),
+        "empty_files": attr.string_list(),
+        "extension": attr.string(default = "tar"),
+        "files": attr.label_keyed_string_dict(allow_files = True),
+        "include_runfiles": attr.bool(),
+        "mode": attr.string(default = "0555"),
+        "modes": attr.string_dict(),
+        "mtime": attr.int(default = _DEFAULT_MTIME),
+
+        # Common attributes
+        "out": attr.output(mandatory = True),
+        "owner": attr.string(default = "0.0"),
+        "ownername": attr.string(default = "."),
+        "ownernames": attr.string_dict(),
+        "owners": attr.string_dict(),
+        "package_base": attr.string(default = "./"),
+        "package_dir": attr.string(),
+        "package_dir_file": attr.label(allow_single_file = True),
+        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_variables": attr.label(
+            doc = "See Common Attributes",
+            providers = [PackageVariablesInfo],
+        ),
+        "portable_mtime": attr.bool(default = True),
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
+        "remap_paths": attr.string_dict(),
+        "srcs": attr.label_list(allow_files = True),
+        "stamp": attr.int(
+            doc = """Enable file time stamping.  Possible values:<ul>
+<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
+<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
+<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
+</ul>""",
+            default = 0,
+        ),
+        "strip_prefix": attr.string(),
+        "symlinks": attr.string_dict(),
     },
     provides = [PackageArtifactInfo],
 )
 
+# buildifier: disable=function-docstring-args
 def pkg_tar(name, **kwargs):
     """Creates a .tar file. See pkg_tar_impl."""
 
@@ -347,7 +345,6 @@ def pkg_tar(name, **kwargs):
         }),
         **kwargs
     )
-
 
 def _pkg_zip_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
@@ -432,18 +429,20 @@ pkg_zip_impl = rule(
     implementation = _pkg_zip_impl,
     attrs = {
         "mode": attr.string(default = "0555"),
-        "package_dir": attr.string(default = "/"),
-        "srcs": attr.label_list(allow_files = True),
-        "strip_prefix": attr.string(),
-        "timestamp": attr.int(default = 315532800),
 
         # Common attributes
         "out": attr.output(mandatory = True),
+        "package_dir": attr.string(default = "/"),
         "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
             doc = "See Common Attributes",
             providers = [PackageVariablesInfo],
         ),
+
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
+        "srcs": attr.label_list(allow_files = True),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:<ul>
 <li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
@@ -452,10 +451,8 @@ pkg_zip_impl = rule(
 </ul>""",
             default = 0,
         ),
-
-        # Is --stamp set on the command line?
-        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
-        "private_stamp_detect": attr.bool(default = False),
+        "strip_prefix": attr.string(),
+        "timestamp": attr.int(default = 315532800),
 
         # Implicit dependencies.
         "_build_zip": attr.label(
@@ -468,6 +465,7 @@ pkg_zip_impl = rule(
     provides = [PackageArtifactInfo],
 )
 
+# buildifier: disable=function-docstring-args
 def pkg_zip(name, **kwargs):
     """Creates a .zip file. See pkg_zip_impl."""
     extension = kwargs.pop("extension", None)

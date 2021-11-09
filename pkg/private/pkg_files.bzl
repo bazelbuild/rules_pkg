@@ -34,7 +34,6 @@ Concepts and terms:
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
@@ -49,21 +48,23 @@ ENTRY_IS_DIR = 2  # Entry is an empty dir
 ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
 ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
 
+# buildifier: disable=name-conventions
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
     fields = {
-        "src": "source file",
-        "mode": "mode, or empty",
-        "user": "user, or empty",
+        "entry_type": "int. See ENTRY_IS_* values above.",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "entry_type": "int. See ENTRY_IS_* values above.",
+        "mode": "mode, or empty",
         "origin": "target which added this",
+        "src": "source file",
+        "user": "user, or empty",
     },
 )
 
 def _check_dest(content_map, dest, src, origin):
     old_entry = content_map.get(dest)
+
     # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob
@@ -87,7 +88,7 @@ def _merge_attributes(info, mode, user, group):
 def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
-        dest = dir.strip('/')
+        dest = dir.strip("/")
         _check_dest(content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
@@ -101,7 +102,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
 def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
-        dest = filename.strip('/')
+        dest = filename.strip("/")
         _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
@@ -190,7 +191,7 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
         found_info = True
     return found_info
 
-def add_directory(content_map, dir_path, origin, mode=None, user=None, group=None):
+def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None):
     """Add an empty directory to the content map.
 
     Args:
@@ -210,7 +211,7 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
         group = group,
     )
 
-def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=None):
+def add_empty_file(content_map, dest_path, origin, mode = None, user = None, group = None):
     """Add a single file to the content map.
 
     Args:
@@ -221,7 +222,7 @@ def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=N
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    dest = dest_path.strip('/')
+    dest = dest_path.strip("/")
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
@@ -286,7 +287,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    dest = dest_path.strip('/')
+    dest = dest_path.strip("/")
     _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
@@ -341,7 +342,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         group = group,
     )
 
-def write_manifest(ctx, manifest_file, content_map, use_short_path=False):
+def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
     """Write a content map to a manifest file.
 
     The format of this file is currently undocumented, as it is a private
@@ -359,9 +360,11 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path=False):
     ctx.actions.write(
         manifest_file,
         "[\n" + ",\n".join(
-            [_encode_manifest_entry(dst, content_map[dst], use_short_path)
-             for dst in sorted(content_map.keys())]
-            ) + "\n]\n"
+            [
+                _encode_manifest_entry(dst, content_map[dst], use_short_path)
+                for dst in sorted(content_map.keys())
+            ],
+        ) + "\n]\n",
     )
 
 def _encode_manifest_entry(dest, df, use_short_path):
@@ -369,6 +372,7 @@ def _encode_manifest_entry(dest, df, use_short_path):
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
+
     elif hasattr(df, "link_to"):
         src = df.link_to
         entry_type = ENTRY_IS_LINK

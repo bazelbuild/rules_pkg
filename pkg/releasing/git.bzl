@@ -63,11 +63,11 @@ _git_changelog = rule(
             doc = "lower commit ref. The default is to use the latest tag",
             default = "_LATEST_TAG_",
         ),
+        "out": attr.output(mandatory = True),
         "to_ref": attr.string(
             doc = "upper commit ref. The default is HEAD",
             default = "HEAD",
         ),
-        "out": attr.output(mandatory = True),
         "verbose": attr.bool(
             doc = "Be verbose",
             default = False,
@@ -83,7 +83,6 @@ _git_changelog = rule(
     toolchains = ["@rules_pkg//toolchains/git:git_toolchain_type"],
 )
 
-
 def git_changelog(name, **kwargs):
     _git_changelog(
         name = name,
@@ -93,5 +92,5 @@ def git_changelog(name, **kwargs):
             str(Label("//toolchains/git:have_git")): [],
             "//conditions:default": ["//:not_compatible"],
         }),
-        **kwargs,
+        **kwargs
     )

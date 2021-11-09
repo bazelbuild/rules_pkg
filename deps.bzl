@@ -17,6 +17,7 @@
 #     load("//pkg:deps.bzl", "rules_pkg_dependencies")
 # going forward.
 
+# buildifier: disable=module-docstring
 load("//pkg:deps.bzl", _rules_pkg_dependencies = "rules_pkg_dependencies")
 
 rules_pkg_dependencies = _rules_pkg_dependencies

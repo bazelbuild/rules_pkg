@@ -19,9 +19,9 @@ run`-able installation script.
 
 """
 
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load("//pkg/private:pkg_files.bzl", "process_src", "write_manifest")
-load("@rules_python//python:defs.bzl", "py_binary")
 
 def _pkg_install_script_impl(ctx):
     script_file = ctx.actions.declare_file(ctx.attr.name + ".py")
@@ -50,7 +50,7 @@ def _pkg_install_script_impl(ctx):
     # This is super brittle, but I don't know how to otherwise get this
     # information without creating a circular dependency given the current state
     # of rules_python.
-    
+
     # The name of the binary is the name of this target, minus
     # "_install_script".
     label_str = str(ctx.label)[:-len("_install_script")]
@@ -60,11 +60,11 @@ def _pkg_install_script_impl(ctx):
         output = script_file,
         substitutions = {
             "{MANIFEST_INCLUSION}": manifest_file.short_path,
+            # Used to annotate --help with "bazel run //path/to/your:installer"
+            "{TARGET_LABEL}": label_str,
             # This is used to extend the manifest paths when the script is run
             # inside a build.
             "{WORKSPACE_NAME}": ctx.workspace_name,
-            # Used to annotate --help with "bazel run //path/to/your:installer"
-            "{TARGET_LABEL}": label_str,
         },
         is_executable = True,
     )
@@ -141,7 +141,7 @@ def pkg_install(name, srcs, **kwargs):
     ```
     bazel run -- //path/to:install --help
     ```
-    
+
     WARNING: While this rule does function when being run from within a bazel
     rule, such use is not recommended.  If you do, **always** use the
     `--destdir` argument to specify the desired location for the installation to

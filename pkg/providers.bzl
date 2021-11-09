@@ -84,8 +84,8 @@ PackageFilegroupInfo = provider(
 
     """,
     fields = {
-        "pkg_files": "list of tuples of (PackageFilesInfo, origin)",
         "pkg_dirs": "list of tuples of (PackageDirsInfo, origin)",
+        "pkg_files": "list of tuples of (PackageFilesInfo, origin)",
         "pkg_symlinks": "list of tuples of (PackageSymlinkInfo, origin)",
     },
 )
