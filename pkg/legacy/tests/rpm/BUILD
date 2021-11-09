@@ -17,7 +17,10 @@ load("//pkg:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(
     name = "test-rpm",
-    data = ["//tests:archive_testdata"],
+    data = [
+        "BUILD",
+        "//pkg/legacy:rpm.bzl",
+    ],
     debug = 1,
     release = "0",
     spec_file = "test_rpm.spec",
