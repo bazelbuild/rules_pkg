@@ -1,3 +1,7 @@
+buildifier:
+  version: latest
+  warnings: "all"
+
 imports:
 - tests.yml
 - examples_naming.yml
