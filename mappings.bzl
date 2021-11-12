@@ -21,7 +21,10 @@ load(
     _pkg_mkdirs = "pkg_mkdirs",
     _pkg_mklink = "pkg_mklink",
     _strip_prefix = "strip_prefix",
+    _REMOVE_BASE_DIRECTORY = "REMOVE_BASE_DIRECTORY",
 )
+
+REMOVE_BASE_DIRECTORY = _REMOVE_BASE_DIRECTORY
 
 filter_directory = _filter_directory
 
