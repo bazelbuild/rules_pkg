@@ -68,7 +68,10 @@ def compute_data_path(ctx, data_path):
       ctx: rule implementation ctx.
       data_path: path to a file, relative to the package of the rule ctx.
     """
-    build_dir = ctx.label.package
+    build_dir = ctx.label.workspace_root
+    if ctx.label.workspace_root and ctx.label.package:
+        build_dir += "/"
+    build_dir += ctx.label.package
     if data_path:
         # Strip ./ from the beginning if specified.
         # There is no way to handle .// correctly (no function that would make
