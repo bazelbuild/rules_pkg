@@ -65,3 +65,12 @@ local_repository(
     name = "mappings_test_external_repo",
     path = "tests/mappings/external_repo",
 )
+
+# This repository is used to test pkg_tar rule itself.
+local_repository(
+    name = "rules_pkg_test_workspace",
+    path = ".",
+    repo_mapping = {
+        "@rules_pkg": "@",
+    },
+)

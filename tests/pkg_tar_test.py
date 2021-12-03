@@ -39,7 +39,10 @@ class PkgTarTest(unittest.TestCase):
     """
     # NOTE: This is portable to Windows. os.path.join('rules_pkg', 'tests',
     # filename) is not.
-    file_path = runfiles.Create().Rlocation('rules_pkg/tests/' + file_name)
+    if file_name[0] == '/':
+      file_path = runfiles.Create().Rlocation(file_name[1:])
+    else:
+      file_path = runfiles.Create().Rlocation('rules_pkg/tests/' + file_name)
     with tarfile.open(file_path, 'r:*') as f:
       i = 0
       for info in f:
@@ -93,6 +96,14 @@ class PkgTarTest(unittest.TestCase):
         {'name': './etc/nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-substring.tar', content)
+
+  def test_strip_prefix_external_workspace(self):
+    content = [
+        {'name': '.', 'isdir': True},
+        {'name': './BUILD'},
+    ]
+    self.assertTarFileContent('/rules_pkg_test_workspace/tests/test-tar-strip_prefix-external_workspace.tar', content)
+
 
   def test_strip_prefix_dot(self):
     content = [

@@ -420,6 +420,15 @@ pkg_tar(
 )
 
 pkg_tar(
+    name = "test-tar-strip_prefix-external_workspace",
+    srcs = [
+         "BUILD",
+    ],
+    strip_prefix = ".",
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
     name = "test-tar-files_dict",
     files = {
         ":etc/nsswitch.conf": "not-etc/mapped-filename.conf",
@@ -493,6 +502,7 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+        "@rules_pkg_test_workspace//tests:test-tar-strip_prefix-external_workspace",
         ":test_tar_package_dir_substitution.tar",
         ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
