@@ -5,7 +5,7 @@ NOTE: This is perpetually a work in progress. We will revise it as we need.
 ## PR guidelines
 
 Please discuss proposed major features and structural changes before sending a
-PR. The best way to do that is to
+PR. The best way to do that is to do one or more of the following.
 
 1.  Create an an issue
 1.  Discuss it in the issue or in rules-pkg-discuss@googlegroups.com
@@ -15,7 +15,7 @@ PR. The best way to do that is to
 ### A few small PRs are better than one big one.
 
 If you need to refactor a lot of code before you can add new behavior, please
-send a refactoring CL first (which should not add or change tests), then send a
+send a refactoring PR first (which should not add or change tests), then send a
 smaller change that implements the new behavior.
 
 ## Functionality
@@ -24,7 +24,7 @@ smaller change that implements the new behavior.
 
 -   Favor solutions that can be reused for all package formats. We will not
     accept contributions that add specific features to one package format when
-    they could be incorporated into existing pkg_files and related rules such
+    they could be incorporated into existing `pkg_files` and related rules such
     that they could be used by all formats.
 -   We are moving towards aligning attribute names across rules. If we want
     backwards compatibility with older versions, do that in the macro wrapper.
@@ -40,7 +40,7 @@ smaller change that implements the new behavior.
 
 ### Portability
 
--   All of the code must work on Linux, macos, and Windows. Other OSes are
+-   All of the code must work on Linux, macOS, and Windows. Other OSes are
     optional, but we do not have CI to ensure it. If you are making changes that
     require something specifically for portability, your change should include
     inline comments about why, so a future maintainer does not accidentally
@@ -51,7 +51,7 @@ smaller change that implements the new behavior.
 
 ### Major features require commitment
 
-We would love to have features like an MSI builder or macos application support.
+We would love to have features like an MSI builder or macOS application support.
 Before accepting a PR for something like that, we want to know that your
 organization will commit to maintaining that feature and responding to issues.
 
@@ -59,11 +59,20 @@ organization will commit to maintaining that feature and responding to issues.
 
 ### Repository structure: run time vs build time
 
--   pkg/... contains what is needed at run time. Everything else is not `part of
+-   pkg/... contains what is needed at run time. Everything else is not part of
     the packaged distribution releases.
 -   docs/... is served as github pages. We mostly generate that rather than edit
     by hand.
 -   distro/... contains the rules to create the distribution package.
+-   examples/... contains runnable examples  which serve as additional
+    documentation. These are tested in CI.
+-   tests/... contains unit and integration tests. It is a distinct folder so
+    that it is not needed in the distribution runtime.
+-   <root> contains shims for the .bzl files in pkg/*.bzl. They add backwards
+    compatibility to to older releases.
+
+Additionally:
+-   deb_packages/... is defunct and unsupported.
 
 ### Starlark style
 
@@ -71,10 +80,10 @@ organization will commit to maintaining that feature and responding to issues.
     must update the docstring to explain it.
 -   Add docstrings args defined in macros. We are targeting the future time when
     stardoc can build unified documentation for the rule and the wrapper.
--   Actions should not write quoted strings to command lings. If your rule must
+-   Actions should not write quoted strings to command lines. If your rule must
     pass file paths to another program, write the paths to an intermediate file
     and pass that as an arg to the other program.
-    (See #214)[https://github.com/bazelbuild/rules_pkg/issues/214].
+    [See #214](https://github.com/bazelbuild/rules_pkg/issues/214).
 
 ### Python style
 
