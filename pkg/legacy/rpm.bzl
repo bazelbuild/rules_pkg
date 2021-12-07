@@ -162,6 +162,7 @@ def _pkg_rpm_outputs(version, release):
 
 # Define the rule.
 pkg_rpm = rule(
+    doc = "Legacy version",
     attrs = {
         "spec_file": attr.label(
             mandatory = True,
