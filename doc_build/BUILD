@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//:version.bzl", "version")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
-
-package(
-    default_visibility = ["//visibility:private"],
-)
+load("//:version.bzl", "version")
 
 # HOW TO:
 #   bazel build //doc_build:reference
@@ -45,7 +41,7 @@ ORDER = [
 
 genrule(
     name = "reference",
-    srcs = ["%s.md" % rule for rule,_ in ORDER],
+    srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
     cmd = "cat $(SRCS) >$@",
 )
@@ -60,7 +56,8 @@ genrule(
         ],
         deps = [":rules_pkg_lib"],
     )
-    for rule, src in ORDER if src
+    for rule, src in ORDER
+    if src
 ]
 
 genrule(
