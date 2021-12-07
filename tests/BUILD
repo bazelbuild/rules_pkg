@@ -62,12 +62,6 @@ py_test(
     ],
 )
 
-copy_file(
-    name = "zipcontent_loremipsum",
-    src = "testdata/loremipsum.txt",
-    out = "zipcontent/loremipsum.txt",
-)
-
 #
 # Tests for package_file_name
 #
