@@ -14,6 +14,7 @@
 # -*- coding: utf-8 -*-
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load(
     "//pkg:mappings.bzl",
@@ -310,7 +311,60 @@ sh_library(
 )
 
 ############################################################################
-# Actual tests
+# Confirm that the %dir tag is being applied properly (#473)
+############################################################################
+
+pkg_mkdirs(
+    name = "dirtest_dirs",
+    dirs = [
+        "dir",
+    ],
+    attributes = pkg_attributes(mode = "0755"),
+)
+
+pkg_files(
+    name = "dirtest_file",
+    srcs = [
+        ":config_empty",
+    ],
+    prefix = "dir",
+    attributes = pkg_attributes(mode = "0644"),
+)
+pkg_rpm(
+    name = "test_rpm_dirs",
+    srcs = [
+        # Do not sort.  Order important for testing.
+        ":dirtest_file",
+        ":dirtest_dirs",
+    ],
+    architecture = "noarch",
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    release = "2222",
+    spec_template = "template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+)
+
+genrule(
+    name = "test_rpm_dirs_contents",
+    srcs = [":test_rpm_dirs"],
+    outs = [":test_rpm_dirs_contents.txt"],
+    cmd = """
+    # pkg_rpm emits two outputs
+    RPMS=($(SRCS))
+    rpm -qp --queryformat '[%{FILEMODES:perms} %{FILENAMES}\n]' $${RPMS[0]} > $@
+    """
+)
+
+diff_test(
+    name = "test_rpm_dirs_contents_golden_test",
+    file1 = ":test_rpm_dirs_contents",
+    file2 = "test_rpm_dirs_contents.txt.golden",
+)
+
+############################################################################
+# Common tests
 ############################################################################
 
 py_library(
