@@ -18,13 +18,8 @@ This is a package description.
 %build
 
 %install
-cp -r ./tests %{buildroot}/
+cp -r ./pkg/legacy %{buildroot}/
 
 %files
-/tests/testdata/a.ar
-/tests/testdata/a_ab.ar
-/tests/testdata/a_b.ar
-/tests/testdata/a_b_ab.ar
-/tests/testdata/ab.ar
-/tests/testdata/b.ar
-/tests/testdata/config
+/legacy/rpm.bzl
+/legacy/tests/rpm/BUILD
