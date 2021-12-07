@@ -7,7 +7,7 @@ NOTE: This is perpetually a work in progress. We will revise it as we need.
 Please discuss proposed major features and structural changes before sending a
 PR. The best way to do that is to do one or more of the following.
 
-1.  Create an an issue
+1.  Create an issue
 1.  Discuss it in the issue or in rules-pkg-discuss@googlegroups.com
 1.  Bring it up at the monthly engineering meeting. (See #325 for
     details)[https://github.com/bazelbuild/rules_pkg/issues/325].
@@ -84,8 +84,18 @@ Additionally:
     pass file paths to another program, write the paths to an intermediate file
     and pass that as an arg to the other program.
     [See #214](https://github.com/bazelbuild/rules_pkg/issues/214).
+-   Run buildifier on you .bzl files before sending a PR.
 
 ### Python style
 
 -   We use Python 3. We are not trying to support Python 2 at all.
 -   Always import with a full path from the root of the source tree.
+
+### Dependencies
+
+-   No new dependencies on language toolchains. We take a dependency on Python
+    because it is generally available on all OSes.
+-   No new python package dependencies.  Use only what is part of the core
+    distribution.
+-   Other new dependencies are strongly discouraged. The exception is that we
+    may take dependencies on other modules maintained by the Bazel team.
