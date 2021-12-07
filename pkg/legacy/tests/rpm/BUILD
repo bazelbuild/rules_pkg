@@ -17,9 +17,16 @@ load("//pkg:rpm.bzl", "pkg_rpm")
 
 pkg_rpm(
     name = "test-rpm",
+    # TODO(aiuto): Replace the use of these .ar files with something more
+    # useful to testing rpm builds.
     data = [
-        "BUILD",
-        "//pkg/legacy:rpm.bzl",
+        "//tests:testdata/a.ar",
+        "//tests:testdata/a_ab.ar",
+        "//tests:testdata/a_b.ar",
+        "//tests:testdata/a_b_ab.ar",
+        "//tests:testdata/ab.ar",
+        "//tests:testdata/b.ar",
+        "//tests:testdata/config",
     ],
     debug = 1,
     release = "0",

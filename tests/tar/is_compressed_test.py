@@ -27,7 +27,7 @@ class IsCompressedTest(unittest.TestCase):
     """Get the file path to a generated archive in the runfiles."""
 
     return self.data_files.Rlocation(
-        "rules_pkg/tests/" + file_name
+        "rules_pkg/tests/tar/" + file_name
     )
 
   def is_zip_compressed(self, file_name):

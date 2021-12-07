@@ -19,7 +19,7 @@ import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
 from pkg.private import archive
-from tests import compressor
+from tests.tar import compressor
 
 
 class SimpleArFileTest(unittest.TestCase):
@@ -391,9 +391,9 @@ class TarFileWriterTest(unittest.TestCase):
     pkg_tar yields identical results.
     """
     package_dir = self.data_files.Rlocation(
-        "rules_pkg/tests/test_tar_package_dir.tar")
+        "rules_pkg/tests/tar/test_tar_package_dir.tar")
     package_dir_file = self.data_files.Rlocation(
-        "rules_pkg/tests/test_tar_package_dir_file.tar")
+        "rules_pkg/tests/tar/test_tar_package_dir_file.tar")
 
     expected_content = [
         {"name": "."},
@@ -408,7 +408,7 @@ class TarFileWriterTest(unittest.TestCase):
     original = self.data_files.Rlocation(
         "rules_pkg/tests/testdata/tar_test.tar")
     compressed = self.data_files.Rlocation(
-        "rules_pkg/tests/test_tar_compression.tar")
+        "rules_pkg/tests/tar/test_tar_compression.tar")
     expected_content = [
         {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
     ]
