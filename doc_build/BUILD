@@ -27,8 +27,9 @@ package(
 
 
 # pairs of rule name and the source file to get it from
+# buildifier: leave-alone
 ORDER = [
-    # buildifier: nosort
+    # buildifier: do not sort
     ("toc",            None),
     ("common",         None),
     ("pkg_deb",        "//pkg/private/deb:deb.bzl"),
@@ -36,8 +37,8 @@ ORDER = [
     ("pkg_rpm",        "//pkg:rpm_pfg.bzl"),
     ("pkg_tar",        "//pkg:pkg.bzl"),
     ("pkg_tar_impl",   "//pkg:pkg.bzl"),
-    ("pkg_zip",        "//pkg:pkg.bzl"),
-    ("pkg_zip_impl",   "//pkg:pkg.bzl"),
+    ("pkg_zip",        "//pkg/private/zip:zip.bzl"),
+    ("pkg_zip_impl",   "//pkg/private/zip:zip.bzl"),
     ("mappings",       None),
     ("legacy_pkg_rpm", None),
 ]
@@ -103,6 +104,7 @@ bzl_library(
         "//pkg/private:pkg_files.bzl",
         "//pkg/private:util.bzl",
         "//pkg/private/deb:deb.bzl",
+        "//pkg/private/zip:zip.bzl",
         "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:private"],

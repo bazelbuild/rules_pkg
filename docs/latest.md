@@ -360,16 +360,16 @@ pkg_zip_impl(<a href="#pkg_zip_impl-name">name</a>, <a href="#pkg_zip_impl-mode"
 | Name  | Description | Type | Mandatory | Default |
 | :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
 | name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| mode |  -   | String | optional | "0555" |
+| mode |  The default mode for all files in the archive.   | String | optional | "0555" |
 | out |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| package_dir |  -   | String | optional | "/" |
+| package_dir |  The prefix to add to all all paths in the archive.   | String | optional | "/" |
 | package_file_name |  See Common Attributes   | String | optional | "" |
 | package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | private_stamp_detect |  -   | Boolean | optional | False |
-| srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| srcs |  List of files that should be included in the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | stamp |  Enable file time stamping.  Possible values:&lt;ul&gt; &lt;li&gt;stamp = 1: Use the time of the build as the modification time of each file in the archive.&lt;/li&gt; &lt;li&gt;stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.&lt;/li&gt; &lt;li&gt;stamp = -1: Control the chosen modification time using the --[no]stamp flag.&lt;/li&gt; &lt;/ul&gt;   | Integer | optional | 0 |
 | strip_prefix |  -   | String | optional | "" |
-| timestamp |  -   | Integer | optional | 315532800 |
+| timestamp |  Time stamp to place on all files in the archive, expressed as seconds since the Unix Epoch, as per RFC 3339.  The default is January 01, 1980, 00:00 UTC.<br><br>Due to limitations in the format of zip files, values before Jan 1, 1980 will be rounded up and the precision in the zip file is limited to a granularity of 2 seconds.   | Integer | optional | 315532800 |
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
