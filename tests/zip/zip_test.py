@@ -42,7 +42,7 @@ class ZipTest(unittest.TestCase):
     """Get the file path to a generated zip in the runfiles."""
 
     return self.data_files.Rlocation(
-        "rules_pkg/tests/" + zip_file
+        "rules_pkg/tests/zip/" + zip_file
     )
 
   def setUp(self):

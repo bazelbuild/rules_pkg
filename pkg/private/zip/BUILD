@@ -24,7 +24,6 @@ filegroup(
     name = "standard_package",
     srcs = [
         "BUILD",
-        "install.py.tpl",
     ] + glob([
         "*.bzl",
         "*.py",
@@ -39,72 +38,15 @@ exports_files(
     visibility = ["//distro:__pkg__"],
 )
 
-# pkg_install's template script file
-exports_files(
-    ["install.py.tpl"],
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "private_stamp_detect",
-    values = {"stamp": "1"},
-)
-
-py_library(
-    name = "build_info",
-    srcs = [
-        "build_info.py",
-    ],
-    srcs_version = "PY3",
-    visibility = [
-        "//:__subpackages__",
-        "//tests:__pkg__",
-    ],
-)
-
-py_library(
-    name = "archive",
-    srcs = [
-        "__init__.py",
-        "archive.py",
-    ],
-    srcs_version = "PY3",
-    visibility = [
-        "//:__subpackages__",
-        "//tests:__subpackages__",
-    ],
-)
-
-py_library(
-    name = "helpers",
-    srcs = [
-        "__init__.py",
-        "helpers.py",
-    ],
-    srcs_version = "PY3",
-    visibility = [
-        "//:__subpackages__",
-        "//tests:__pkg__",
-    ],
-)
-
 py_binary(
-    name = "build_tar",
-    srcs = ["build_tar.py"],
+    name = "build_zip",
+    srcs = ["build_zip.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":archive",
-        ":build_info",
-        ":helpers",
-        ":manifest",
+        "//pkg/private:build_info",
+        "//pkg/private:helpers",
+        "//pkg/private:manifest",
     ],
-)
-
-py_library(
-    name = "manifest",
-    srcs = ["manifest.py"],
-    srcs_version = "PY3",
-    visibility = ["//visibility:public"],
 )

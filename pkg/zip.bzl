@@ -11,11 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("//pkg/private/zip:zip.bzl", _pkg_zip = "pkg_zip")
 
-load("//pkg:deb.bzl", _pkg_deb = "pkg_deb")
-load("//pkg:pkg.bzl", _pkg_tar = "pkg_tar")
-load("//pkg:zip.bzl", _pkg_zip = "pkg_zip")
-
-pkg_deb = _pkg_deb
-pkg_tar = _pkg_tar
 pkg_zip = _pkg_zip
