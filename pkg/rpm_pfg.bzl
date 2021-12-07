@@ -495,7 +495,7 @@ def _pkg_rpm_impl(ctx):
                 dep[PackageDirsInfo],
                 dep.label,  # origin label
                 None,  # group label
-                _make_filetags(dep[PackageDirsInfo].attributes),  # file_base
+                _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
                 dest_check_map,
                 packaged_directories,
                 rpm_files_list,
