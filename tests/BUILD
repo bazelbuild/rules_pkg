@@ -117,11 +117,6 @@ sh_test(
     ],
 )
 
-test_suite(
-    name = "all_windows_tests",
-    tests = [":windows_tests"],
-)
-
 pkg_tar(
     name = "stamped_tar",
     srcs = ["BUILD"],
