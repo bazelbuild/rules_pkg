@@ -26,7 +26,6 @@ licenses(["notice"])
 
 exports_files(glob(["testdata/**"]))
 
-# Used within experimental/tests/ for external repo genpkg tests
 filegroup(
     name = "loremipsum_txt",
     srcs = [
