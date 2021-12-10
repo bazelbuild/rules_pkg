@@ -16,7 +16,7 @@
 # Tests for pkg_deb specific behavior
 
 load("@rules_python//python:defs.bzl", "py_test")
-load(":deb_tests.bzl", "package_naming_test")
+load(":deb_tests.bzl", "all_files_in_default_info_test", "package_naming_test")
 load("//pkg:mappings.bzl", "pkg_mklink")
 load("//pkg:pkg.bzl", "pkg_tar")
 load("//pkg:deb.bzl", "pkg_deb")
@@ -104,8 +104,14 @@ py_test(
     ],
 )
 
+all_files_in_default_info_test(
+    name = "default_info_test",
+    expected_basename = "fizzbuzz_test_all",
+    target_under_test = ":test_deb",
+)
+
 package_naming_test(
     name = "naming_test",
-    target_under_test = ":test_deb",
     expected_name = "fizzbuzz_test_all.deb",
+    target_under_test = ":test_deb",
 )

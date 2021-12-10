@@ -163,7 +163,7 @@ def _pkg_deb_impl(ctx):
     return [
         OutputGroupInfo(**output_groups),
         DefaultInfo(
-            files = depset([output_file]),
+            files = depset(outputs),
             runfiles = ctx.runfiles(files = outputs),
         ),
         PackageArtifactInfo(
