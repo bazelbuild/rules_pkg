@@ -291,12 +291,17 @@ def _pkg_rpm_impl(ctx):
     else:
         fail("None of the release or release_file attributes were specified")
 
+    # source_date_epoch is an integer, and Bazel (as of 4.2.2) does not allow
+    # you to put "None" as the default for an "int" attribute.
+    #
+    # Since source_date_epoch cannot reasonably be negative, being zero or positive 
+    # treated the same as existing below.
     if ctx.attr.source_date_epoch_file:
-        if ctx.attr.source_date_epoch:
+        if ctx.attr.source_date_epoch >= 0:
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
         args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
         files.append(ctx.file.source_date_epoch_file)
-    elif ctx.attr.source_date_epoch != None:
+    elif ctx.attr.source_date_epoch >= 0:
         args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.summary:
@@ -748,12 +753,15 @@ pkg_rpm = rule(
             """,
         ),
         "source_date_epoch": attr.int(
-            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate repr
+            doc = """Value to export as SOURCE_DATE_EPOCH to facilitate reproducible builds
 
             Implicitly sets the `%clamp_mtime_to_source_date_epoch` in the
             subordinate call to `rpmbuild` to facilitate more consistent in-RPM
             file timestamps.
+
+            Negative values (the default) disable this feature
             """,
+            default = -1,
         ),
         "source_date_epoch_file": attr.label(
             doc = """File containing the SOURCE_DATE_EPOCH value.

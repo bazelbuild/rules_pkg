@@ -213,5 +213,42 @@ echo postun
         actual_compressor = sio.read()
         self.assertEqual(actual_compressor, 'bzip2')
 
+    def test_mtimes(self):
+        # Modification times should be something close to when the package was
+        # built.  Since we do not know when the package was actually built, we
+        # can just check for something that is non-zero.
+        #
+        # See also #486.
+        
+        filedata = rpm_util.read_rpm_filedata(
+            self.test_rpm_path,
+            query_tag_map = {
+                "FILENAMES": "path",
+                "FILEMTIMES": "mtime",
+            }
+        )
+
+        self.assertNotEqual(
+            len(filedata),
+            0,
+            "rpm_util.read_rpm_filedata produced no output"
+        )
+
+        filedata_shortened = {
+            path: int(data["mtime"])
+            for path, data in filedata.items()
+        }
+
+        files_with_zero_mtimes = dict(filter(
+            lambda kv: kv[1] == 0,
+            filedata_shortened.items(),
+        ))
+
+        self.assertDictEqual(
+            files_with_zero_mtimes,
+            {},
+            "No files should have zero mtimes without source_date_epoch or source_date_epoch_file")
+
+
 if __name__ == "__main__":
     unittest.main()

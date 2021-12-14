@@ -31,10 +31,23 @@ def get_rpm_version_as_tuple(rpm_bin_path="rpm"):
 def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
     """Helper to ease the invocation of an rpm query with a custom queryformat.
 
-    Returns any output as a UTF-8 decoded string.
+    Returns any output as a UTF-8 decoded string if the command succeeds.  If it
+    fails, throws CalledProcessException, like `subprocess.check_output`.
     """
-    return subprocess.check_output(
-        [rpm_bin_path, "-qp", "--queryformat", queryformat, rpm_file_path]).decode("utf-8")
+
+    # The RPM tooling (at least the copy I have here, 4.14.2.1) is a bit buggy:
+    #
+    # - If you don't pass "-p/--package" argument, `rpm -q --queryformat` run
+    #   against a package will always "fail" with no explanation.
+    #
+    # - If you do pass "-p/--package" argument, `rpm -q --queryformat` run
+    #   against a package will always succeed if it can a file, even when there
+    #   is an error.
+    #
+    # As a workaround, you should generally know if you're expecting output.
+    # Check if the output contains anything not whitespace, or if you're using
+    # `read_rpm_filedata`, check if the output dict is nonempty.
+    return subprocess.check_output([rpm_bin_path, "-qp", "--queryformat", queryformat, rpm_file_path]).decode("utf-8")
 
 
 # TODO(nacl): "rpm_bin_path" should be derived from a toolchain somewhere.
@@ -62,6 +75,8 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
     Check out the implementation for more details, and consult the RPM
     documentation even more more details.  You can get a list of all tags by
     invoking `rpm --querytags`.
+
+    NOTE: see also caveats in `invoke_rpm_with_queryformat`, above.
 
     """
     # It is not necessary to check for file sizes, as the hashes are
@@ -100,10 +115,13 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
 
         rpm_queryformat_fieldnames = list(query_tag_map.values())
 
-    rpm_output = subprocess.check_output(
-        [rpm_bin_path, "-qp", "--queryformat", rpm_queryformat, rpm_file_path])
+    rpm_output = invoke_rpm_with_queryformat(
+        rpm_file_path,
+        rpm_queryformat,
+        rpm_bin_path,
+    )
 
-    sio = io.StringIO(rpm_output.decode('utf-8'))
+    sio = io.StringIO(rpm_output)
     rpm_output_reader = csv.DictReader(
         sio,
         fieldnames=rpm_queryformat_fieldnames
