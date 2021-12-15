@@ -41,13 +41,19 @@ def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
     #   against a package will always "fail" with no explanation.
     #
     # - If you do pass "-p/--package" argument, `rpm -q --queryformat` run
-    #   against a package will always succeed if it can a file, even when there
-    #   is an error.
+    #   against a package will always succeed if it can read a file, even when
+    #   there is an error in some other aspect of the query.
     #
     # As a workaround, you should generally know if you're expecting output.
     # Check if the output contains anything not whitespace, or if you're using
     # `read_rpm_filedata`, check if the output dict is nonempty.
-    return subprocess.check_output([rpm_bin_path, "-qp", "--queryformat", queryformat, rpm_file_path]).decode("utf-8")
+    return subprocess.check_output([
+        rpm_bin_path,
+        "-qp",
+        "--queryformat",
+        queryformat,
+        rpm_file_path,
+    ]).decode("utf-8")
 
 
 # TODO(nacl): "rpm_bin_path" should be derived from a toolchain somewhere.

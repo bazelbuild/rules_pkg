@@ -219,10 +219,10 @@ echo postun
         # can just check for something that is non-zero.
         #
         # See also #486.
-        
+
         filedata = rpm_util.read_rpm_filedata(
             self.test_rpm_path,
-            query_tag_map = {
+            query_tag_map={
                 "FILENAMES": "path",
                 "FILEMTIMES": "mtime",
             }
@@ -231,7 +231,7 @@ echo postun
         self.assertNotEqual(
             len(filedata),
             0,
-            "rpm_util.read_rpm_filedata produced no output"
+            "rpm_util.read_rpm_filedata() produced no output"
         )
 
         filedata_shortened = {

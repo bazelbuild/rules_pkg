@@ -292,10 +292,11 @@ def _pkg_rpm_impl(ctx):
         fail("None of the release or release_file attributes were specified")
 
     # source_date_epoch is an integer, and Bazel (as of 4.2.2) does not allow
-    # you to put "None" as the default for an "int" attribute.
+    # you to put "None" as the default for an "int" attribute.  See also
+    # https://github.com/bazelbuild/bazel/issues/14434.
     #
-    # Since source_date_epoch cannot reasonably be negative, being zero or positive 
-    # treated the same as existing below.
+    # Since source_date_epoch cannot reasonably be negative, being zero or
+    # positive treated the same as existing below.
     if ctx.attr.source_date_epoch_file:
         if ctx.attr.source_date_epoch >= 0:
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
