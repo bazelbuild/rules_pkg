@@ -47,13 +47,7 @@ def invoke_rpm_with_queryformat(rpm_file_path, queryformat, rpm_bin_path="rpm"):
     # As a workaround, you should generally know if you're expecting output.
     # Check if the output contains anything not whitespace, or if you're using
     # `read_rpm_filedata`, check if the output dict is nonempty.
-    return subprocess.check_output([
-        rpm_bin_path,
-        "-qp",
-        "--queryformat",
-        queryformat,
-        rpm_file_path,
-    ]).decode("utf-8")
+    return subprocess.check_output([rpm_bin_path, "-qp", "--queryformat", queryformat, rpm_file_path]).decode("utf-8")
 
 
 # TODO(nacl): "rpm_bin_path" should be derived from a toolchain somewhere.
