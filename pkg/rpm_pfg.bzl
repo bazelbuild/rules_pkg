@@ -760,7 +760,7 @@ pkg_rpm = rule(
             subordinate call to `rpmbuild` to facilitate more consistent in-RPM
             file timestamps.
 
-            Negative values (the default) disable this feature
+            Negative values (like the default) disable this feature.
             """,
             default = -1,
         ),
