@@ -373,7 +373,8 @@ class RpmBuilder(object):
         'LANG': 'C',
         'RPM_BUILD_ROOT': buildroot,
     }
-    if self.source_date_epoch:
+
+    if self.source_date_epoch is not None:
       env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
       args += ["--define", "clamp_mtime_to_source_date_epoch Y"]
 
