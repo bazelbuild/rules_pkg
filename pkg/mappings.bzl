@@ -36,7 +36,7 @@ _PKGFILEGROUP_STRIP_ALL = "."
 
 REMOVE_BASE_DIRECTORY = "\0"
 
-def _sp_files_only():
+def _sp_flatten():
     return _PKGFILEGROUP_STRIP_ALL
 
 def _sp_from_pkg(path = ""):
@@ -56,7 +56,7 @@ strip_prefix = struct(
 
     Each member is a function that equates to:
 
-    - `files_only()`: strip all directory components from all paths
+    - `flatten()`: strip all directory components from all paths
 
     - `from_pkg(path)`: strip all directory components up to the current
       package, plus what's in `path`, if provided.
@@ -67,7 +67,7 @@ strip_prefix = struct(
     Prefix stripping is applied to each `src` in a `pkg_files` rule
     independently.
  """,
-    files_only = _sp_files_only,
+    flatten = _sp_flatten,
     from_pkg = _sp_from_pkg,
     from_root = _sp_from_root,
 )
@@ -335,19 +335,18 @@ pkg_files = rule(
             """,
             default = "",
         ),
-        "strip_prefix": attr.string(
-            doc = """What prefix of a file's path to discard prior to installation.
+        "local_strip_prefix": attr.string(
+            doc = """What prefix of a file's source path to discard prior to installation.
 
             This specifies what prefix of an incoming file's path should not be
             included in the output package at after being appended to the
             install prefix (the `prefix` attribute).  Note that this is only
-            applied to full directory names, see `strip_prefix` for more
-            details.
+            applied to full directory names, see the `strip_prefix` struct
+            for more details.
 
             Use the `strip_prefix` struct to define this attribute.  If this
-            attribute is not specified, all directories will be stripped from
-            all files prior to being included in packages
-            (`strip_prefix.files_only()`).
+            attribute is not specified, paths will be preserved relative to
+            their current package (`strip_prefix.from_pkg()`).
 
             If prefix stripping fails on any file provided in `srcs`, the build
             will fail.
@@ -357,7 +356,7 @@ pkg_files = rule(
             TreeArtifacts (directory outputs), or the directories themselves.
             See also #269.
             """,
-            default = strip_prefix.files_only(),
+            default = strip_prefix.from_pkg(),
         ),
         "excludes": attr.label_list(
             doc = """List of files or labels to exclude from the inputs to this rule.
