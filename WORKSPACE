@@ -65,3 +65,13 @@ local_repository(
     name = "mappings_test_external_repo",
     path = "tests/mappings/external_repo",
 )
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "migration_deps",
+    requirements_lock = "//migration:migration_deps_lock.txt",
+)
+
+load("@migration_deps//:requirements.bzl", "install_deps")
+install_deps()
