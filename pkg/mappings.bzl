@@ -196,15 +196,15 @@ def _pkg_files_impl(ctx):
     # Exclude excludes
     srcs = [f for f in ctx.files.srcs if f not in ctx.files.excludes]
 
-    if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
+    if ctx.attr.local_strip_prefix == _PKGFILEGROUP_STRIP_ALL:
         src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
-    elif ctx.attr.strip_prefix.startswith("/"):
+    elif ctx.attr.local_strip_prefix.startswith("/"):
         # Relative to workspace/repository root
         src_dest_paths_map = {src: paths.join(
             ctx.attr.prefix,
             _do_strip_prefix(
                 _path_relative_to_repo_root(src),
-                ctx.attr.strip_prefix[1:],
+                ctx.attr.local_strip_prefix[1:],
                 src,
             ),
         ) for src in srcs}
@@ -214,7 +214,7 @@ def _pkg_files_impl(ctx):
             ctx.attr.prefix,
             _do_strip_prefix(
                 _path_relative_to_package(src),
-                ctx.attr.strip_prefix,
+                ctx.attr.local_strip_prefix,
                 src,
             ),
         ) for src in srcs}
