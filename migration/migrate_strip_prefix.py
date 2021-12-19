@@ -64,14 +64,17 @@ class PkgFilesStripPrefixTransformer(cstm.MatcherDecoratableTransformer):
         ])
 
     # FIXME: need to incorporate a hack to allow the decorator's contents to be
-    # evaluated at runtime (so we can get the real value of REPOSITORY_NAME)
+    # evaluated at runtime (so we can get the real value of REPOSITORY_NAME or a
+    # constant in the module itself)
     @cstm.leave(
         cstm.Call(
             func=cstm.Name("load"),
             args=[
                 cstm.OneOf(
-                    cstm.Arg(value=cstm.SimpleString('"//pkg:mappings.bzl"'.format(REPOSITORY_NAME))),
-                    #cstm.Arg(value=cstm.SimpleString('"{}//:mappings.bzl"'.format(REPOSITORY_NAME))),
+                    cstm.Arg(value=cstm.SimpleString('"//:mappings.bzl"')),
+                    cstm.Arg(value=cstm.SimpleString('"//pkg:mappings.bzl"')),
+                    cstm.Arg(value=cstm.SimpleString('"@rules_pkg//:mappings.bzl"')),
+                    cstm.Arg(value=cstm.SimpleString('"@rules_pkg//pkg:mappings.bzl"')),
                 ),
                 cstm.ZeroOrMore(~cstm.Arg(value=cstm.SimpleString('"strip_prefix"')))
             ],
