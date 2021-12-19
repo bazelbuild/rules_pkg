@@ -25,19 +25,6 @@ class PkgFilesStripPrefixTransformer(cstm.MatcherDecoratableTransformer):
         return updated_node.with_changes(keyword = cst.Name("local_strip_prefix"))
 
     @cstm.call_if_inside(cstm.Call(
-        func = cstm.Name("pkg_files")
-        args = ~(cstm.Arg(cstm.keyword('strip_prefix')))
-    ))
-    @cstm.leave(cstm.Call(
-        func = cstm.Name("pkg_files")
-    ))
-    def strip_prefix_account_for_new_default(self,
-                                             original_node: cst.Arg,
-                                             updated_node: cst.Arg) -> cst.Arg:
-        print('empty node')
-        return updated_node
-
-    @cstm.call_if_inside(cstm.Call(
         func = cstm.Attribute(value = cstm.Name("strip_prefix"))
     ))
     @cstm.leave(cstm.Attribute(value = cstm.Name("strip_prefix")))
@@ -48,14 +35,33 @@ class PkgFilesStripPrefixTransformer(cstm.MatcherDecoratableTransformer):
             attr = cst.Name('flatten') if updated_node.attr.value == 'files_only' else updated_node.attr
         )
 
-    # @cstm.call_if_inside(cstm.Call(
-    #     func = cstm.Name("pkg_files")
-    # ))
-    # @cstm.leave(cstm.Call(func = cstm.Name("pkg_files")))
-    # def yeah_whatever(self, original_node: cst.Call, updated_node: cst.Call) -> cst.Call:
-    #     print(updated_node.args)
-    #     return updated_node
-    
+    @cstm.call_if_inside(cstm.Call(
+        func = cstm.Name("pkg_files"),
+        args = [
+            cstm.ZeroOrMore(~cstm.Arg(keyword=cstm.Name('strip_prefix'))),
+        ],
+    ))
+    @cstm.leave(cstm.Arg(
+        keyword = cstm.Name("srcs")
+    ))
+    def strip_prefix_account_for_new_default(self,
+                                             original_node: cst.Arg,
+                                             updated_node: cst.Arg) -> cst.Arg:
+        new_node = updated_node.with_changes(
+            keyword = cst.Name("local_strip_prefix"),
+            value = cst.Call(
+                func = cst.Attribute(
+                    value = cst.Name("strip_prefix"),
+                    attr = cst.Name("flatten"),
+                )
+            )
+        )
+        return cst.FlattenSentinel([
+            updated_node,
+            new_node,
+        ])
+
+
 def main(argv):
     parser = argparse.ArgumentParser()
 
