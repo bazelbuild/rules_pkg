@@ -41,13 +41,11 @@ load(
     "PackageSymlinkInfo",
 )
 
-# Possible values for entry_type
-# These must be kept in sync with the declarations in private/manifest.py.
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an empty dir
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
-ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
+ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = "dir"  # Entry is an empty dir
+ENTRY_IS_TREE = "tree" # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
@@ -57,7 +55,7 @@ _DestFile = provider(
         "user": "user, or empty",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "entry_type": "int. See ENTRY_IS_* values above.",
+        "entry_type": "string.  See ENTRY_IS_* values above.",
         "origin": "target which added this",
     },
 )
@@ -127,6 +125,7 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
+        entry_type = ENTRY_IS_LINK,
         mode = attrs[0],
         user = attrs[1],
         group = attrs[2],
@@ -426,6 +425,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
     _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
+        entry_type = ENTRY_IS_FILE,
         origin = origin,
         mode = mode,
         user = user,
@@ -477,7 +477,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         group = group,
     )
 
-def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
+def write_manifest(ctx, manifest_file, content_map, use_short_path=False, pretty_print=False):
     """Write a content map to a manifest file.
 
     The format of this file is currently undocumented, as it is a private
@@ -496,13 +496,13 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
         manifest_file,
         "[\n" + ",\n".join(
             [
-                _encode_manifest_entry(dst, content_map[dst], use_short_path)
+                _encode_manifest_entry(dst, content_map[dst], use_short_path, pretty_print)
                 for dst in sorted(content_map.keys())
-            ],
-        ) + "\n]\n",
+            ]
+        ) + "\n]\n"
     )
 
-def _encode_manifest_entry(dest, df, use_short_path):
+def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
@@ -513,11 +513,25 @@ def _encode_manifest_entry(dest, df, use_short_path):
         entry_type = ENTRY_IS_LINK
     else:
         src = None
-    return json.encode([
-        entry_type,
-        dest.strip("/"),
-        src,
-        df.mode or "",
-        df.user or None,
-        df.group or None,
-    ])
+
+    # Bazel 6 or newer stringifies local labels with a beginning repository of
+    # "@", which is equivalent to the repository in which the bazel command was
+    # run.
+    origin_str = str(df.origin)
+    if not origin_str.startswith('@'):
+        origin_str = '@' + origin_str
+
+    data = {
+        "type": df.entry_type,
+        "src": src,
+        "dest": dest.strip("/"),
+        "mode": df.mode or "",
+        "user": df.user or None,
+        "group": df.group or None,
+        "origin": origin_str,
+    }
+
+    if pretty_print:
+        return json.encode_indent(data)
+    else:
+        return json.encode(data)

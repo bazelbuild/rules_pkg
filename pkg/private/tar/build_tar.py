@@ -14,7 +14,6 @@
 """This tool build tar files from a list of inputs."""
 
 import argparse
-import json
 import os
 import tarfile
 import tempfile
@@ -282,9 +281,7 @@ class TarFile(object):
             uname=names[0],
             gname=names[1])
 
-  def add_manifest_entry(self, entry_list, file_attributes):
-    entry = manifest.ManifestEntry(*entry_list)
-
+  def add_manifest_entry(self, entry, file_attributes):
     # Use the pkg_tar mode/owner remaping as a fallback
     non_abs_path = entry.dest.strip('/')
     if file_attributes:
@@ -300,13 +297,13 @@ class TarFile(object):
       else:
         # Use group that legacy tar process would assign
         attrs['names'] = (entry.user, attrs.get('names')[1])
-    if entry.entry_type == manifest.ENTRY_IS_LINK:
+    if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_DIR:
+    elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(entry.dest, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_TREE:
+    elif entry.type == manifest.ENTRY_IS_TREE:
       self.add_tree(entry.src, entry.dest, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+    elif entry.type == manifest.ENTRY_IS_EMPTY_FILE:
       self.add_empty_file(entry.dest, **attrs)
     else:
       self.add_file(entry.src, entry.dest, **attrs)
@@ -425,8 +422,8 @@ def main():
 
     if options.manifest:
       with open(options.manifest, 'r') as manifest_fp:
-        manifest = json.load(manifest_fp)
-        for entry in manifest:
+        manifest_entries = manifest.read_entries_from(manifest_fp)
+        for entry in manifest_entries:
           output.add_manifest_entry(entry, file_attributes)
 
     for tar in options.tar or []:
