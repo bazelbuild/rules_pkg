@@ -58,6 +58,7 @@ directory(
 pkg_files(
     name = "directory-with-contents",
     srcs = ["treeartifact"],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(mode = "0644"),
 )
 
@@ -78,6 +79,7 @@ pkg_files(
     srcs = [
         "mappings_test.bzl",
     ],
+local_strip_prefix = strip_prefix.flatten(),
 )
 
 # TODO: this seems to write the JSON in a particular order; regardless of input
@@ -106,7 +108,7 @@ pkg_files(
     srcs = [
         "//tests/testdata/utf8:files",
     ],
-    strip_prefix = strip_prefix.from_pkg(),
+    local_strip_prefix = strip_prefix.from_pkg(),
 )
 
 write_content_manifest(

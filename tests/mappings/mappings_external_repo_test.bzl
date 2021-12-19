@@ -30,6 +30,7 @@ def _test_pkg_files_extrepo():
     pkg_files(
         name = "pf_extrepo_strip_all_g",
         srcs = ["@mappings_test_external_repo//pkg:dir/script"],
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
@@ -43,7 +44,7 @@ def _test_pkg_files_extrepo():
     pkg_files(
         name = "pf_extrepo_strip_from_pkg_g",
         srcs = ["@mappings_test_external_repo//pkg:dir/script"],
-        strip_prefix = strip_prefix.from_pkg("dir"),
+        local_strip_prefix = strip_prefix.from_pkg("dir"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -59,7 +60,7 @@ def _test_pkg_files_extrepo():
     pkg_files(
         name = "pf_extrepo_strip_from_root_g",
         srcs = ["@mappings_test_external_repo//pkg:dir/script"],
-        strip_prefix = strip_prefix.from_root("pkg"),
+        local_strip_prefix = strip_prefix.from_root("pkg"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -80,7 +81,7 @@ def _test_pkg_files_extrepo():
         srcs = [":extrepo_test_fg"],
         # Files within filegroups should be considered relative to their
         # destination paths.
-        strip_prefix = strip_prefix.from_pkg(""),
+        local_strip_prefix = strip_prefix.from_pkg(""),
     )
     pkg_files_contents_test(
         name = "pf_extrepo_filegroup_strip_from_pkg",
@@ -94,7 +95,7 @@ def _test_pkg_files_extrepo():
         srcs = [":extrepo_test_fg"],
         # Files within filegroups should be considered relative to their
         # destination paths.
-        strip_prefix = strip_prefix.from_root("pkg"),
+        local_strip_prefix = strip_prefix.from_root("pkg"),
     )
     pkg_files_contents_test(
         name = "pf_extrepo_filegroup_strip_from_root",

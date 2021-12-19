@@ -97,6 +97,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_no_strip_prefix_g",
         srcs = ["testdata/hello.txt"],
+        local_strip_prefix = strip_prefix.flatten(),
         attributes = pkg_attributes(
             mode = "0755",
             user = "foo",
@@ -123,7 +124,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_files_only_g",
         srcs = ["testdata/hello.txt"],
-        strip_prefix = strip_prefix.files_only(),
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
@@ -147,7 +148,7 @@ def _test_pkg_files_contents():
             "testdata/hello.txt",
             ":testdata/test_script",
         ],
-        strip_prefix = strip_prefix.from_pkg("testdata/"),
+        local_strip_prefix = strip_prefix.from_pkg("testdata/"),
         tags = ["manual"],
     )
 
@@ -173,7 +174,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_from_root_g",
         srcs = [":testdata/test_script"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        local_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
 
@@ -193,7 +194,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_attributes_mode_overlay_if_not_provided_g",
         srcs = ["foo"],
-        strip_prefix = strip_prefix.from_pkg(),
+        local_strip_prefix = strip_prefix.from_pkg(),
         attributes = pkg_attributes(
             user = "foo",
             group = "bar",
@@ -218,6 +219,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_destination_collision_invalid_g",
         srcs = ["foo", "bar/foo"],
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -229,7 +231,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_strip_prefix_from_package_invalid_g",
         srcs = ["foo/foo", "bar/foo"],
-        strip_prefix = strip_prefix.from_pkg("bar"),
+        local_strip_prefix = strip_prefix.from_pkg("bar"),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -241,7 +243,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_strip_prefix_from_root_invalid_g",
         srcs = ["foo", "bar"],
-        strip_prefix = strip_prefix.from_root("not/the/root"),
+        local_strip_prefix = strip_prefix.from_root("not/the/root"),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -266,6 +268,7 @@ def _test_pkg_files_exclusions():
     pkg_files(
         name = "pf_exclude_by_label_strip_all_g",
         srcs = [":test_base_fg"],
+        local_strip_prefix = strip_prefix.flatten(),
         excludes = ["//tests/mappings:testdata/config"],
         tags = ["manual"],
     )
@@ -278,6 +281,7 @@ def _test_pkg_files_exclusions():
     pkg_files(
         name = "pf_exclude_by_filename_strip_all_g",
         srcs = [":test_base_fg"],
+        local_strip_prefix = strip_prefix.flatten(),
         excludes = ["testdata/config"],
         tags = ["manual"],
     )
@@ -292,7 +296,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_label_strip_from_pkg_g",
         srcs = [":test_base_fg"],
         excludes = ["//tests/mappings:testdata/config"],
-        strip_prefix = strip_prefix.from_pkg("testdata"),
+        local_strip_prefix = strip_prefix.from_pkg("testdata"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -305,7 +309,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_filename_strip_from_pkg_g",
         srcs = [":test_base_fg"],
         excludes = ["testdata/config"],
-        strip_prefix = strip_prefix.from_pkg("testdata"),
+        local_strip_prefix = strip_prefix.from_pkg("testdata"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -319,7 +323,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_label_strip_from_root_g",
         srcs = [":test_base_fg"],
         excludes = ["//tests/mappings:testdata/config"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        local_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -332,7 +336,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_filename_strip_from_root_g",
         srcs = [":test_base_fg"],
         excludes = ["testdata/config"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        local_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -348,6 +352,7 @@ def _test_pkg_files_rename():
             "testdata/hello.txt",
             "testdata/loremipsum.txt",
         ],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "usr",
         renames = {
             "testdata/hello.txt": "share/goodbye.txt",
@@ -377,6 +382,7 @@ def _test_pkg_files_rename():
     pkg_files(
         name = "pf_rename_rule_with_multiple_outputs_g",
         srcs = ["test_script_rename"],
+        local_strip_prefix = strip_prefix.flatten(),
         renames = {
             ":test_script_rename": "still_a_script",
         },
@@ -392,6 +398,7 @@ def _test_pkg_files_rename():
     pkg_files(
         name = "pf_rename_single_missing_value_g",
         srcs = ["testdata/hello.txt"],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "usr",
         renames = {
             "a_script": "an_output_location",
@@ -410,6 +417,7 @@ def _test_pkg_files_rename():
             "testdata/hello.txt",
             "testdata/loremipsum.txt",
         ],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "usr",
         excludes = [
             "testdata/hello.txt",
@@ -431,6 +439,7 @@ def _test_pkg_files_rename():
             "foo",
             "bar",
         ],
+        local_strip_prefix = strip_prefix.flatten(),
         renames = {"foo": "bar"},
         tags = ["manual"],
     )
@@ -443,6 +452,7 @@ def _test_pkg_files_rename():
     pkg_files(
         name = "pf_file_rename_to_empty_g",
         srcs = ["foo"],
+        local_strip_prefix = strip_prefix.flatten(),
         renames = {"foo": REMOVE_BASE_DIRECTORY},
         tags = ["manual"],
     )
@@ -460,6 +470,7 @@ def _test_pkg_files_rename():
     pkg_files(
         name = "pf_directory_rename_to_empty_g",
         srcs = [":a_directory"],
+        local_strip_prefix = strip_prefix.flatten(),
         renames = {":a_directory": REMOVE_BASE_DIRECTORY},
         tags = ["manual"],
     )
@@ -722,6 +733,7 @@ def _test_pkg_filegroup(name):
     pkg_files(
         name = "{}_pkg_files".format(name),
         srcs = ["foo", "bar"],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "bin",
         tags = ["manual"],
     )
@@ -776,6 +788,7 @@ def _test_pkg_filegroup(name):
     pkg_files(
         name = "{}_pkg_files_prefixed".format(name),
         srcs = ["foo", "bar"],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "prefix/bin",
         tags = ["manual"],
     )
@@ -821,6 +834,7 @@ def _test_pkg_filegroup(name):
     pkg_files(
         name = "{}_pkg_files_nested_prefixed".format(name),
         srcs = ["foo", "bar"],
+        local_strip_prefix = strip_prefix.flatten(),
         prefix = "nest/prefix/bin",
         tags = ["manual"],
     )
@@ -874,7 +888,7 @@ def _test_pkg_filegroup(name):
 
 def _strip_prefix_test_impl(ctx):
     env = unittest.begin(ctx)
-    asserts.equals(env, ".", strip_prefix.files_only())
+    asserts.equals(env, ".", strip_prefix.flatten())
     asserts.equals(env, "path", strip_prefix.from_pkg("path"))
     asserts.equals(env, "path", strip_prefix.from_pkg("/path"))
     asserts.equals(env, "/path", strip_prefix.from_root("path"))

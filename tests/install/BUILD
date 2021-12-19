@@ -14,7 +14,7 @@
 
 load("@rules_python//python:defs.bzl", "py_test")
 load("//pkg:install.bzl", "pkg_install")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "strip_prefix")
 load("//tests/util:defs.bzl", "fake_artifact")
 
 py_test(
@@ -54,6 +54,7 @@ fake_artifact(
 pkg_files(
     name = "artifact-in-owned-dir",
     srcs = ["artifact"],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(mode = "0700"),
     prefix = "owned-dir",
 )
@@ -61,6 +62,7 @@ pkg_files(
 pkg_files(
     name = "artifact-in-unowned-dir",
     srcs = ["artifact"],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(mode = "0755"),
     prefix = "unowned-dir",
 )

@@ -14,7 +14,7 @@
 
 """Tests for path.bzl"""
 
-load("//pkg:mappings.bzl", "pkg_mkdirs")
+load("//pkg:mappings.bzl", "pkg_mkdirs", "strip_prefix")
 load("//pkg:path.bzl", "compute_data_path")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 

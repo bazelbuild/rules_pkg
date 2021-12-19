@@ -56,6 +56,8 @@ pkg_files(
         ":fooctl",
     ],
     # Where it should be in the final package
+    local_strip_prefix = strip_prefix.flatten(),
+    # Where it should be in the final package
     prefix = select(shared_object_path_selector) + "/bin",
     # Should this work?
     # runfiles_prefix = select(shared_object_path_selector) + "/bin/runfiles",
@@ -66,6 +68,7 @@ pkg_files(
     srcs = [
         ":foolib",
     ],
+    local_strip_prefix = strip_prefix.flatten(),
     prefix = "usr/lib/foo",
 )
 
@@ -83,6 +86,7 @@ pkg_files(
     srcs = [
         ":man",
     ],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "man",
         mode = "0444",

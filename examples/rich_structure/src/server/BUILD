@@ -41,6 +41,7 @@ pkg_files(
     srcs = [
         ":food",
     ],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "root",
         mode = "0551",
@@ -63,6 +64,7 @@ pkg_files(
     srcs = [
         ":mansrc",
     ],
+    local_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "man",
         mode = "0444",

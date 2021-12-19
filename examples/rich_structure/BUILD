@@ -29,7 +29,7 @@ pkg_files(
         "//docs",
     ],
     # Required, but why?: see #354
-    strip_prefix = strip_prefix.from_pkg(),
+    local_strip_prefix = strip_prefix.from_pkg(),
     # Where it should be in the final package
     prefix = "usr/share/doc/foo",
 )

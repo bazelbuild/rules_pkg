@@ -32,7 +32,7 @@ pkg_files(
     name = "extproj_script_pf",
     srcs = ["dir/extproj.sh"],
     prefix = "usr/bin",
-    strip_prefix = strip_prefix.from_pkg(),
+    local_strip_prefix = strip_prefix.from_pkg(),
     tags = ["manual"],
 )
 

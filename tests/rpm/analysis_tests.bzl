@@ -20,6 +20,7 @@ load(
     "pkg_files",
     "pkg_mkdirs",
     "pkg_mklink",
+    "strip_prefix",
 )
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
@@ -76,6 +77,7 @@ def _test_conflicting_inputs(name):
     pkg_files(
         name = "{}_file_base".format(name),
         srcs = ["foo"],
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
@@ -96,6 +98,7 @@ def _test_conflicting_inputs(name):
     pkg_files(
         name = "{}_file_conflict".format(name),
         srcs = ["foo"],
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
@@ -244,6 +247,7 @@ def _test_naming(name):
     pkg_files(
         name = "{}_file_base".format(name),
         srcs = ["foo"],
+        local_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
