@@ -38,7 +38,11 @@ class PkgFilesStripPrefixTransformer(cstm.MatcherDecoratableTransformer):
 
     @cstm.call_if_inside(cstm.Call(
         func = cstm.Name("pkg_files"),
-        args = [cstm.ZeroOrMore(~cstm.Arg(keyword=cstm.Name('strip_prefix')))],
+        args = [cstm.ZeroOrMore(~cstm.OneOf(
+            cstm.Arg(keyword=cstm.Name('strip_prefix')),
+            # Be idempotent
+            cstm.Arg(keyword=cstm.Name('local_strip_prefix'))
+        ))],
     ))
     @cstm.leave(cstm.Arg(keyword = cstm.Name("srcs")))
     def strip_prefix_account_for_new_default(self,
@@ -120,7 +124,7 @@ class PkgFilesStripPrefixTransformer(cstm.MatcherDecoratableTransformer):
                 cst.Arg(
                     value=cst.SimpleString(value='"strip_prefix"')
                 )
-            ])
+            ], key = arg_value)
         else:
             # Just stick `strip_prefix` on the back.  They can sort the list
             # again later if they want
