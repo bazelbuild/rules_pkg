@@ -1,5 +1,6 @@
 <a name="common"></a>
-## Common Attributes
+
+### Common Attributes
 
 These attributes are used in several rules within this module.
 
