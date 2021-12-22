@@ -2,10 +2,10 @@
 
 <div class="toc">
   <h2>Common Attributes</h2>
-    <ul>
-      <li><a href="#common">Package attributes</a></li>
-      <li><a href="#mapping-attrs">File attributes</a></li>
-    <ul>
+  <ul>
+    <li><a href="#common">Package attributes</a></li>
+    <li><a href="#mapping-attrs">File attributes</a></li>
+  </ul>
 
   <h2>Packaging Rules</h2>
   <ul>
@@ -25,5 +25,4 @@
     <li><a href="#pkg_attributes">pkg_attributes</a></li>
     <li><a href="#strip_prefix.files_only">strip_prefix</a></li>
   </ul>
-
 </div>
