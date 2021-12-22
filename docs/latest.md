@@ -17,13 +17,13 @@
 
   <h2>File Tree Creation Rules</h2>
   <ul>
-    <li><a href="#filter_directory">filter_directory</a>
-    <li><a href="#pkg_filegroup">pkg_filegroup</a>
-    <li><a href="#pkg_files">pkg_files</a>
-    <li><a href="#pkg_mkdirs">pkg_mkdirs</a>
-    <li><a href="#pkg_mklink">pkg_mklink</a>
-    <li><a href="#pkg_attributes">pkg_attributes</a>
-    <li><a href="#strip_prefix.files_only">strip_prefix</a>
+    <li><a href="#filter_directory">filter_directory</a></li>
+    <li><a href="#pkg_filegroup">pkg_filegroup</a></li>
+    <li><a href="#pkg_files">pkg_files</a></li>
+    <li><a href="#pkg_mkdirs">pkg_mkdirs</a></li>
+    <li><a href="#pkg_mklink">pkg_mklink</a></li>
+    <li><a href="#pkg_attributes">pkg_attributes</a></li>
+    <li><a href="#strip_prefix.files_only">strip_prefix</a></li>
   </ul>
 
 </div>
@@ -237,7 +237,7 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 | requires |  List of rpm capability expressions that this package requires.<br><br>            Corresponds to the "Requires" preamble tag.<br><br>            See also: https://rpm.org/user_doc/dependencies.html   | List of strings | optional | [] |
 | requires_contextual |  Contextualized requirement specifications<br><br>            This is a map of various properties (often scriptlet types) to             capability name specifications, e.g.:<br><br>            <pre><code>python             {"pre": ["GConf2"],"post": ["GConf2"], "postun": ["GConf2"]}             </code></pre><br><br>            Which causes the below to be added to the spec file's preamble:<br><br>            <pre><code>             Requires(pre): GConf2             Requires(post): GConf2             Requires(postun): GConf2             </code></pre><br><br>            This is most useful for ensuring that required tools exist when             scriptlets are run, although there may be other valid use cases.             Valid keys for this attribute may include, but are not limited to:<br><br>            - <code>pre</code>             - <code>post</code>             - <code>preun</code>             - <code>postun</code>             - <code>pretrans</code>             - <code>posttrans</code><br><br>            For capabilities that are always required by packages at runtime,             use the <code>requires</code> attribute instead.<br><br>            See also: https://rpm.org/user_doc/more_dependencies.html<br><br>            NOTE: <code>pkg_rpm</code> does not check if the keys of this dictionary are             acceptable to <code>rpm(8)</code>.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
 | rpmbuild_path |  Path to a <code>rpmbuild</code> binary.  Deprecated in favor of the rpmbuild toolchain   | String | optional | "" |
-| source_date_epoch |  Value to export as SOURCE_DATE_EPOCH to facilitate repr<br><br>            Implicitly sets the <code>%clamp_mtime_to_source_date_epoch</code> in the             subordinate call to <code>rpmbuild</code> to facilitate more consistent in-RPM             file timestamps.   | Integer | optional | 0 |
+| source_date_epoch |  Value to export as SOURCE_DATE_EPOCH to facilitate reproducible builds<br><br>            Implicitly sets the <code>%clamp_mtime_to_source_date_epoch</code> in the             subordinate call to <code>rpmbuild</code> to facilitate more consistent in-RPM             file timestamps.<br><br>            Negative values (like the default) disable this feature.   | Integer | optional | -1 |
 | source_date_epoch_file |  File containing the SOURCE_DATE_EPOCH value.<br><br>            Implicitly sets the <code>%clamp_mtime_to_source_date_epoch</code> in the             subordinate call to <code>rpmbuild</code> to facilitate more consistent in-RPM             file timestamps.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | spec_template |  Spec file template.<br><br>            Use this if you need to add additional logic to your spec files that             is not available by default.<br><br>            In most cases, you should not need to override this attribute.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/rpm:template.spec.tpl |
 | srcs |  Mapping groups to include in this RPM.<br><br>            These are typically brought into life as <code>pkg_filegroup</code>s.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | required |  |
