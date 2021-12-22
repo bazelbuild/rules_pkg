@@ -16,12 +16,12 @@
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 
 def assert_contains(env, expected, got, msg = None):
-    """Asserts that the given `expected` occurs in a set of things.
+    """Asserts that `expected` occurs in the iterable (`list`, `dict`) `got`.
 
     Args:
       env: The test environment returned by `unittest.begin`.
       expected: An expected value.
-      go: The actual set returned by some computation.
+      got: The actual set returned by some computation.
       msg: An optional message that will be printed that describes the failure.
           If omitted, a default will be used.
     """
@@ -32,7 +32,7 @@ def assert_contains(env, expected, got, msg = None):
         full_msg = "%s (%s)" % (msg, expectation_msg)
     else:
         full_msg = expectation_msg
-    fail(env, full_msg)
+    analysistest.fail(env, full_msg)
 
 def _package_naming_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -74,7 +74,7 @@ def _all_files_in_default_info_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
     di = target_under_test[DefaultInfo]
     files = di.files.to_list()
-    file_names = ",".join([f.basename for f in files])
+    file_names = [f.basename for f in files]
     asserts.equals(
         env,
         3,
