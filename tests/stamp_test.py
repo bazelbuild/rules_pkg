@@ -36,7 +36,7 @@ class StampTest(unittest.TestCase):
   # CI run and have the test run a few seconds later. Ideally, this would
   # be no greater than the expected total CI run time, but the extra margin
   # does not hurt.
-  ALLOWED_DELTA_FROM_NOW = 10000  # seconds
+  ALLOWED_DELTA_FROM_NOW = 30000  # seconds
 
   def check_mtime(self, mtime, file_path, file_name):
     """Checks that a time stamp is reasonable.
@@ -61,9 +61,12 @@ class StampTest(unittest.TestCase):
     if ((mtime < self.target_mtime - StampTest.ALLOWED_DELTA_FROM_NOW)
         or (mtime > self.target_mtime)):
        self.fail(
-           'Archive %s contains file %s with mtime:%d, expected:%d +/- %d' % (
+           'Archive %s contains file %s with mtime:%d, expected:%d +/- %d.' % (
                file_path, file_name, mtime, self.target_mtime,
-               StampTest.ALLOWED_DELTA_FROM_NOW))
+               StampTest.ALLOWED_DELTA_FROM_NOW) +
+           '  This may be a false positive if your build cache is more than' +
+           ' %s seconds old.  If so, try bazel clean and rerun the test.' %
+           StampTest.ALLOWED_DELTA_FROM_NOW)
 
   def assertTarFilesAreAlmostNew(self, file_name):
     """Assert that tarfile contains files with an mtime of roughly now.
