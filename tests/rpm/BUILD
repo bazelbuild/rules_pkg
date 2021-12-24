@@ -100,13 +100,13 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "test_links",
-    src = "/usr/bin/link-target",
+    dest = "/usr/bin/link-name",
+    target = "/usr/bin/link-target",
     attributes = pkg_attributes(
         group = "root",
         mode = "0777",
         user = "root",
     ),
-    dest = "/usr/bin/link-name",
 )
 
 pkg_filegroup(

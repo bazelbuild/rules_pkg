@@ -38,8 +38,8 @@ my_package_naming(
 
 pkg_mklink(
     name = "java_link",
-    src = "/path/to/bin/java",
     dest = "usr/bin/java",
+    target = "/path/to/bin/java",
 )
 
 pkg_tar(

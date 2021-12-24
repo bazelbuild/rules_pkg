@@ -477,7 +477,7 @@ def _pkg_mklink_impl(ctx):
     return [
         PackageSymlinkInfo(
             destination = ctx.attr.dest,
-            source = ctx.attr.src,
+            target = ctx.attr.target,
             attributes = out_attributes,
         ),
     ]
@@ -508,8 +508,8 @@ pkg_mklink = rule(
             """,
             mandatory = True,
         ),
-        "src": attr.string(
-            doc = """Link "source", a path on the filesystem.
+        "target": attr.string(
+            doc = """Link "target", a path on the filesystem.
 
             This is what the link "points" to, and may point to an arbitrary
             filesystem path, even relative paths.
@@ -575,7 +575,7 @@ def _pkg_filegroup_impl(ctx):
                 links += [
                     (
                         PackageSymlinkInfo(
-                            source = psi.source,
+                            target = psi.target,
                             destination = paths.join(ctx.attr.prefix, psi.destination),
                             attributes = psi.attributes,
                         ),
@@ -608,7 +608,7 @@ def _pkg_filegroup_impl(ctx):
 
             if PackageSymlinkInfo in s:
                 new_psi = PackageSymlinkInfo(
-                    source = s[PackageSymlinkInfo].source,
+                    target = s[PackageSymlinkInfo].target,
                     destination = paths.join(ctx.attr.prefix, s[PackageSymlinkInfo].destination),
                     attributes = s[PackageSymlinkInfo].attributes,
                 )
