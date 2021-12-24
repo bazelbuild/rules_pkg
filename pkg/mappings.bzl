@@ -482,7 +482,7 @@ def _pkg_mklink_impl(ctx):
         ),
     ]
 
-_pkg_mklink = rule(
+pkg_mklink_impl = rule(
     doc = """Define a symlink  within packages
 
     This rule results in the creation of a single link within a package.
@@ -551,7 +551,7 @@ def pkg_mklink(name, target, dest, attributes=None, src=None, **kwargs):
       fail("You can not specify both target and source. Use source")
     print("Warning: pkg_mklink.src is deprecated. Use target.")
     target = src
-  _pkg_mklink(
+  pkg_mklink_impl(
       name = name,
       target = target,
       dest = dest,
