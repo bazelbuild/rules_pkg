@@ -42,6 +42,12 @@ pkg_mkdirs(
     ],
 )
 
+pkg_mklink(
+    name = "link",
+    src = "/usr/local/foo/foo.real",
+    dest = "/usr/bin/foo",
+)
+
 directory(
     name = "generate_tree",
     contents = "hello there",
@@ -79,6 +85,7 @@ pkg_zip(
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
         ":dirs",
+        ":link",
     ],
 )
 
