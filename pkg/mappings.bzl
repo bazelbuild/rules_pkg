@@ -482,7 +482,7 @@ def _pkg_mklink_impl(ctx):
         ),
     ]
 
-pkg_mklink = rule(
+_pkg_mklink = rule(
     doc = """Define a symlink  within packages
 
     This rule results in the creation of a single link within a package.
@@ -494,6 +494,15 @@ pkg_mklink = rule(
     implementation = _pkg_mklink_impl,
     # @unsorted-dict-items
     attrs = {
+        "target": attr.string(
+            doc = """Link "target", a path on the filesystem.
+
+            This is what the link "points" to, and may point to an arbitrary
+            filesystem path, even relative paths.
+
+            """,
+            mandatory = True,
+        ),
         "dest": attr.string(
             doc = """Link "target", a path within the package.
 
@@ -504,15 +513,6 @@ pkg_mklink = rule(
             will be created implicitly, much like with `pkg_files`.
 
             This path may be prefixed or rooted by grouping or packaging rules.
-
-            """,
-            mandatory = True,
-        ),
-        "target": attr.string(
-            doc = """Link "target", a path on the filesystem.
-
-            This is what the link "points" to, and may point to an arbitrary
-            filesystem path, even relative paths.
 
             """,
             mandatory = True,
@@ -536,6 +536,30 @@ pkg_mklink = rule(
     },
     provides = [PackageSymlinkInfo],
 )
+
+def pkg_mklink(name, target, dest, attributes=None, src=None, **kwargs):
+  """Create a symlink.
+
+  Args:
+    name: target name
+    target: target path that the link should point to.
+    dest: the path in the package that should point to the target.
+    attributes: file attributes.
+  """
+  if src:
+    if target:
+      fail("You can not specify both target and source. Use source")
+    print("Warning: pkg_mklink.src is deprecated. Use target.")
+    target = src
+  _pkg_mklink(
+      name = name,
+      target = target,
+      dest = dest,
+      attributes = attributes,
+      **kwargs,
+  )
+
+
 
 def _pkg_filegroup_impl(ctx):
     files = []
