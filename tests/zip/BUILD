@@ -46,6 +46,9 @@ pkg_mklink(
     name = "link",
     src = "/usr/local/foo/foo.real",
     dest = "/usr/bin/foo",
+    attributes = pkg_attributes(
+        mode = "555",
+    ),
 )
 
 directory(
@@ -114,6 +117,7 @@ pkg_zip(
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
         ":dirs",
+        ":link",
     ],
     timestamp = 0,
 )
