@@ -87,3 +87,12 @@ def substitute_package_variables(ctx, attribute_value):
 
     package_variables = ctx.attr.package_variables[PackageVariablesInfo]
     return attribute_value.format(**package_variables.values)
+
+def compute_execution_requirements(ctx):
+    if not ctx.attr.tags:
+        return None
+
+    return {
+        tag: "1"
+        for tag in ctx.attr.tags
+    }

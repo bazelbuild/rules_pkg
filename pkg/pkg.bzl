@@ -32,7 +32,12 @@ load(
     "process_src",
     "write_manifest",
 )
-load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load(
+    "//pkg/private:util.bzl",
+    "setup_output_files",
+    "substitute_package_variables",
+    "compute_execution_requirements",
+)
 load("//pkg/private/deb:deb.bzl", _pkg_deb = "pkg_deb")
 load("//pkg/private/zip:zip.bzl", _pkg_zip = "pkg_zip")
 
@@ -228,6 +233,7 @@ def _pkg_tar_impl(ctx):
     files.append(arg_file)
     ctx.actions.write(arg_file, "\n".join(args))
 
+
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
@@ -243,6 +249,7 @@ def _pkg_tar_impl(ctx):
             "PYTHONUTF8": "1",
         },
         use_default_shell_env = True,
+        execution_requirements = compute_execution_requirements(ctx),
     )
     return [
         DefaultInfo(

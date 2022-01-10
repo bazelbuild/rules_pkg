@@ -14,7 +14,7 @@
 """Rule for creating Debian packages."""
 
 load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
-load("//pkg/private:util.bzl", "setup_output_files")
+load("//pkg/private:util.bzl", "setup_output_files", "compute_execution_requirements")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
 
@@ -154,6 +154,7 @@ def _pkg_deb_impl(ctx):
             "PYTHONIOENCODING": "UTF-8",
             "PYTHONUTF8": "1",
         },
+        execution_requirements = compute_execution_requirements(ctx)
     )
     output_groups = {
         "out": [ctx.outputs.out],

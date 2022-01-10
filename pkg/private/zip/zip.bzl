@@ -19,7 +19,7 @@ load(
     "PackageArtifactInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files")
+load("//pkg/private:util.bzl", "setup_output_files", "compute_execution_requirements")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_single_file",
@@ -96,6 +96,7 @@ def _pkg_zip_impl(ctx):
             "PYTHONUTF8": "1",
         },
         use_default_shell_env = True,
+        execution_requirements = compute_execution_requirements(ctx),
     )
     return [
         DefaultInfo(
