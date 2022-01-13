@@ -15,25 +15,6 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 
-def assert_contains(env, expected, got, msg = None):
-    """Asserts that `expected` occurs in the iterable (`list`, `dict`) `got`.
-
-    Args:
-      env: The test environment returned by `unittest.begin`.
-      expected: An expected value.
-      got: The actual set returned by some computation.
-      msg: An optional message that will be printed that describes the failure.
-          If omitted, a default will be used.
-    """
-    if expected in got:
-        return
-    expectation_msg = "Expected %s in (%s)" % (expected, got)
-    if msg:
-        full_msg = "%s (%s)" % (msg, expectation_msg)
-    else:
-        full_msg = expectation_msg
-    analysistest.fail(env, full_msg)
-
 def _package_naming_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
@@ -56,58 +37,16 @@ def _package_naming_test_impl(ctx):
     if ctx.attr.expected_name:
         asserts.equals(
             env,
-            ctx.attr.expected_name,
             deb_path.split("/")[-1],  # basename(path)
+            ctx.attr.expected_name,
             "Deb package file name is not correct",
         )
     return analysistest.end(env)
+
 
 package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {
         "expected_name": attr.string(),
-    },
-)
-
-def _all_files_in_default_info_impl(ctx):
-    env = analysistest.begin(ctx)
-    target_under_test = analysistest.target_under_test(env)
-    di = target_under_test[DefaultInfo]
-    files = di.files.to_list()
-    file_names = [f.basename for f in files]
-    asserts.equals(
-        env,
-        3,
-        len(files),
-        file_names,
-    )
-
-    expect_output = target_under_test.label.name + ".deb"
-    assert_contains(
-        env,
-        expect_output,
-        file_names,
-    )
-
-    expect_output = ctx.attr.expected_basename + ".deb"
-    assert_contains(
-        env,
-        expect_output,
-        file_names,
-    )
-
-    expect_output = ctx.attr.expected_basename + ".changes"
-    assert_contains(
-        env,
-        expect_output,
-        file_names,
-    )
-
-    return analysistest.end(env)
-
-all_files_in_default_info_test = analysistest.make(
-    _all_files_in_default_info_impl,
-    attrs = {
-        "expected_basename": attr.string(),
     },
 )
