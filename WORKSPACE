@@ -46,9 +46,11 @@ experimental_find_system_git(
 
 http_archive(
     name = "bazel_stardoc",
-    sha256 = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a",
-    strip_prefix = "stardoc-0.4.0",
-    url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.zip",
+    sha256 = "c9794dcc8026a30ff67cf7cf91ebe245ca294b20b071845d12c192afe243ad72",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.0/stardoc-0.5.0.tar.gz",
+        "https://github.com/bazelbuild/stardoc/releases/download/0.5.0/stardoc-0.5.0.tar.gz",
+    ],
 )
 
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
