@@ -94,7 +94,7 @@ pkg_files(
 
 pkg_mklink(
     name = "usr_bin",
-    src = select(shared_object_path_selector) + "/bin/foo",
+    target = select(shared_object_path_selector) + "/bin/foo",
     dest = "usr/bin/foo",
 )
 
