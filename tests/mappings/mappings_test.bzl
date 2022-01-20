@@ -213,7 +213,7 @@ def _test_pkg_files_contents():
         ),
     )
 
-    # Test that pkg_files rejects cases where two sources resolve to the same
+    # Test that pkg_files rejects cases where two targets resolve to the same
     # destination.
     pkg_files(
         name = "pf_destination_collision_invalid_g",
@@ -557,14 +557,14 @@ def _pkg_mklink_contents_test_impl(ctx):
 
     asserts.equals(
         env,
-        ctx.attr.expected_src,
-        target_under_test[PackageSymlinkInfo].source,
-        "pkg_mklink source does not match expectations",
+        ctx.attr.expected_target,
+        target_under_test[PackageSymlinkInfo].target,
+        "pkg_mklink target does not match expectations",
     )
 
     asserts.equals(
         env,
-        ctx.attr.expected_dest,
+        ctx.attr.expected_link_name,
         target_under_test[PackageSymlinkInfo].destination,
         "pkg_mklink destination does not match expectations",
     )
@@ -583,17 +583,17 @@ def _pkg_mklink_contents_test_impl(ctx):
 pkg_mklink_contents_test = analysistest.make(
     _pkg_mklink_contents_test_impl,
     attrs = {
-        "expected_src": attr.string(mandatory = True),
-        "expected_dest": attr.string(mandatory = True),
         "expected_attributes": attr.string(),
+        "expected_link_name": attr.string(mandatory = True),
+        "expected_target": attr.string(mandatory = True),
     },
 )
 
 def _test_pkg_mklink():
     pkg_mklink(
         name = "pkg_mklink_base_g",
-        dest = "foo",
-        src = "bar",
+        link_name = "foo",
+        target = "bar",
         tags = ["manual"],
         attributes = pkg_attributes(mode = "0111"),
     )
@@ -601,8 +601,8 @@ def _test_pkg_mklink():
     pkg_mklink_contents_test(
         name = "pkg_mklink_base",
         target_under_test = ":pkg_mklink_base_g",
-        expected_dest = "foo",
-        expected_src = "bar",
+        expected_link_name = "foo",
+        expected_target = "bar",
         expected_attributes = pkg_attributes(mode = "0111"),
     )
 
@@ -610,8 +610,8 @@ def _test_pkg_mklink():
     # values in "attributes".
     pkg_mklink(
         name = "pkg_mklink_mode_overlay_if_not_provided_g",
-        dest = "foo",
-        src = "bar",
+        link_name = "foo",
+        target = "bar",
         attributes = pkg_attributes(
             user = "root",
             group = "sudo",
@@ -621,8 +621,8 @@ def _test_pkg_mklink():
     pkg_mklink_contents_test(
         name = "pkg_mklink_mode_overlay_if_not_provided",
         target_under_test = ":pkg_mklink_mode_overlay_if_not_provided_g",
-        expected_dest = "foo",
-        expected_src = "bar",
+        expected_link_name = "foo",
+        expected_target = "bar",
         expected_attributes = pkg_attributes(
             mode = "0777",
             user = "root",
@@ -734,8 +734,8 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink".format(name),
-        src = "src",
-        dest = "dest",
+        link_name = "dest",
+        target = "src",
         tags = ["manual"],
     )
 
@@ -788,8 +788,8 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink_prefixed".format(name),
-        src = "src",
-        dest = "prefix/dest",
+        link_name = "prefix/dest",
+        target = "src",
         tags = ["manual"],
     )
 
@@ -833,8 +833,8 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink_nested_prefixed".format(name),
-        src = "src",
-        dest = "nest/prefix/dest",
+        link_name = "nest/prefix/dest",
+        target = "src",
         tags = ["manual"],
     )
 
