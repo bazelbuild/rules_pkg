@@ -476,7 +476,7 @@ def _pkg_mklink_impl(ctx):
     out_attributes.setdefault("mode", "0777")
     return [
         PackageSymlinkInfo(
-            destination = ctx.attr.dest,
+            destination = ctx.attr.link_name,
             target = ctx.attr.target,
             attributes = out_attributes,
         ),
@@ -503,8 +503,8 @@ pkg_mklink_impl = rule(
             """,
             mandatory = True,
         ),
-        "dest": attr.string(
-            doc = """Link "target", a path within the package.
+        "link_name": attr.string(
+            doc = """Link "destination", a path within the package.
 
             This is the actual created symbolic link.
 
@@ -537,24 +537,25 @@ pkg_mklink_impl = rule(
     provides = [PackageSymlinkInfo],
 )
 
-def pkg_mklink(name, target, dest, attributes=None, src=None, **kwargs):
+def pkg_mklink(name, link_name, target, attributes=None, src=None, **kwargs):
   """Create a symlink.
 
   Args:
     name: target name
     target: target path that the link should point to.
-    dest: the path in the package that should point to the target.
+    link_name: the path in the package that should point to the target.
     attributes: file attributes.
   """
   if src:
     if target:
-      fail("You can not specify both target and source. Use source")
+      fail("You can not specify both target and src.")
+    # buildifier: disable=print
     print("Warning: pkg_mklink.src is deprecated. Use target.")
     target = src
   pkg_mklink_impl(
       name = name,
       target = target,
-      dest = dest,
+      link_name = link_name,
       attributes = attributes,
       **kwargs,
   )

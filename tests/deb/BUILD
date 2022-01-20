@@ -38,7 +38,7 @@ my_package_naming(
 
 pkg_mklink(
     name = "java_link",
-    dest = "usr/bin/java",
+    link_name = "usr/bin/java",
     target = "/path/to/bin/java",
 )
 

@@ -564,7 +564,7 @@ def _pkg_mklink_contents_test_impl(ctx):
 
     asserts.equals(
         env,
-        ctx.attr.expected_dest,
+        ctx.attr.expected_link_name,
         target_under_test[PackageSymlinkInfo].destination,
         "pkg_mklink destination does not match expectations",
     )
@@ -583,16 +583,16 @@ def _pkg_mklink_contents_test_impl(ctx):
 pkg_mklink_contents_test = analysistest.make(
     _pkg_mklink_contents_test_impl,
     attrs = {
-        "expected_target": attr.string(mandatory = True),
-        "expected_dest": attr.string(mandatory = True),
         "expected_attributes": attr.string(),
+        "expected_link_name": attr.string(mandatory = True),
+        "expected_target": attr.string(mandatory = True),
     },
 )
 
 def _test_pkg_mklink():
     pkg_mklink(
         name = "pkg_mklink_base_g",
-        dest = "foo",
+        link_name = "foo",
         target = "bar",
         tags = ["manual"],
         attributes = pkg_attributes(mode = "0111"),
@@ -601,7 +601,7 @@ def _test_pkg_mklink():
     pkg_mklink_contents_test(
         name = "pkg_mklink_base",
         target_under_test = ":pkg_mklink_base_g",
-        expected_dest = "foo",
+        expected_link_name = "foo",
         expected_target = "bar",
         expected_attributes = pkg_attributes(mode = "0111"),
     )
@@ -610,7 +610,7 @@ def _test_pkg_mklink():
     # values in "attributes".
     pkg_mklink(
         name = "pkg_mklink_mode_overlay_if_not_provided_g",
-        dest = "foo",
+        link_name = "foo",
         target = "bar",
         attributes = pkg_attributes(
             user = "root",
@@ -621,7 +621,7 @@ def _test_pkg_mklink():
     pkg_mklink_contents_test(
         name = "pkg_mklink_mode_overlay_if_not_provided",
         target_under_test = ":pkg_mklink_mode_overlay_if_not_provided_g",
-        expected_dest = "foo",
+        expected_link_name = "foo",
         expected_target = "bar",
         expected_attributes = pkg_attributes(
             mode = "0777",
@@ -734,7 +734,7 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink".format(name),
-        dest = "dest",
+        link_name = "dest",
         target = "src",
         tags = ["manual"],
     )
@@ -788,7 +788,7 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink_prefixed".format(name),
-        dest = "prefix/dest",
+        link_name = "prefix/dest",
         target = "src",
         tags = ["manual"],
     )
@@ -833,7 +833,7 @@ def _test_pkg_filegroup(name):
 
     pkg_mklink(
         name = "{}_pkg_symlink_nested_prefixed".format(name),
-        dest = "nest/prefix/dest",
+        link_name = "nest/prefix/dest",
         target = "src",
         tags = ["manual"],
     )

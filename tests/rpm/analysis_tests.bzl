@@ -131,7 +131,7 @@ def _test_conflicting_inputs(name):
 
     pkg_mklink(
         name = "{}_symlink_conflict".format(name),
-        dest = "foo",
+        link_name = "foo",
         target = "bar",
         tags = ["manual"],
     )

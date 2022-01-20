@@ -100,7 +100,7 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "test_links",
-    dest = "/usr/bin/link-name",
+    link_name = "/usr/bin/link-name",
     target = "/usr/bin/link-target",
     attributes = pkg_attributes(
         group = "root",
