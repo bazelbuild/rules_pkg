@@ -202,7 +202,7 @@ def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_ma
     rpm_files_list.append(file_base + " " + abs_dest)
     install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
         abs_dest,
-        psi.source,
+        psi.target,
         psi.attributes["mode"],
     ))
 

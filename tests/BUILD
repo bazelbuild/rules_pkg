@@ -18,7 +18,7 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
 load(":path_test.bzl", "path_tests")
 load("//pkg:deb.bzl", "pkg_deb")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 load("//pkg:pkg.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
 

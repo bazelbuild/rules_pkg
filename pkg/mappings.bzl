@@ -476,13 +476,13 @@ def _pkg_mklink_impl(ctx):
     out_attributes.setdefault("mode", "0777")
     return [
         PackageSymlinkInfo(
-            destination = ctx.attr.dest,
-            source = ctx.attr.src,
+            destination = ctx.attr.link_name,
+            target = ctx.attr.target,
             attributes = out_attributes,
         ),
     ]
 
-pkg_mklink = rule(
+pkg_mklink_impl = rule(
     doc = """Define a symlink  within packages
 
     This rule results in the creation of a single link within a package.
@@ -494,8 +494,17 @@ pkg_mklink = rule(
     implementation = _pkg_mklink_impl,
     # @unsorted-dict-items
     attrs = {
-        "dest": attr.string(
-            doc = """Link "target", a path within the package.
+        "target": attr.string(
+            doc = """Link "target", a path on the filesystem.
+
+            This is what the link "points" to, and may point to an arbitrary
+            filesystem path, even relative paths.
+
+            """,
+            mandatory = True,
+        ),
+        "link_name": attr.string(
+            doc = """Link "destination", a path within the package.
 
             This is the actual created symbolic link.
 
@@ -504,15 +513,6 @@ pkg_mklink = rule(
             will be created implicitly, much like with `pkg_files`.
 
             This path may be prefixed or rooted by grouping or packaging rules.
-
-            """,
-            mandatory = True,
-        ),
-        "src": attr.string(
-            doc = """Link "source", a path on the filesystem.
-
-            This is what the link "points" to, and may point to an arbitrary
-            filesystem path, even relative paths.
 
             """,
             mandatory = True,
@@ -536,6 +536,31 @@ pkg_mklink = rule(
     },
     provides = [PackageSymlinkInfo],
 )
+
+def pkg_mklink(name, link_name, target, attributes=None, src=None, **kwargs):
+  """Create a symlink.
+
+  Args:
+    name: target name
+    target: target path that the link should point to.
+    link_name: the path in the package that should point to the target.
+    attributes: file attributes.
+  """
+  if src:
+    if target:
+      fail("You can not specify both target and src.")
+    # buildifier: disable=print
+    print("Warning: pkg_mklink.src is deprecated. Use target.")
+    target = src
+  pkg_mklink_impl(
+      name = name,
+      target = target,
+      link_name = link_name,
+      attributes = attributes,
+      **kwargs,
+  )
+
+
 
 def _pkg_filegroup_impl(ctx):
     files = []
@@ -575,7 +600,7 @@ def _pkg_filegroup_impl(ctx):
                 links += [
                     (
                         PackageSymlinkInfo(
-                            source = psi.source,
+                            target = psi.target,
                             destination = paths.join(ctx.attr.prefix, psi.destination),
                             attributes = psi.attributes,
                         ),
@@ -608,7 +633,7 @@ def _pkg_filegroup_impl(ctx):
 
             if PackageSymlinkInfo in s:
                 new_psi = PackageSymlinkInfo(
-                    source = s[PackageSymlinkInfo].source,
+                    target = s[PackageSymlinkInfo].target,
                     destination = paths.join(ctx.attr.prefix, s[PackageSymlinkInfo].destination),
                     attributes = s[PackageSymlinkInfo].attributes,
                 )
