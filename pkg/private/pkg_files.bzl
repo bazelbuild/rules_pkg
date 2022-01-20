@@ -122,7 +122,7 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
         user = attrs[1],
         group = attrs[2],
         origin = origin,
-        link_to = pkg_symlink_info.source,
+        link_to = pkg_symlink_info.target,
     )
 
 def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):

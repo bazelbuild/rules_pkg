@@ -562,12 +562,12 @@ Defines creation and ownership of directories in packages
 | <a id="pkg_mkdirs-dirs"></a>dirs |  Directory names to make within the package<br><br>            If any part of the requested directory structure does not already             exist within a package, the package builder will create it for you             with a reasonable set of default permissions (typically <code>0755             root.root</code>).   | List of strings | required |  |
 
 
-<a id="#pkg_mklink"></a>
+<a id="#pkg_mklink_impl"></a>
 
-## pkg_mklink
+## pkg_mklink_impl
 
 <pre>
-pkg_mklink(<a href="#pkg_mklink-name">name</a>, <a href="#pkg_mklink-attributes">attributes</a>, <a href="#pkg_mklink-dest">dest</a>, <a href="#pkg_mklink-src">src</a>)
+pkg_mklink_impl(<a href="#pkg_mklink_impl-name">name</a>, <a href="#pkg_mklink_impl-attributes">attributes</a>, <a href="#pkg_mklink_impl-link_name">link_name</a>, <a href="#pkg_mklink_impl-target">target</a>)
 </pre>
 
 Define a symlink  within packages
@@ -584,10 +584,10 @@ Define a symlink  within packages
 
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="pkg_mklink-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="pkg_mklink-attributes"></a>attributes |  Attributes to set on packaged symbolic links.<br><br>            Always use <code>pkg_attributes()</code> to set this rule attribute.<br><br>            Symlink permissions may have different meanings depending on your             host operating system; consult its documentation for more details.<br><br>            If not otherwise overridden, the link's mode will be set to UNIX             "0777", or the target platform's equivalent.<br><br>            Consult the "Mapping Attributes" documentation in the rules_pkg             reference for more details.   | String | optional | "{}" |
-| <a id="pkg_mklink-dest"></a>dest |  Link "target", a path within the package.<br><br>            This is the actual created symbolic link.<br><br>            If the directory structure provided by this attribute is not             otherwise created when exist within the package when it is built, it             will be created implicitly, much like with <code>pkg_files</code>.<br><br>            This path may be prefixed or rooted by grouping or packaging rules.   | String | required |  |
-| <a id="pkg_mklink-src"></a>src |  Link "source", a path on the filesystem.<br><br>            This is what the link "points" to, and may point to an arbitrary             filesystem path, even relative paths.   | String | required |  |
+| <a id="pkg_mklink_impl-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_mklink_impl-attributes"></a>attributes |  Attributes to set on packaged symbolic links.<br><br>            Always use <code>pkg_attributes()</code> to set this rule attribute.<br><br>            Symlink permissions may have different meanings depending on your             host operating system; consult its documentation for more details.<br><br>            If not otherwise overridden, the link's mode will be set to UNIX             "0777", or the target platform's equivalent.<br><br>            Consult the "Mapping Attributes" documentation in the rules_pkg             reference for more details.   | String | optional | "{}" |
+| <a id="pkg_mklink_impl-link_name"></a>link_name |  Link "destination", a path within the package.<br><br>            This is the actual created symbolic link.<br><br>            If the directory structure provided by this attribute is not             otherwise created when exist within the package when it is built, it             will be created implicitly, much like with <code>pkg_files</code>.<br><br>            This path may be prefixed or rooted by grouping or packaging rules.   | String | required |  |
+| <a id="pkg_mklink_impl-target"></a>target |  Link "target", a path on the filesystem.<br><br>            This is what the link "points" to, and may point to an arbitrary             filesystem path, even relative paths.   | String | required |  |
 
 
 <a id="#pkg_attributes"></a>
@@ -627,6 +627,29 @@ rules (e.g. `pkg_files`).
 **RETURNS**
 
 A value usable in the "attributes" attribute in package mapping rules.
+
+
+<a id="#pkg_mklink"></a>
+
+## pkg_mklink
+
+<pre>
+pkg_mklink(<a href="#pkg_mklink-name">name</a>, <a href="#pkg_mklink-link_name">link_name</a>, <a href="#pkg_mklink-target">target</a>, <a href="#pkg_mklink-attributes">attributes</a>, <a href="#pkg_mklink-src">src</a>, <a href="#pkg_mklink-kwargs">kwargs</a>)
+</pre>
+
+Create a symlink.
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="pkg_mklink-name"></a>name |  target name   |  none |
+| <a id="pkg_mklink-link_name"></a>link_name |  the path in the package that should point to the target.   |  none |
+| <a id="pkg_mklink-target"></a>target |  target path that the link should point to.   |  none |
+| <a id="pkg_mklink-attributes"></a>attributes |  file attributes.   |  <code>None</code> |
+| <a id="pkg_mklink-src"></a>src |  <p align="center"> - </p>   |  <code>None</code> |
+| <a id="pkg_mklink-kwargs"></a>kwargs |  <p align="center"> - </p>   |  none |
 
 
 <a id="#strip_prefix.files_only"></a>
