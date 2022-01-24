@@ -43,7 +43,7 @@ genrule(
     name = "reference",
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
-    cmd = "cat $(SRCS) >$@",
+    cmd = "cat $(SRCS) | sed -e 's/&lt;li&gt;/<li>/g' >$@",
 )
 
 [
