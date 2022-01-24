@@ -292,10 +292,10 @@ pkg_tar_impl = rule(
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
-            doc = """Enable file time stamping.  Possible values:<ul>
-- stamp = 1: Use the time of the build as the modification time of each file in the archive.
-- stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.
-- stamp = -1: Control the chosen modification time using the --[no]stamp flag.
+            doc = """Enable file time stamping.  Possible values:
+<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.
+<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.
+<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.
 """,
             default = 0,
         ),
