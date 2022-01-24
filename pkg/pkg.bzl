@@ -293,10 +293,10 @@ pkg_tar_impl = rule(
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:<ul>
-<li>stamp = 1: Use the time of the build as the modification time of each file in the archive.</li>
-<li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.</li>
-<li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.</li>
-</ul>""",
+- stamp = 1: Use the time of the build as the modification time of each file in the archive.
+- stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.
+- stamp = -1: Control the chosen modification time using the --[no]stamp flag.
+""",
             default = 0,
         ),
         # Is --stamp set on the command line?
