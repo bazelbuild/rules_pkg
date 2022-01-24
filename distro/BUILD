@@ -20,9 +20,8 @@ load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
-licenses(["notice"])
-
 package(
+    default_applicable_licenses = ["//:license"],
     default_visibility = ["//visibility:private"],
 )
 

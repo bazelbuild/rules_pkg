@@ -14,9 +14,9 @@
 
 load(
     ":mappings_test.bzl",
-     "manifest_golden_test",
-     "mappings_analysis_tests",
-     "mappings_unit_tests",
+    "manifest_golden_test",
+    "mappings_analysis_tests",
+    "mappings_unit_tests",
 )
 load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
 load(
@@ -29,6 +29,8 @@ load(
 )
 load("//tests/util:defs.bzl", "directory", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
+
+package(default_applicable_licenses = ["//:license"])
 
 py_library(
     name = "manifest_test_lib",
@@ -51,7 +53,10 @@ mappings_external_repo_analysis_tests()
 
 directory(
     name = "treeartifact",
-    filenames = ["artifact_in_tree1", "artifact_in_tree2"],
+    filenames = [
+        "artifact_in_tree1",
+        "artifact_in_tree2",
+    ],
 )
 
 pkg_files(
@@ -85,16 +90,16 @@ write_content_manifest(
     name = "all",
     srcs = [
         "BUILD",
+        ":directory-with-contents",
         ":dirs",
         ":files",
-        ":directory-with-contents",
     ],
 )
 
 manifest_golden_test(
     name = "all_test",
-    target = "all",
     expected = "all.manifest.golden",
+    target = "all",
 )
 
 #
@@ -117,6 +122,6 @@ write_content_manifest(
 
 manifest_golden_test(
     name = "utf8_manifest_test",
-    target = "utf8",
     expected = "utf8_manifest.golden",
+    target = "utf8",
 )

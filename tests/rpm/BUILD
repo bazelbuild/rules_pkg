@@ -32,6 +32,8 @@ load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 # analysis tests
 ############################################################################
 
+package(default_applicable_licenses = ["//:license"])
+
 analysis_tests(name = "analysis_tests")
 
 create_toolchain_analysis_tests()
@@ -100,13 +102,13 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "test_links",
-    link_name = "/usr/bin/link-name",
-    target = "/usr/bin/link-target",
     attributes = pkg_attributes(
         group = "root",
         mode = "0777",
         user = "root",
     ),
+    link_name = "/usr/bin/link-name",
+    target = "/usr/bin/link-target",
 )
 
 pkg_filegroup(
@@ -316,10 +318,10 @@ sh_library(
 
 pkg_mkdirs(
     name = "dirtest_dirs",
+    attributes = pkg_attributes(mode = "0755"),
     dirs = [
         "dir",
     ],
-    attributes = pkg_attributes(mode = "0755"),
 )
 
 pkg_files(
@@ -327,9 +329,10 @@ pkg_files(
     srcs = [
         ":config_empty",
     ],
-    prefix = "dir",
     attributes = pkg_attributes(mode = "0644"),
+    prefix = "dir",
 )
+
 pkg_rpm(
     name = "test_rpm_dirs",
     srcs = [
@@ -354,7 +357,7 @@ genrule(
     # pkg_rpm emits two outputs
     RPMS=($(SRCS))
     rpm -qp --queryformat '[%{FILEMODES:perms} %{FILENAMES}\n]' $${RPMS[0]} > $@
-    """
+    """,
 )
 
 diff_test(

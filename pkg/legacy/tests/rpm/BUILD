@@ -15,6 +15,8 @@
 
 load("//pkg:rpm.bzl", "pkg_rpm")
 
+package(default_applicable_licenses = ["//:license"])
+
 pkg_rpm(
     name = "test-rpm",
     data = [

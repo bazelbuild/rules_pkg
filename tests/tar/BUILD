@@ -19,6 +19,8 @@ load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
+package(default_applicable_licenses = ["//:license"])
+
 py_test(
     name = "archive_test",
     srcs = [

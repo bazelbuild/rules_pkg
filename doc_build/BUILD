@@ -16,6 +16,8 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
 
+package(default_applicable_licenses = ["//:license"])
+
 # HOW TO:
 #   bazel build //doc_build:reference
 #   cp bazel-bin/doc_build/reference.md docs/latest.md
@@ -26,6 +28,7 @@ load("//:version.bzl", "version")
 # buildifier: leave-alone
 ORDER = [
     # buildifier: do not sort
+    # buildifier: do not reformat
     ("toc",            None),
     ("common",         None),
     ("pkg_deb",        "//pkg/private/deb:deb.bzl"),

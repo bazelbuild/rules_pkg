@@ -22,6 +22,8 @@ load("//pkg:pkg.bzl", "pkg_tar")
 load("//pkg:deb.bzl", "pkg_deb")
 load("//tests:my_package_name.bzl", "my_package_naming")
 
+package(default_applicable_licenses = ["//:license"])
+
 genrule(
     name = "generate_files",
     outs = [
@@ -106,6 +108,6 @@ py_test(
 
 package_naming_test(
     name = "naming_test",
-    target_under_test = ":test_deb",
     expected_name = "fizzbuzz_test_all.deb",
+    target_under_test = ":test_deb",
 )

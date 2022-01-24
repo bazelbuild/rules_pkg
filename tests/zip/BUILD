@@ -19,6 +19,8 @@ load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
+package(default_applicable_licenses = ["//:license"])
+
 licenses(["notice"])
 
 genrule(
@@ -76,9 +78,9 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic",
     srcs = [
+        ":dirs",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
-        ":dirs",
     ],
 )
 
@@ -104,9 +106,9 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic_timestamp_before_epoch",
     srcs = [
+        ":dirs",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
-        ":dirs",
     ],
     timestamp = 0,
 )

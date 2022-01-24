@@ -26,6 +26,8 @@ Toolchains:
 
 load("//toolchains:rpmbuild.bzl", "is_rpmbuild_available", "rpmbuild_toolchain")
 
+package(default_applicable_licenses = ["//:license"])
+
 filegroup(
     name = "standard_package",
     srcs = glob([

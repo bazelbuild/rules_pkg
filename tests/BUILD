@@ -22,6 +22,8 @@ load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 load("//pkg:pkg.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
 
+package(default_applicable_licenses = ["//:license"])
+
 licenses(["notice"])
 
 exports_files(glob(["testdata/**"]))
