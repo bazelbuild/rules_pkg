@@ -32,9 +32,7 @@ filegroup(
 )
 
 exports_files(
-    glob([
-        "*.bzl",
-    ]),
+    glob(["*.bzl"]),
     visibility = [
         "//distro:__pkg__",
         "//doc_build:__pkg__",
