@@ -43,6 +43,8 @@ genrule(
     name = "reference",
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
+    # Compensate for https://github.com/bazelbuild/stardoc/issues/118.
+    # Convert escaped HTML <li> back to raw text
     cmd = "cat $(SRCS) | sed -e 's/&lt;li&gt;/<li>/g' >$@",
 )
 
