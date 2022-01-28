@@ -68,15 +68,15 @@ documentation for more information.
 ## Using an implicit output as input to another rule.
 
 Sometimes a rule will create an implicit output that the user does not
-explicitly specify as an attribute of the target. The .changes file
-from pkg_deb is an example. If we want another rule to depend on an
-implicitly created file, we can do that with a filegroup that
-specifies the specific output group containing that file.
+explicitly specify as an attribute of the target. The .changes file from
+pkg_deb is an example. If we want another rule to depend on an implicitly
+created file, we can do that with a filegroup that specifies the specific
+output group containing that file.
 
 In the example below, `:deb` is a rule producing an explicit .deb output
-and an implict .changes output. We refer to the .changes file using
-the `filegroup` and specifying the desired output group name. Then,
-any rule can use this `filegroup` as an input.
+and an implict .changes output. We refer to the .changes file using the
+`filegroup` and specifying the desired output group name. Then, any rule
+can use this `filegroup` as an input.
 
 ```python
 
