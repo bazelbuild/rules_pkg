@@ -39,3 +39,18 @@ pkg_deb(
     package = "mwp",
     version = "3.14",
 )
+
+# We can also depend just on the .changes file
+
+filegroup(
+    name = "the_changes_file",
+    srcs = [":deb"],
+    output_group = "changes",
+)
+
+genrule(
+    name = "use_changes_file",
+    srcs = [":the_changes_file"],
+    outs = ["copy_of_changes.txt"],
+    cmd = "cp $(location :the_changes_file) $@",
+)
