@@ -91,20 +91,6 @@ py_library(
     ],
 )
 
-py_binary(
-    name = "build_tar",
-    srcs = ["build_tar.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":archive",
-        ":build_info",
-        ":helpers",
-        ":manifest",
-    ],
-)
-
 py_library(
     name = "manifest",
     srcs = ["manifest.py"],
