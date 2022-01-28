@@ -1,7 +1,7 @@
 * @aiuto @nacl
 
 /deb_packages/  @aiuto
-/docs		@aiuto @nacl @floriographygoth
+/docs		@aiuto @nacl @floriographygoth @gregestren
 
 /pkg/rpm/	@nacl
 /pkg/tests/rpm/	@nacl
