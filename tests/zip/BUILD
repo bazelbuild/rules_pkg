@@ -13,7 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
@@ -42,6 +42,15 @@ pkg_mkdirs(
     dirs = [
         "foodir",
     ],
+)
+
+pkg_mklink(
+    name = "link",
+    target = "/usr/local/foo/foo.real",
+    link_name = "/usr/bin/foo",
+    attributes = pkg_attributes(
+        mode = "555",
+    ),
 )
 
 directory(
@@ -79,6 +88,7 @@ pkg_zip(
     name = "test_zip_basic",
     srcs = [
         ":dirs",
+        ":link",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -107,6 +117,7 @@ pkg_zip(
     name = "test_zip_basic_timestamp_before_epoch",
     srcs = [
         ":dirs",
+        ":link",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
