@@ -27,6 +27,7 @@ ZIP_EPOCH = 315532800
 # Unix dir bit and Windows dir bit. Magic from zip spec
 UNIX_DIR_BIT = 0o40000
 MSDOS_DIR_BIT = 0x10
+UNIX_SYMLINK_BIT = 0o120000
 
 def _create_argument_parser():
   """Creates the command line arg parser."""
@@ -108,6 +109,11 @@ def _add_manifest_entry(options, zip_file, entry, default_mode, ts):
     # Set directory bits
     entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
     zip_file.writestr(entry_info, '')
+  elif entry_type == manifest.ENTRY_IS_LINK:
+    entry_info.compress_type = zipfile.ZIP_STORED
+    # Set directory bits
+    entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
+    zip_file.writestr(entry_info, src)
   # TODO(#309): All the rest
 
 def main(args):
