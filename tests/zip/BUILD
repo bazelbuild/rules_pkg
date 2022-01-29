@@ -13,7 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")

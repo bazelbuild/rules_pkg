@@ -16,7 +16,7 @@
 # Extract the paths to the various outputs of pkg_deb
 #
 # Usage:
-#   bazel cquery //:debian --output=starlark --starlark:file=show_deb_outputs.bzl
+#   bazel cquery //:deb --output=starlark --starlark:file=show_all_outputs.bzl
 #
 
 def format(target):

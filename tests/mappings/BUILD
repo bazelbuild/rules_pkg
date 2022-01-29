@@ -25,7 +25,6 @@ load(
     "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
-    "pkg_mklink",
     "strip_prefix",
 )
 load("//tests/util:defs.bzl", "directory", "write_content_manifest")

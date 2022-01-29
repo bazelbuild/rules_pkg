@@ -65,7 +65,7 @@ PackageSymlinkInfo = provider(
     fields = {
         "attributes": """See `attributes` in PackageFilesInfo.""",
         "destination": """string: Filesystem link 'name'""",
-        "source": """string or Label: Filesystem link 'target'.
+        "target": """string or Label: Filesystem link 'target'.
 
         TODO(nacl): Label sources not yet supported.
         """,
