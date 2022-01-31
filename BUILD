@@ -29,14 +29,12 @@ license(
 
 exports_files(
     ["WORKSPACE"],
-    visibility = ["//visibility:public"],
 )
 
 exports_files(
     glob([
         "*.bzl",
     ]),
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
