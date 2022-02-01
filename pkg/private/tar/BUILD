@@ -28,7 +28,10 @@ filegroup(
         "*.bzl",
         "*.py",
     ]),
-    visibility = ["//distro:__pkg__"],
+    visibility = [
+        "//distro:__pkg__",
+        "//pkg:__pkg__",
+    ],
 )
 
 exports_files(
