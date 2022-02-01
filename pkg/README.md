@@ -30,7 +30,7 @@ WORKSPACE to use one installed on your system:
 
 ```python
 # Find rpmbuild provided on your system.
-load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name = "rules_pkg_rpmbuild")
 ```
 
