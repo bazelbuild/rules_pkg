@@ -894,7 +894,7 @@ pkg_rpm = rule(
         "conflicts": attr.string_list(
             doc = """List of capabilities that conflict with this package when it is installed.
 
-            Cooresponds to the "Conflicts" preamble tag.
+            Corresponds to the "Conflicts" preamble tag.
 
             See also: https://rpm.org/user_doc/dependencies.html
             """,
@@ -902,7 +902,7 @@ pkg_rpm = rule(
         "provides": attr.string_list(
             doc = """List of rpm capabilities that this package provides.
 
-            Cooresponds to the "Provides" preamble tag.
+            Corresponds to the "Provides" preamble tag.
 
             See also: https://rpm.org/user_doc/dependencies.html
             """,

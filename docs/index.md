@@ -12,7 +12,7 @@ Use rules-pkg-discuss@googlegroups.com for discussion.
 We are in the process of migrating from hand-written docs to generated ones.
 Some rules are fully documented in their definitions, and will have complete
 documentation in the Latest or versioned snapshots. Some rules still have
-attributes only defined in in the "Legacy" documentation. You may have to
+attributes only defined in the "Legacy" documentation. You may have to
 consult more than one place to get a complete picture.
 
 *   [Latest Snapshot](latest.md)
