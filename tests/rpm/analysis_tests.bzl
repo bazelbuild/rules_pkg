@@ -191,7 +191,6 @@ def _package_naming_test_impl(ctx):
         elif f.basename == ctx.attr.expected_default_name and not default_name_found:
             default_name_found = True
 
-
     asserts.true(
         env,
         packaged_file != None,

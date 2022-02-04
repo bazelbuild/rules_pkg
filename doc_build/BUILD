@@ -23,9 +23,8 @@ load("//:version.bzl", "version")
 
 
 # pairs of rule name and the source file to get it from
-# buildifier: leave-alone
+# buildifier: leave-alone, do not sort
 ORDER = [
-    # buildifier: do not sort
     ("toc",            None),
     ("common",         None),
     ("pkg_deb",        "//pkg/private/deb:deb.bzl"),

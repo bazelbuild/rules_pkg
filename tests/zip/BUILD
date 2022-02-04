@@ -44,11 +44,11 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "link",
-    target = "/usr/local/foo/foo.real",
-    link_name = "/usr/bin/foo",
     attributes = pkg_attributes(
         mode = "555",
     ),
+    link_name = "/usr/bin/foo",
+    target = "/usr/local/foo/foo.real",
 )
 
 directory(
@@ -85,10 +85,10 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic",
     srcs = [
-        "//tests:testdata/hello.txt",
-        "//tests:testdata/loremipsum.txt",
         ":dirs",
         ":link",
+        "//tests:testdata/hello.txt",
+        "//tests:testdata/loremipsum.txt",
     ],
 )
 
@@ -114,10 +114,10 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_basic_timestamp_before_epoch",
     srcs = [
-        "//tests:testdata/hello.txt",
-        "//tests:testdata/loremipsum.txt",
         ":dirs",
         ":link",
+        "//tests:testdata/hello.txt",
+        "//tests:testdata/loremipsum.txt",
     ],
     timestamp = 0,
 )

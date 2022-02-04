@@ -106,6 +106,6 @@ py_test(
 
 package_naming_test(
     name = "naming_test",
-    target_under_test = ":test_deb",
     expected_name = "fizzbuzz_test_all.deb",
+    target_under_test = ":test_deb",
 )
