@@ -43,7 +43,6 @@ def _package_naming_test_impl(ctx):
         )
     return analysistest.end(env)
 
-
 package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {

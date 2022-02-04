@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Forwarder for pkg_zip."""
+
 load("//pkg/private/zip:zip.bzl", _pkg_zip = "pkg_zip")
 
 pkg_zip = _pkg_zip

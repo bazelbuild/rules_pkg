@@ -109,7 +109,6 @@ def _test_pkg_files_extrepo():
         expected_dests = ["usr/bin/dir/extproj.sh"],
     )
 
-
 def mappings_external_repo_analysis_tests():
     """Declare mappings.bzl analysis tests"""
     _test_pkg_files_extrepo()

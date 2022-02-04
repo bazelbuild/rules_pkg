@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Workspace dependencies for rules_pkg/pkg
-# This is for backwards compatibility with existing usage.  Please use
-#     load("//pkg:deps.bzl", "rules_pkg_dependencies")
-# going forward.
+"""Workspace dependencies for rules_pkg/pkg.
+This is for backwards compatibility with existing usage.  Please use
+     load("//pkg:deps.bzl", "rules_pkg_dependencies")
+going forward.
+"""
 
 load("//pkg:deps.bzl", _rules_pkg_dependencies = "rules_pkg_dependencies")
 
