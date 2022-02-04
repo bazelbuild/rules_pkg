@@ -315,7 +315,7 @@ pkg_tar_impl = rule(
 )
 
 def pkg_tar(name, **kwargs):
-    """Creates a .tar file. See pkg_tar_impl."""
+    """@wraps(pkg_tar_impl)"""
 
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.

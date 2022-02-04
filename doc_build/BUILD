@@ -43,9 +43,8 @@ genrule(
     name = "reference",
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
-    # Compensate for https://github.com/bazelbuild/stardoc/issues/118.
-    # Convert escaped HTML <li> back to raw text
-    cmd = "cat $(SRCS) | sed -e 's/&lt;li&gt;/<li>/g' >$@",
+    cmd = "$(location :merge) $(SRCS) >$@",
+    tools = [":merge"],
 )
 
 [
@@ -106,5 +105,37 @@ bzl_library(
         "//pkg/private/zip:zip.bzl",
         "@bazel_skylib//lib:paths",
     ],
+    visibility = ["//visibility:private"],
+)
+load("@rules_python//python:defs.bzl", "py_library")
+
+licenses(["notice"])
+
+filegroup(
+    name = "standard_package",
+    srcs = [
+        "BUILD",
+    ] + glob([
+        "*.bzl",
+        "*.py",
+    ]),
+    visibility = ["//distro:__pkg__"],
+)
+
+exports_files(
+    glob([
+        "*.bzl",
+    ]),
+    visibility = [
+        "//distro:__pkg__",
+        "//doc_build:__pkg__",
+    ],
+)
+
+py_binary(
+    name = "merge",
+    srcs = ["merge.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:private"],
 )
