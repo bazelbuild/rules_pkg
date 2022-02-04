@@ -80,27 +80,26 @@ def _pkg_tar_impl(ctx):
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
 
+    # Start building the arguments.
+    args = ctx.actions.args()
+    args.add("--root_directory", ctx.attr.package_base)
+    args.add("--output", output_file.path)
+    args.add("--mode", ctx.attr.mode)
+    args.add("--owner", ctx.attr.owner)
+    args.add("--owner_name", ctx.attr.ownername)
+
     # Package dir can be specified by a file or inlined.
     if ctx.attr.package_dir_file:
         if ctx.attr.package_dir:
             fail("Both package_dir and package_dir_file attributes were specified")
-        package_dir_arg = "--directory=@" + ctx.file.package_dir_file.path
+        args.add("--directory", "@" + ctx.file.package_dir_file.path)
         files.append(ctx.file.package_dir_file)
     else:
         package_dir_expanded = substitute_package_variables(ctx, ctx.attr.package_dir)
-        package_dir_arg = "--directory=" + package_dir_expanded or "/"
+        args.add("--directory", package_dir_expanded or "/")
 
-    # Start building the arguments.
-    args = [
-        "--root_directory=" + ctx.attr.package_base,
-        "--output=" + output_file.path,
-        package_dir_arg,
-        "--mode=" + ctx.attr.mode,
-        "--owner=" + ctx.attr.owner,
-        "--owner_name=" + ctx.attr.ownername,
-    ]
     if ctx.executable.compressor:
-        args.append("--compressor=%s %s" % (ctx.executable.compressor.path, ctx.attr.compressor_args))
+        args.add("--compressor", "%s %s" % (ctx.executable.compressor.path, ctx.attr.compressor_args))
     else:
         extension = ctx.attr.extension
         if extension and extension != "tar":
@@ -114,16 +113,16 @@ def _pkg_tar_impl(ctx):
                 compression = "gz"
             if compression:
                 if compression in SUPPORTED_TAR_COMPRESSIONS:
-                    args += ["--compression=%s" % compression]
+                    args.add("--compression", compression)
                 else:
                     fail("Unsupported compression: '%s'" % compression)
 
     if ctx.attr.mtime != _DEFAULT_MTIME:
         if ctx.attr.portable_mtime:
             fail("You may not set both mtime and portable_mtime")
-        args.append("--mtime=%d" % ctx.attr.mtime)
+        args.add("--mtime", "%d" % ctx.attr.mtime)
     if ctx.attr.portable_mtime:
-        args.append("--mtime=portable")
+        args.add("--mtime", "portable")
 
     # Now we begin processing the files.
     file_deps = []  # inputs we depend on
@@ -187,25 +186,23 @@ def _pkg_tar_impl(ctx):
         )
 
     if ctx.attr.modes:
-        args += [
-            "--modes=%s=%s" % (_quote(key), ctx.attr.modes[key])
-            for key in ctx.attr.modes
-        ]
+        for key in ctx.attr.modes:
+            args.add("--modes", "%s=%s" % (_quote(key), ctx.attr.modes[key]))
     if ctx.attr.owners:
-        args += [
-            "--owners=%s=%s" % (_quote(key), ctx.attr.owners[key])
-            for key in ctx.attr.owners
-        ]
+        for key in ctx.attr.owners:
+            args.add("--owners", "%s=%s" % (_quote(key), ctx.attr.owners[key]))
     if ctx.attr.ownernames:
-        args += [
-            "--owner_names=%s=%s" % (_quote(key), ctx.attr.ownernames[key])
-            for key in ctx.attr.ownernames
-        ]
+        for key in ctx.attr.ownernames:
+            args.add(
+                "--owner_names",
+                "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
+            )
     for empty_file in ctx.attr.empty_files:
         add_empty_file(content_map, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(content_map, empty_dir, ctx.label)
-    args += ["--tar=" + f.path for f in ctx.files.deps]
+    for f in ctx.files.deps:
+        args.add("--tar", f.path)
     for link in ctx.attr.symlinks:
         add_symlink(
             content_map,
@@ -215,18 +212,17 @@ def _pkg_tar_impl(ctx):
         )
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
-        args.append("--stamp_from=%s" % ctx.version_file.path)
+        args.add("--stamp_from", ctx.version_file.path)
         files.append(ctx.version_file)
 
     file_inputs = depset(transitive = file_deps)
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     files.append(manifest_file)
     write_manifest(ctx, manifest_file, content_map)
-    args.append("--manifest=%s" % manifest_file.path)
+    args.add("--manifest", manifest_file.path)
 
-    arg_file = ctx.actions.declare_file(ctx.label.name + ".args")
-    files.append(arg_file)
-    ctx.actions.write(arg_file, "\n".join(args))
+    args.set_param_file_format("flag_per_line")
+    args.use_param_file("@%s", use_always = False)
 
     ctx.actions.run(
         mnemonic = "PackageTar",
@@ -234,7 +230,7 @@ def _pkg_tar_impl(ctx):
         inputs = file_inputs.to_list() + ctx.files.deps + files,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
         executable = ctx.executable.build_tar,
-        arguments = ["@" + arg_file.path],
+        arguments = [args],
         outputs = [output_file],
         env = {
             "LANG": "en_US.UTF-8",
