@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""rules for creating install scripts from pkg_filegroups and friends.
+"""Rules for creating install scripts from pkg_filegroups and friends.
 
 This module provides an interface (`pkg_install`) for creating a `bazel
 run`-able installation script.
-
 """
 
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")

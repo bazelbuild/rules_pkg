@@ -24,14 +24,15 @@ load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 def _compute_data_path_test_impl(ctx):
     env = analysistest.begin(ctx)
     target_under_test = analysistest.target_under_test(env)
+
     # Subtle: This allows you to vendor the library into your own repo at some
     # arbitrary path.
     expect = ctx.attr.expected_path
-    if expect.startswith('tests'):
-      expect = ctx.label.package + expect[5:]
+    if expect.startswith("tests"):
+        expect = ctx.label.package + expect[5:]
     asserts.equals(
         env,
-        expect, 
+        expect,
         compute_data_path(ctx, ctx.attr.in_path),
     )
     return analysistest.end(env)
@@ -88,4 +89,4 @@ def _test_compute_data_path(name):
 
 def path_tests(name):
     """Declare path.bzl analysis tests."""
-    _test_compute_data_path(name=name + "_compute_data_path")
+    _test_compute_data_path(name = name + "_compute_data_path")
