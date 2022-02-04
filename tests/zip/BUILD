@@ -46,11 +46,11 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "link",
-    target = "/usr/local/foo/foo.real",
-    link_name = "/usr/bin/foo",
     attributes = pkg_attributes(
         mode = "555",
     ),
+    link_name = "/usr/bin/foo",
+    target = "/usr/local/foo/foo.real",
 )
 
 directory(

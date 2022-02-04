@@ -20,23 +20,24 @@ load(
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
-    "PackageSymlinkInfo",)
+    "PackageSymlinkInfo",
+)
 load(
     "//pkg:mappings.bzl",
+    "REMOVE_BASE_DIRECTORY",
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
     "pkg_mklink",
     "strip_prefix",
-    "REMOVE_BASE_DIRECTORY",
 )
 load(
     "//tests/util:defs.bzl",
     "directory",
     "fake_artifact",
     "generic_base_case_test",
-    "generic_negative_test"
+    "generic_negative_test",
 )
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@rules_python//python:defs.bzl", "py_test")
@@ -62,10 +63,10 @@ def _pkg_files_contents_test_impl(ctx):
     for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
         asserts.true(
             got in expected_dests,
-            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests))
+            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests),
+        )
         n_found += 1
     asserts.equals(env, len(expected_dests), n_found)
-
 
     # Simple equality checks for the others, if specified
     if ctx.attr.expected_attributes:
@@ -467,7 +468,6 @@ def _test_pkg_files_rename():
         name = "pf_directory_rename_to_empty",
         target_under_test = ":pf_directory_rename_to_empty_g",
     )
-
 
 ##########
 # Test pkg_mkdirs
@@ -968,7 +968,6 @@ _gen_manifest_test_main = rule(
         ),
     },
 )
-
 
 def manifest_golden_test(name, target, expected):
     """Tests that a content manifest file matches a golden copy.

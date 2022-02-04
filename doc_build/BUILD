@@ -25,10 +25,8 @@ package(default_applicable_licenses = ["//:license"])
 
 
 # pairs of rule name and the source file to get it from
-# buildifier: leave-alone
+# buildifier: leave-alone, do not sort
 ORDER = [
-    # buildifier: do not sort
-    # buildifier: do not reformat
     ("toc",            None),
     ("common",         None),
     ("pkg_deb",        "//pkg/private/deb:deb.bzl"),
