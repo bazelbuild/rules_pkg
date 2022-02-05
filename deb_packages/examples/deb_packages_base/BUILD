@@ -22,7 +22,7 @@ genrule(
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
 load("@io_bazel_rules_docker//contrib:passwd.bzl", "passwd_file")
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@bazel_tools//tools/build_defs/pkg:tar.bzl", "pkg_tar")
 load("@runtimes_common//structure_tests:tests.bzl", "structure_test")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
