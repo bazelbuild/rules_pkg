@@ -15,8 +15,8 @@
 
 licenses(["notice"])
 
-load("@rules_pkg//:deb.bzl", "pkg_deb")
-load("@rules_pkg//:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:deb.bzl", "pkg_deb")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(":package_upload.bzl", "debian_upload")
 load(":my_package_name.bzl", "basic_naming", "name_part_from_command_line", "names_from_toolchains")
 
