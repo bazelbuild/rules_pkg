@@ -11,16 +11,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Generate the reference documentation.
+
+How to:
+   bazel build //doc_build:reference
+   cp bazel-bin/doc_build/reference.md docs/latest.md
+   git commit -m 'update docs' docs/latest.md
+"""
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_python//python:defs.bzl", "py_library")
 load("//:version.bzl", "version")
 
-# HOW TO:
-#   bazel build //doc_build:reference
-#   cp bazel-bin/doc_build/reference.md docs/latest.md
-#   git commit -m 'update docs' docs/latest.md
+filegroup(
+    name = "standard_package",
+    srcs = [
+        "BUILD",
+    ] + glob([
+        "*.bzl",
+        "*.py",
+    ]),
+    visibility = ["//distro:__pkg__"],
+)
 
+exports_files(
+    glob([
+        "*.bzl",
+    ]),
+    visibility = [
+        "//distro:__pkg__",
+        "//doc_build:__pkg__",
+    ],
+)
 
 # pairs of rule name and the source file to get it from
 # buildifier: leave-alone, do not sort
@@ -105,30 +128,6 @@ bzl_library(
         "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:private"],
-)
-load("@rules_python//python:defs.bzl", "py_library")
-
-licenses(["notice"])
-
-filegroup(
-    name = "standard_package",
-    srcs = [
-        "BUILD",
-    ] + glob([
-        "*.bzl",
-        "*.py",
-    ]),
-    visibility = ["//distro:__pkg__"],
-)
-
-exports_files(
-    glob([
-        "*.bzl",
-    ]),
-    visibility = [
-        "//distro:__pkg__",
-        "//doc_build:__pkg__",
-    ],
 )
 
 py_binary(
