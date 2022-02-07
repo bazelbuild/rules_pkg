@@ -29,7 +29,7 @@ ORDER = [
     ("common",         None),
     ("pkg_deb",        "//pkg/private/deb:deb.bzl"),
     ("pkg_deb_impl",   "//pkg/private/deb:deb.bzl"),
-    ("pkg_rpm",        "//pkg:tar.bzl"),
+    ("pkg_rpm",        "//pkg:rpm_pfg.bzl"),
     ("pkg_tar",        "//pkg:pkg.bzl"),
     ("pkg_tar_impl",   "//pkg:pkg.bzl"),
     ("pkg_zip",        "//pkg/private/zip:zip.bzl"),
