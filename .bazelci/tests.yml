@@ -15,30 +15,27 @@ rolling: &rolling
 # Groups of tests, by platform
 #
 default_tests: &default_tests
-  test_targets:
-    - "//distro/..."
-    - "//pkg/..."
-    - "//tests/..."
-    - "//toolchains/..."
+  - "//distro/..."
+  - "//pkg/..."
+  - "//tests/..."
+  - "//toolchains/..."
 
 # rpmbuild(8) is not available or installed on most platforms
-skip_rpm: &skip_rpm
-  test_targets:
-    - "-//tests/rpm/..."
-    - "-//pkg/legacy/tests/rpm/..."
+skip_rpm_tests: &skip_rpm_tests
+  - "-//tests/rpm/..."
+  - "-//pkg/legacy/tests/rpm/..."
 
 win_tests: &win_tests
-  test_targets:
-    - "//pkg/..."
-    - "//tests/..."
-    - "//toolchains/..."
-    - "-//tests:make_rpm_test"
-    - "-//tests:package_naming_aggregate_test"
-    - "-//tests:path_test"
-    # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
-    # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
-    - "-//tests/mappings:utf8_manifest_test"
-    - "-//tests/mappings/filter_directory/..."
+  - "//pkg/..."
+  - "//tests/..."
+  - "//toolchains/..."
+  - "-//tests:make_rpm_test"
+  - "-//tests:package_naming_aggregate_test"
+  - "-//tests:path_test"
+  # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
+  # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
+  - "-//tests/mappings:utf8_manifest_test"
+  - "-//tests/mappings/filter_directory/..."
 
 #
 # Commmon features by platform
@@ -46,8 +43,9 @@ win_tests: &win_tests
 ubuntu1804: &ubuntu
   platform: ubuntu1804
   <<: *common
-  <<: *default_tests
-  <<: *skip_rpm
+  test_targets:
+    <<: *default_tests
+    <<: *skip_rpm_tests
   build_targets:
     - "//distro:distro"
     - "//distro:relnotes"
@@ -56,20 +54,23 @@ ubuntu1804: &ubuntu
 centos7: &centos
   platform: centos7
   <<: *common
-  <<: *default_tests
+  test_targets:
+    <<: *default_tests
 
 macos: &macos
   platform: macos
   <<: *common
-  <<: *default_tests
-  <<: *skip_rpm
+  test_targets:
+    <<: *default_tests
+    <<: *skip_rpm_tests
 
 windows: &windows
   platform: windows
   <<: *common
-  <<: *win_tests
-  # rpmbuild is not available on windows
-  <<: *skip_rpm
+  test_targets:
+    <<: *win_tests
+    # rpmbuild is not available on windows
+    <<: *skip_rpm_tests
 
 #
 # Finally, the cross product of bazel releases X platforms
