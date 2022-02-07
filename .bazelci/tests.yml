@@ -23,8 +23,9 @@ default_tests: &default_tests
 
 # rpmbuild(8) is not available or installed on most platforms
 skip_rpm: &skip_rpm
-  - "-//tests/rpm/..."
-  - "-//pkg/legacy/tests/rpm/..."
+  test_targets:
+    - "-//tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
 
 win_tests: &win_tests
   test_targets:
@@ -38,6 +39,7 @@ win_tests: &win_tests
     # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
     - "-//tests/mappings:utf8_manifest_test"
     - "-//tests/mappings/filter_directory/..."
+
 #
 # Commmon features by platform
 # 
