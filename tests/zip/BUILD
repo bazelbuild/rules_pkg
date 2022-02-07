@@ -71,6 +71,11 @@ copy_file(
 )
 
 pkg_zip(
+    name = "test_zip_tree",
+    srcs = [":generate_tree"],
+)
+
+pkg_zip(
     name = "test_zip_empty",
     srcs = [],
 )
@@ -184,6 +189,7 @@ py_test(
     ],
     data = [
         "test_zip_empty.zip",
+        "test_zip_tree.zip",
         "test_zip_basic.zip",
         "test_zip_package_dir0.zip",
         "test_zip_timestamp.zip",

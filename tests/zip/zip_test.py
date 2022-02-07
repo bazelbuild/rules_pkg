@@ -112,6 +112,15 @@ class ZipContentsCase(ZipTest):
         {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
+  def test_zip_tree(self):
+      self.assertZipFileContent("test_zip_tree.zip", [
+          {"filename": "b/e"},
+          {"filename": "b/c/d"},
+          {"filename": "b/d"},
+          {"filename": "a/a"},
+          {"filename": "a/b/c"},
+      ])
+
   def test_zip_strip_prefix_empty(self):
     self.assertZipFileContent("test-zip-strip_prefix-empty.zip", [
         {"filename": "loremipsum.txt", "crc": LOREM_CRC},
