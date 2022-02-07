@@ -37,16 +37,21 @@ win_tests: &win_tests
     - "//pkg/..."
     - "//tests/..."
     - "//toolchains/..."
-    - "-//tests:make_rpm_test"
     - "-//tests:package_naming_aggregate_test"
     - "-//tests:path_test"
     # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
     # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
     - "-//tests/mappings:utf8_manifest_test"
     - "-//tests/mappings/filter_directory/..."
+    # See #387
+    - "-//tests/install/..."
     # rpmbuild(8) is not supported on Windows
     - "-//tests/rpm/..."
     - "-//pkg/legacy/tests/rpm/..."
+    # RPM-related, but not applicable to Windows given the above.  Also relies
+    # on a Bourne Shell.  On other platforms, this exercises a dummy "rpmbuild",
+    # so it's OK to keep around.
+    - "-//tests:make_rpm_test"
 
 #
 # Commmon features by platform
