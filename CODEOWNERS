@@ -1,11 +1,13 @@
 * @aiuto @nacl
 
 /deb_packages/  @aiuto
-/docs		@aiuto @nacl @floriographygoth @gregestren
+/docs/		@aiuto @nacl @jylinv0 @gregestren
+/doc_build/	@aiuto @nacl @jylinv0
 
-/pkg/rpm/	@nacl
-/pkg/tests/rpm/	@nacl
-legacy/tests/rpm	@nacl
+/pkg/rpm/		@nacl
+/pkg/tests/rpm/		@nacl
+/legacy/tests/rpm	@nacl
 
-/pkg/private/make_deb.py	@aiuto @dannysullivan
-/pkg/tests/deb/			@aiuto @dannysullivan
+/pkg/deb.bzl		@aiuto @dannysullivan @jylinv0
+/pkg/private/deb/	@aiuto @dannysullivan @jylinv0
+/pkg/tests/deb/		@aiuto @dannysullivan @jylinv0
