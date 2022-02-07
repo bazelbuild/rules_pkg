@@ -316,8 +316,6 @@ def main():
                       help='The output file, mandatory.')
   parser.add_argument('--manifest',
                       help='manifest of contents to add to the layer.')
-  parser.add_argument('--legacy_manifest',
-                      help='DEPRECATED: JSON manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
   parser.add_argument(
@@ -422,25 +420,6 @@ def main():
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
       }
-
-    # TODO(aiuto): Make sure this is unused and remove the code.
-    if options.legacy_manifest:
-      with open(options.legacy_manifest, 'r') as manifest_fp:
-        manifest = json.load(manifest_fp)
-        for f in manifest.get('files', []):
-          output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
-        for f in manifest.get('empty_files', []):
-          output.add_empty_file(f, **file_attributes(f))
-        for d in manifest.get('empty_dirs', []):
-          output.add_empty_dir(d, **file_attributes(d))
-        for d in manifest.get('empty_root_dirs', []):
-          output.add_empty_root_dir(d, **file_attributes(d))
-        for f in manifest.get('symlinks', []):
-          output.add_link(f['linkname'], f['target'])
-        for tar in manifest.get('tars', []):
-          output.add_tar(tar)
-        for deb in manifest.get('debs', []):
-          output.add_deb(deb)
 
     if options.manifest:
       with open(options.manifest, 'r') as manifest_fp:
