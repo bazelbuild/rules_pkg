@@ -14,7 +14,7 @@
 
 """Example rules to show package naming techniques."""
 
-load("@rules_pkg//:providers.bzl", "PackageVariablesInfo")
+load("@rules_pkg//pkg:providers.bzl", "PackageVariablesInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 
 def _basic_naming_impl(ctx):
