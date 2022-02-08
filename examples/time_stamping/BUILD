@@ -15,7 +15,7 @@
 
 licenses(["notice"])
 
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 pkg_tar(
     name = "never_stamped",

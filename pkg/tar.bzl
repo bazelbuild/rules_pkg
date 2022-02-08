@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2022 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Forwarder for pkg_tar."""
 
-workspace(name = "rules_pkg_example_prebuilt_rpmbuild")
+load("//pkg:pkg.bzl", _pkg_tar = "pkg_tar")
 
-local_repository(
-    name = "rules_pkg",
-    path = "../..",
-)
-
-load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
-
-rules_pkg_dependencies()
-
-load("//local:rpmbuild.bzl", "register_my_rpmbuild_toolchain")
-
-register_my_rpmbuild_toolchain()
+pkg_tar = _pkg_tar

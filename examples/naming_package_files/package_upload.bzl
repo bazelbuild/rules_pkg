@@ -13,7 +13,7 @@
 # limitations under the License.
 """Example of how we can use PackageArtifactInfo to find an output name."""
 
-load("@rules_pkg//:providers.bzl", "PackageArtifactInfo")
+load("@rules_pkg//pkg:providers.bzl", "PackageArtifactInfo")
 
 def _debian_upload_impl(ctx):
     # Find out the basename of the deb file we created.
