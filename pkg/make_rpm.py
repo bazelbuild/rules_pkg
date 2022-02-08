@@ -376,7 +376,8 @@ class RpmBuilder(object):
 
     if self.source_date_epoch is not None:
       env['SOURCE_DATE_EPOCH'] = self.source_date_epoch
-      args += ["--define", "clamp_mtime_to_source_date_epoch Y"]
+      args += ["--define", "clamp_mtime_to_source_date_epoch 1"]
+      args += ["--define", "use_source_date_epoch_as_buildtime 1"]
 
     if self.debug:
       print('Running rpmbuild as:', ' '.join(["'" + a + "'" for a in args]))
