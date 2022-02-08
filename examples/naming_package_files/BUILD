@@ -15,7 +15,8 @@
 
 licenses(["notice"])
 
-load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+load("@rules_pkg//pkg:deb.bzl", "pkg_deb")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(":package_upload.bzl", "debian_upload")
 load(":my_package_name.bzl", "basic_naming", "name_part_from_command_line", "names_from_toolchains")
 
@@ -25,21 +26,19 @@ config_setting(
 )
 
 VERSION = "1"
+
 REVISION = "2"
 
 # Exposes the value of the compilation mode to the package naming.
 basic_naming(
     name = "my_naming_vars",
 
-    # Explicit values to use in all package names
-    version = VERSION,
-    revision = REVISION,
-
     # We make the product name a variable rather than put it in every rule.
     # This technique can be useful if you need to create packages in many
     # different formats but have not decided on the final naming yet. You
     # can use a placeholder and change it on one location.
     product_name = "RulesPkgExamples",
+    revision = REVISION,
 
     # Use a config_setting flag to specify part of the package name.
     # In this example, we define the config_setting based on a command line
@@ -50,6 +49,9 @@ basic_naming(
         ":special_build": "-IsSpecial",
         "//conditions:default": "",
     }),
+
+    # Explicit values to use in all package names
+    version = VERSION,
 )
 
 # Try building with various flag combinations to explore.
@@ -73,8 +75,8 @@ pkg_tar(
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "example2-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
     package_dir = "example1/{product_name}/{target_cpu}/{compilation_mode}{special_build}",
+    package_file_name = "example2-{product_name}-{target_cpu}-{compilation_mode}{special_build}.tar",
     package_variables = ":my_naming_vars",
 )
 

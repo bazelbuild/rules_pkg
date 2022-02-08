@@ -21,10 +21,7 @@ local_repository(
     path = "../..",
 )
 
-http_archive
-
-
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 

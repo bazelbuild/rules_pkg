@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("//:version.bzl", "version")
-load("//pkg:pkg.bzl", "pkg_tar")
+load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg/releasing:defs.bzl", "print_rel_notes")
 load("//pkg/releasing:git.bzl", "git_changelog")
 load("@rules_python//python:defs.bzl", "py_test")
