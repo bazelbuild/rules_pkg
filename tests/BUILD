@@ -19,7 +19,7 @@ load(":my_package_name.bzl", "my_package_naming")
 load(":path_test.bzl", "path_tests")
 load("//pkg:deb.bzl", "pkg_deb")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
-load("//pkg:pkg.bzl", "pkg_tar")
+load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
 
 package(default_applicable_licenses = ["//:license"])

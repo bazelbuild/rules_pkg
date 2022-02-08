@@ -310,7 +310,7 @@ pkg_tar_impl(<a href="#pkg_tar_impl-name">name</a>, <a href="#pkg_tar_impl-build
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_tar_impl-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="pkg_tar_impl-build_tar"></a>build_tar |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/private:build_tar |
+| <a id="pkg_tar_impl-build_tar"></a>build_tar |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/private/tar:build_tar |
 | <a id="pkg_tar_impl-compressor"></a>compressor |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar_impl-compressor_args"></a>compressor_args |  -   | String | optional | "" |
 | <a id="pkg_tar_impl-deps"></a>deps |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
