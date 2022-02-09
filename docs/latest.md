@@ -246,7 +246,7 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-Rules for manipulation of various packaging.
+Rules for making .tar files.
 
 <a id="#pkg_tar"></a>
 
