@@ -13,7 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//pkg:pkg.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
+load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
