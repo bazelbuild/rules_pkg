@@ -13,6 +13,6 @@
 # limitations under the License.
 """Forwarder for pkg_tar."""
 
-load("//pkg:pkg.bzl", _pkg_tar = "pkg_tar")
+load("//pkg/private/tar:tar.bzl", _pkg_tar = "pkg_tar")
 
 pkg_tar = _pkg_tar
