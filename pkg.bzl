@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("//pkg:deb.bzl", _pkg_deb = "pkg_deb")
-load("//pkg:pkg.bzl", _pkg_tar = "pkg_tar")
+load("//pkg:tar.bzl", _pkg_tar = "pkg_tar")
 load("//pkg:zip.bzl", _pkg_zip = "pkg_zip")
 
 pkg_deb = _pkg_deb
