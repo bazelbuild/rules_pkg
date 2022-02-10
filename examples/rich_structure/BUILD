@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_zip")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
 
 # This is the top level BUILD for a hypothetical project Foo.  It has a client,
 # a server, docs, and runtime directories needed by the server.
@@ -28,10 +29,10 @@ pkg_files(
     srcs = [
         "//docs",
     ],
-    # Required, but why?: see #354
-    strip_prefix = strip_prefix.from_pkg(),
     # Where it should be in the final package
     prefix = "usr/share/doc/foo",
+    # Required, but why?: see #354
+    strip_prefix = strip_prefix.from_pkg(),
 )
 
 pkg_filegroup(
@@ -42,7 +43,6 @@ pkg_filegroup(
     ],
     prefix = "/usr/share",
 )
-
 
 pkg_tar(
     name = "foo_tar",

@@ -61,10 +61,10 @@ Paths containing directories will also have the intermediate directories created
 
 def _fake_artifact_impl(ctx):
     out_file = ctx.actions.declare_file(ctx.attr.name)
-    content = ['echo ' + rf.path for rf in ctx.files.runfiles]
+    content = ["echo " + rf.path for rf in ctx.files.runfiles]
     ctx.actions.write(
         output = out_file,
-        content = '\r\n'.join(content),
+        content = "\r\n".join(content),
         is_executable = ctx.attr.executable,
     )
     return DefaultInfo(
@@ -137,7 +137,7 @@ def write_content_manifest(name, srcs):
         name = name,
         srcs = srcs,
         use_short_path = True,
-        out = name + ".manifest"
+        out = name + ".manifest",
     )
 
 ############################################################
