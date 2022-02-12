@@ -132,6 +132,20 @@ class ZipContentsCase(ZipTest):
         {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
+  def test_zip_tree(self):
+    self.assertZipFileContent("test_zip_tree.zip", [
+        {"filename": "a", "isdir": True},
+        {"filename": "a/a"},
+        {"filename": "a/b", "isdir": True},
+        {"filename": "a/b/c"},
+        {"filename": "b", "isdir": True},
+        {"filename": "b/c", "isdir": True},
+        {"filename": "b/c/d"},
+        {"filename": "b/d"},
+        {"filename": "b/e"},
+    ])
+
+
 
 class ZipEquivalency(ZipTest):
   """Check that some generated zip files are equivalent to each-other."""
