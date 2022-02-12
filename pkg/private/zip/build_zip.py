@@ -159,19 +159,16 @@ class ZipWriter(object):
     Args:
       tree_top: the top of the tree to add
       destpath: the path under which to place the files
-      mode: file mode
+      mode: if not None, file mode to apply to all files
     """
 
     # We expect /-style paths.
     tree_top = os.path.normpath(tree_top).replace(os.path.sep, '/')
 
-    dest = destpath.strip('/')  # redundant, dests should never have / here
-    # XXX From build_tar.py
-    #if self.directory and self.directory != '/':
-    #  dest = self.directory.lstrip('/') + '/' + dest
-
     # Again, we expect /-style paths.
+    dest = destpath.strip('/')  # redundant, dests should never have / here
     dest = os.path.normpath(dest).replace(os.path.sep, '/')
+    # paths should not have a leading ./
     dest = '' if dest == '.' else dest + '/'
 
     to_write = {}
@@ -186,8 +183,6 @@ class ZipWriter(object):
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
-      for dir in dirs:
-        to_write[dest_dir + dir] = None
       for file in sorted(files):
         to_write[dest_dir + file] = root + '/' + file
 
