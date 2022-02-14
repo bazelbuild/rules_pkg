@@ -180,9 +180,9 @@ class TarFileWriter(object):
       self.root_directory = self.root_directory + '/'
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
-    self.members = set([])
+    self.members = set()
     # The directories we have created so far
-    self.directories = set([])
+    self.directories = set()
 
   def __enter__(self):
     return self
