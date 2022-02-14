@@ -199,7 +199,7 @@ class TarFileWriter(object):
     Args:
       path: a file path
     Returns:
-      modified path
+      modified path.
     """
     path = path.replace(os.path.sep, '/').rstrip('/')
     if not self.root_directory or path.startswith('/'):
@@ -296,7 +296,8 @@ class TarFileWriter(object):
     else:
       self._addfile(tarinfo)
     if kind == tarfile.DIRTYPE:
-      self.directories.add(name.rstrip('/'))
+      assert name[-1] != '/'
+      self.directories.add(name)
 
   def add_tar(self,
               tar,
