@@ -133,7 +133,6 @@ class PkgDebTest(unittest.TestCase):
   def test_expected_files(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     expected = [
-        {'name': '.', 'isdir': True},
         {'name': './etc', 'isdir': True,
          'uid': 24, 'gid': 42, 'uname': 'foobar', 'gname': 'fizzbuzz'},
         {'name': './etc/nsswitch.conf',
