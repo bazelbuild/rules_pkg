@@ -122,7 +122,7 @@ class TarFileWriter(object):
                name,
                compression='',
                compressor='',
-               root_directory='.',
+               root_directory='',
                default_mtime=None,
                preserve_tar_mtimes=True):
     """TarFileWriter wraps tarfile.open().
@@ -174,12 +174,15 @@ class TarFileWriter(object):
                                               stdout=open(name, 'wb'))
       self.fileobj = self.compressor_proc.stdin
     self.name = name
-    self.root_directory = root_directory.rstrip('/').rstrip('\\')
-    self.root_directory = self.root_directory.replace('\\', '/')
+    # tarfile uses / instead of os.path.sep
+    self.root_directory = root_directory.replace(os.path.sep, '/').rstrip('/')
+    if self.root_directory:
+      self.root_directory = self.root_directory + '/'
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
-    self.members = set([])
-    self.directories = set([])
+    self.members = set()
+    # The directories we have created so far
+    self.directories = set()
 
   def __enter__(self):
     return self
@@ -187,76 +190,23 @@ class TarFileWriter(object):
   def __exit__(self, t, v, traceback):
     self.close()
 
-  def add_dir(self,
-              name,
-              path,
-              uid=0,
-              gid=0,
-              uname='',
-              gname='',
-              mtime=None,
-              mode=None,
-              depth=100):
-    """Recursively add a directory.
+
+  def add_root(self, path: str) -> str:
+    """Add the root prefix to a path.
+
+    If the path begins with / or the prefix itself, do nothing.
 
     Args:
-      name: the ('/' delimited) path of the directory to add.
-      path: the (os.path.sep delimited) path of the directory to add.
-      uid: owner user identifier.
-      gid: owner group identifier.
-      uname: owner user names.
-      gname: owner group names.
-      mtime: modification time to put in the archive.
-      mode: unix permission mode of the file, default 0644 (0755).
-      depth: maximum depth to recurse in to avoid infinite loops
-             with cyclic mounts.
-
-    Raises:
-      TarFileWriter.Error: when the recursion depth has exceeded the
-                           `depth` argument.
+      path: a file path
+    Returns:
+      modified path.
     """
-    if not (name == self.root_directory or name.startswith('/') or
-            name.startswith(self.root_directory + '/')):
-      name = self.root_directory + '/' + name
-    if mtime is None:
-      mtime = self.default_mtime
-    path = path.rstrip('/').rstrip('\\')
-    if os.path.isdir(path):
-      # Remove trailing '/' (index -1 => last character)
-      if name[-1] in ('/', '\\'):
-        name = name[:-1]
-      # Add the x bit to directories to prevent non-traversable directories.
-      # The x bit is set to 1 only if the read bit is also set.
-      dirmode = (mode | ((0o444 & mode) >> 2)) if mode else mode
-      self.add_file(name + '/',
-                    tarfile.DIRTYPE,
-                    uid=uid,
-                    gid=gid,
-                    uname=uname,
-                    gname=gname,
-                    mtime=mtime,
-                    mode=dirmode)
-      if depth <= 0:
-        raise self.Error('Recursion depth exceeded, probably in '
-                         'an infinite directory loop.')
-      # Iterate over the sorted list of file so we get a deterministic result.
-      filelist = os.listdir(path)
-      filelist.sort()
-      for f in filelist:
-        new_name = name + '/' + f
-        new_path = os.path.join(path, f)
-        self.add_dir(new_name, new_path, uid, gid, uname, gname, mtime, mode,
-                     depth - 1)
-    else:
-      self.add_file(name,
-                    tarfile.REGTYPE,
-                    file_content=path,
-                    uid=uid,
-                    gid=gid,
-                    uname=uname,
-                    gname=gname,
-                    mtime=mtime,
-                    mode=mode)
+    path = path.replace(os.path.sep, '/').rstrip('/')
+    if not self.root_directory or path.startswith('/'):
+      return path
+    if (path + '/').startswith(self.root_directory):
+      return path
+    return self.root_directory + path
 
   def _addfile(self, info, fileobj=None):
     """Add a file in the tar file if there is no conflict."""
@@ -287,7 +237,7 @@ class TarFileWriter(object):
     Args:
       name: the ('/' delimited) path of the file to add.
       kind: the type of the file to add, see tarfile.*TYPE.
-      content: a textual content to put in the file.
+      content: the content to put in the file.
       link: if the file is a link, the destination of the link.
       file_content: file to read the content from. Provide either this
           one or `content` to specifies a content for the file.
@@ -298,32 +248,30 @@ class TarFileWriter(object):
       mtime: modification time to put in the archive.
       mode: unix permission mode of the file, default 0644 (0755).
     """
-    name = name.replace('\\', '/')
-    if file_content and os.path.isdir(file_content):
-      # Recurse into directory
-      self.add_dir(name, file_content, uid, gid, uname, gname, mtime, mode)
+    if not name:
       return
-    if not (name == self.root_directory or name.startswith('/') or
-            name.startswith(self.root_directory + '/')):
-      name = self.root_directory + '/' + name
-    if kind == tarfile.DIRTYPE:
-      name = name.rstrip('/').rstrip('\\')
-      if name in self.directories:
-        return
+    if name == '.':
+      return
+    name = self.add_root(name)
+    # Do not add a directory that is already in the tar file.
+    if kind == tarfile.DIRTYPE and name in self.directories:
+      return
+
     if mtime is None:
       mtime = self.default_mtime
 
-    components = name.rsplit('/', 1)
-    if len(components) > 1:
-      d = components[0]
-      self.add_file(d,
-                    tarfile.DIRTYPE,
+    # Make directories up the file
+    parent_dirs = name.rsplit('/', 1)
+    if len(parent_dirs) > 1:
+      self.add_file(parent_dirs[0],
+                    kind=tarfile.DIRTYPE,
                     uid=uid,
                     gid=gid,
                     uname=uname,
                     gname=gname,
                     mtime=mtime,
                     mode=0o755)
+
     tarinfo = tarfile.TarInfo(name)
     tarinfo.mtime = mtime
     tarinfo.uid = uid
@@ -346,9 +294,10 @@ class TarFileWriter(object):
         tarinfo.size = os.fstat(f.fileno()).st_size
         self._addfile(tarinfo, f)
     else:
-      if kind == tarfile.DIRTYPE:
-        self.directories.add(name)
       self._addfile(tarinfo)
+    if kind == tarfile.DIRTYPE:
+      assert name[-1] != '/'
+      self.directories.add(name)
 
   def add_tar(self,
               tar,
@@ -392,10 +341,7 @@ class TarFileWriter(object):
           tarinfo.uname = ''
           tarinfo.gname = ''
 
-        name = tarinfo.name
-        if (not name.startswith('/') and
-            not name.startswith(self.root_directory)):
-          name = self.root_directory + '/' + name
+        name = self.add_root(tarinfo.name)
         if root is not None:
           if name.startswith('.'):
             name = '.' + root + name.lstrip('.')
