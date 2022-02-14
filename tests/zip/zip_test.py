@@ -32,6 +32,7 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
 
   def test_basic(self):
     self.assertZipFileContent("test_zip_basic.zip", [
+        {"filename": "an_executable", "attr": 0o755},
         {"filename": "foodir/", "isdir": True, "attr": 0o711},
         {"filename": "hello.txt", "crc": HELLO_CRC},
         {"filename": "loremipsum.txt", "crc": LOREM_CRC},

@@ -277,30 +277,103 @@ def add_label_list(
             default_group = default_group,
         ):
             # Add in the files of srcs which are not pkg_* types
-            if not DefaultInfo in src:
-                continue
-            for f in src[DefaultInfo].files.to_list():
-                d_path = dest_path(f, data_path, data_path_without_prefix)
-                if f.is_directory:
-                    add_tree_artifact(
-                        content_map,
-                        d_path,
-                        f,
-                        origin = src.label,
-                        mode = default_mode,
-                        user = default_user,
-                        group = default_group,
-                    )
-                else:
-                    add_single_file(
-                        content_map,
-                        d_path,
-                        f,
-                        origin = src.label,
-                        mode = default_mode,
-                        user = default_user,
-                        group = default_group,
-                    )
+            # We can 
+
+            add_from_default_info(
+                content_map,
+                file_deps,
+                src,
+                data_path,
+                data_path_without_prefix,
+                default_mode = default_mode,
+                default_user = default_user,
+                default_group = default_group,
+            )
+
+
+
+def add_from_default_info(
+        content_map,
+        file_deps,
+        src,
+        data_path,
+        data_path_without_prefix,
+        default_mode = None,
+        default_user = None,
+        default_group = None):
+    """Helper method to add the DefaultInfo of a target to a content_map.
+
+    Args:
+      content_map: (r/w) The content map to update.
+      file_deps: (r/w) The list of file Depsets that srcs depend on.
+      src: A source object.
+      data_path: path to package
+      data_path_without_prefix: path to the package after prefix stripping
+      default_mode: fallback mode to use for Package*Info elements without mode
+      default_user: fallback user to use for Package*Info elements without user
+      default_group: fallback mode to use for Package*Info elements without group
+    """
+    if not DefaultInfo in src:
+        return
+
+    # Auto-detect the executable so we can set its mode.
+    the_executable = get_my_executable(src)
+    file_deps.append(src[DefaultInfo].files)
+    all_files = src[DefaultInfo].files.to_list()
+    for f in all_files:
+        d_path = dest_path(f, data_path, data_path_without_prefix)
+        if f.is_directory:
+            add_tree_artifact(
+                content_map,
+                d_path,
+                f,
+                origin = src.label,
+                mode = default_mode,
+                user = default_user,
+                group = default_group,
+            )
+        else:
+            fmode = "0755" if f == the_executable else default_mode
+            add_single_file(
+                content_map,
+                d_path,
+                f,
+                origin = src.label,
+                mode = fmode,
+                user = default_user,
+                group = default_group,
+            )
+
+
+def get_my_executable(src):
+    """If a target represents an executable, return its file handle.
+
+    The roundabout hackery here is because there is no good way to see if
+    DefaultInfo was created with an executable in it.
+    See: https://github.com/bazelbuild/bazel/issues/14811
+
+    Inputs:
+      src: A label.
+    Returns:
+      File or None.
+    """
+    the_executable = None  # The file which is the actual executable.
+    if DefaultInfo in src:
+        di = src[DefaultInfo]
+        # XXX print(ctx.label, dir(di))
+        if hasattr(di, "files_to_run"):
+            ftr = di.files_to_run
+            # The docs lead you to believe that you could look at
+            # files_to_run.executable, but that is filled out even for
+            # source files.
+            # XXX print(dir(ftr))
+            if hasattr(ftr, "runfiles_manifest"):
+                # XXX print(ftr.executable, ftr.runfiles_manifest)
+                if ftr.runfiles_manifest:
+                    # XX print("Got an manifest executable", ftr.executable)
+                    the_executable = ftr.executable
+    return the_executable
+
 
 def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.

@@ -125,3 +125,17 @@ manifest_golden_test(
     expected = "utf8_manifest.golden",
     target = "utf8",
 )
+
+# Test handling of executable files
+write_content_manifest(
+    name = "executable_manifest",
+    srcs = [
+        "//tests:an_executable",
+    ],
+)
+
+manifest_golden_test(
+    name = "executable_test",
+    expected = "executable.manifest.golden",
+    target = "executable_manifest",
+)

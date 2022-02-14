@@ -94,6 +94,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -105,6 +106,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -148,6 +150,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
