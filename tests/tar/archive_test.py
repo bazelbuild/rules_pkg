@@ -163,8 +163,7 @@ class TarFileWriterTest(unittest.TestCase):
       for n in names:
         f.add_file(n, content=n)
     # pylint: disable=g-complex-comprehension
-    content = ([{"name": "."}] +
-               [{"name": n,
+    content = ([{"name": n,
                  "size": len(n.encode("utf-8")),
                  "data": n.encode("utf-8")}
                 for n in names])
@@ -187,33 +186,13 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_file("..e")
       f.add_file(".f")
     content = [
-        {"name": "."}, {"name": "./a"}, {"name": "/b"}, {"name": "./c"},
-        {"name": "./.d"}, {"name": "./..e"}, {"name": "./.f"}
+        {"name": "a"},
+        {"name": "/b"},
+        {"name": "./c"},
+        {"name": "./.d"},
+        {"name": "..e"},
+        {"name": ".f"}
     ]
-    self.assertTarFileContent(self.tempfile, content)
-
-  def testAddDir(self):
-    # For some strange reason, ending slash is stripped by the test
-    content = [
-        {"name": ".", "mode": 0o755},
-        {"name": "./a", "mode": 0o755},
-        {"name": "./a/b", "data": b"ab", "mode": 0o644},
-        {"name": "./a/c", "mode": 0o755},
-        {"name": "./a/c/d", "data": b"acd", "mode": 0o644},
-        ]
-    tempdir = os.path.join(os.environ["TEST_TMPDIR"], "test_dir")
-    # Iterate over the `content` array to create the directory
-    # structure it describes.
-    for c in content:
-      if "data" in c:
-        # Create files is happening locally, so use native path sep.
-        path_parts = c["name"][2:].split('/')
-        p = os.path.join(tempdir, *path_parts)
-        os.makedirs(os.path.dirname(p))
-        with open(p, "wb") as f:
-          f.write(c["data"])
-    with archive.TarFileWriter(self.tempfile) as f:
-      f.add_dir("./", tempdir, mode=0o644)
     self.assertTarFileContent(self.tempfile, content)
 
   def testMergeTar(self):
@@ -230,7 +209,6 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testMergeTarRelocated(self):
     content = [
-        {"name": ".", "mode": 0o755},
         {"name": "./foo", "mode": 0o755},
         {"name": "./foo/a", "data": b"a"},
         {"name": "./foo/ab", "data": b"ab"},
@@ -276,43 +254,8 @@ class TarFileWriterTest(unittest.TestCase):
     with archive.TarFileWriter(self.tempfile) as f:
       f.add_file("d/f")
     content = [
-        {"name": ".",
-         "mode": 0o755},
-        {"name": "./d",
-         "mode": 0o755},
-        {"name": "./d/f"},
-    ]
-    self.assertTarFileContent(self.tempfile, content)
-
-  def testAddingDirectoriesForFileSeparately(self):
-    d_dir = os.path.join(os.environ["TEST_TMPDIR"], "d_dir")
-    os.makedirs(d_dir)
-    with open(os.path.join(d_dir, "dir_file"), "w"):
-      pass
-    a_dir = os.path.join(os.environ["TEST_TMPDIR"], "a_dir")
-    os.makedirs(a_dir)
-    with open(os.path.join(a_dir, "dir_file"), "w"):
-      pass
-
-    with archive.TarFileWriter(self.tempfile) as f:
-      f.add_dir("d", d_dir)
-      f.add_file("d/f")
-
-      f.add_dir("a", a_dir)
-      f.add_file("a/b/f")
-    content = [
-        {"name": ".",
-         "mode": 0o755},
-        {"name": "./d",
-         "mode": 0o755},
-        {"name": "./d/dir_file"},
-        {"name": "./d/f"},
-        {"name": "./a",
-         "mode": 0o755},
-        {"name": "./a/dir_file"},
-        {"name": "./a/b",
-         "mode": 0o755},
-        {"name": "./a/b/f"},
+        {"name": "d", "mode": 0o755},
+        {"name": "d/f"},
     ]
     self.assertTarFileContent(self.tempfile, content)
 
@@ -330,23 +273,15 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_file("x/y/f")
       f.add_file("x", tarfile.DIRTYPE)
     content = [
-        {"name": ".",
-         "mode": 0o755},
-        {"name": "./d",
-         "mode": 0o755},
-        {"name": "./d/f"},
-        {"name": "./a",
-         "mode": 0o755},
-        {"name": "./a/b",
-         "mode": 0o755},
-        {"name": "./a/b/c",
-         "mode": 0o755},
-        {"name": "./a/b/c/f"},
-        {"name": "./x",
-         "mode": 0o755},
-        {"name": "./x/y",
-         "mode": 0o755},
-        {"name": "./x/y/f"},
+        {"name": "d", "mode": 0o755},
+        {"name": "d/f"},
+        {"name": "a", "mode": 0o755},
+        {"name": "a/b", "mode": 0o755},
+        {"name": "a/b/c", "mode": 0o755},
+        {"name": "a/b/c/f"},
+        {"name": "x", "mode": 0o755},
+        {"name": "x/y", "mode": 0o755},
+        {"name": "x/y/f"},
     ]
     self.assertTarFileContent(self.tempfile, content)
 
@@ -364,22 +299,15 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_file("x/y/f")
       f.add_file("x", tarfile.DIRTYPE)
     content = [
-        {"name": "root",
-         "mode": 0o755},
-        {"name": "root/d",
-         "mode": 0o755},
+        {"name": "root", "mode": 0o755},
+        {"name": "root/d", "mode": 0o755},
         {"name": "root/d/f"},
-        {"name": "root/a",
-         "mode": 0o755},
-        {"name": "root/a/b",
-         "mode": 0o755},
-        {"name": "root/a/b/c",
-         "mode": 0o755},
+        {"name": "root/a", "mode": 0o755},
+        {"name": "root/a/b", "mode": 0o755},
+        {"name": "root/a/b/c", "mode": 0o755},
         {"name": "root/a/b/c/f"},
-        {"name": "root/x",
-         "mode": 0o755},
-        {"name": "root/x/y",
-         "mode": 0o755},
+        {"name": "root/x", "mode": 0o755},
+        {"name": "root/x/y", "mode": 0o755},
         {"name": "root/x/y/f"},
     ]
     self.assertTarFileContent(self.tempfile, content)
@@ -396,7 +324,6 @@ class TarFileWriterTest(unittest.TestCase):
         "rules_pkg/tests/tar/test_tar_package_dir_file.tar")
 
     expected_content = [
-        {"name": "."},
         {"name": "./package"},
         {"name": "./package/nsswitch.conf"},
     ]
