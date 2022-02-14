@@ -10,6 +10,11 @@ lts: &lts
 
 rolling: &rolling
   bazel: rolling
+  # Enable bzlmod on experimental branches.  Might remove prior to submit.
+  build_flags:
+    - "--experimental_enable_bzlmod"
+  test_flags:
+    - "--experimental_enable_bzlmod"
 
 #
 # Groups of tests, by platform
