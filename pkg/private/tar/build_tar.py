@@ -31,13 +31,13 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, root_directory,
-               default_mtime):
-    self.directory = directory
+  def __init__(self, output, directory, compression, compressor, default_mtime):
+    # Directory prefix on all output paths
+    d = directory.strip('/')
+    self.directory = (d + '/') if d else None
     self.output = output
     self.compression = compression
     self.compressor = compressor
-    self.root_directory = root_directory
     self.default_mtime = default_mtime
 
   def __enter__(self):
@@ -45,12 +45,25 @@ class TarFile(object):
         self.output,
         self.compression,
         self.compressor,
-        self.root_directory,
+        root_directory = self.directory,
         default_mtime=self.default_mtime)
     return self
 
   def __exit__(self, t, v, traceback):
     self.tarfile.close()
+
+  def normalize_path(self, path: str) -> str:
+    # Note: normpath changes / to \ on windows, but tarfile needs / style paths.
+    dest = os.path.normpath(path).replace(os.path.sep, '/')
+    # paths should not have a leading ./
+    if dest.startswith('./'):
+      dest = dest[2:]
+    # No path should ever come in with slashs on either end, but protect
+    # against that anyway.
+    dest = dest.strip('/')
+    if self.directory:
+      dest = self.directory + dest
+    return dest
 
   def add_file(self, f, destfile, mode=None, ids=None, names=None):
     """Add a file to the tar file.
@@ -64,9 +77,7 @@ class TarFile(object):
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.
     """
-    dest = destfile.lstrip('/')  # Remove leading slashes
-    if self.directory and self.directory != '/':
-      dest = self.directory.lstrip('/') + '/' + dest
+    dest = self.normalize_path(destfile)
     # If mode is unspecified, derive the mode from the file's mode.
     if mode is None:
       mode = 0o755 if os.access(f, os.X_OK) else 0o644
@@ -74,8 +85,6 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    # Note: normpath changes / to \ on windows, but we expect / style paths.
-    dest = os.path.normpath(dest).replace(os.path.sep, '/')
     self.tarfile.add_file(
         dest,
         file_content=f,
@@ -132,21 +141,6 @@ class TarFile(object):
     """
     self.add_empty_file(
         destpath, mode=mode, ids=ids, names=names, kind=tarfile.DIRTYPE)
-
-  def add_empty_root_dir(self, destpath, mode=None, ids=None, names=None):
-    """Add a directory to the root of the tar file.
-
-    Args:
-       destpath: the name of the directory in the layer
-       mode: force to set the specified mode, defaults to 644
-       ids: (uid, gid) for the file to set ownership
-       names: (username, groupname) for the file to set ownership.  An empty
-         directory will be created as `destfile` in the root layer.
-    """
-    original_root_directory = self.tarfile.root_directory
-    self.tarfile.root_directory = destpath
-    self.add_empty_dir(destpath, mode=mode, ids=ids, names=names)
-    self.tarfile.root_directory = original_root_directory
 
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
@@ -323,8 +317,6 @@ def main():
       help='Set mtime on tar file entries. May be an integer or the'
            ' value "portable", to get the value 2000-01-01, which is'
            ' is usable with non *nix OSes.')
-  parser.add_argument('--empty_root_dir', action='append',
-                      help='An empty dir to add to the layer.')
   parser.add_argument('--tar', action='append',
                       help='A tar file to add to the layer')
   parser.add_argument('--deb', action='append',
@@ -359,8 +351,6 @@ def main():
       '--owner_names', action='append',
       help='Specify the owner names of individual files, e.g. '
            'path/to/file=root.root.')
-  parser.add_argument('--root_directory', default='./',
-                      help='Default root directory is named "."')
   parser.add_argument('--stamp_from', default='',
                       help='File to find BUILD_STAMP in')
   options = parser.parse_args()
@@ -408,8 +398,10 @@ def main():
 
   # Add objects to the tar file
   with TarFile(
-      options.output, helpers.GetFlagValue(options.directory),
-      options.compression, options.compressor, options.root_directory,
+      options.output, 
+      directory = helpers.GetFlagValue(options.directory),
+      compression = options.compression,
+      compressor = options.compressor,
       default_mtime=default_mtime) as output:
 
     def file_attributes(filename):
@@ -427,8 +419,6 @@ def main():
         for entry in manifest:
           output.add_manifest_entry(entry, file_attributes)
 
-    for f in options.empty_root_dir or []:
-      output.add_empty_root_dir(f, **file_attributes(f))
     for tar in options.tar or []:
       output.add_tar(tar)
     for deb in options.deb or []:
