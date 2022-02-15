@@ -33,7 +33,7 @@ load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
 
 find_system_rpmbuild(
     name = "rules_pkg_rpmbuild",
-    verbose = True,
+    verbose = False,
 )
 
 # Needed for making our release notes
@@ -41,7 +41,7 @@ load("@rules_pkg//toolchains/git:git_configure.bzl", "experimental_find_system_g
 
 experimental_find_system_git(
     name = "rules_pkg_git",
-    verbose = True,
+    verbose = False,
 )
 
 http_archive(
