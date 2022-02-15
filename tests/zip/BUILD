@@ -77,9 +77,14 @@ pkg_zip(
 
 # The contents of this file should equal test_zip_empty
 pkg_zip(
-    name = "test_zip_empty_different_extension",
-    srcs = [],
-    extension = "otherkindofzip",
+    name = "test_zip_basic_renamed",
+    srcs = [
+        ":dirs",
+        ":link",
+        "//tests:testdata/hello.txt",
+        "//tests:testdata/loremipsum.txt",
+    ],
+    package_file_name = "test_zip_basic_renamed.foo",
 )
 
 pkg_zip(
@@ -185,6 +190,7 @@ py_test(
     data = [
         "test_zip_empty.zip",
         "test_zip_basic.zip",
+        "test_zip_basic_renamed",
         "test_zip_package_dir0.zip",
         "test_zip_timestamp.zip",
         "test_zip_permissions.zip",
@@ -195,7 +201,6 @@ py_test(
 
         # these could be replaced with diff_test() rules (from skylib)
         "test_zip_basic_timestamp_before_epoch.zip",
-        "test_zip_empty_different_extension.otherkindofzip",
         "test_zip_package_dir1.zip",
         "test_zip_package_dir2.zip",
     ],
