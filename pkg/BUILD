@@ -37,7 +37,6 @@ filegroup(
     srcs = glob([
         "*.bzl",
         "*.py",
-        "*.md",
     ]) + [
         "BUILD",
         "//pkg/legacy:standard_package",
