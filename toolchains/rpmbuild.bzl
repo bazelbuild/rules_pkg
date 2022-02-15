@@ -20,6 +20,7 @@ RpmbuildInfo = provider(
         "valid": "Is this toolchain valid and usable?",
         "label": "The path to a target I will build",
         "path": "The path to a pre-built rpmbuild",
+        "version": "The version string of rpmbuild",
     },
 )
 
@@ -33,6 +34,7 @@ def _rpmbuild_toolchain_impl(ctx):
             valid = valid,
             label = ctx.attr.label,
             path = ctx.attr.path,
+            version = ctx.attr.version,
         ),
     )
     return [toolchain_info]
@@ -48,6 +50,9 @@ rpmbuild_toolchain = rule(
         ),
         "path": attr.string(
             doc = "The path to the rpmbuild executable. Mutually exclusive with label.",
+        ),
+        "version": attr.string(
+            doc = "The version string of the rpmbuild executable. This should be manually set.",
         ),
     },
 )
