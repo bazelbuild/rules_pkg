@@ -4,6 +4,7 @@ def print_rel_notes(
         name,
         repo,
         version,
+        artifact_name = None,
         outs = None,
         setup_file = "",
         deps_method = "",
@@ -11,7 +12,8 @@ def print_rel_notes(
         org = "bazelbuild",
         changelog = None,
         mirror_host = None):
-    tarball_name = ":%s-%s.tar.gz" % (repo, version)
+    if not artifact_name:
+        artifact_name = ":%s-%s.tar.gz" % (repo, version)
     # Must use Label to get a path relative to the rules_pkg repository,
     # instead of the calling BUILD file.
     print_rel_notes_helper = Label("//pkg/releasing:print_rel_notes")
@@ -21,7 +23,7 @@ def print_rel_notes(
         "--org=%s" % org,
         "--repo=%s" % repo,
         "--version=%s" % version,
-        "--tarball=$(location %s)" % tarball_name,
+        "--tarball=$(location %s)" % artifact_name,
     ]
     if setup_file:
         cmd.append("--setup_file=%s" % setup_file)
@@ -43,7 +45,7 @@ def print_rel_notes(
     native.genrule(
         name = name,
         srcs = [
-            tarball_name,
+            artifact_name,
         ],
         outs = outs or [name + ".txt"],
         cmd = " ".join(cmd),
