@@ -374,6 +374,16 @@ py_library(
     visibility = [":__subpackages__"],
 )
 
+py_test(
+    name = "make_rpm_test",
+    srcs = ["make_rpm_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//pkg:make_rpm_lib",
+    ],
+)
+
 # RPM content verification tests
 py_test(
     name = "pkg_rpm_basic_test",
