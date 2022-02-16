@@ -4,6 +4,7 @@ load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
 rpmbuild_toolchain(
     name = "rpmbuild_auto",
     path = "{RPMBUILD_PATH}",
+    version = "{RPMBUILD_VERSION}",
 )
 
 toolchain(

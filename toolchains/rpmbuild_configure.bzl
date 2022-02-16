@@ -13,7 +13,7 @@
 # limitations under the License.
 """Repository rule to autoconfigure a toolchain using the system rpmbuild."""
 
-def _write_build(rctx, path):
+def _write_build(rctx, path, version):
     if not path:
         path = ""
     rctx.template(
@@ -22,6 +22,7 @@ def _write_build(rctx, path):
         substitutions = {
             "{GENERATOR}": "@rules_pkg//toolchains/rpmbuild_configure.bzl%find_system_rpmbuild",
             "{RPMBUILD_PATH}": str(path),
+            "{RPMBUILD_VERSION}": version,
         },
         executable = False,
     )
@@ -33,7 +34,15 @@ def _find_system_rpmbuild_impl(rctx):
             print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
           print("No system rpmbuild found.")  # buildifier: disable=print
-    _write_build(rctx = rctx, path = rpmbuild_path)
+    version = "unknown"
+    if rpmbuild_path:
+        res = rctx.execute([rpmbuild_path, "--version"])
+        if res.return_code == 0:
+            # expect stdout like: RPM version 4.16.1.2
+            parts = res.stdout.strip().split(" ")
+            if parts[0] == "RPM" and parts[1] == "version":
+                version = parts[2]
+    _write_build(rctx = rctx, path = rpmbuild_path, version = version)
 
 _find_system_rpmbuild = repository_rule(
     implementation = _find_system_rpmbuild_impl,
