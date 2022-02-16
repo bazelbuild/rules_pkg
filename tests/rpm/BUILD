@@ -32,6 +32,8 @@ load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 # analysis tests
 ############################################################################
 
+package(default_applicable_licenses = ["//:license"])
+
 analysis_tests(name = "analysis_tests")
 
 create_toolchain_analysis_tests()
