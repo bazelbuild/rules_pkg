@@ -24,6 +24,8 @@ load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:version.bzl", "version")
 
+package(default_applicable_licenses = ["//:license"])
+
 filegroup(
     name = "standard_package",
     srcs = [

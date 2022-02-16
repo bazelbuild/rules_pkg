@@ -11,3 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package(default_applicable_licenses = ["//:license"])
+
+filegroup(
+    name = "standard_package",
+    srcs = glob([
+        "*",
+    ]),
+    visibility = ["//distro:__pkg__"],
+)
+
+exports_files(
+    glob(["*"]),
+    visibility = ["//visibility:public"],
+)
