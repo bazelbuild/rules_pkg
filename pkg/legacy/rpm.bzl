@@ -21,7 +21,7 @@ find to convenient to use the one provided with their system. To enable that
 toolchain add the following stanza to WORKSPACE:
 
     # Find rpmbuild if it exists.
-    load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+    load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
     find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
@@ -45,7 +45,7 @@ def _pkg_rpm_impl(ctx):
         print("rpmbuild_path is deprecated. See the README for instructions on how" +
               " to migrate to toolchains")
     else:
-        toolchain = ctx.toolchains["@rules_pkg//toolchains:rpmbuild_toolchain_type"].rpmbuild
+        toolchain = ctx.toolchains["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"].rpmbuild
         if not toolchain.valid:
             fail("The rpmbuild_toolchain is not properly configured: " +
                  toolchain.name)
@@ -198,7 +198,7 @@ pkg_rpm = rule(
     executable = False,
     outputs = _pkg_rpm_outputs,
     implementation = _pkg_rpm_impl,
-    toolchains = ["@rules_pkg//toolchains:rpmbuild_toolchain_type"],
+    toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
 )
 
 # buildifier: disable=no-effect

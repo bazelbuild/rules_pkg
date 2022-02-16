@@ -14,6 +14,8 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 
+package(default_applicable_licenses = ["//:license"])
+
 exports_files(
     glob([
         "*.bzl",

@@ -30,6 +30,8 @@ load(
 load("//tests/util:defs.bzl", "directory", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
 
+package(default_applicable_licenses = ["//:license"])
+
 py_library(
     name = "manifest_test_lib",
     srcs = ["manifest_test_lib.py"],
