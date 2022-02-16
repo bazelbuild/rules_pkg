@@ -75,7 +75,7 @@ class ZipWriter(object):
   def __init__(self, output_path: str, time_stamp: int, default_mode: int):
     """Create a writer.
 
-    You must close() after use.
+    You must close() after use or use in a 'with' statement.
 
     Args:
       output_path: path to write to
@@ -87,8 +87,15 @@ class ZipWriter(object):
     self.default_mode = default_mode
     self.zip_file = zipfile.ZipFile(self.output_path, mode='w')
 
+  def __enter__(self):
+    return self
+
+  def __exit__(self, t, v, traceback):
+    self.close()
+
   def close(self):
     self.zip_file.close()
+    self.zip_file = None
 
   def make_zipinfo(self, path: str, mode: int):
     """Create a Zipinfo.
@@ -213,12 +220,12 @@ def main(args):
 
   if not args.manifest:
     raise Exception('Missing --manifest')
-  zip_out = ZipWriter(args.output, time_stamp=ts, default_mode=default_mode)
   with open(args.manifest, 'r') as manifest_fp:
     manifest = json.load(manifest_fp)
-    for entry in manifest:
-      zip_out.add_manifest_entry(args, entry)
-  zip_out.close()
+    with ZipWriter(
+        args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
+      for entry in manifest:
+        zip_out.add_manifest_entry(args, entry)
 
 
 if __name__ == '__main__':
