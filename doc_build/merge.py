@@ -45,6 +45,12 @@ def merge_file(file: str, out, wrapper_map:typing.Dict[str, str]) -> None:
 
 
 def merge_text(text: str, out) -> None:
+  """Merge a block of text into an output stream.
+
+  Args:
+    text: block of text produced by Starroc.
+    out: an output file stream.
+  """
   for line in text.split('\n'):
     if line.startswith('| :'):
       line = fix_stardoc_table_align(line)
@@ -54,6 +60,7 @@ def merge_text(text: str, out) -> None:
     line = CENTER_RE.sub(r'\1', line)
     _ = out.write(line)
     _ = out.write('\n')
+
 
 def fix_stardoc_table_align(line: str) -> str:
   """Change centered descriptions to left justified."""
