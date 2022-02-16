@@ -66,7 +66,7 @@ genrule(
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
     cmd = "$(location :merge) $(SRCS) >$@",
-    tools = [":merge"],
+    exec_tools = [":merge"],
 )
 
 [
