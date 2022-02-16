@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
+load("@rules_pkg//toolchains/rpm:rpmbuild.bzl", "rpmbuild_toolchain")
 
 rpmbuild_toolchain(
     name = "prebuilt_rpmbuild",
@@ -23,5 +23,5 @@ rpmbuild_toolchain(
 toolchain(
     name = "local_rpmbuild",
     toolchain = ":prebuilt_rpmbuild",
-    toolchain_type = "@rules_pkg//toolchains:rpmbuild_toolchain_type",
+    toolchain_type = "@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type",
 )
