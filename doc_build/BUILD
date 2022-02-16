@@ -11,16 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Generate the reference documentation.
+
+How to:
+   bazel build //doc_build:reference
+   cp bazel-bin/doc_build/reference.md docs/latest.md
+   git commit -m 'update docs' docs/latest.md
+"""
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_python//python:defs.bzl", "py_library")
 load("//:version.bzl", "version")
 
-# HOW TO:
-#   bazel build //doc_build:reference
-#   cp bazel-bin/doc_build/reference.md docs/latest.md
-#   git commit -m 'update docs' docs/latest.md
+package(default_applicable_licenses = ["//:license"])
 
+filegroup(
+    name = "standard_package",
+    srcs = [
+        "BUILD",
+    ] + glob([
+        "*.bzl",
+        "*.py",
+    ]),
+    visibility = ["//distro:__pkg__"],
+)
+
+exports_files(
+    glob([
+        "*.bzl",
+    ]),
+    visibility = [
+        "//distro:__pkg__",
+        "//doc_build:__pkg__",
+    ],
+)
 
 # pairs of rule name and the source file to get it from
 # buildifier: leave-alone, do not sort
@@ -42,9 +67,8 @@ genrule(
     name = "reference",
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
-    # Compensate for https://github.com/bazelbuild/stardoc/issues/118.
-    # Convert escaped HTML <li> back to raw text
-    cmd = "cat $(SRCS) | sed -e 's/&lt;li&gt;/<li>/g' >$@",
+    cmd = "$(location :merge) $(SRCS) >$@",
+    exec_tools = [":merge"],
 )
 
 [
@@ -105,5 +129,13 @@ bzl_library(
         "//pkg/private/zip:zip.bzl",
         "@bazel_skylib//lib:paths",
     ],
+    visibility = ["//visibility:private"],
+)
+
+py_binary(
+    name = "merge",
+    srcs = ["merge.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:private"],
 )

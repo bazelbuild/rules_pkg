@@ -20,9 +20,8 @@ load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
-licenses(["notice"])
-
 package(
+    default_applicable_licenses = ["//:license"],
     default_visibility = ["//visibility:private"],
 )
 
@@ -43,8 +42,8 @@ pkg_tar(
         "//pkg/private/tar:standard_package",
         "//pkg/private/zip:standard_package",
         "//pkg/releasing:standard_package",
-        "//toolchains:standard_package",
         "//toolchains/git:standard_package",
+        "//toolchains/rpm:standard_package",
     ],
     extension = "tar.gz",
     # It is all source code, so make it read-only.

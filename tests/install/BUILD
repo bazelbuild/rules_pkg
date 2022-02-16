@@ -17,6 +17,8 @@ load("//pkg:install.bzl", "pkg_install")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
 load("//tests/util:defs.bzl", "fake_artifact")
 
+package(default_applicable_licenses = ["//:license"])
+
 py_test(
     name = "install_test",
     srcs = ["test.py"],

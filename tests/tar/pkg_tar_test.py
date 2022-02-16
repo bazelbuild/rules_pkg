@@ -70,28 +70,24 @@ class PkgTarTest(unittest.TestCase):
 
   def test_strip_prefix_empty(self):
     content = [
-        {'name': '.'},
         {'name': './nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-empty.tar', content)
 
   def test_strip_prefix_none(self):
     content = [
-        {'name': '.', 'isdir': True},
         {'name': './nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-none.tar', content)
 
   def test_strip_prefix_etc(self):
     content = [
-        {'name': '.', 'isdir': True},
         {'name': './nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-etc.tar', content)
 
   def test_strip_prefix_substring(self):
     content = [
-        {'name': '.', 'isdir': True},
         {'name': './etc', 'isdir': True},
         {'name': './etc/nsswitch.conf'},
     ]
@@ -99,7 +95,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_strip_prefix_dot(self):
     content = [
-        {'name': '.'},
         {'name': './etc'},
         {'name': './etc/nsswitch.conf'},
         {'name': './external'},
@@ -113,7 +108,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_strip_files_dict(self):
     content = [
-        {'name': '.'},
         {'name': './not-etc'},
         {'name': './not-etc/mapped-filename.conf'},
     ]
@@ -121,7 +115,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_empty_files(self):
     content = [
-        {'name': '.'},
         {'name': './a', 'size': 0, 'uid': 0},
         {'name': './b', 'size': 0, 'uid': 0, 'mtime': PORTABLE_MTIME},
     ]
@@ -129,7 +122,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_empty_dirs(self):
     content = [
-        {'name': '.'},
         {'name': './pmt', 'isdir': True, 'size': 0, 'uid': 0,
          'mtime': PORTABLE_MTIME},
         {'name': './tmp', 'isdir': True, 'size': 0, 'uid': 0,
@@ -140,7 +132,6 @@ class PkgTarTest(unittest.TestCase):
   def test_mtime(self):
     # Note strange mtime. It is specified in the BUILD file.
     content = [
-        {'name': '.', 'mtime': 946684740},
         {'name': './nsswitch.conf', 'mtime': 946684740},
     ]
     self.assertTarFileContent('test-tar-mtime.tar', content)
@@ -148,7 +139,6 @@ class PkgTarTest(unittest.TestCase):
   def test_basic(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     content = [
-        {'name': '.'},
         {'name': './etc',
          'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
         {'name': './etc/nsswitch.conf',
@@ -170,7 +160,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_file_inclusion(self):
     content = [
-        {'name': '.'},
         {'name': './etc', 'uid': 24, 'gid': 42},
         {'name': './etc/nsswitch.conf', 'mode': 0o644, 'uid': 24, 'gid': 42},
         {'name': './usr', 'uid': 42, 'gid': 24},
@@ -186,7 +175,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_strip_prefix_empty(self):
     content = [
-        {'name': '.'},
         {'name': './level1'},
         {'name': './level1/some_value'},
         {'name': './level1/some_value/level3'},
@@ -196,14 +184,12 @@ class PkgTarTest(unittest.TestCase):
 
   def test_tar_with_long_file_name(self):
     content = [
-      {'name': '.'},
       {'name': './file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
     self.assertTarFileContent('test-tar-long-filename.tar', content)
 
   def test_repackage_file_with_long_name(self):
     content = [
-      {'name': '.'},
       {'name': './can_i_repackage_a_file_with_a_long_name'},
       {'name': './can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
@@ -218,7 +204,6 @@ class PkgTarTest(unittest.TestCase):
     #  "b/e"
 
     content = [
-      {'name': '.'},
       {'name': './a_tree', 'isdir': True},
       {'name': './a_tree/a', 'isdir': True},
       {'name': './a_tree/a/a'},
@@ -234,7 +219,6 @@ class PkgTarTest(unittest.TestCase):
 
   def test_tar_with_runfiles(self):
     content = [
-      {'name': '.'},
       {'name': './BUILD' },
       {'name': './a_program' },
       {'name': './executable.sh' },

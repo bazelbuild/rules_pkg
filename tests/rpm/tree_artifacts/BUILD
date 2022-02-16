@@ -36,6 +36,8 @@ load("@rules_python//python:defs.bzl", "py_test")
 # - Each file in a TreeArtifact is installed relative to its position in the
 #   TreeArtifact, which itself is relative to the desired install prefix.
 
+package(default_applicable_licenses = ["//:license"])
+
 # The actual test.  It tests whether the contents match a particular desired
 # "manifest", most notably with regards to file structure.
 py_test(

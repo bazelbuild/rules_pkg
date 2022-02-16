@@ -12,16 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_license//rules:license.bzl", "license")
+
+package(
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
+)
+
+license(
+    name = "license",
+    license_kinds = [
+        "@rules_license//licenses/spdx:Apache-2.0"
+    ],
+    license_text = "LICENSE",
+)
+
 exports_files(
     ["WORKSPACE"],
-    visibility = ["//visibility:public"],
 )
 
 exports_files(
     glob([
         "*.bzl",
     ]),
-    visibility = ["//visibility:public"],
 )
 
 filegroup(

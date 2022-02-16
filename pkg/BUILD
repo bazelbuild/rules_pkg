@@ -15,7 +15,7 @@
 # -*- coding: utf-8 -*-
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
-licenses(["notice"])
+package(default_applicable_licenses = ["//:license"])
 
 exports_files(
     glob([
@@ -53,7 +53,7 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY3",
     target_compatible_with = select({
-        "//toolchains:have_rpmbuild": [],
+        "//toolchains/rpm:have_rpmbuild": [],
         "//conditions:default": [":not_compatible"],
     }),
     visibility = ["//visibility:public"],

@@ -353,7 +353,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
 )
 
 def pkg_deb(name, archive_name = None, **kwargs):
-    """Creates a deb file. See pkg_deb_impl."""
+    """@wraps(pkg_deb_impl)."""
     if archive_name:
         # buildifier: disable=print
         print("'archive_name' is deprecated. Use 'package_file_name' or 'out' to name the output.")

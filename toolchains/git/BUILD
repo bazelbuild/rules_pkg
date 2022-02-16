@@ -25,6 +25,8 @@ Toolchains:
 
 load("//toolchains/git:git.bzl", "git_toolchain", "is_git_available")
 
+package(default_applicable_licenses = ["//:license"])
+
 filegroup(
     name = "standard_package",
     srcs = glob(["*"]),

@@ -25,6 +25,8 @@ load("//tests/util:defs.bzl", "directory")
 # Base case
 ############################################################################
 
+package(default_applicable_licenses = ["//:license"])
+
 inspect_directory_test(
     name = "base",
     directory = ":test_directory",

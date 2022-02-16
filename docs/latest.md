@@ -9,23 +9,24 @@
 
   <h2>Packaging Rules</h2>
   <ul>
-    <li><a href="#pkg_deb">pkg_deb</a></li>
-    <li><a href="#pkg_tar">pkg_tar</a></li>
-    <li><a href="#pkg_rpm">pkg_rpm</a></li>
-    <li><a href="#pkg_zip">pkg_zip</a></li>
+    <li><a href="#pkg_deb">//pkg:deb.bzl%pkg_deb</a></li>
+    <li><a href="#pkg_rpm">//pkg:rpm.bzl%pkg_rpm</a></li>
+    <li><a href="#pkg_tar">//pkg:tar.bzl%pkg_tar</a></li>
+    <li><a href="#pkg_zip">//pkg:zip.bzl%pkg_zip</a></li>
   </ul>
 
   <h2>File Tree Creation Rules</h2>
   <ul>
-    <li><a href="#filter_directory">filter_directory</a></li>
-    <li><a href="#pkg_filegroup">pkg_filegroup</a></li>
-    <li><a href="#pkg_files">pkg_files</a></li>
-    <li><a href="#pkg_mkdirs">pkg_mkdirs</a></li>
-    <li><a href="#pkg_mklink">pkg_mklink</a></li>
-    <li><a href="#pkg_attributes">pkg_attributes</a></li>
-    <li><a href="#strip_prefix.files_only">strip_prefix</a></li>
+    <li><a href="#filter_directory">//pkg:mappings.bzl%filter_directory</a></li>
+    <li><a href="#pkg_filegroup">//pkg:mappings.bzl%pkg_filegroup</a></li>
+    <li><a href="#pkg_files">//pkg:mappings.bzl%pkg_files</a></li>
+    <li><a href="#pkg_mkdirs">//pkg:mappings.bzl%pkg_mkdirs</a></li>
+    <li><a href="#pkg_mklink">//pkg:mappings.bzl%pkg_mklink</a></li>
+    <li><a href="#pkg_attributes">//pkg:mappings.bzl%pkg_attributes</a></li>
+    <li><a href="#strip_prefix.files_only">//pkg:mappings.bzl%strip_prefix</a></li>
   </ul>
 </div>
+
 <a name="common"></a>
 
 ### Common Attributes
@@ -75,6 +76,7 @@ should not be relied upon.
 
 Any other attributes should be specified as additional arguments to
 `pkg_attributes`.
+
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
 Rule for creating Debian packages.
@@ -84,36 +86,12 @@ Rule for creating Debian packages.
 ## pkg_deb
 
 <pre>
-pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-archive_name">archive_name</a>, <a href="#pkg_deb-kwargs">kwargs</a>)
-</pre>
-
-Creates a deb file. See pkg_deb_impl.
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :------------- | :------------- | :------------- |
-| <a id="pkg_deb-name"></a>name |  <p align="center"> - </p>   |  none |
-| <a id="pkg_deb-archive_name"></a>archive_name |  <p align="center"> - </p>   |  <code>None</code> |
-| <a id="pkg_deb-kwargs"></a>kwargs |  <p align="center"> - </p>   |  none |
-
-
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
-
-Rule for creating Debian packages.
-
-<a id="#pkg_deb_impl"></a>
-
-## pkg_deb_impl
-
-<pre>
-pkg_deb_impl(<a href="#pkg_deb_impl-name">name</a>, <a href="#pkg_deb_impl-architecture">architecture</a>, <a href="#pkg_deb_impl-architecture_file">architecture_file</a>, <a href="#pkg_deb_impl-breaks">breaks</a>, <a href="#pkg_deb_impl-built_using">built_using</a>, <a href="#pkg_deb_impl-built_using_file">built_using_file</a>,
-             <a href="#pkg_deb_impl-conffiles">conffiles</a>, <a href="#pkg_deb_impl-conffiles_file">conffiles_file</a>, <a href="#pkg_deb_impl-config">config</a>, <a href="#pkg_deb_impl-conflicts">conflicts</a>, <a href="#pkg_deb_impl-data">data</a>, <a href="#pkg_deb_impl-depends">depends</a>, <a href="#pkg_deb_impl-depends_file">depends_file</a>, <a href="#pkg_deb_impl-description">description</a>,
-             <a href="#pkg_deb_impl-description_file">description_file</a>, <a href="#pkg_deb_impl-distribution">distribution</a>, <a href="#pkg_deb_impl-enhances">enhances</a>, <a href="#pkg_deb_impl-homepage">homepage</a>, <a href="#pkg_deb_impl-maintainer">maintainer</a>, <a href="#pkg_deb_impl-out">out</a>, <a href="#pkg_deb_impl-package">package</a>,
-             <a href="#pkg_deb_impl-package_file_name">package_file_name</a>, <a href="#pkg_deb_impl-package_variables">package_variables</a>, <a href="#pkg_deb_impl-postinst">postinst</a>, <a href="#pkg_deb_impl-postrm">postrm</a>, <a href="#pkg_deb_impl-predepends">predepends</a>, <a href="#pkg_deb_impl-preinst">preinst</a>, <a href="#pkg_deb_impl-prerm">prerm</a>,
-             <a href="#pkg_deb_impl-priority">priority</a>, <a href="#pkg_deb_impl-provides">provides</a>, <a href="#pkg_deb_impl-recommends">recommends</a>, <a href="#pkg_deb_impl-replaces">replaces</a>, <a href="#pkg_deb_impl-section">section</a>, <a href="#pkg_deb_impl-suggests">suggests</a>, <a href="#pkg_deb_impl-templates">templates</a>, <a href="#pkg_deb_impl-triggers">triggers</a>,
-             <a href="#pkg_deb_impl-urgency">urgency</a>, <a href="#pkg_deb_impl-version">version</a>, <a href="#pkg_deb_impl-version_file">version_file</a>)
+pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-architecture_file">architecture_file</a>, <a href="#pkg_deb-breaks">breaks</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>,
+             <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>, <a href="#pkg_deb-description">description</a>,
+             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
+             <a href="#pkg_deb-package_file_name">package_file_name</a>, <a href="#pkg_deb-package_variables">package_variables</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>,
+             <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-provides">provides</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-replaces">replaces</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>, <a href="#pkg_deb-triggers">triggers</a>,
+             <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
 </pre>
 
 
@@ -123,45 +101,46 @@ pkg_deb_impl(<a href="#pkg_deb_impl-name">name</a>, <a href="#pkg_deb_impl-archi
 
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="pkg_deb_impl-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="pkg_deb_impl-architecture"></a>architecture |  Package architecture. Must not be used with architecture_file.   | String | optional | "all" |
-| <a id="pkg_deb_impl-architecture_file"></a>architecture_file |  File that contains the package architecture.             Must not be used with architecture.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-breaks"></a>breaks |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-built_using"></a>built_using |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | String | optional | "" |
-| <a id="pkg_deb_impl-built_using_file"></a>built_using_file |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-conffiles"></a>conffiles |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-conffiles_file"></a>conffiles_file |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-config"></a>config |  config file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-conflicts"></a>conflicts |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-data"></a>data |  A tar file that contains the data for the debian package.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_deb_impl-depends"></a>depends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-depends_file"></a>depends_file |  File that contains a list of package dependencies. Must not be used with <code>depends</code>.             See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-description"></a>description |  The package description. Must not be used with <code>description_file</code>.   | String | optional | "" |
-| <a id="pkg_deb_impl-description_file"></a>description_file |  The package description. Must not be used with <code>description</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-distribution"></a>distribution |  "distribution: See http://www.debian.org/doc/debian-policy.   | String | optional | "unstable" |
-| <a id="pkg_deb_impl-enhances"></a>enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-homepage"></a>homepage |  The homepage of the project.   | String | optional | "" |
-| <a id="pkg_deb_impl-maintainer"></a>maintainer |  The maintainer of the package.   | String | required |  |
-| <a id="pkg_deb_impl-out"></a>out |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_deb_impl-package"></a>package |  The name of the package   | String | required |  |
-| <a id="pkg_deb_impl-package_file_name"></a>package_file_name |  See Common Attributes.             Default: "{package}-{version}-{architecture}.deb   | String | optional | "" |
-| <a id="pkg_deb_impl-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-postinst"></a>postinst |  The post-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-postrm"></a>postrm |  The post-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-predepends"></a>predepends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-preinst"></a>preinst |  "The pre-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-prerm"></a>prerm |  The pre-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-priority"></a>priority |  The priority of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-priorities.   | String | optional | "" |
-| <a id="pkg_deb_impl-provides"></a>provides |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-recommends"></a>recommends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-replaces"></a>replaces |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-section"></a>section |  The section of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.   | String | optional | "" |
-| <a id="pkg_deb_impl-suggests"></a>suggests |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
-| <a id="pkg_deb_impl-templates"></a>templates |  templates file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-triggers"></a>triggers |  triggers file for configuring installation events exchanged by packages.             See https://wiki.debian.org/DpkgTriggers.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_deb_impl-urgency"></a>urgency |  "urgency: See http://www.debian.org/doc/debian-policy.   | String | optional | "medium" |
-| <a id="pkg_deb_impl-version"></a>version |  Package version. Must not be used with <code>version_file</code>.   | String | optional | "" |
-| <a id="pkg_deb_impl-version_file"></a>version_file |  File that contains the package version.             Must not be used with <code>version</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_deb-architecture"></a>architecture |  Package architecture. Must not be used with architecture_file.   | String | optional | "all" |
+| <a id="pkg_deb-architecture_file"></a>architecture_file |  File that contains the package architecture.             Must not be used with architecture.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-breaks"></a>breaks |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-built_using"></a>built_using |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | String | optional | "" |
+| <a id="pkg_deb-built_using_file"></a>built_using_file |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-conffiles"></a>conffiles |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | List of strings | optional | [] |
+| <a id="pkg_deb-conffiles_file"></a>conffiles_file |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-config"></a>config |  config file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-conflicts"></a>conflicts |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-data"></a>data |  A tar file that contains the data for the debian package.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="pkg_deb-depends"></a>depends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-depends_file"></a>depends_file |  File that contains a list of package dependencies. Must not be used with <code>depends</code>.             See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-description"></a>description |  The package description. Must not be used with <code>description_file</code>.   | String | optional | "" |
+| <a id="pkg_deb-description_file"></a>description_file |  The package description. Must not be used with <code>description</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-distribution"></a>distribution |  "distribution: See http://www.debian.org/doc/debian-policy.   | String | optional | "unstable" |
+| <a id="pkg_deb-enhances"></a>enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-homepage"></a>homepage |  The homepage of the project.   | String | optional | "" |
+| <a id="pkg_deb-maintainer"></a>maintainer |  The maintainer of the package.   | String | required |  |
+| <a id="pkg_deb-out"></a>out |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="pkg_deb-package"></a>package |  The name of the package   | String | required |  |
+| <a id="pkg_deb-package_file_name"></a>package_file_name |  See Common Attributes.             Default: "{package}-{version}-{architecture}.deb   | String | optional | "" |
+| <a id="pkg_deb-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-postinst"></a>postinst |  The post-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-postrm"></a>postrm |  The post-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-predepends"></a>predepends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-preinst"></a>preinst |  "The pre-install script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-prerm"></a>prerm |  The pre-remove script for the package.             See http://www.debian.org/doc/debian-policy/ch-maintainerscripts.html.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-priority"></a>priority |  The priority of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-priorities.   | String | optional | "" |
+| <a id="pkg_deb-provides"></a>provides |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-recommends"></a>recommends |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-replaces"></a>replaces |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-section"></a>section |  The section of the package.             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.   | String | optional | "" |
+| <a id="pkg_deb-suggests"></a>suggests |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
+| <a id="pkg_deb-templates"></a>templates |  templates file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-triggers"></a>triggers |  triggers file for configuring installation events exchanged by packages.             See https://wiki.debian.org/DpkgTriggers.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-urgency"></a>urgency |  "urgency: See http://www.debian.org/doc/debian-policy.   | String | optional | "medium" |
+| <a id="pkg_deb-version"></a>version |  Package version. Must not be used with <code>version_file</code>.   | String | optional | "" |
+| <a id="pkg_deb-version_file"></a>version_file |  File that contains the package version.             Must not be used with <code>version</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
@@ -174,7 +153,7 @@ toolchain add the following stanza to WORKSPACE:
 
 ```
 # Find rpmbuild if it exists.
-load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
 find_system_rpmbuild(name="rules_pkg_rpmbuild")
 ```
 
@@ -264,6 +243,7 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 | <a id="pkg_rpm-version_file"></a>version_file |  File containing RPM "Version" tag.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 
+
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
 Rules for making .tar files.
@@ -273,33 +253,10 @@ Rules for making .tar files.
 ## pkg_tar
 
 <pre>
-pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-kwargs">kwargs</a>)
-</pre>
-
-Creates a .tar file. See pkg_tar_impl.
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :------------- | :------------- | :------------- |
-| <a id="pkg_tar-name"></a>name |  <p align="center"> - </p>   |  none |
-| <a id="pkg_tar-kwargs"></a>kwargs |  <p align="center"> - </p>   |  none |
-
-
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
-
-Rules for making .tar files.
-
-<a id="#pkg_tar_impl"></a>
-
-## pkg_tar_impl
-
-<pre>
-pkg_tar_impl(<a href="#pkg_tar_impl-name">name</a>, <a href="#pkg_tar_impl-build_tar">build_tar</a>, <a href="#pkg_tar_impl-compressor">compressor</a>, <a href="#pkg_tar_impl-compressor_args">compressor_args</a>, <a href="#pkg_tar_impl-deps">deps</a>, <a href="#pkg_tar_impl-empty_dirs">empty_dirs</a>, <a href="#pkg_tar_impl-empty_files">empty_files</a>, <a href="#pkg_tar_impl-extension">extension</a>,
-             <a href="#pkg_tar_impl-files">files</a>, <a href="#pkg_tar_impl-include_runfiles">include_runfiles</a>, <a href="#pkg_tar_impl-mode">mode</a>, <a href="#pkg_tar_impl-modes">modes</a>, <a href="#pkg_tar_impl-mtime">mtime</a>, <a href="#pkg_tar_impl-out">out</a>, <a href="#pkg_tar_impl-owner">owner</a>, <a href="#pkg_tar_impl-ownername">ownername</a>, <a href="#pkg_tar_impl-ownernames">ownernames</a>, <a href="#pkg_tar_impl-owners">owners</a>,
-             <a href="#pkg_tar_impl-package_base">package_base</a>, <a href="#pkg_tar_impl-package_dir">package_dir</a>, <a href="#pkg_tar_impl-package_dir_file">package_dir_file</a>, <a href="#pkg_tar_impl-package_file_name">package_file_name</a>, <a href="#pkg_tar_impl-package_variables">package_variables</a>,
-             <a href="#pkg_tar_impl-portable_mtime">portable_mtime</a>, <a href="#pkg_tar_impl-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar_impl-remap_paths">remap_paths</a>, <a href="#pkg_tar_impl-srcs">srcs</a>, <a href="#pkg_tar_impl-stamp">stamp</a>, <a href="#pkg_tar_impl-strip_prefix">strip_prefix</a>, <a href="#pkg_tar_impl-symlinks">symlinks</a>)
+pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>,
+             <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>,
+             <a href="#pkg_tar-package_base">package_base</a>, <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>,
+             <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, <a href="#pkg_tar-stamp">stamp</a>, <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
 </pre>
 
 
@@ -309,36 +266,37 @@ pkg_tar_impl(<a href="#pkg_tar_impl-name">name</a>, <a href="#pkg_tar_impl-build
 
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="pkg_tar_impl-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="pkg_tar_impl-build_tar"></a>build_tar |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/private/tar:build_tar |
-| <a id="pkg_tar_impl-compressor"></a>compressor |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_tar_impl-compressor_args"></a>compressor_args |  -   | String | optional | "" |
-| <a id="pkg_tar_impl-deps"></a>deps |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
-| <a id="pkg_tar_impl-empty_dirs"></a>empty_dirs |  -   | List of strings | optional | [] |
-| <a id="pkg_tar_impl-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
-| <a id="pkg_tar_impl-extension"></a>extension |  -   | String | optional | "tar" |
-| <a id="pkg_tar_impl-files"></a>files |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
-| <a id="pkg_tar_impl-include_runfiles"></a>include_runfiles |  -   | Boolean | optional | False |
-| <a id="pkg_tar_impl-mode"></a>mode |  -   | String | optional | "0555" |
-| <a id="pkg_tar_impl-modes"></a>modes |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar_impl-mtime"></a>mtime |  -   | Integer | optional | -1 |
-| <a id="pkg_tar_impl-out"></a>out |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_tar_impl-owner"></a>owner |  -   | String | optional | "0.0" |
-| <a id="pkg_tar_impl-ownername"></a>ownername |  -   | String | optional | "." |
-| <a id="pkg_tar_impl-ownernames"></a>ownernames |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar_impl-owners"></a>owners |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar_impl-package_base"></a>package_base |  -   | String | optional | "./" |
-| <a id="pkg_tar_impl-package_dir"></a>package_dir |  -   | String | optional | "" |
-| <a id="pkg_tar_impl-package_dir_file"></a>package_dir_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_tar_impl-package_file_name"></a>package_file_name |  See Common Attributes   | String | optional | "" |
-| <a id="pkg_tar_impl-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_tar_impl-portable_mtime"></a>portable_mtime |  -   | Boolean | optional | True |
-| <a id="pkg_tar_impl-private_stamp_detect"></a>private_stamp_detect |  -   | Boolean | optional | False |
-| <a id="pkg_tar_impl-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar_impl-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
-| <a id="pkg_tar_impl-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.   | Integer | optional | 0 |
-| <a id="pkg_tar_impl-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
-| <a id="pkg_tar_impl-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="pkg_tar-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_tar-build_tar"></a>build_tar |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/private/tar:build_tar |
+| <a id="pkg_tar-compressor"></a>compressor |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_tar-compressor_args"></a>compressor_args |  -   | String | optional | "" |
+| <a id="pkg_tar-deps"></a>deps |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| <a id="pkg_tar-empty_dirs"></a>empty_dirs |  -   | List of strings | optional | [] |
+| <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
+| <a id="pkg_tar-extension"></a>extension |  -   | String | optional | "tar" |
+| <a id="pkg_tar-files"></a>files |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
+| <a id="pkg_tar-include_runfiles"></a>include_runfiles |  -   | Boolean | optional | False |
+| <a id="pkg_tar-mode"></a>mode |  -   | String | optional | "0555" |
+| <a id="pkg_tar-modes"></a>modes |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="pkg_tar-mtime"></a>mtime |  -   | Integer | optional | -1 |
+| <a id="pkg_tar-out"></a>out |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| <a id="pkg_tar-owner"></a>owner |  -   | String | optional | "0.0" |
+| <a id="pkg_tar-ownername"></a>ownername |  -   | String | optional | "." |
+| <a id="pkg_tar-ownernames"></a>ownernames |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="pkg_tar-owners"></a>owners |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="pkg_tar-package_base"></a>package_base |  -   | String | optional | "./" |
+| <a id="pkg_tar-package_dir"></a>package_dir |  -   | String | optional | "" |
+| <a id="pkg_tar-package_dir_file"></a>package_dir_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_tar-package_file_name"></a>package_file_name |  See Common Attributes   | String | optional | "" |
+| <a id="pkg_tar-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_tar-portable_mtime"></a>portable_mtime |  -   | Boolean | optional | True |
+| <a id="pkg_tar-private_stamp_detect"></a>private_stamp_detect |  -   | Boolean | optional | False |
+| <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| <a id="pkg_tar-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.   | Integer | optional | 0 |
+| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
+| <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
@@ -360,8 +318,9 @@ Creates a .zip file. See pkg_zip_impl.
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="pkg_zip-name"></a>name |  <p align="center"> - </p>   |  none |
-| <a id="pkg_zip-kwargs"></a>kwargs |  <p align="center"> - </p>   |  none |
+| <a id="pkg_zip-name"></a>name |   -    |  none |
+| <a id="pkg_zip-kwargs"></a>kwargs |   -    |  none |
+
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
@@ -395,6 +354,7 @@ pkg_zip_impl(<a href="#pkg_zip_impl-name">name</a>, <a href="#pkg_zip_impl-mode"
 | <a id="pkg_zip_impl-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.   | Integer | optional | 0 |
 | <a id="pkg_zip_impl-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
 | <a id="pkg_zip_impl-timestamp"></a>timestamp |  Time stamp to place on all files in the archive, expressed as seconds since the Unix Epoch, as per RFC 3339.  The default is January 01, 1980, 00:00 UTC.<br><br>Due to limitations in the format of zip files, values before Jan 1, 1980 will be rounded up and the precision in the zip file is limited to a granularity of 2 seconds.   | Integer | optional | 315532800 |
+
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
@@ -648,8 +608,8 @@ Create a symlink.
 | <a id="pkg_mklink-link_name"></a>link_name |  the path in the package that should point to the target.   |  none |
 | <a id="pkg_mklink-target"></a>target |  target path that the link should point to.   |  none |
 | <a id="pkg_mklink-attributes"></a>attributes |  file attributes.   |  <code>None</code> |
-| <a id="pkg_mklink-src"></a>src |  <p align="center"> - </p>   |  <code>None</code> |
-| <a id="pkg_mklink-kwargs"></a>kwargs |  <p align="center"> - </p>   |  none |
+| <a id="pkg_mklink-src"></a>src |   -    |  <code>None</code> |
+| <a id="pkg_mklink-kwargs"></a>kwargs |   -    |  none |
 
 
 <a id="#strip_prefix.files_only"></a>
@@ -679,7 +639,7 @@ strip_prefix.from_pkg(<a href="#strip_prefix.from_pkg-path">path</a>)
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="strip_prefix.from_pkg-path"></a>path |  <p align="center"> - </p>   |  <code>""</code> |
+| <a id="strip_prefix.from_pkg-path"></a>path |   -    |  <code>""</code> |
 
 
 <a id="#strip_prefix.from_root"></a>
@@ -697,7 +657,8 @@ strip_prefix.from_root(<a href="#strip_prefix.from_root-path">path</a>)
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="strip_prefix.from_root-path"></a>path |  <p align="center"> - </p>   |  <code>""</code> |
+| <a id="strip_prefix.from_root-path"></a>path |   -    |  <code>""</code> |
+
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
@@ -712,7 +673,7 @@ find to convenient to use the one provided with their system. To enable that
 toolchain add the following stanza to WORKSPACE:
 
     # Find rpmbuild if it exists.
-    load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+    load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
     find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
 
@@ -745,5 +706,6 @@ Legacy version
 | <a id="pkg_rpm-spec_file"></a>spec_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="pkg_rpm-version"></a>version |  -   | String | optional | "" |
 | <a id="pkg_rpm-version_file"></a>version_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+
 
 
