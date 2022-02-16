@@ -20,6 +20,8 @@ load("//pkg:rpm.bzl", "pkg_rpm")
 # Test handling the source_date_epoch attribute
 ############################################################################
 
+package(default_applicable_licenses = ["//:license"])
+
 # The actual test.  It tests whether the contents match a particular desired
 # "manifest", most notably with regards to file structure.
 py_test(

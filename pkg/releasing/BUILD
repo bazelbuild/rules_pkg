@@ -1,9 +1,8 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("git.bzl", "git_changelog")
 
-licenses(["notice"])
-
 package(
+    default_applicable_licenses = ["//:license"],
     default_visibility = ["//visibility:public"],
 )
 

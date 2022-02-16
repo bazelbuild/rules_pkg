@@ -22,6 +22,8 @@ load("//pkg:deb.bzl", "pkg_deb")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 
+package(default_applicable_licenses = ["//:license"])
+
 genrule(
     name = "generate_files",
     outs = [
