@@ -52,7 +52,7 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY3",
     target_compatible_with = select({
-        "//toolchains:have_rpmbuild": [],
+        "//toolchains/rpm:have_rpmbuild": [],
         "//conditions:default": [":not_compatible"],
     }),
     visibility = ["//visibility:public"],

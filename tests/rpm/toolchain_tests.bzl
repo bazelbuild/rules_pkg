@@ -15,7 +15,7 @@
 """Tests for rpmbuild toolchain type."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("//toolchains:rpmbuild.bzl", "rpmbuild_toolchain")
+load("//toolchains/rpm:rpmbuild.bzl", "rpmbuild_toolchain")
 
 # Generic negative test boilerplate
 def _generic_neg_test_impl(ctx):
