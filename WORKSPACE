@@ -29,7 +29,7 @@ bazel_skylib_workspace()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Find rpmbuild if it exists.
-load("@rules_pkg//toolchains:rpmbuild_configure.bzl", "find_system_rpmbuild")
+load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
 
 find_system_rpmbuild(
     name = "rules_pkg_rpmbuild",

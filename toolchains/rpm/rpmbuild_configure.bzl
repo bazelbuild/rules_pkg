@@ -18,9 +18,9 @@ def _write_build(rctx, path, version):
         path = ""
     rctx.template(
         "BUILD",
-        Label("//toolchains:BUILD.tpl"),
+        Label("//toolchains/rpm:BUILD.tpl"),
         substitutions = {
-            "{GENERATOR}": "@rules_pkg//toolchains/rpmbuild_configure.bzl%find_system_rpmbuild",
+            "{GENERATOR}": "@rules_pkg//toolchains/rpm/rpmbuild_configure.bzl%find_system_rpmbuild",
             "{RPMBUILD_PATH}": str(path),
             "{RPMBUILD_VERSION}": version,
         },
@@ -60,4 +60,4 @@ def find_system_rpmbuild(name, verbose=False):
     _find_system_rpmbuild(name=name, verbose=verbose)
     native.register_toolchains(
         "@%s//:rpmbuild_auto_toolchain" % name,
-        "@rules_pkg//toolchains:rpmbuild_missing_toolchain")
+        "@rules_pkg//toolchains/rpm:rpmbuild_missing_toolchain")
