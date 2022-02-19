@@ -35,6 +35,7 @@ COMPRESSIONS = ('', 'gz', 'bz2', 'xz') if HAS_LZMA else ('', 'gz', 'bz2')
 # See: https://github.com/bazelbuild/bazel/issues/1299
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
+_DEBUG_VERBOSITY = 0
 
 class SimpleArFile(object):
   """A simple AR file reader.
@@ -47,7 +48,8 @@ class SimpleArFile(object):
   with SimpleArFile(filename) as ar:
     nextFile = ar.next()
     while nextFile:
-      print(nextFile.filename)
+      if _DEBUG_VERBOSITY > 0:
+        print(nextFile.filename)
       nextFile = ar.next()
 
   Upon error, this class will raise a ArError exception.
@@ -174,15 +176,21 @@ class TarFileWriter(object):
                                               stdout=open(name, 'wb'))
       self.fileobj = self.compressor_proc.stdin
     self.name = name
-    # tarfile uses / instead of os.path.sep
-    self.root_directory = root_directory.replace(os.path.sep, '/').rstrip('/')
-    if self.root_directory:
-      self.root_directory = self.root_directory + '/'
+    if root_directory:
+      # tarfile uses / instead of os.path.sep, so convert to that
+      self.root_directory = root_directory.replace(os.path.sep, '/')
+      self.root_directory = self.root_directory.rstrip('/') + '/'
+    else:
+      self.root_directory = None
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
     self.members = set()
-    # The directories we have created so far
     self.directories = set()
+    # Preseed the added directory list with things we should not add. If we
+    # some day need to allow '.' or '/' as an explicit member of the archive,
+    # we can adjust that here based on the setting of root_dirctory.
+    self.directories.add('/')
+    self.directories.add('./')
 
   def __enter__(self):
     return self
@@ -191,7 +199,7 @@ class TarFileWriter(object):
     self.close()
 
 
-  def add_root(self, path: str) -> str:
+  def add_root_prefix(self, path: str) -> str:
     """Add the root prefix to a path.
 
     If the path begins with / or the prefix itself, do nothing.
@@ -208,17 +216,72 @@ class TarFileWriter(object):
       return path
     return self.root_directory + path
 
+  def _have_added(self, path):
+    """Have we added this file before."""
+    return (path in self.members) or (path in self.directories)
+
   def _addfile(self, info, fileobj=None):
     """Add a file in the tar file if there is no conflict."""
-    if not info.name.endswith('/') and info.type == tarfile.DIRTYPE:
+    if info.type == tarfile.DIRTYPE:
       # Enforce the ending / for directories so we correctly deduplicate.
-      info.name += '/'
-    if info.name not in self.members:
+      if not info.name.endswith('/'):
+        info.name += '/'
+    if not self._have_added(info.name):
       self.tar.addfile(info, fileobj)
       self.members.add(info.name)
+      if info.type == tarfile.DIRTYPE:
+        self.directories.add(info.name)
     elif info.type != tarfile.DIRTYPE:
       print('Duplicate file in archive: %s, '
             'picking first occurrence' % info.name)
+
+  def add_directory_path(self,
+                         path,
+                         uid=0,
+                         gid=0,
+                         uname='',
+                         gname='',
+                         mtime=None,
+                         mode=0o755):
+    """Add a directory to the current tar.
+
+    Args:
+      path: the ('/' delimited) path of the file to add.
+      uid: owner user identifier.
+      gid: owner group identifier.
+      uname: owner user names.
+      gname: owner group names.
+      mtime: modification time to put in the archive.
+      mode: unix permission mode of the file, default: 0755.
+    """
+    assert path[-1] == '/'
+    if not path or self._have_added(path):
+      return
+    if _DEBUG_VERBOSITY > 1:
+      print('DEBUG: adding directory', path)
+    tarinfo = tarfile.TarInfo(path)
+    tarinfo.type = tarfile.DIRTYPE
+    tarinfo.mtime = mtime
+    tarinfo.mode = mode
+    tarinfo.uid = uid
+    tarinfo.gid = gid
+    tarinfo.uname = uname
+    tarinfo.gname = gname
+    self._addfile(tarinfo)
+
+  def add_parents(self, path, uid=0, gid=0, uname='', gname='', mtime=0, mode=0o755):
+    dirs = path.split('/')
+    parent_path = ''
+    for next_level in dirs[0:-1]:
+      parent_path = parent_path + next_level + '/'
+      self.add_directory_path(
+          parent_path,
+          uid=uid,
+          gid=gid,
+          uname=uname,
+          gname=gname,
+          mtime=mtime,
+          mode=0o755)
 
   def add_file(self,
                name,
@@ -252,25 +315,17 @@ class TarFileWriter(object):
       return
     if name == '.':
       return
-    name = self.add_root(name)
-    # Do not add a directory that is already in the tar file.
+    name = self.add_root_prefix(name)
     if kind == tarfile.DIRTYPE and name in self.directories:
+      return
+    if name in self.members:
       return
 
     if mtime is None:
       mtime = self.default_mtime
 
     # Make directories up the file
-    parent_dirs = name.rsplit('/', 1)
-    if len(parent_dirs) > 1:
-      self.add_file(parent_dirs[0],
-                    kind=tarfile.DIRTYPE,
-                    uid=uid,
-                    gid=gid,
-                    uname=uname,
-                    gname=gname,
-                    mtime=mtime,
-                    mode=0o755)
+    self.add_parents(name, mtime=mtime, mode=0o755, uid=uid, gid=gid, uname=uname, gname=gname)
 
     tarinfo = tarfile.TarInfo(name)
     tarinfo.mtime = mtime
@@ -295,9 +350,6 @@ class TarFileWriter(object):
         self._addfile(tarinfo, f)
     else:
       self._addfile(tarinfo)
-    if kind == tarfile.DIRTYPE:
-      assert name[-1] != '/'
-      self.directories.add(name)
 
   def add_tar(self,
               tar,
@@ -317,15 +369,16 @@ class TarFileWriter(object):
       name_filter: filter out file by names. If not none, this method will be
           called for each file to add, given the name and should return true if
           the file is to be added to the final tar and false otherwise.
-      root: place all non-absolute content under given root directory, if not
-          None.
+      root: place all content under given root directory, if not None.
 
     Raises:
       TarFileWriter.Error: if an error happens when uncompressing the tar file.
     """
-    if root and root[0] not in ['/', '.']:
-      # Root prefix should start with a '/', adds it if missing
-      root = '/' + root
+    #if root and root[0] not in ['/', '.']:
+    #  # Root prefix should start with a '/', adds it if missing
+    #  root = '/' + root
+    if _DEBUG_VERBOSITY > 1:
+      print('==========================  root is', root)
     intar = tarfile.open(name=tar, mode='r:*')
     for tarinfo in intar:
       if name_filter is None or name_filter(tarinfo.name):
@@ -341,7 +394,7 @@ class TarFileWriter(object):
           tarinfo.uname = ''
           tarinfo.gname = ''
 
-        name = self.add_root(tarinfo.name)
+        name = self.add_root_prefix(tarinfo.name)
         if root is not None:
           if name.startswith('.'):
             name = '.' + root + name.lstrip('.')
@@ -390,3 +443,4 @@ class TarFileWriter(object):
     if self.compressor_proc and self.compressor_proc.wait() != 0:
       raise self.Error('Custom compression command '
                        '"{}" failed'.format(self.compressor_cmd))
+
