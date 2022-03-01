@@ -189,8 +189,6 @@ class ZipWriter(object):
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
-      for dir in dirs:
-        to_write[dest_dir + dir + '/'] = None
       for file in files:
         to_write[dest_dir + file] = root + '/' + file
 
