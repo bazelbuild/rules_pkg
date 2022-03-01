@@ -316,8 +316,6 @@ class TarFileWriter(object):
     if name == '.':
       return
     name = self.add_root_prefix(name)
-    if kind == tarfile.DIRTYPE and name in self.directories:
-      return
     if name in self.members:
       return
 
