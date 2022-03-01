@@ -135,8 +135,12 @@ class ZipContentsCase(ZipTest):
 
   def test_zip_tree(self):
     self.assertZipFileContent("test_zip_tree.zip", [
+        {"filename": "a/"},
         {"filename": "a/a"},
+        {"filename": "a/b/"},
         {"filename": "a/b/c"},
+        {"filename": "b/"},
+        {"filename": "b/c/"},
         {"filename": "b/c/d"},
         {"filename": "b/d"},
         {"filename": "b/e"},

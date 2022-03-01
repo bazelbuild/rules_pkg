@@ -184,13 +184,14 @@ class ZipWriter(object):
       # `os.walk` and `os.path.join` on Windows may not.
       root = os.path.normpath(root).replace(os.path.sep, '/')
 
-      dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
       if rel_path_from_top:
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
-      for file in sorted(files):
+      for dir in dirs:
+        to_write[dest_dir + dir + '/'] = None
+      for file in files:
         to_write[dest_dir + file] = root + '/' + file
 
     for path in sorted(to_write.keys()):
