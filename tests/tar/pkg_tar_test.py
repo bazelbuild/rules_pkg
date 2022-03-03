@@ -25,7 +25,7 @@ PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 class PkgTarTest(unittest.TestCase):
   """Testing for pkg_tar rule."""
 
-  def assertTarFileContent(self, file_name, content):
+  def assertTarFileContent(self, file_name, content, verbose=False):
     """Assert that tarfile contains exactly the entry described by `content`.
 
     Args:
@@ -43,7 +43,8 @@ class PkgTarTest(unittest.TestCase):
     with tarfile.open(file_path, 'r:*') as f:
       i = 0
       for info in f:
-        print('============got', info.name)
+        if verbose:
+          print('  >> from tar file:', info.name)
         error_msg = 'Extraneous file at end of archive %s: %s' % (
             file_path,
             info.name
@@ -61,7 +62,7 @@ class PkgTarTest(unittest.TestCase):
               '%s in archive %s does' % (info.name, file_path),
               'not match expected value `%s`' % v
               ])
-          # self.assertEqual(value, v, error_msg)
+          self.assertEqual(value, v, error_msg)
           if value != v:
             print(error_msg)
         i += 1
@@ -205,17 +206,28 @@ class PkgTarTest(unittest.TestCase):
 
     content = [
       {'name': './a_tree', 'isdir': True},
-      {'name': './a_tree/a', 'isdir': True},
-      {'name': './a_tree/a/a'},
-      {'name': './a_tree/a/b', 'isdir': True},
-      {'name': './a_tree/a/b/c'},
-      {'name': './a_tree/b', 'isdir': True},
-      {'name': './a_tree/b/c', 'isdir': True},
-      {'name': './a_tree/b/c/d'},
-      {'name': './a_tree/b/d'},
-      {'name': './a_tree/b/e'},
+      {'name': './a_tree/generate_tree', 'isdir': True},
+      {'name': './a_tree/generate_tree/a', 'isdir': True},
+      {'name': './a_tree/generate_tree/a/a'},
+      {'name': './a_tree/generate_tree/a/b', 'isdir': True},
+      {'name': './a_tree/generate_tree/a/b/c'},
+      {'name': './a_tree/generate_tree/b', 'isdir': True},
+      {'name': './a_tree/generate_tree/b/c', 'isdir': True},
+      {'name': './a_tree/generate_tree/b/c/d'},
+      {'name': './a_tree/generate_tree/b/d'},
+      {'name': './a_tree/generate_tree/b/e'},
+      {'name': './a_tree/loremipsum.txt'},
     ]
     self.assertTarFileContent('test-tar-tree-artifact.tar', content)
+
+    # Now test against the tree artifact with the name stripped.
+    noroot_content = []
+    for c in content[1:]:
+      nc = dict(c)
+      nc['name'] = c['name'].replace('/generate_tree', '')
+      noroot_content.append(nc)
+    self.assertTarFileContent('test-tar-tree-artifact-noroot.tar',
+                              noroot_content)
 
   def test_tar_with_runfiles(self):
     content = [
