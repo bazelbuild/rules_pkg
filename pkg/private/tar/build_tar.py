@@ -25,6 +25,17 @@ from pkg.private import build_info
 from pkg.private import manifest
 
 
+def normpath(path):
+  """Normalize a path to the format we need it.
+  
+  os.path.normpath changes / to \ on windows, but tarfile needs / style paths.
+
+  Args:
+    path: (str) path to normalize.
+  """
+  return os.path.normpath(path).replace(os.path.sep, '/')
+
+
 class TarFile(object):
   """A class to generates a TAR file."""
 
@@ -53,8 +64,7 @@ class TarFile(object):
     self.tarfile.close()
 
   def normalize_path(self, path: str) -> str:
-    # Note: normpath changes / to \ on windows, but tarfile needs / style paths.
-    dest = os.path.normpath(path).replace(os.path.sep, '/')
+    dest = normpath(path)
     # paths should not have a leading ./
     if dest.startswith('./'):
       dest = dest[2:]
@@ -118,7 +128,7 @@ class TarFile(object):
       ids = (0, 0)
     if names is None:
       names = ('', '')
-    dest = os.path.normpath(dest).replace(os.path.sep, '/')
+    dest = normpath(dest)
     self.tarfile.add_file(
         dest,
         content='' if kind == tarfile.REGTYPE else None,
@@ -169,7 +179,7 @@ class TarFile(object):
       names: (username, groupname) for the file to set ownership.  An empty
         file will be created as `destfile` in the layer.
     """
-    symlink = os.path.normpath(symlink).replace(os.path.sep, '/')
+    symlink = normpath(symlink)
     self.tarfile.add_file(
         symlink,
         tarfile.SYMTYPE,
@@ -218,14 +228,14 @@ class TarFile(object):
          copied to `self.directory/destfile` in the layer.
     """
     # We expect /-style paths.
-    tree_top = os.path.normpath(tree_top).replace(os.path.sep, '/')
+    tree_top = normpath(tree_top)
 
     dest = destpath.strip('/')  # redundant, dests should never have / here
     if self.directory and self.directory != '/':
       dest = self.directory.lstrip('/') + '/' + dest
 
     # Again, we expect /-style paths.
-    dest = os.path.normpath(dest).replace(os.path.sep, '/')
+    dest = normpath(dest)
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -235,7 +245,7 @@ class TarFile(object):
     for root, dirs, files in os.walk(tree_top):
       # While `tree_top` uses '/' as a path separator, results returned by
       # `os.walk` and `os.path.join` on Windows may not.
-      root = os.path.normpath(root).replace(os.path.sep, '/')
+      root = normpath(root)
 
       dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
