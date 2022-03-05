@@ -210,6 +210,8 @@ class TarFileWriter(object):
       modified path.
     """
     path = path.replace(os.path.sep, '/').rstrip('/')
+    while path.startswith('./'):
+      path = path[2:]
     if not self.root_directory or path.startswith('/'):
       return path
     if (path + '/').startswith(self.root_directory):
@@ -393,24 +395,21 @@ class TarFileWriter(object):
           tarinfo.gname = ''
 
         name = self.add_root_prefix(tarinfo.name)
+        tarinfo.name = name
+        self.add_parents(
+            name,
+            mtime=tarinfo.mtime,
+            mode=0o755,
+            uid=tarinfo.uid,
+            gid=tarinfo.gid,
+            uname=tarinfo.uname,
+            gname=tarinfo.gname)
+
         if root is not None:
-          if name.startswith('.'):
-            name = '.' + root + name.lstrip('.')
-            # Add root dir with same permissions if missing. Note that
-            # add_file deduplicates directories and is safe to call here.
-            self.add_file('.' + root,
-                          tarfile.DIRTYPE,
-                          uid=tarinfo.uid,
-                          gid=tarinfo.gid,
-                          uname=tarinfo.uname,
-                          gname=tarinfo.gname,
-                          mtime=tarinfo.mtime,
-                          mode=0o755)
           # Relocate internal hardlinks as well to avoid breaking them.
           link = tarinfo.linkname
           if link.startswith('.') and tarinfo.type == tarfile.LNKTYPE:
             tarinfo.linkname = '.' + root + link.lstrip('.')
-        tarinfo.name = name
 
         # Remove path pax header to ensure that the proposed name is going
         # to be used. Without this, files with long names will not be
