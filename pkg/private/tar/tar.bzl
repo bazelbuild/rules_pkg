@@ -70,7 +70,6 @@ def _pkg_tar_impl(ctx):
 
     # Start building the arguments.
     args = ctx.actions.args()
-    args.add("--root_directory", ctx.attr.package_base)
     args.add("--output", output_file.path)
     args.add("--mode", ctx.attr.mode)
     args.add("--owner", ctx.attr.owner)
@@ -245,8 +244,9 @@ pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(),
-        "package_base": attr.string(default = "./"),
-        "package_dir": attr.string(),
+        "package_dir": attr.string(
+            doc = """Prefix to be prepend to all paths written."""
+        ),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
         "srcs": attr.label_list(allow_files = True),
