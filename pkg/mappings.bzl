@@ -122,6 +122,8 @@ def _do_strip_prefix(path, to_strip, src_file):
 
     if path_norm.startswith(to_strip_norm):
         return path_norm[len(to_strip_norm):]
+    elif src_file.is_directory and (path_norm + '/') == to_strip_norm:
+        return ''
     else:
         # Avoid user surprise by failing if prefix stripping doesn't work as
         # expected.
