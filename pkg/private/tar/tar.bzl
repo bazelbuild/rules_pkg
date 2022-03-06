@@ -140,11 +140,7 @@ def _pkg_tar_impl(ctx):
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
                 if f.is_directory:
-                    # Tree artifacts need a name, but the name is never really
-                    # the important part. The likely behavior people want is
-                    # just the content, so we strip the directory name.
-                    dest = "/".join(d_path.split("/")[0:-1])
-                    add_tree_artifact(content_map, dest, f, src.label)
+                    add_tree_artifact(content_map, d_path, f, src.label)
                 else:
                     # Note: This extra remap is the bottleneck preventing this
                     # large block from being a utility method as shown below.
