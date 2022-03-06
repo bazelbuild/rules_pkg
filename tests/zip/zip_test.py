@@ -143,7 +143,6 @@ class ZipContentsCase(ZipTest):
     ])
 
 
-
 class ZipEquivalency(ZipTest):
   """Check that some generated zip files are equivalent to each-other."""
 
