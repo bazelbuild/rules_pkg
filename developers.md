@@ -71,9 +71,6 @@ organization will commit to maintaining that feature and responding to issues.
 -   <root> contains shims for the .bzl files in pkg/*.bzl. They add backwards
     compatibility to to older releases.
 
-Additionally:
--   deb_packages/... is defunct and unsupported.
-
 ### Starlark style
 
 -   We are moving towards fully generated docs. If you touch an attribute, you
