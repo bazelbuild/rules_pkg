@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Testing for archive."""
+"""Testing for pkg_tar."""
 
 import tarfile
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from pkg.private import archive
+from pkg.private.tar import tar_writer
 
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
@@ -156,7 +156,8 @@ class PkgTarTest(unittest.TestCase):
          'mode': 0o755,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
     ]
-    for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
+    for ext in [('.' + comp if comp else '')
+                for comp in tar_writer.COMPRESSIONS]:
       with self.subTest(ext=ext):
         self.assertTarFileContent('test-tar-basic-%s.tar%s' % (ext[1:], ext),
                                   content)
@@ -171,7 +172,8 @@ class PkgTarTest(unittest.TestCase):
         {'name': 'usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
         {'name': 'BUILD'},
     ]
-    for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
+    for ext in [('.' + comp if comp else '')
+                for comp in tar_writer.COMPRESSIONS]:
       with self.subTest(ext=ext):
         self.assertTarFileContent('test-tar-inclusion-%s.tar' % ext[1:],
                                   content)

@@ -23,6 +23,7 @@ from pkg.private import archive
 from pkg.private import helpers
 from pkg.private import build_info
 from pkg.private import manifest
+from pkg.private.tar import tar_writer
 
 
 def normpath(path):
@@ -52,7 +53,7 @@ class TarFile(object):
     self.default_mtime = default_mtime
 
   def __enter__(self):
-    self.tarfile = archive.TarFileWriter(
+    self.tarfile = tar_writer.TarFileWriter(
         self.output,
         self.compression,
         self.compressor,
@@ -203,7 +204,7 @@ class TarFile(object):
     Raises:
       DebError: if the format of the deb archive is incorrect.
     """
-    with archive.SimpleArFile(deb) as arfile:
+    with archive.SimpleArReader(deb) as arfile:
       current = next(arfile)
       while current and not current.filename.startswith('data.'):
         current = next(arfile)

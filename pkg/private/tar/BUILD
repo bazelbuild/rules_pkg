@@ -16,7 +16,7 @@
 All interfaces are subject to change at any time.
 """
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 licenses(["notice"])
 
@@ -46,9 +46,21 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":tar_writer",
         "//pkg/private:archive",
         "//pkg/private:build_info",
         "//pkg/private:helpers",
         "//pkg/private:manifest",
+    ],
+)
+
+py_library(
+    name = "tar_writer",
+    srcs = [
+        "tar_writer.py",
+    ],
+    srcs_version = "PY3",
+    visibility = [
+        "//tests:__subpackages__",
     ],
 )

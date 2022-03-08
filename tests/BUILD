@@ -37,6 +37,28 @@ filegroup(
 )
 
 py_test(
+    name = "archive_test",
+    srcs = [
+        "archive_test.py",
+    ],
+    data = [
+        "//tests:testdata/empty.ar",
+        "//tests:testdata/a_ab.ar",
+        "//tests:testdata/a.ar",
+        "//tests:testdata/a_b_ab.ar",
+        "//tests:testdata/a_b.ar",
+        "//tests:testdata/ab.ar",
+        "//tests:testdata/b.ar",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//pkg/private:archive",
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+py_test(
     name = "path_test",
     srcs = ["path_test.py"],
     data = ["//pkg:path.bzl"],
