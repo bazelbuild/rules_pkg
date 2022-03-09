@@ -22,9 +22,7 @@ load(
 load("//pkg/private:util.bzl", "setup_output_files")
 load(
     "//pkg/private:pkg_files.bzl",
-    "add_single_file",
-    "add_tree_artifact",
-    "process_src",
+    "add_label_list",
     "write_manifest",
 )
 
@@ -39,6 +37,7 @@ def _pkg_zip_impl(ctx):
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
     inputs = []
+    file_deps = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
         args.add("--stamp_from", ctx.version_file.path)
@@ -48,29 +47,8 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
-
-    # TODO(aiuto): Refactor this loop out of pkg_tar and pkg_zip into a helper
-    # that both can use.
-    for src in ctx.attr.srcs:
-        # Gather the files for every srcs entry here, even if it is not from
-        # a pkg_* rule.
-        if DefaultInfo in src:
-            inputs.extend(src[DefaultInfo].files.to_list())
-        if not process_src(
-            content_map,
-            src,
-            src.label,
-            default_mode = None,
-            default_user = None,
-            default_group = None,
-        ):
-            # Add in the files of srcs which are not pkg_* types
-            for f in src.files.to_list():
-                d_path = dest_path(f, data_path, data_path_without_prefix)
-                if f.is_directory:
-                    add_tree_artifact(content_map, d_path, f, src.label)
-                else:
-                    add_single_file(content_map, d_path, f, src.label)
+    add_label_list(ctx, content_map, file_deps, srcs = ctx.attr.srcs)
+    file_inputs = depset(transitive = file_deps)
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     inputs.append(manifest_file)
@@ -81,7 +59,7 @@ def _pkg_zip_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "PackageZip",
-        inputs = ctx.files.srcs + inputs,
+        inputs = file_inputs.to_list() + inputs,
         executable = ctx.executable._build_zip,
         arguments = [args],
         outputs = [output_file],
