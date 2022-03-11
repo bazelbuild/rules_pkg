@@ -81,7 +81,7 @@ class PackagingTest(unittest.TestCase):
     # TODO(aiuto): Find tar in a disciplined way
     content = subprocess.check_output(
         ['tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
-    self.assertEqual(b'./BUILD\n', content)
+    self.assertEqual(b'BUILD\n', content)
 
 
 if __name__ == '__main__':
