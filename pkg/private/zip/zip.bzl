@@ -68,11 +68,7 @@ def _pkg_zip_impl(ctx):
             for f in src.files.to_list():
                 d_path = dest_path(f, data_path, data_path_without_prefix)
                 if f.is_directory:
-                    # Tree artifacts need a name, but the name is never really
-                    # the important part. The likely behavior people want is
-                    # just the content, so we strip the directory name.
-                    dest = "/".join(d_path.split("/")[0:-1])
-                    add_tree_artifact(content_map, dest, f, src.label)
+                    add_tree_artifact(content_map, d_path, f, src.label)
                 else:
                     add_single_file(content_map, d_path, f, src.label)
 
@@ -138,7 +134,10 @@ limited to a granularity of 2 seconds.""",
         ),
 
         # Common attributes
-        "out": attr.output(mandatory = True),
+        "out": attr.output(
+            doc = """output file name. Default: name + ".zip".""",
+            mandatory = True,
+        ),
         "package_file_name": attr.string(doc = "See Common Attributes"),
         "package_variables": attr.label(
             doc = "See Common Attributes",
@@ -168,27 +167,19 @@ limited to a granularity of 2 seconds.""",
     provides = [PackageArtifactInfo],
 )
 
-def pkg_zip(name, **kwargs):
-    """Creates a .zip file. See pkg_zip_impl."""
-    extension = kwargs.pop("extension", None)
-    if extension:
-        # buildifier: disable=print
-        print("'extension' is deprecated. Use 'package_file_name' or 'out' to name the output.")
-    else:
-        extension = "zip"
-    archive_name = kwargs.pop("archive_name", None)
-    if archive_name:
-        if kwargs.get("package_file_name"):
-            fail("You may not set both 'archive_name' and 'package_file_name'.")
+def pkg_zip(name, out = None, **kwargs):
+    """Creates a .zip file.
 
-        # buildifier: disable=print
-        print("archive_name is deprecated. Use package_file_name instead.")
-        kwargs["package_file_name"] = archive_name + "." + extension
-    else:
-        archive_name = name
+    @wraps(pkg_zip_impl)
+
+    Args:
+      out: output file name. Default: name + ".zip".
+    """
+    if not out:
+        out = name + ".zip"
     pkg_zip_impl(
         name = name,
-        out = archive_name + "." + extension,
+        out = out,
         private_stamp_detect = select({
             _stamp_condition: True,
             "//conditions:default": False,
