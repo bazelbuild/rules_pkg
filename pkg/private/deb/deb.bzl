@@ -352,15 +352,12 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
     provides = [PackageArtifactInfo],
 )
 
-def pkg_deb(name, archive_name = None, **kwargs):
+def pkg_deb(name, out = None, **kwargs):
     """@wraps(pkg_deb_impl)."""
-    if archive_name:
-        # buildifier: disable=print
-        print("'archive_name' is deprecated. Use 'package_file_name' or 'out' to name the output.")
-        if kwargs.get("package_file_name"):
-            fail("You may not set both 'archive_name' and 'package_file_name'.")
+    if not out:
+      out = name + ".deb"
     pkg_deb_impl(
         name = name,
-        out = (archive_name or name) + ".deb",
+        out = out,
         **kwargs
     )

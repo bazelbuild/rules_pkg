@@ -163,7 +163,7 @@ class TarFileWriterTest(unittest.TestCase):
       for n in names:
         f.add_file(n, content=n)
     # pylint: disable=g-complex-comprehension
-    content = ([{"name": n,
+    content = ([{"name": n.lstrip('./'),
                  "size": len(n.encode("utf-8")),
                  "data": n.encode("utf-8")}
                 for n in names])
@@ -188,8 +188,8 @@ class TarFileWriterTest(unittest.TestCase):
     content = [
         {"name": "a"},
         {"name": "/b"},
-        {"name": "./c"},
-        {"name": "./.d"},
+        {"name": "c"},
+        {"name": ".d"},
         {"name": "..e"},
         {"name": ".f"}
     ]
@@ -197,9 +197,9 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testMergeTar(self):
     content = [
-        {"name": "./a", "data": b"a"},
-        {"name": "./ab", "data": b"ab"},
-        ]
+        {"name": "a", "data": b"a"},
+        {"name": "ab", "data": b"ab"},
+    ]
     for ext in [("." + comp if comp else "") for comp in archive.COMPRESSIONS]:
       with archive.TarFileWriter(self.tempfile) as f:
         datafile = self.data_files.Rlocation(
@@ -209,14 +209,14 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testMergeTarRelocated(self):
     content = [
-        {"name": "./foo", "mode": 0o755},
-        {"name": "./foo/a", "data": b"a"},
-        {"name": "./foo/ab", "data": b"ab"},
+        {"name": "foo", "mode": 0o755},
+        {"name": "foo/a", "data": b"a"},
+        {"name": "foo/ab", "data": b"ab"},
         ]
-    with archive.TarFileWriter(self.tempfile) as f:
+    with archive.TarFileWriter(self.tempfile, root_directory="foo") as f:
       datafile = self.data_files.Rlocation(
           "rules_pkg/tests/testdata/tar_test.tar")
-      f.add_tar(datafile, name_filter=lambda n: n != "./b", root="/foo")
+      f.add_tar(datafile, name_filter=lambda n: n != "./b")
     self.assertTarFileContent(self.tempfile, content)
 
   def testDefaultMtimeNotProvided(self):
@@ -238,7 +238,9 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
       for file_name in f.members:
-        input_file = input_tar.getmember(file_name)
+        # The test case file still uses "./a" format.  If we fix that, then
+        # update the next line accordingly.
+        input_file = input_tar.getmember("./" + file_name)
         output_file = f.tar.getmember(file_name)
         self.assertEqual(input_file.mtime, output_file.mtime)
 
@@ -324,8 +326,8 @@ class TarFileWriterTest(unittest.TestCase):
         "rules_pkg/tests/tar/test_tar_package_dir_file.tar")
 
     expected_content = [
-        {"name": "./package"},
-        {"name": "./package/nsswitch.conf"},
+        {"name": "package"},
+        {"name": "package/nsswitch.conf"},
     ]
 
     self.assertTarFileContent(package_dir, expected_content)
@@ -336,16 +338,20 @@ class TarFileWriterTest(unittest.TestCase):
         "rules_pkg/tests/testdata/tar_test.tar")
     compressed = self.data_files.Rlocation(
         "rules_pkg/tests/tar/test_tar_compression.tar")
-    expected_content = [
-        {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
-    ]
     with open(compressed, "rb") as f_in, open(self.tempfile, "wb") as f_out:
       # "Decompress" by skipping garbage bytes
       f_in.seek(len(compressor.GARBAGE))
       f_out.write(f_in.read())
 
+    expected_content = [
+        {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
+    ]
     self.assertTarFileContent(original, expected_content)
+    expected_content = [
+        {"name": x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
+    ]
     self.assertTarFileContent(self.tempfile, expected_content)
+
 
 if __name__ == "__main__":
   unittest.main()

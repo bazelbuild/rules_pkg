@@ -153,8 +153,8 @@ class ZipEquivalency(ZipTest):
 
   def test_extension(self):
     self.assertFilesEqual(
-        "test_zip_empty_different_extension.otherkindofzip",
-        "test_zip_empty.zip",
+        "test_zip_basic_renamed.foo",
+        "test_zip_basic.zip",
     )
 
   def test_package_dir1(self):

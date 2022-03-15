@@ -15,6 +15,7 @@
 """Tests for pkg_tar."""
 
 # buildifier: disable=bzl-visibility
+load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
@@ -267,9 +268,28 @@ pkg_tar(
     name = "test-tar-tree-artifact",
     srcs = [
         ":generate_tree",
+        "//tests:loremipsum_txt",
     ],
     package_dir = "a_tree",
 )
+
+pkg_files(
+    name = "tree_noroot",
+    srcs = [
+        ":generate_tree",
+    ],
+    strip_prefix = "generate_tree",
+)
+
+pkg_tar(
+    name = "test-tar-tree-artifact-noroot",
+    srcs = [
+        ":tree_noroot",
+        "//tests:loremipsum_txt",
+    ],
+    package_dir = "a_tree",
+)
+
 
 py_test(
     name = "pkg_tar_test",
@@ -291,6 +311,7 @@ py_test(
         ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
         ":test-tar-tree-artifact",
+        ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
@@ -322,15 +343,6 @@ test_suite(
 test_suite(
     name = "all_windows_tests",
     tests = [":windows_tests"],
-)
-
-# Used within experimental/tests/ for external repo genpkg tests
-filegroup(
-    name = "loremipsum_txt",
-    srcs = [
-        "//tests:testdata/loremipsum.txt",
-    ],
-    visibility = ["//visibility:public"],
 )
 
 pkg_tar(

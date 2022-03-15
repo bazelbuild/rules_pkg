@@ -25,7 +25,7 @@ PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 class PkgTarTest(unittest.TestCase):
   """Testing for pkg_tar rule."""
 
-  def assertTarFileContent(self, file_name, content):
+  def assertTarFileContent(self, file_name, content, verbose=False):
     """Assert that tarfile contains exactly the entry described by `content`.
 
     Args:
@@ -40,10 +40,12 @@ class PkgTarTest(unittest.TestCase):
     # NOTE: This is portable to Windows. os.path.join('rules_pkg', 'tests',
     # filename) is not.
     file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+    got = []
     with tarfile.open(file_path, 'r:*') as f:
       i = 0
       for info in f:
-        print('============got', info.name)
+        if verbose:
+          print('  >> from tar file:', info.name)
         error_msg = 'Extraneous file at end of archive %s: %s' % (
             file_path,
             info.name
@@ -61,70 +63,71 @@ class PkgTarTest(unittest.TestCase):
               '%s in archive %s does' % (info.name, file_path),
               'not match expected value `%s`' % v
               ])
-          # self.assertEqual(value, v, error_msg)
+          self.assertEqual(value, v, error_msg)
           if value != v:
             print(error_msg)
         i += 1
       if i < len(content):
-        self.fail('Missing file %s in archive %s' % (content[i], file_path))
+        self.fail('Missing file %s in archive %s of [%s]' % (
+            content[i], file_path, ',\n    '.join(got)))
 
   def test_strip_prefix_empty(self):
     content = [
-        {'name': './nsswitch.conf'},
+        {'name': 'nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-empty.tar', content)
 
   def test_strip_prefix_none(self):
     content = [
-        {'name': './nsswitch.conf'},
+        {'name': 'nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-none.tar', content)
 
   def test_strip_prefix_etc(self):
     content = [
-        {'name': './nsswitch.conf'},
+        {'name': 'nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-etc.tar', content)
 
   def test_strip_prefix_substring(self):
     content = [
-        {'name': './etc', 'isdir': True},
-        {'name': './etc/nsswitch.conf'},
+        {'name': 'etc', 'isdir': True},
+        {'name': 'etc/nsswitch.conf'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-substring.tar', content)
 
   def test_strip_prefix_dot(self):
     content = [
-        {'name': './etc'},
-        {'name': './etc/nsswitch.conf'},
-        {'name': './external'},
-        {'name': './external/bazel_tools'},
-        {'name': './external/bazel_tools/tools'},
-        {'name': './external/bazel_tools/tools/python'},
-        {'name': './external/bazel_tools/tools/python/runfiles'},
-        {'name': './external/bazel_tools/tools/python/runfiles/runfiles.py'},
+        {'name': 'etc'},
+        {'name': 'etc/nsswitch.conf'},
+        {'name': 'external'},
+        {'name': 'external/bazel_tools'},
+        {'name': 'external/bazel_tools/tools'},
+        {'name': 'external/bazel_tools/tools/python'},
+        {'name': 'external/bazel_tools/tools/python/runfiles'},
+        {'name': 'external/bazel_tools/tools/python/runfiles/runfiles.py'},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-dot.tar', content)
 
   def test_strip_files_dict(self):
     content = [
-        {'name': './not-etc'},
-        {'name': './not-etc/mapped-filename.conf'},
+        {'name': 'not-etc'},
+        {'name': 'not-etc/mapped-filename.conf'},
     ]
     self.assertTarFileContent('test-tar-files_dict.tar', content)
 
   def test_empty_files(self):
     content = [
-        {'name': './a', 'size': 0, 'uid': 0},
-        {'name': './b', 'size': 0, 'uid': 0, 'mtime': PORTABLE_MTIME},
+        {'name': 'a', 'size': 0, 'uid': 0},
+        {'name': 'b', 'size': 0, 'uid': 0, 'mtime': PORTABLE_MTIME},
     ]
     self.assertTarFileContent('test-tar-empty_files.tar', content)
 
   def test_empty_dirs(self):
     content = [
-        {'name': './pmt', 'isdir': True, 'size': 0, 'uid': 0,
+        {'name': 'pmt', 'isdir': True, 'size': 0, 'uid': 0,
          'mtime': PORTABLE_MTIME},
-        {'name': './tmp', 'isdir': True, 'size': 0, 'uid': 0,
+        {'name': 'tmp', 'isdir': True, 'size': 0, 'uid': 0,
          'mtime': PORTABLE_MTIME},
     ]
     self.assertTarFileContent('test-tar-empty_dirs.tar', content)
@@ -132,24 +135,24 @@ class PkgTarTest(unittest.TestCase):
   def test_mtime(self):
     # Note strange mtime. It is specified in the BUILD file.
     content = [
-        {'name': './nsswitch.conf', 'mtime': 946684740},
+        {'name': 'nsswitch.conf', 'mtime': 946684740},
     ]
     self.assertTarFileContent('test-tar-mtime.tar', content)
 
   def test_basic(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     content = [
-        {'name': './etc',
+        {'name': 'etc',
          'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'},
-        {'name': './etc/nsswitch.conf',
+        {'name': 'etc/nsswitch.conf',
          'mode': 0o644,
          'uid': 24, 'gid': 42, 'uname': 'tata', 'gname': 'titi'
          },
-        {'name': './usr',
+        {'name': 'usr',
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
-        {'name': './usr/bin'},
-        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
-        {'name': './usr/titi',
+        {'name': 'usr/bin'},
+        {'name': 'usr/bin/java', 'linkname': '/path/to/bin/java'},
+        {'name': 'usr/titi',
          'mode': 0o755,
          'uid': 42, 'gid': 24, 'uname': 'titi', 'gname': 'tata'},
     ]
@@ -160,13 +163,13 @@ class PkgTarTest(unittest.TestCase):
 
   def test_file_inclusion(self):
     content = [
-        {'name': './etc', 'uid': 24, 'gid': 42},
-        {'name': './etc/nsswitch.conf', 'mode': 0o644, 'uid': 24, 'gid': 42},
-        {'name': './usr', 'uid': 42, 'gid': 24},
-        {'name': './usr/bin'},
-        {'name': './usr/bin/java', 'linkname': '/path/to/bin/java'},
-        {'name': './usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
-        {'name': './BUILD'},
+        {'name': 'etc', 'uid': 24, 'gid': 42},
+        {'name': 'etc/nsswitch.conf', 'mode': 0o644, 'uid': 24, 'gid': 42},
+        {'name': 'usr', 'uid': 42, 'gid': 24},
+        {'name': 'usr/bin'},
+        {'name': 'usr/bin/java', 'linkname': '/path/to/bin/java'},
+        {'name': 'usr/titi', 'mode': 0o755, 'uid': 42, 'gid': 24},
+        {'name': 'BUILD'},
     ]
     for ext in [('.' + comp if comp else '') for comp in archive.COMPRESSIONS]:
       with self.subTest(ext=ext):
@@ -175,23 +178,23 @@ class PkgTarTest(unittest.TestCase):
 
   def test_strip_prefix_empty(self):
     content = [
-        {'name': './level1'},
-        {'name': './level1/some_value'},
-        {'name': './level1/some_value/level3'},
-        {'name': './level1/some_value/level3/BUILD'},
+        {'name': 'level1'},
+        {'name': 'level1/some_value'},
+        {'name': 'level1/some_value/level3'},
+        {'name': 'level1/some_value/level3/BUILD'},
     ]
     self.assertTarFileContent('test_tar_package_dir_substitution.tar', content)
 
   def test_tar_with_long_file_name(self):
     content = [
-      {'name': './file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
+      {'name': 'file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
     self.assertTarFileContent('test-tar-long-filename.tar', content)
 
   def test_repackage_file_with_long_name(self):
     content = [
-      {'name': './can_i_repackage_a_file_with_a_long_name'},
-      {'name': './can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
+      {'name': 'can_i_repackage_a_file_with_a_long_name'},
+      {'name': 'can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt'}
     ]
     self.assertTarFileContent('test-tar-repackaging-long-filename.tar', content)
 
@@ -204,24 +207,35 @@ class PkgTarTest(unittest.TestCase):
     #  "b/e"
 
     content = [
-      {'name': './a_tree', 'isdir': True},
-      {'name': './a_tree/a', 'isdir': True},
-      {'name': './a_tree/a/a'},
-      {'name': './a_tree/a/b', 'isdir': True},
-      {'name': './a_tree/a/b/c'},
-      {'name': './a_tree/b', 'isdir': True},
-      {'name': './a_tree/b/c', 'isdir': True},
-      {'name': './a_tree/b/c/d'},
-      {'name': './a_tree/b/d'},
-      {'name': './a_tree/b/e'},
+      {'name': 'a_tree', 'isdir': True},
+      {'name': 'a_tree/generate_tree', 'isdir': True},
+      {'name': 'a_tree/generate_tree/a', 'isdir': True},
+      {'name': 'a_tree/generate_tree/a/a'},
+      {'name': 'a_tree/generate_tree/a/b', 'isdir': True},
+      {'name': 'a_tree/generate_tree/a/b/c'},
+      {'name': 'a_tree/generate_tree/b', 'isdir': True},
+      {'name': 'a_tree/generate_tree/b/c', 'isdir': True},
+      {'name': 'a_tree/generate_tree/b/c/d'},
+      {'name': 'a_tree/generate_tree/b/d'},
+      {'name': 'a_tree/generate_tree/b/e'},
+      {'name': 'a_tree/loremipsum.txt'},
     ]
     self.assertTarFileContent('test-tar-tree-artifact.tar', content)
 
+    # Now test against the tree artifact with the dir name stripped.
+    noroot_content = []
+    for c in content[1:]:  # one less level in tree. Skip first element.
+      nc = dict(c)
+      nc['name'] = c['name'].replace('/generate_tree', '')
+      noroot_content.append(nc)
+    self.assertTarFileContent('test-tar-tree-artifact-noroot.tar',
+                              noroot_content)
+
   def test_tar_with_runfiles(self):
     content = [
-      {'name': './BUILD' },
-      {'name': './a_program' },
-      {'name': './executable.sh' },
+      {'name': 'BUILD' },
+      {'name': 'a_program' },
+      {'name': 'executable.sh' },
     ]
     self.assertTarFileContent('test-tar-with-runfiles.tar', content)
 
