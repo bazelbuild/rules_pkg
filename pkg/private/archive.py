@@ -398,10 +398,9 @@ class TarFileWriter(object):
         in_name = tarinfo.name
         if prefix:
           in_name = prefix + in_name
-        name = self.add_root_prefix(in_name)
-        tarinfo.name = name
+        tarinfo.name = self.add_root_prefix(in_name)
         self.add_parents(
-            name,
+            path=tarinfo.name,
             mtime=tarinfo.mtime,
             mode=0o755,
             uid=tarinfo.uid,

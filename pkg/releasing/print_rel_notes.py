@@ -26,7 +26,7 @@ from pkg.releasing import release_tools
 def print_notes(org, repo, version, tarball_path, mirror_host=None,
                 deps_method=None, setup_file=None, toolchains_method=None,
                 changelog=''):
-  file_name = release_tools.package_basename(repo, version)
+  file_name = os.path.basename(tarball_path)
   sha256 = release_tools.get_package_sha256(tarball_path)
 
   url = 'https://github.com/%s/%s/releases/download/%s/%s' % (
