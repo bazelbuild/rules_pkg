@@ -357,7 +357,7 @@ class TarFileWriter(object):
               rootgid=None,
               numeric=False,
               name_filter=None,
-              root=None):
+              prefix=None):
     """Merge a tar content into the current tar, stripping timestamp.
 
     Args:
@@ -369,16 +369,17 @@ class TarFileWriter(object):
       name_filter: filter out file by names. If not none, this method will be
           called for each file to add, given the name and should return true if
           the file is to be added to the final tar and false otherwise.
-      root: place all content under given root directory, if not None.
+      prefix: prefix to add to all file paths.  This prefix is added to the
+          incoming file path, then the overall root_directory will also be
+          added.
 
     Raises:
       TarFileWriter.Error: if an error happens when uncompressing the tar file.
     """
-    #if root and root[0] not in ['/', '.']:
-    #  # Root prefix should start with a '/', adds it if missing
-    #  root = '/' + root
+    if prefix:
+      prefix = prefix.strip('/') + '/'
     if _DEBUG_VERBOSITY > 1:
-      print('==========================  root is', root)
+      print('==========================  prefix is', prefix)
     intar = tarfile.open(name=tar, mode='r:*')
     for tarinfo in intar:
       if name_filter is None or name_filter(tarinfo.name):
@@ -394,10 +395,12 @@ class TarFileWriter(object):
           tarinfo.uname = ''
           tarinfo.gname = ''
 
-        name = self.add_root_prefix(tarinfo.name)
-        tarinfo.name = name
+        in_name = tarinfo.name
+        if prefix:
+          in_name = prefix + in_name
+        tarinfo.name = self.add_root_prefix(in_name)
         self.add_parents(
-            name,
+            path=tarinfo.name,
             mtime=tarinfo.mtime,
             mode=0o755,
             uid=tarinfo.uid,
@@ -405,11 +408,11 @@ class TarFileWriter(object):
             uname=tarinfo.uname,
             gname=tarinfo.gname)
 
-        if root is not None:
+        if prefix is not None:
           # Relocate internal hardlinks as well to avoid breaking them.
           link = tarinfo.linkname
           if link.startswith('.') and tarinfo.type == tarfile.LNKTYPE:
-            tarinfo.linkname = '.' + root + link.lstrip('.')
+            tarinfo.linkname = '.' + prefix + link.lstrip('.')
 
         # Remove path pax header to ensure that the proposed name is going
         # to be used. Without this, files with long names will not be
