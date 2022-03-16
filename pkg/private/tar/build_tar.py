@@ -57,7 +57,6 @@ class TarFile(object):
         self.output,
         self.compression,
         self.compressor,
-        root_directory = self.directory,
         default_mtime=self.default_mtime)
     return self
 
@@ -163,10 +162,7 @@ class TarFile(object):
     Args:
       tar: the tar file to add
     """
-    root = None
-    if self.directory and self.directory != '/':
-      root = self.directory
-    self.tarfile.add_tar(tar, numeric=True, root=root)
+    self.tarfile.add_tar(tar, numeric=True, prefix=self.directory)
 
   def add_link(self, symlink, destination, mode=None, ids=None, names=None):
     """Add a symbolic link pointing to `destination`.

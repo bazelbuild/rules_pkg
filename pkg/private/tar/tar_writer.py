@@ -30,88 +30,11 @@ except ImportError:
 # that is fragile. Users should stick to the expectations provided here.
 COMPRESSIONS = ('', 'gz', 'bz2', 'xz') if HAS_LZMA else ('', 'gz', 'bz2')
 
-
 # Use a deterministic mtime that doesn't confuse other programs.
 # See: https://github.com/bazelbuild/bazel/issues/1299
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 _DEBUG_VERBOSITY = 0
-
-class SimpleArFile(object):
-  """A simple AR file reader.
-
-  This enable to read AR file (System V variant) as described
-  in https://en.wikipedia.org/wiki/Ar_(Unix).
-
-  The standard usage of this class is:
-
-  with SimpleArFile(filename) as ar:
-    nextFile = ar.next()
-    while nextFile:
-      if _DEBUG_VERBOSITY > 0:
-        print(nextFile.filename)
-      nextFile = ar.next()
-
-  Upon error, this class will raise a ArError exception.
-  """
-
-  # TODO(dmarting): We should use a standard library instead but python 2.7
-  #   does not have AR reading library.
-
-  class ArError(Exception):
-    pass
-
-  class SimpleArFileEntry(object):
-    """Represent one entry in a AR archive.
-
-    Attributes:
-      filename: the filename of the entry, as described in the archive.
-      timestamp: the timestamp of the file entry.
-      owner_id: numeric id of the user and group owning the file.
-      group_id: numeric id of the user and group owning the file.
-      mode: unix permission mode of the file
-      size: size of the file
-      data: the content of the file.
-    """
-
-    def __init__(self, f):
-      self.filename = f.read(16).decode('utf-8').strip()
-      if self.filename.endswith('/'):  # SysV variant
-        self.filename = self.filename[:-1]
-      self.timestamp = int(f.read(12).strip())
-      self.owner_id = int(f.read(6).strip())
-      self.group_id = int(f.read(6).strip())
-      self.mode = int(f.read(8).strip(), 8)
-      self.size = int(f.read(10).strip())
-      pad = f.read(2)
-      if pad != b'\x60\x0a':
-        raise SimpleArFile.ArError('Invalid AR file header')
-      self.data = f.read(self.size)
-
-  MAGIC_STRING = b'!<arch>\n'
-
-  def __init__(self, filename):
-    self.filename = filename
-
-  def __enter__(self):
-    self.f = open(self.filename, 'rb')
-    if self.f.read(len(self.MAGIC_STRING)) != self.MAGIC_STRING:
-      raise self.ArError('Not a ar file: ' + self.filename)
-    return self
-
-  def __exit__(self, t, v, traceback):
-    self.f.close()
-
-  def next(self):
-    """Read the next file. Returns None when reaching the end of file."""
-    # AR sections are two bit aligned using new lines.
-    if self.f.tell() % 2 != 0:
-      self.f.read(1)
-    # An AR sections is at least 60 bytes. Some file might contains garbage
-    # bytes at the end of the archive, ignore them.
-    if self.f.tell() > os.fstat(self.f.fileno()).st_size - 60:
-      return None
-    return self.SimpleArFileEntry(self.f)
 
 
 class TarFileWriter(object):
@@ -357,7 +280,7 @@ class TarFileWriter(object):
               rootgid=None,
               numeric=False,
               name_filter=None,
-              root=None):
+              prefix=None):
     """Merge a tar content into the current tar, stripping timestamp.
 
     Args:
@@ -369,16 +292,17 @@ class TarFileWriter(object):
       name_filter: filter out file by names. If not none, this method will be
           called for each file to add, given the name and should return true if
           the file is to be added to the final tar and false otherwise.
-      root: place all content under given root directory, if not None.
+      prefix: prefix to add to all file paths.  This prefix is added to the
+          incoming file path, then the overall root_directory will also be
+          added.
 
     Raises:
       TarFileWriter.Error: if an error happens when uncompressing the tar file.
     """
-    #if root and root[0] not in ['/', '.']:
-    #  # Root prefix should start with a '/', adds it if missing
-    #  root = '/' + root
+    if prefix:
+      prefix = prefix.strip('/') + '/'
     if _DEBUG_VERBOSITY > 1:
-      print('==========================  root is', root)
+      print('==========================  prefix is', prefix)
     intar = tarfile.open(name=tar, mode='r:*')
     for tarinfo in intar:
       if name_filter is None or name_filter(tarinfo.name):
@@ -394,10 +318,12 @@ class TarFileWriter(object):
           tarinfo.uname = ''
           tarinfo.gname = ''
 
-        name = self.add_root_prefix(tarinfo.name)
-        tarinfo.name = name
+        in_name = tarinfo.name
+        if prefix:
+          in_name = prefix + in_name
+        tarinfo.name = self.add_root_prefix(in_name)
         self.add_parents(
-            name,
+            path=tarinfo.name,
             mtime=tarinfo.mtime,
             mode=0o755,
             uid=tarinfo.uid,
@@ -405,11 +331,11 @@ class TarFileWriter(object):
             uname=tarinfo.uname,
             gname=tarinfo.gname)
 
-        if root is not None:
+        if prefix is not None:
           # Relocate internal hardlinks as well to avoid breaking them.
           link = tarinfo.linkname
           if link.startswith('.') and tarinfo.type == tarfile.LNKTYPE:
-            tarinfo.linkname = '.' + root + link.lstrip('.')
+            tarinfo.linkname = '.' + prefix + link.lstrip('.')
 
         # Remove path pax header to ensure that the proposed name is going
         # to be used. Without this, files with long names will not be
