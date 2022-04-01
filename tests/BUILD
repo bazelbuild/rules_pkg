@@ -76,16 +76,6 @@ py_test(
     ],
 )
 
-py_test(
-    name = "make_rpm_test",
-    srcs = ["make_rpm_test.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-    deps = [
-        "//pkg:make_rpm_lib",
-    ],
-)
-
 #
 # Tests for package_file_name
 #
