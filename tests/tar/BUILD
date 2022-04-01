@@ -25,24 +25,15 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 package(default_applicable_licenses = ["//:license"])
 
 py_test(
-    name = "archive_test",
+    name = "tar_writer_test",
     srcs = [
-        "archive_test.py",
+        "tar_writer_test.py",
     ],
     data = [
         ":compressor",
         ":test_tar_compression",
         ":test_tar_package_dir",
         ":test_tar_package_dir_file",
-        # TODO(aiuto): Some of these are used by pkg_deb tests. Figure out why
-        # and eliminate the weird cross coupling.
-        "//tests:testdata/empty.ar",
-        "//tests:testdata/a_ab.ar",
-        "//tests:testdata/a.ar",
-        "//tests:testdata/a_b_ab.ar",
-        "//tests:testdata/a_b.ar",
-        "//tests:testdata/ab.ar",
-        "//tests:testdata/b.ar",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -52,7 +43,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
-        "//pkg/private:archive",
+        "//pkg/private/tar:tar_writer",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
@@ -327,7 +318,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "//pkg/private:archive",
+        "//pkg/private/tar:tar_writer",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
