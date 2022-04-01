@@ -284,13 +284,9 @@ def add_label_list(
             for f in src[DefaultInfo].files.to_list():
                 d_path = dest_path(f, data_path, data_path_without_prefix)
                 if f.is_directory:
-                    # Tree artifacts need a name, but the name is never really
-                    # the important part. The likely behavior people want is
-                    # just the content, so we strip the directory name.
-                    dest = "/".join(d_path.split("/")[0:-1])
                     add_tree_artifact(
                         content_map,
-                        dest,
+                        d_path,
                         f,
                         origin = src.label,
                         mode = default_mode,

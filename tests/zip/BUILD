@@ -117,6 +117,11 @@ pkg_zip(
 )
 
 pkg_zip(
+    name = "test_zip_tree",
+    srcs = [":generate_tree"],
+)
+
+pkg_zip(
     name = "test_zip_permissions",
     srcs = [
         "//tests:testdata/executable.sh",
@@ -206,8 +211,9 @@ py_test(
         # it with this name.
         "test_zip_out.foo",
         "test_zip_package_dir0.zip",
-        "test_zip_timestamp.zip",
         "test_zip_permissions.zip",
+        "test_zip_timestamp.zip",
+        "test_zip_tree.zip",
         "test-zip-strip_prefix-empty.zip",
         "test-zip-strip_prefix-none.zip",
         "test-zip-strip_prefix-zipcontent.zip",
