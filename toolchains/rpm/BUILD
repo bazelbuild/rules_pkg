@@ -41,7 +41,7 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-# Expose the availabilty of an actual rpmbuild as a config_setting, so we can
+# Expose the availability of an actual rpmbuild as a config_setting, so we can
 # select() on it.
 config_setting(
     name = "have_rpmbuild",
@@ -51,7 +51,7 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-# Expose the availabilty of an actual rpmbuild as a feature flag, so we can
+# Expose the availability of an actual rpmbuild as a feature flag, so we can
 # create a config_setting from it.
 is_rpmbuild_available(
     name = "is_rpmbuild_available",
