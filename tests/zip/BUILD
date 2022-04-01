@@ -213,7 +213,7 @@ py_test(
         "test_zip_package_dir0.zip",
         "test_zip_permissions.zip",
         "test_zip_timestamp.zip",
-        "test_zip_tree",
+        "test_zip_tree.zip",
         "test-zip-strip_prefix-empty.zip",
         "test-zip-strip_prefix-none.zip",
         "test-zip-strip_prefix-zipcontent.zip",

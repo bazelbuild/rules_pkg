@@ -49,7 +49,8 @@ def _create_argument_parser():
       '-m', '--mode',
       help='The file system mode to use for files added into the zip.')
   parser.add_argument('--manifest',
-                      help='manifest of contents to add to the layer.')
+                      help='manifest of contents to add to the layer.',
+                      required=True)
   parser.add_argument(
       'files', type=str, nargs='*',
       help='Files to be added to the zip, in the form of {srcpath}={dstpath}.')
@@ -128,7 +129,6 @@ class ZipWriter(object):
       zip_file: ZipFile to write to
       entry: manifest entry
     """
-
     entry_type, dest, src, mode, user, group = entry
 
     # Use the pkg_tar mode/owner remaping as a fallback
@@ -217,8 +217,6 @@ def main(args):
   if args.mode:
     default_mode = int(args.mode, 8)
 
-  if not args.manifest:
-    raise Exception('Missing --manifest')
   with open(args.manifest, 'r') as manifest_fp:
     manifest = json.load(manifest_fp)
     with ZipWriter(
