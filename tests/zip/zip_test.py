@@ -77,8 +77,9 @@ class ZipContentsCase(ZipTest):
           expect_dir_bits = UNIX_DIR_BIT << 16 | MSDOS_DIR_BIT
           self.assertEqual(info.external_attr & expect_dir_bits,
                            expect_dir_bits)
-        self.assertEqual((info.external_attr >> 16) & UNIX_RWX_BITS,
-                         expected.get("attr", 0o555))
+        got = (info.external_attr >> 16) & UNIX_RWX_BITS
+        exp = expected.get("attr", 0o555)
+        self.assertEqual(got, exp, 'got %o, expected %o' % (got, exp))
 
   def test_empty(self):
     self.assertZipFileContent("test_zip_empty.zip", [])
@@ -130,6 +131,15 @@ class ZipContentsCase(ZipTest):
   def test_zip_strip_prefix_dot(self):
     self.assertZipFileContent("test-zip-strip_prefix-dot.zip", [
         {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
+    ])
+
+  def test_zip_tree(self):
+    self.assertZipFileContent("test_zip_tree.zip", [
+        {"filename": "generate_tree/a/a"},
+        {"filename": "generate_tree/a/b/c"},
+        {"filename": "generate_tree/b/c/d"},
+        {"filename": "generate_tree/b/d"},
+        {"filename": "generate_tree/b/e"},
     ])
 
 
