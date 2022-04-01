@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Archive manipulation library for the Docker rules."""
+"""Tar writing helper."""
 
-# pylint: disable=g-import-not-at-top
 import gzip
 import io
 import os
@@ -120,7 +119,6 @@ class TarFileWriter(object):
 
   def __exit__(self, t, v, traceback):
     self.close()
-
 
   def add_root_prefix(self, path: str) -> str:
     """Add the root prefix to a path.
