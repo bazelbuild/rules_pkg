@@ -118,6 +118,7 @@ bzl_library(
         "//pkg:mappings.bzl",
         "//pkg:package_variables.bzl",
         "//pkg:path.bzl",
+        "//pkg:pkg.bzl",
         "//pkg:providers.bzl",
         "//pkg:rpm.bzl",
         "//pkg:rpm_pfg.bzl",
@@ -129,7 +130,7 @@ bzl_library(
         "//pkg/private/zip:zip.bzl",
         "@bazel_skylib//lib:paths",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"], # https://github.com/bazelbuild/stardoc/issues/93
 )
 
 py_binary(
