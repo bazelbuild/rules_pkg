@@ -134,14 +134,13 @@ def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode
     for psl in pkg_filegroup_info.pkg_symlinks:
         _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
 
-def process_src(ctx, content_map, files, src, origin, default_mode,
-                default_user, default_group):
+def process_src(content_map, files, src, origin, default_mode, default_user,
+                default_group):
     """Add an entry to the content map.
 
     Args:
-      ctx: rule context
       content_map: in/out The content map
-      files: in/out list of files represented in the map
+      files: in/out list of file Depsets represented in the map
       src: Source Package*Info object
       origin: The rule instance adding this entry
       default_mode: fallback mode to use for Package*Info elements without mode
@@ -253,7 +252,7 @@ def add_label_list(
     Args:
       ctx: rule context.
       content_map: (r/w) The content map to update.
-      file_deps: (r/w) The list of File objects srcs depend on.
+      file_deps: (r/w) The list of file Depsets that srcs depend on.
       srcs: List of source objects.
       default_mode: fallback mode to use for Package*Info elements without mode
       default_user: fallback user to use for Package*Info elements without user
@@ -269,7 +268,6 @@ def add_label_list(
 
     for src in srcs:
         if not process_src(
-            ctx,
             content_map,
             file_deps,
             src = src,

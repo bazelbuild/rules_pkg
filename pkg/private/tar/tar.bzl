@@ -118,7 +118,6 @@ def _pkg_tar_impl(ctx):
     # Start with all the pkg_* inputs
     for src in ctx.attr.srcs:
         if not process_src(
-            ctx,
             content_map,
             file_deps,
             src = src,

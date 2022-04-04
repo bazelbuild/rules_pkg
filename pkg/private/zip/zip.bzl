@@ -37,7 +37,6 @@ def _pkg_zip_impl(ctx):
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
     inputs = []
-    file_deps = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
         args.add("--stamp_from", ctx.version_file.path)
@@ -47,6 +46,7 @@ def _pkg_zip_impl(ctx):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     content_map = {}  # content handled in the manifest
+    file_deps = []  # list of Depsets needed by srcs
     add_label_list(ctx, content_map, file_deps, srcs = ctx.attr.srcs)
     file_inputs = depset(transitive = file_deps)
 
