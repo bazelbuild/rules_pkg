@@ -241,6 +241,12 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-with-runfiles.tar', content)
 
+  def test_tar_leading_dotslash(self):
+    content = [
+      {'name': './loremipsum.txt'},
+    ]
+    self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
+
 
 if __name__ == '__main__':
   unittest.main()
