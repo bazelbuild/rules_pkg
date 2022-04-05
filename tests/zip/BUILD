@@ -253,6 +253,5 @@ py_test(
     python_version = "PY3",
     deps = [
         ":zip_test_lib",
-        "@bazel_tools//tools/python/runfiles",
     ],
 )
