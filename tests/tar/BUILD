@@ -281,6 +281,27 @@ pkg_tar(
     package_dir = "a_tree",
 )
 
+fake_artifact(
+    name = "a_program",
+    files = ["//tests:testdata/executable.sh"],
+    runfiles = ["BUILD"],
+)
+
+pkg_tar(
+    name = "test-tar-with-runfiles",
+    srcs = [
+        ":a_program",
+    ],
+    include_runfiles = True,
+)
+
+pkg_tar(
+    name = "test_tar_leading_dotslash",
+    srcs = [
+        "//tests:loremipsum_txt",
+    ],
+    package_dir = ".",
+)
 
 py_test(
     name = "pkg_tar_test",
@@ -298,6 +319,7 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+        ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
         ":test-tar-long-filename",
         ":test-tar-repackaging-long-filename.tar",
@@ -358,20 +380,6 @@ pkg_tar(
         "//tests:testdata/loremipsum.txt",
     ],
     extension = ".bz2",
-)
-
-fake_artifact(
-    name = "a_program",
-    files = ["//tests:testdata/executable.sh"],
-    runfiles = ["BUILD"],
-)
-
-pkg_tar(
-    name = "test-tar-with-runfiles",
-    srcs = [
-        ":a_program",
-    ],
-    include_runfiles = True,
 )
 
 py_test(

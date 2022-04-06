@@ -88,7 +88,7 @@ class TarFileWriterTest(unittest.TestCase):
       for n in names:
         f.add_file(n, content=n)
     # pylint: disable=g-complex-comprehension
-    content = ([{"name": n.lstrip('./'),
+    content = ([{"name": n,
                  "size": len(n.encode("utf-8")),
                  "data": n.encode("utf-8")}
                 for n in names])
@@ -113,8 +113,8 @@ class TarFileWriterTest(unittest.TestCase):
     content = [
         {"name": "a"},
         {"name": "/b"},
-        {"name": "c"},
-        {"name": ".d"},
+        {"name": "./c"},
+        {"name": "./.d"},
         {"name": "..e"},
         {"name": ".f"}
     ]
@@ -122,8 +122,8 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testMergeTar(self):
     content = [
-        {"name": "a", "data": b"a"},
-        {"name": "ab", "data": b"ab"},
+        {"name": "./a", "data": b"a"},
+        {"name": "./ab", "data": b"ab"},
     ]
     for ext in [("." + comp if comp else "") for comp in tar_writer.COMPRESSIONS]:
       with tar_writer.TarFileWriter(self.tempfile) as f:
@@ -138,10 +138,10 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "foo/a", "data": b"a"},
         {"name": "foo/ab", "data": b"ab"},
         ]
-    with tar_writer.TarFileWriter(self.tempfile, root_directory="foo") as f:
+    with tar_writer.TarFileWriter(self.tempfile) as f:
       datafile = self.data_files.Rlocation(
           "rules_pkg/tests/testdata/tar_test.tar")
-      f.add_tar(datafile, name_filter=lambda n: n != "./b")
+      f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
     self.assertTarFileContent(self.tempfile, content)
 
   def testDefaultMtimeNotProvided(self):
@@ -163,9 +163,7 @@ class TarFileWriterTest(unittest.TestCase):
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
       for file_name in f.members:
-        # The test case file still uses "./a" format.  If we fix that, then
-        # update the next line accordingly.
-        input_file = input_tar.getmember("./" + file_name)
+        input_file = input_tar.getmember(file_name)
         output_file = f.tar.getmember(file_name)
         self.assertEqual(input_file.mtime, output_file.mtime)
 
@@ -212,33 +210,6 @@ class TarFileWriterTest(unittest.TestCase):
     ]
     self.assertTarFileContent(self.tempfile, content)
 
-  def testChangingRootDirectory(self):
-    with tar_writer.TarFileWriter(self.tempfile, root_directory="root") as f:
-      f.add_file("d", tarfile.DIRTYPE)
-      f.add_file("d/f")
-
-      f.add_file("a", tarfile.DIRTYPE)
-      f.add_file("a/b", tarfile.DIRTYPE)
-      f.add_file("a/b", tarfile.DIRTYPE)
-      f.add_file("a/b/", tarfile.DIRTYPE)
-      f.add_file("a/b/c/f")
-
-      f.add_file("x/y/f")
-      f.add_file("x", tarfile.DIRTYPE)
-    content = [
-        {"name": "root", "mode": 0o755},
-        {"name": "root/d", "mode": 0o755},
-        {"name": "root/d/f"},
-        {"name": "root/a", "mode": 0o755},
-        {"name": "root/a/b", "mode": 0o755},
-        {"name": "root/a/b/c", "mode": 0o755},
-        {"name": "root/a/b/c/f"},
-        {"name": "root/x", "mode": 0o755},
-        {"name": "root/x/y", "mode": 0o755},
-        {"name": "root/x/y/f"},
-    ]
-    self.assertTarFileContent(self.tempfile, content)
-
   def testPackageDirFileAttribute(self):
     """Tests package_dir and package_dir_file attributes of pkg_tar.
 
@@ -272,9 +243,6 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
     ]
     self.assertTarFileContent(original, expected_content)
-    expected_content = [
-        {"name": x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
-    ]
     self.assertTarFileContent(self.tempfile, expected_content)
 
 
