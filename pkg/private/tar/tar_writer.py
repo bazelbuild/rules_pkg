@@ -46,7 +46,6 @@ class TarFileWriter(object):
                name,
                compression='',
                compressor='',
-               root_directory='',
                default_mtime=None,
                preserve_tar_mtimes=True):
     """TarFileWriter wraps tarfile.open().
@@ -55,7 +54,6 @@ class TarFileWriter(object):
       name: the tar file name.
       compression: compression type: bzip2, bz2, gz, tgz, xz, lzma.
       compressor: custom command to do the compression.
-      root_directory: virtual root to prepend to elements in the archive.
       default_mtime: default mtime to use for elements in the archive.
           May be an integer or the value 'portable' to use the date
           2000-01-01, which is compatible with non *nix OSes'.
@@ -98,12 +96,6 @@ class TarFileWriter(object):
                                               stdout=open(name, 'wb'))
       self.fileobj = self.compressor_proc.stdin
     self.name = name
-    if root_directory:
-      # tarfile uses / instead of os.path.sep, so convert to that
-      self.root_directory = root_directory.replace(os.path.sep, '/')
-      self.root_directory = self.root_directory.rstrip('/') + '/'
-    else:
-      self.root_directory = None
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
     self.members = set()
@@ -119,25 +111,6 @@ class TarFileWriter(object):
 
   def __exit__(self, t, v, traceback):
     self.close()
-
-  def add_root_prefix(self, path: str) -> str:
-    """Add the root prefix to a path.
-
-    If the path begins with / or the prefix itself, do nothing.
-
-    Args:
-      path: a file path
-    Returns:
-      modified path.
-    """
-    path = path.replace(os.path.sep, '/').rstrip('/')
-    while path.startswith('./'):
-      path = path[2:]
-    if not self.root_directory or path.startswith('/'):
-      return path
-    if (path + '/').startswith(self.root_directory):
-      return path
-    return self.root_directory + path
 
   def _have_added(self, path):
     """Have we added this file before."""
@@ -238,7 +211,6 @@ class TarFileWriter(object):
       return
     if name == '.':
       return
-    name = self.add_root_prefix(name)
     if name in self.members:
       return
 
@@ -290,9 +262,7 @@ class TarFileWriter(object):
       name_filter: filter out file by names. If not none, this method will be
           called for each file to add, given the name and should return true if
           the file is to be added to the final tar and false otherwise.
-      prefix: prefix to add to all file paths.  This prefix is added to the
-          incoming file path, then the overall root_directory will also be
-          added.
+      prefix: prefix to add to all file paths.
 
     Raises:
       TarFileWriter.Error: if an error happens when uncompressing the tar file.
@@ -318,8 +288,8 @@ class TarFileWriter(object):
 
         in_name = tarinfo.name
         if prefix:
-          in_name = prefix + in_name
-        tarinfo.name = self.add_root_prefix(in_name)
+          in_name = os.path.normpath(prefix + in_name).replace(os.path.sep, '/')
+        tarinfo.name = in_name
         self.add_parents(
             path=tarinfo.name,
             mtime=tarinfo.mtime,

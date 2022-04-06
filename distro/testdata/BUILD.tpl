@@ -7,7 +7,7 @@ pkg_tar(
     ],
     extension = "tar.gz",
     owner = "0.0",
-    package_dir = ".",
+    package_dir = "etc",
     tags = [
         "manual",
     ],
