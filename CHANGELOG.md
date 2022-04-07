@@ -4,7 +4,7 @@
 - Make the .bzl files available as input to a bzl_library (#567)
 - Allow pkg_files.strip_prefix to work on tree artifact without having to use `renames`.
 - Add @rules_license style license declarations (#508)
-- Better looking [documentation)[https://bazelbuild.github.io/rules_pkg/0.7.0/reference.html]
+- Better looking [documentation](https://bazelbuild.github.io/rules_pkg/0.7.0/reference.html)
 - Add `artifact_name` to `print_relnotes` (#541)
 - pkg_{deb,rpm,tar,zip} are now available via individual .bzl files, so you
   only need to load what you actually need.
