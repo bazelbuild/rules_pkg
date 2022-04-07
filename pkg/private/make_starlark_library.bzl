@@ -14,7 +14,7 @@ def _make_starlark_library(ctx):
         else:
             for file in src[DefaultInfo].files.to_list():
                 if file.path.endswith(".bzl"):
-                    print(file.path)
+                    # print(file.path)
                     direct.append(file)
     all_files = depset(direct, transitive = transitive)
     return [

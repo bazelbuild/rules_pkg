@@ -53,6 +53,7 @@ starlark_library(
     name = "bzl_srcs",
     srcs = [
         ":standard_package",
+        "//pkg:pkg.bzl",
         "//pkg/private:standard_package",
         "//pkg/private/deb:standard_package",
         "//pkg/private/tar:standard_package",
