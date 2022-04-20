@@ -144,7 +144,6 @@ alias(
 
 manifest_golden_test(
     name = "executable_test",
-    #expected = ":executable_test_expected",
-    expected = "executable.manifest.golden",
+    expected = ":executable_test_expected",
     target = "executable_manifest",
 )

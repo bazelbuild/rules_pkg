@@ -946,8 +946,8 @@ def _gen_manifest_test_main_impl(ctx):
         template = ctx.file._template,
         output = ctx.outputs.out,
         substitutions = {
-            "${EXPECTED}": ctx.files.expected[0].path,
-            "${TARGET}": ctx.files.target[0].path,
+            "${EXPECTED}": ctx.files.expected[0].short_path,
+            "${TARGET}": ctx.files.target[0].short_path,
             "${TEST_NAME}": ctx.attr.test_name,
         },
     )
@@ -991,6 +991,7 @@ def manifest_golden_test(name, target, expected):
         name = name,
         srcs = [":" + name + ".py"],
         data = [
+            ":" + target,
             ":" + target + ".manifest",
             expected,
         ],
