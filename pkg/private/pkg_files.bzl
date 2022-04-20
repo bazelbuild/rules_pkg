@@ -277,8 +277,6 @@ def add_label_list(
             default_group = default_group,
         ):
             # Add in the files of srcs which are not pkg_* types
-            # We can 
-
             add_from_default_info(
                 content_map,
                 file_deps,
@@ -318,7 +316,6 @@ def add_from_default_info(
 
     # Auto-detect the executable so we can set its mode.
     the_executable = get_my_executable(src)
-    file_deps.append(src[DefaultInfo].files)
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
         d_path = dest_path(f, data_path, data_path_without_prefix)
@@ -357,22 +354,21 @@ def get_my_executable(src):
     Returns:
       File or None.
     """
-    the_executable = None  # The file which is the actual executable.
-    if DefaultInfo in src:
-        di = src[DefaultInfo]
-        # XXX print(ctx.label, dir(di))
-        if hasattr(di, "files_to_run"):
-            ftr = di.files_to_run
-            # The docs lead you to believe that you could look at
-            # files_to_run.executable, but that is filled out even for
-            # source files.
-            # XXX print(dir(ftr))
-            if hasattr(ftr, "runfiles_manifest"):
-                # XXX print(ftr.executable, ftr.runfiles_manifest)
-                if ftr.runfiles_manifest:
-                    # XX print("Got an manifest executable", ftr.executable)
-                    the_executable = ftr.executable
-    return the_executable
+    if not DefaultInfo in src:
+        return None
+    di = src[DefaultInfo]
+    if not hasattr(di, "files_to_run"):
+        return None
+    ftr = di.files_to_run
+    # The docs lead you to believe that you could look at
+    # files_to_run.executable, but that is filled out even for source
+    # files.
+    if not hasattr(ftr, "runfiles_manifest"):
+        return None
+    if ftr.runfiles_manifest:
+        # DEBUG print("Got an manifest executable", ftr.executable)
+        return ftr.executable
+    return None
 
 
 def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):

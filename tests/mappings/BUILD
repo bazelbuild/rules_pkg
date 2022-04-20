@@ -134,8 +134,17 @@ write_content_manifest(
     ],
 )
 
+alias(
+   name = "executable_test_expected",
+   actual = select({
+      "@platforms//os:windows": "executable.manifest.windows.golden",
+      "//conditions:default": "executable.manifest.golden",
+   }),
+)
+
 manifest_golden_test(
     name = "executable_test",
+    #expected = ":executable_test_expected",
     expected = "executable.manifest.golden",
     target = "executable_manifest",
 )

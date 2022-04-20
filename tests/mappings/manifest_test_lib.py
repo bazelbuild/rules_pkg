@@ -30,12 +30,12 @@ class ContentManifestTest(unittest.TestCase):
         expected: The path to the content we expect.
         got: The path to the content we got.
     """
-    e_file = ContentManifestTest.run_files.Rlocation(
-        'rules_pkg/tests/mappings/' + expected)
-    with open(e_file, mode='rb') as e_fp:
+    #e_file = ContentManifestTest.run_files.Rlocation(
+    #    'rules_pkg/tests/mappings/' + expected)
+    with open(expected, mode='rb') as e_fp:
       expected = json.load(e_fp)
-    g_file = ContentManifestTest.run_files.Rlocation(
-        'rules_pkg/tests/mappings/' + got)
-    with open(g_file, mode='rb') as g_fp:
+    #g_file = ContentManifestTest.run_files.Rlocation(
+    #    'rules_pkg/tests/mappings/' + got)
+    with open(got, mode='rb') as g_fp:
       got = json.load(g_fp)
     self.assertEqual(expected, got)

@@ -31,6 +31,13 @@ licenses(["notice"])
 
 exports_files(glob(["testdata/**"]))
 
+#XXXXconfig_setting(
+#    name = "windows",
+#    constraint_values = ["@platforms//os:windows"],
+#    visibility = ["//visibility:public"],
+#)
+
+
 filegroup(
     name = "loremipsum_txt",
     srcs = [
