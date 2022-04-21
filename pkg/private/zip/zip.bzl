@@ -19,7 +19,11 @@ load(
     "PackageArtifactInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files")
+load(
+    "//pkg/private:util.bzl",
+    "setup_output_files",
+    "substitute_package_variables",
+)
 load(
     "//pkg/private:pkg_files.bzl",
     "add_label_list",
@@ -33,7 +37,7 @@ def _pkg_zip_impl(ctx):
 
     args = ctx.actions.args()
     args.add("-o", output_file.path)
-    args.add("-d", ctx.attr.package_dir)
+    args.add("-d", substitute_package_variables(ctx, ctx.attr.package_dir))
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
     inputs = []

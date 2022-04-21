@@ -59,6 +59,12 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
         {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
+  def test_package_dir_substitution(self):
+    self.assertZipFileContent("test_zip_package_dir_substitution.zip", [
+        {"filename": "level1/some_value/level3/hello.txt", "crc": HELLO_CRC},
+        {"filename": "level1/some_value/level3/loremipsum.txt", "crc": LOREM_CRC},
+    ])
+
   def test_zip_strip_prefix_empty(self):
     self.assertZipFileContent("test-zip-strip_prefix-empty.zip", [
         {"filename": "loremipsum.txt", "crc": LOREM_CRC},
