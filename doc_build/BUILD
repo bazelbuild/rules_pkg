@@ -115,21 +115,10 @@ bzl_library(
     name = "rules_pkg_lib",
     srcs = [
         "//:version.bzl",
-        "//pkg:mappings.bzl",
-        "//pkg:package_variables.bzl",
-        "//pkg:path.bzl",
-        "//pkg:providers.bzl",
-        "//pkg:rpm.bzl",
-        "//pkg:rpm_pfg.bzl",
-        "//pkg/legacy:rpm.bzl",
-        "//pkg/private:pkg_files.bzl",
-        "//pkg/private:util.bzl",
-        "//pkg/private/deb:deb.bzl",
-        "//pkg/private/tar:tar.bzl",
-        "//pkg/private/zip:zip.bzl",
+        "//pkg:bzl_srcs",
         "@bazel_skylib//lib:paths",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_binary(

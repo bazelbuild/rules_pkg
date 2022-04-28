@@ -64,6 +64,7 @@ _DestFile = provider(
 
 def _check_dest(content_map, dest, src, origin):
     old_entry = content_map.get(dest)
+
     # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob
@@ -87,7 +88,7 @@ def _merge_attributes(info, mode, user, group):
 def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
-        dest = dir.strip('/')
+        dest = dir.strip("/")
         _check_dest(content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
@@ -101,7 +102,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
 def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
-        dest = filename.strip('/')
+        dest = filename.strip("/")
         _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
@@ -133,11 +134,13 @@ def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode
     for psl in pkg_filegroup_info.pkg_symlinks:
         _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
 
-def process_src(content_map, src, origin, default_mode, default_user, default_group):
+def process_src(content_map, files, src, origin, default_mode, default_user,
+                default_group):
     """Add an entry to the content map.
 
     Args:
-      content_map: The content map
+      content_map: in/out The content map
+      files: in/out list of file Depsets represented in the map
       src: Source Package*Info object
       origin: The rule instance adding this entry
       default_mode: fallback mode to use for Package*Info elements without mode
@@ -147,15 +150,19 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
     Returns:
       True if src was a Package*Info and added to content_map.
     """
+    # Gather the files for every srcs entry here, even if it is not from
+    # a pkg_* rule.
+    if DefaultInfo in src:
+        files.append(src[DefaultInfo].files)
     found_info = False
     if PackageFilesInfo in src:
         _process_pkg_files(
             content_map,
             src[PackageFilesInfo],
             origin,
-            default_mode,
-            default_user,
-            default_group,
+            default_mode = default_mode,
+            default_user = default_user,
+            default_group = default_group,
         )
         found_info = True
     if PackageFilegroupInfo in src:
@@ -163,9 +170,9 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             content_map,
             src[PackageFilegroupInfo],
             origin,
-            default_mode,
-            default_user,
-            default_group,
+            default_mode = default_mode,
+            default_user = default_user,
+            default_group = default_group,
         )
         found_info = True
     if PackageSymlinkInfo in src:
@@ -173,9 +180,9 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             content_map,
             src[PackageSymlinkInfo],
             origin,
-            default_mode,
-            default_user,
-            default_group,
+            default_mode = default_mode,
+            default_user = default_user,
+            default_group = default_group,
         )
         found_info = True
     if PackageDirsInfo in src:
@@ -183,14 +190,14 @@ def process_src(content_map, src, origin, default_mode, default_user, default_gr
             content_map,
             src[PackageDirsInfo],
             origin,
-            "0555",
-            default_user,
-            default_group,
+            default_mode = "0555",
+            default_user = default_user,
+            default_group = default_group,
         )
         found_info = True
     return found_info
 
-def add_directory(content_map, dir_path, origin, mode=None, user=None, group=None):
+def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None):
     """Add an empty directory to the content map.
 
     Args:
@@ -210,7 +217,7 @@ def add_directory(content_map, dir_path, origin, mode=None, user=None, group=Non
         group = group,
     )
 
-def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=None):
+def add_empty_file(content_map, dest_path, origin, mode = None, user = None, group = None):
     """Add a single file to the content map.
 
     Args:
@@ -221,7 +228,7 @@ def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=N
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    dest = dest_path.strip('/')
+    dest = dest_path.strip("/")
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
@@ -232,14 +239,24 @@ def add_empty_file(content_map, dest_path, origin, mode=None, user=None, group=N
         group = group,
     )
 
-def add_label_list(ctx, content_map, file_deps, srcs):
+def add_label_list(
+        ctx,
+        content_map,
+        file_deps,
+        srcs,
+        default_mode = None,
+        default_user = None,
+        default_group = None):
     """Helper method to add a list of labels (typically 'srcs') to a content_map.
 
     Args:
       ctx: rule context.
       content_map: (r/w) The content map to update.
-      file_deps: (r/w) The list of File objects srcs depend on.
+      file_deps: (r/w) The list of file Depsets that srcs depend on.
       srcs: List of source objects.
+      default_mode: fallback mode to use for Package*Info elements without mode
+      default_user: fallback user to use for Package*Info elements without user
+      default_group: fallback mode to use for Package*Info elements without group
     """
 
     # Compute the relative path
@@ -250,29 +267,40 @@ def add_label_list(ctx, content_map, file_deps, srcs):
     data_path_without_prefix = compute_data_path(ctx, ".")
 
     for src in srcs:
-        # Gather the files for every srcs entry here, even if it is not from
-        # a pkg_* rule.
-        if DefaultInfo in src:
-            file_deps.append(src[DefaultInfo].files)
         if not process_src(
             content_map,
-            src,
-            src.label,
-            default_mode = None,
-            default_user = None,
-            default_group = None,
+            file_deps,
+            src = src,
+            origin = src.label,
+            default_mode = default_mode,
+            default_user = default_user,
+            default_group = default_group,
         ):
             # Add in the files of srcs which are not pkg_* types
-            for f in src.files.to_list():
+            if not DefaultInfo in src:
+                continue
+            for f in src[DefaultInfo].files.to_list():
                 d_path = dest_path(f, data_path, data_path_without_prefix)
                 if f.is_directory:
-                    # Tree artifacts need a name, but the name is never really
-                    # the important part. The likely behavior people want is
-                    # just the content, so we strip the directory name.
-                    dest = "/".join(d_path.split("/")[0:-1])
-                    add_tree_artifact(content_map, dest, f, src.label)
+                    add_tree_artifact(
+                        content_map,
+                        d_path,
+                        f,
+                        origin = src.label,
+                        mode = default_mode,
+                        user = default_user,
+                        group = default_group,
+                    )
                 else:
-                    add_single_file(content_map, d_path, f, src.label)
+                    add_single_file(
+                        content_map,
+                        d_path,
+                        f,
+                        origin = src.label,
+                        mode = default_mode,
+                        user = default_user,
+                        group = default_group,
+                    )
 
 def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
@@ -286,7 +314,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
     """
-    dest = dest_path.strip('/')
+    dest = dest_path.strip("/")
     _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
@@ -341,7 +369,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         group = group,
     )
 
-def write_manifest(ctx, manifest_file, content_map, use_short_path=False):
+def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
     """Write a content map to a manifest file.
 
     The format of this file is currently undocumented, as it is a private
@@ -359,9 +387,11 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path=False):
     ctx.actions.write(
         manifest_file,
         "[\n" + ",\n".join(
-            [_encode_manifest_entry(dst, content_map[dst], use_short_path)
-             for dst in sorted(content_map.keys())]
-            ) + "\n]\n"
+            [
+                _encode_manifest_entry(dst, content_map[dst], use_short_path)
+                for dst in sorted(content_map.keys())
+            ],
+        ) + "\n]\n",
     )
 
 def _encode_manifest_entry(dest, df, use_short_path):
