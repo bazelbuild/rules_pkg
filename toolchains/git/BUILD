@@ -38,7 +38,7 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
-# Expose the availabilty of an actual git as a config_setting, so we can
+# Expose the availability of an actual git as a config_setting, so we can
 # select() on it.
 config_setting(
     name = "have_git",
@@ -48,7 +48,7 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-# Expose the availabilty of an actual git as a feature flag, so we can
+# Expose the availability of an actual git as a feature flag, so we can
 # create a config_setting from it.
 is_git_available(
     name = "is_git_available",

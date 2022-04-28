@@ -48,10 +48,6 @@ win_tests: &win_tests
     # rpmbuild(8) is not supported on Windows
     - "-//tests/rpm/..."
     - "-//pkg/legacy/tests/rpm/..."
-    # RPM-related, but not applicable to Windows given the above.  Also relies
-    # on a Bourne Shell.  On other platforms, this exercises a dummy "rpmbuild",
-    # so it's OK to keep around.
-    - "-//tests:make_rpm_test"
 
 #
 # Commmon features by platform

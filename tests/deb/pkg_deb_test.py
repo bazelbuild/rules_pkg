@@ -33,7 +33,7 @@ class DebInspect(object):
     self.deb_version = None
     self.data = None
     self.control = None
-    with archive.SimpleArFile(deb_file) as f:
+    with archive.SimpleArReader(deb_file) as f:
       info = f.next()
       while info:
         if info.filename == 'debian-binary':

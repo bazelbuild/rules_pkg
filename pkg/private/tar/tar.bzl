@@ -117,14 +117,11 @@ def _pkg_tar_impl(ctx):
 
     # Start with all the pkg_* inputs
     for src in ctx.attr.srcs:
-        # Gather the files for every srcs entry here, even if it is not from
-        # a pkg_* rule.
-        if DefaultInfo in src:
-            file_deps.append(src[DefaultInfo].files)
         if not process_src(
             content_map,
-            src,
-            src.label,
+            file_deps,
+            src = src,
+            origin = src.label,
             default_mode = None,
             default_user = None,
             default_group = None,

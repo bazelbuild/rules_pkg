@@ -1,3 +1,70 @@
+# Release 0.7.0
+
+## New Features
+- Make the .bzl files available as input to a bzl_library (#567)
+- Allow pkg_files.strip_prefix to work on tree artifact without having to use `renames`.
+- Add @rules_license style license declarations (#508)
+- Better looking [documentation](https://bazelbuild.github.io/rules_pkg/0.7.0/reference.html)
+- Add `artifact_name` to `print_relnotes` (#541)
+- pkg_{deb,rpm,tar,zip} are now available via individual .bzl files, so you
+  only need to load what you actually need.
+- Add tree artifact support to pkg_zip (#537)
+- symlink support to pkg_zip (#499)
+
+## Potentially breaking changes
+
+- Get rid of the long deprecated archive_name and extension from pkg_zip. (#552)
+  - Make 'out' work in a reasonable way. Fixes #414
+  - Partial fix for #284
+ 
+## Bug fixes:
+
+- Only allow .deb Description to be multiline. (#573)
+  Fixes: https://github.com/bazelbuild/rules_pkg/issues/572
+- Fix pkg_tar to not add the ./ to the prefix of every member. (#554). Closes: #531
+- Stop stripping tree artifact root name in pkg_tar and pkg_zip. (#555). Closes #404
+- Fix RPM source date epoch for rpmbuild 4.17+ (#529)
+
+
+## Contributors
+
+Thanks to: Andrew Psaltis, Gunnar Wagenknecht, and Sven Mueller
+for contributions to this release.
+
+
+# Release 0.6.0
+
+This revision requires Bazel 4.x or greater
+
+## Visible changes
+- Enable nested pkg_filegroups (#420)
+- Restore `include_runfiles` support for pkg_tar. (#398)
+- Change the Debian example to reflect standard Debian naming. (#389)
+- More support for TreeArtifacts in PackageFilesInfo (#421)
+- Improved docs
+  - Provide on https://bazelbuild.github.io/rules_pkg/0.6.0/reference.html
+  - Provide an example for using the new packaging rules (#375)
+  - Create "where is my output" example (#432)
+  - post process docs to work around stardoc bugs.
+- eliminate need to load all rules if you only need one.
+
+## Bug fixes:
+- [pkg_deb] fix computation of changes file file name (#418)
+- Fix use of name parameter to pkg_tar (#469)
+- Fix missing `%dir` RPM filetag when `PackageDirsInfo` is provided (#473)
+- pkg_rpm: Don't have source_date_epoch apply by default; test modularity cleanup (#487)
+
+## Internal changes
+- Remove legacy command line options to tar builder. Everything is now in the manifest.
+- Unify template files names as .tpl (#383)
+- Modularize manifest python code (#384)
+- many code refactorings to make tests more isolated and allow more ownership by domain
+
+## Contributors
+Thanks to: Andrew Psaltis, Grant Monroe, Gunnar Wagenknecht, Ken Conley, Motiejus Jakštys, and Ryan Beasley
+for contributions to this release.
+
+
 # Release 0.5.1
 
 ## New features

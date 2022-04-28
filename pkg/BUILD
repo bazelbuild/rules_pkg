@@ -14,6 +14,7 @@
 
 # -*- coding: utf-8 -*-
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_pkg//pkg/private:make_starlark_library.bzl", "starlark_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -37,13 +38,29 @@ filegroup(
     srcs = glob([
         "*.bzl",
         "*.py",
-        "*.md",
     ]) + [
         "BUILD",
         "//pkg/legacy:standard_package",
         "//pkg/rpm:standard_package",
     ],
-    visibility = ["//distro:__pkg__"],
+    visibility = [
+        "//distro:__pkg__",
+        "//pkg:__pkg__",
+    ],
+)
+
+starlark_library(
+    name = "bzl_srcs",
+    srcs = [
+        ":standard_package",
+        "//pkg:pkg.bzl",
+        "//pkg/private:standard_package",
+        "//pkg/private/deb:standard_package",
+        "//pkg/private/tar:standard_package",
+        "//pkg/private/zip:standard_package",
+        "//pkg/releasing:standard_package",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 # Used by pkg_rpm in rpm.bzl.
@@ -58,8 +75,8 @@ py_binary(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/private:archive",
         "//pkg:make_rpm_lib",
+        "//pkg/private:archive",
     ],
 )
 
