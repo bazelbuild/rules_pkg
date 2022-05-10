@@ -14,6 +14,7 @@
 
 import datetime
 import filecmp
+import os
 import unittest
 import zipfile
 
@@ -31,12 +32,24 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     self.assertZipFileContent("test_zip_empty.zip", [])
 
   def test_basic(self):
-    self.assertZipFileContent("test_zip_basic.zip", [
-        {"filename": "foodir/", "isdir": True, "attr": 0o711},
-        {"filename": "hello.txt", "crc": HELLO_CRC},
-        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-        {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
-    ])
+    if os.name == "nt":
+      expect = [
+          {"filename": "an_executable.exe", "attr": 0o755},
+          {"filename": "foodir/", "isdir": True, "attr": 0o711},
+          {"filename": "hello.txt", "crc": HELLO_CRC},
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
+      ]
+    else:
+      expect = [
+          {"filename": "an_executable", "attr": 0o755},
+          {"filename": "foodir/", "isdir": True, "attr": 0o711},
+          {"filename": "hello.txt", "crc": HELLO_CRC},
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
+      ]
+
+    self.assertZipFileContent("test_zip_basic.zip", expect)
 
   def test_timestamp(self):
     self.assertZipFileContent("test_zip_timestamp.zip", [

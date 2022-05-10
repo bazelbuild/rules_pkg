@@ -946,8 +946,8 @@ def _gen_manifest_test_main_impl(ctx):
         template = ctx.file._template,
         output = ctx.outputs.out,
         substitutions = {
-            "${EXPECTED}": ctx.attr.expected,
-            "${TARGET}": ctx.attr.target,
+            "${EXPECTED}": ctx.files.expected[0].short_path,
+            "${TARGET}": ctx.files.target[0].short_path,
             "${TEST_NAME}": ctx.attr.test_name,
         },
     )
@@ -959,8 +959,8 @@ _gen_manifest_test_main = rule(
     implementation = _gen_manifest_test_main_impl,
     attrs = {
         "out": attr.output(mandatory = True),
-        "expected": attr.string(mandatory = True),
-        "target": attr.string(mandatory = True),
+        "expected": attr.label(mandatory = True, allow_single_file = True),
+        "target": attr.label(mandatory = True, allow_single_file = True),
         "test_name": attr.string(mandatory = True),
         "_template": attr.label(
             default = Label("//tests/mappings:manifest_test_main.py.tpl"),
@@ -991,6 +991,7 @@ def manifest_golden_test(name, target, expected):
         name = name,
         srcs = [":" + name + ".py"],
         data = [
+            ":" + target,
             ":" + target + ".manifest",
             expected,
         ],
