@@ -72,10 +72,10 @@ class ZipContentsTestBase(ZipTest):
         self.assertEqual(info.date_time, ts)
         if "isdir" in expected:
           expect_dir_bits = UNIX_DIR_BIT << 16 | MSDOS_DIR_BIT
-          self.assertEqual(info.external_attr & expect_dir_bits,
-                           expect_dir_bits)
-          self.assertEqual((info.external_attr >> 16) & UNIX_RWX_BITS,
-                           expected.get("attr", 0o755))
+          self.assertEqual(oct(info.external_attr & expect_dir_bits),
+                           oct(expect_dir_bits))
+          self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
+                           oct(expected.get("attr", 0o755)))
         else:
-          self.assertEqual((info.external_attr >> 16) & UNIX_RWX_BITS,
-                           expected.get("attr", 0o555))
+          self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
+                           oct(expected.get("attr", 0o555)))
