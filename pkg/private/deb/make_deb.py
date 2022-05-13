@@ -348,6 +348,10 @@ def main():
   parser.add_argument(
       '--triggers',
       help='The triggers file (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--stamp',
+      action='append',
+      help='The stamp variables (prefix with @ to provide a path).')
   # see
   # https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
   parser.add_argument(
@@ -355,6 +359,11 @@ def main():
       help='List of conffiles (prefix item with @ to provide a path)')
   AddControlFlags(parser)
   options = parser.parse_args()
+
+  stamp = dict()
+  if options.stamp:
+      for stamp_vars in options.stamp:
+          stamp.update(helpers.ParseStamp(helpers.GetFlagValue(stamp_vars)))
 
   CreateDeb(
       options.output,
@@ -368,8 +377,8 @@ def main():
       triggers=helpers.GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
       package=options.package,
-      version=helpers.GetFlagValue(options.version),
-      description=helpers.GetFlagValue(options.description),
+      version=helpers.GetFlagValue(options.version, stamp=stamp),
+      description=helpers.GetFlagValue(options.description, stamp=stamp),
       maintainer=helpers.GetFlagValue(options.maintainer),
       section=options.section,
       architecture=helpers.GetFlagValue(options.architecture),
@@ -393,7 +402,7 @@ def main():
       architecture=options.architecture,
       description=helpers.GetFlagValue(options.description),
       maintainer=helpers.GetFlagValue(options.maintainer), package=options.package,
-      version=helpers.GetFlagValue(options.version), section=options.section,
+      version=helpers.GetFlagValue(options.version, stamp=stamp), section=options.section,
       priority=options.priority, distribution=options.distribution,
       urgency=options.urgency)
 
