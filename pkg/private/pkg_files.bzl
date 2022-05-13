@@ -289,7 +289,6 @@ def add_label_list(
             )
 
 
-
 def add_from_default_info(
         content_map,
         file_deps,
@@ -345,6 +344,9 @@ def add_from_default_info(
 def get_my_executable(src):
     """If a target represents an executable, return its file handle.
 
+    Args:
+      src: A source dependency.
+    """
     The roundabout hackery here is because there is no good way to see if
     DefaultInfo was created with an executable in it.
     See: https://github.com/bazelbuild/bazel/issues/14811
