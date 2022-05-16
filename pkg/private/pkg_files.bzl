@@ -289,7 +289,6 @@ def add_label_list(
             )
 
 
-
 def add_from_default_info(
         content_map,
         file_deps,
@@ -349,7 +348,7 @@ def get_my_executable(src):
     DefaultInfo was created with an executable in it.
     See: https://github.com/bazelbuild/bazel/issues/14811
 
-    Inputs:
+    Args:
       src: A label.
     Returns:
       File or None.
