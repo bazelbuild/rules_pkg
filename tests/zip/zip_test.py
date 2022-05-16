@@ -34,19 +34,19 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
   def test_basic(self):
     if os.name == "nt":
       expect = [
-          {"filename": "an_executable.exe", "attr": 0o755},
+          {"filename": "an_executable.exe", "isexe": True},
           {"filename": "foodir/", "isdir": True, "attr": 0o711},
           {"filename": "hello.txt", "crc": HELLO_CRC},
           {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-          {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
+          {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
       ]
     else:
       expect = [
-          {"filename": "an_executable", "attr": 0o755},
+          {"filename": "an_executable", "isexe": True},
           {"filename": "foodir/", "isdir": True, "attr": 0o711},
           {"filename": "hello.txt", "crc": HELLO_CRC},
           {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-          {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
+          {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
       ]
 
     self.assertZipFileContent("test_zip_basic.zip", expect)
