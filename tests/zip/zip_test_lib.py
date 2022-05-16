@@ -24,6 +24,7 @@ from bazel_tools.tools.python.runfiles import runfiles
 UNIX_DIR_BIT = 0o40000
 MSDOS_DIR_BIT = 0x10
 UNIX_RWX_BITS = 0o777
+UNIX_RX_BITS = 0o555
 
 # The ZIP epoch date: (1980, 1, 1, 0, 0, 0)
 _ZIP_EPOCH_DT = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -76,6 +77,13 @@ class ZipContentsTestBase(ZipTest):
                            oct(expect_dir_bits))
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
                            oct(expected.get("attr", 0o755)))
-        else:
+        if "isexe" in expected:
+          got_mode = (info.external_attr >> 16) & UNIX_RX_BITS
+          self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
+
+        if "attr" in expected:
+          attr = expected.get("attr")
+          if "attr_mask" in expected:
+            attr &= expected.get("attr_mask")
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
-                           oct(expected.get("attr", 0o555)))
+                           oct(attr))
