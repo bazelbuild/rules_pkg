@@ -77,13 +77,18 @@ class ZipContentsTestBase(ZipTest):
                            oct(expect_dir_bits))
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
                            oct(expected.get("attr", 0o755)))
-        if "isexe" in expected:
+        elif "isexe" in expected:
           got_mode = (info.external_attr >> 16) & UNIX_RX_BITS
           self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
 
-        if "attr" in expected:
-          attr = expected.get("attr")
-          if "attr_mask" in expected:
-            attr &= expected.get("attr_mask")
+        else:
+          if "attr" in expected:
+            attr = expected.get("attr")
+            if "attr_mask" in expected:
+              attr &= expected.get("attr_mask")
+          else:
+            # I would argue this is a dumb choice, but it matchs the
+            # legacy rule implementation.
+            attr = 0o555
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
                            oct(attr))
