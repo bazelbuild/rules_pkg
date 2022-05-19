@@ -22,7 +22,10 @@ load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
 
-package(default_applicable_licenses = ["//:license"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//tests:__subpackages__"],
+)
 
 licenses(["notice"])
 
@@ -64,6 +67,11 @@ py_test(
     data = ["//pkg:path.bzl"],
     python_version = "PY3",
     srcs_version = "PY3",
+)
+
+cc_binary(
+  name = "an_executable",
+  srcs = ["foo.cc"],
 )
 
 py_test(
