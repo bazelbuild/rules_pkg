@@ -15,6 +15,7 @@
 
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:zip.bzl", "pkg_zip")
+load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
@@ -94,6 +95,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -105,6 +107,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -148,6 +151,7 @@ pkg_zip(
     srcs = [
         ":dirs",
         ":link",
+        "//tests:an_executable",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -209,6 +213,21 @@ filegroup(
     "/abc/def/",
 ])]
 
+my_package_naming(
+    name = "my_package_variables",
+    label = "some_value",
+)
+
+pkg_zip(
+    name = "test_zip_package_dir_substitution",
+    srcs = [
+        "//tests:testdata/hello.txt",
+        "//tests:testdata/loremipsum.txt",
+    ],
+    package_dir = "/level1/{label}/level3",
+    package_variables = ":my_package_variables",
+)
+
 py_test(
     name = "zip_test",
     srcs = [
@@ -222,6 +241,7 @@ py_test(
         ":test_zip_basic.zip",
         ":test_zip_empty.zip",
         ":test_zip_package_dir0.zip",
+        ":test_zip_package_dir_substitution.zip",
         ":test_zip_permissions.zip",
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",

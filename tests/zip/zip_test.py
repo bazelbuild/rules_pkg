@@ -14,6 +14,7 @@
 
 import datetime
 import filecmp
+import os
 import unittest
 import zipfile
 
@@ -31,12 +32,24 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     self.assertZipFileContent("test_zip_empty.zip", [])
 
   def test_basic(self):
-    self.assertZipFileContent("test_zip_basic.zip", [
-        {"filename": "foodir/", "isdir": True, "attr": 0o711},
-        {"filename": "hello.txt", "crc": HELLO_CRC},
-        {"filename": "loremipsum.txt", "crc": LOREM_CRC},
-        {"filename": "usr/bin/foo", "attr": 0o555, "data": "/usr/local/foo/foo.real"},
-    ])
+    if os.name == "nt":
+      expect = [
+          {"filename": "an_executable.exe", "isexe": True},
+          {"filename": "foodir/", "isdir": True, "attr": 0o711},
+          {"filename": "hello.txt", "crc": HELLO_CRC},
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
+      ]
+    else:
+      expect = [
+          {"filename": "an_executable", "isexe": True},
+          {"filename": "foodir/", "isdir": True, "attr": 0o711},
+          {"filename": "hello.txt", "crc": HELLO_CRC},
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
+      ]
+
+    self.assertZipFileContent("test_zip_basic.zip", expect)
 
   def test_timestamp(self):
     self.assertZipFileContent("test_zip_timestamp.zip", [
@@ -57,6 +70,12 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     self.assertZipFileContent("test_zip_package_dir0.zip", [
         {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
         {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
+    ])
+
+  def test_package_dir_substitution(self):
+    self.assertZipFileContent("test_zip_package_dir_substitution.zip", [
+        {"filename": "level1/some_value/level3/hello.txt", "crc": HELLO_CRC},
+        {"filename": "level1/some_value/level3/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
   def test_zip_strip_prefix_empty(self):
