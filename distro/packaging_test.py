@@ -19,7 +19,7 @@ import subprocess
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from pkg.releasing import release_tools
+from rules_pkg.pkg.releasing import release_tools
 from distro import release_version
 
 _VERBOSE = True
@@ -31,7 +31,7 @@ class PackagingTest(unittest.TestCase):
   def setUp(self):
     self.data_files = runfiles.Create()
     self.source_repo = 'rules_pkg'
-    self.dest_repo = 'not_named_rules_pkg'
+    self.dest_repo = 'rules_pkg'
     self.version = release_version.RELEASE_VERSION
 
   def testBuild(self):

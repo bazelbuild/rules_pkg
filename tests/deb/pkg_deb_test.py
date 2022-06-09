@@ -23,7 +23,7 @@ import tarfile
 import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
-from pkg.private import archive
+from rules_pkg.pkg.private import archive
 
 
 class DebInspect(object):

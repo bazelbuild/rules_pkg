@@ -22,7 +22,7 @@ import stat
 import subprocess
 
 from rules_python.python.runfiles import runfiles
-from pkg.private import manifest
+from rules_pkg.pkg.private import manifest
 
 
 class PkgInstallTest(unittest.TestCase):

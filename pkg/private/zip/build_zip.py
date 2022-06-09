@@ -19,9 +19,9 @@ import json
 import os
 import zipfile
 
-from pkg.private import build_info
-from pkg.private import helpers
-from pkg.private import manifest
+from rules_pkg.pkg.private import build_info
+from rules_pkg.pkg.private import helpers
+from rules_pkg.pkg.private import manifest
 
 ZIP_EPOCH = 315532800
 
