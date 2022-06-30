@@ -125,10 +125,14 @@ def MakeDebianControlField(name, value, wrap=False):
   if isinstance(value, list):
     value = u', '.join(value)
   if wrap:
-    result += u' '.join(value.split('\n'))
-    result = textwrap.fill(result,
-                           break_on_hyphens=False,
-                           break_long_words=False)
+    paragraphs = []
+    for item in value.split('\n'):
+      item = item.strip()
+      if item == "": continue
+      paragraphs += [textwrap.fill(item,
+                                   break_on_hyphens=False,
+                                   break_long_words=False)]
+    result += u'\n'.join(paragraphs)
   else:
     result += value
   return result.replace(u'\n', u'\n ') + u'\n'
