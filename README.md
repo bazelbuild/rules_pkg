@@ -2,7 +2,7 @@
 
 Bazel rules for building tar, zip, deb, and rpm for packages.
 
-Latest version: 0.7.0 [Release Notes](https://github.com/bazelbuild/rules_pkg/releases/tag/0.7.0) /
+Latest version: 0.7.0 [Release Notes](https://github.com/bazelbuild/rules_pkg/releases/tag/0.7.0) (with `WORKSPACE` setup) /
 [Documentation](https://bazelbuild.github.io/rules_pkg/0.7.0/reference.html)
 
 Use rules-pkg-discuss@googlegroups.com for discussion.
