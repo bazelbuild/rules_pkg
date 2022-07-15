@@ -76,7 +76,7 @@ pkg_deb(
         "dep1",
         "dep2",
     ],
-    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é",
+    description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more",
     distribution = "trusty",
     maintainer = "soméone@somewhere.com",
     package = "fizzbuzz",
@@ -86,7 +86,7 @@ pkg_deb(
     templates = "templates",
     triggers = "deb_triggers",
     urgency = "low",
-    version = "test",
+    version = "4.5.6",
 )
 
 py_test(
@@ -108,6 +108,18 @@ py_test(
 
 package_naming_test(
     name = "naming_test",
-    expected_name = "fizzbuzz_test_all.deb",
+    expected_name = "fizzbuzz_4.5.6_all.deb",
     target_under_test = ":test_deb",
+)
+
+py_test(
+    name = "control_field_test",
+    size = "small",
+    srcs = [
+        "control_field_test.py",
+    ],
+    python_version = "PY3",
+    deps = [
+        "//pkg/private/deb:make_deb_lib",
+    ],
 )
