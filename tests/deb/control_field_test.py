@@ -34,12 +34,16 @@ class MakeControlFieldTest(unittest.TestCase):
     self.assertEqual(
         'Package: fizzbuzz\n',
         make_deb.MakeDebianControlField('Package', 'fizzbuzz'))
+
+  def test_simple_strip(self):
     self.assertEqual(
         'Package: fizzbuzz\n',
         make_deb.MakeDebianControlField('Package', ' fizzbuzz'))
     self.assertEqual(
         'Package: fizzbuzz\n',
         make_deb.MakeDebianControlField('Package', ' fizzbuzz '))
+
+  def test_simple_no_newline(self):
     with self.assertRaises(ValueError):
       make_deb.MakeDebianControlField('Package', ' fizz\nbuzz ')
 
@@ -53,15 +57,18 @@ class MakeControlFieldTest(unittest.TestCase):
         'Description: fizz\n buzz\n',
         make_deb.MakeDebianControlField(
             'Description', 'fizz\n buzz\n', is_multiline=True))
+
+  def test_multiline_add_required_space(self):
     self.assertEqual(
         'Description: fizz\n buzz\n',
         make_deb.MakeDebianControlField(
             'Description', 'fizz\nbuzz', is_multiline=True))
+
+  def test_multiline_add_trailing_newline(self):
     self.assertEqual(
         'Description: fizz\n buzz\n baz\n',
         make_deb.MakeDebianControlField(
             'Description', 'fizz\n buzz\n baz', is_multiline=True))
- 
 
 
 if __name__ == '__main__':

@@ -223,16 +223,25 @@ class PkgDebTest(unittest.TestCase):
         if content.find(field) < 0:
           self.fail('Missing template field: <%s> in <%s>' % (field, content))
 
+      # From the spec:
+      #   In a .changes file, the Description field contains a summary of the
+      #   descriptions for the packages being uploaded. For this case, the first
+      #   line of the field value (the part on the same line as Description:) is
+      #   always empty. It is a multiline field, with one line per package. Each
+      #   line is indented by one space and contains the name of a binary package,
+      #   a space, a hyphen (-), a space, and the short description line from that
+      #   package.
       d_expect = 'Description:\n fizzbuzz - toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
       d_start = content.find(d_expect)
       if d_start < 0:
         self.fail(
             'Could not find expected description (%s) in\n=====%s=====' %
             (d_expect, content))
+      # Check that the next line is the start of a new description, rather than
+      # a continuation.
       self.assertTrue(
           content[d_start + len(d_expect)].isupper(),
           'Description has unexpected characters at end (%s)' % content)
-
 
 
 if __name__ == '__main__':
