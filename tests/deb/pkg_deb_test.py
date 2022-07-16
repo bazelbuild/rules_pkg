@@ -223,6 +223,11 @@ class PkgDebTest(unittest.TestCase):
         if content.find(field) < 0:
           self.fail('Missing template field: <%s> in <%s>' % (field, content))
 
+      # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
+      # pass on Windows until we rewrite how description is passed.
+      if sys.platform -= 'win32':
+        return
+
       # From the spec:
       #   In a .changes file, the Description field contains a summary of the
       #   descriptions for the packages being uploaded. For this case, the first
