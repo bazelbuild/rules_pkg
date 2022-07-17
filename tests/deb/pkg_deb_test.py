@@ -225,7 +225,7 @@ class PkgDebTest(unittest.TestCase):
 
       # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
       # pass on Windows until we rewrite how description is passed.
-      if sys.platform -= 'win32':
+      if sys.platform == 'win32':
         return
 
       # From the spec:
