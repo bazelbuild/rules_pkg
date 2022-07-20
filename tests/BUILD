@@ -39,6 +39,15 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "file_and_link",
+    srcs = [
+        "BUILD",
+        "testdata/outer_BUILD",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 py_test(
     name = "archive_test",
     srcs = [

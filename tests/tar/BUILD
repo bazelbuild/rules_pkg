@@ -417,13 +417,14 @@ link_tree(
 pkg_tar(
     name = "relative_links_tar",
     srcs = [
-      ":node_modules",
+        ":node_modules",
+        "//tests:file_and_link",
     ],
 )
 
 pkg_tar(
     name = "relative_links_re_tar",
     deps = [
-      ":relative_links_tar",
+        ":relative_links_tar",
     ],
 )
