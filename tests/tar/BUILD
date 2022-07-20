@@ -18,11 +18,14 @@
 load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("//tests/util:defs.bzl", "directory", "fake_artifact")
+load("//tests/util:defs.bzl", "directory", "link_tree", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-package(default_applicable_licenses = ["//:license"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
 
 py_test(
     name = "tar_writer_test",
@@ -394,5 +397,33 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/bar@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        ".pnpm/foo@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
+        ".pnpm/qar@2.0.0/node_modules/qar": "STORE/qar",
+    },
+    package_dir = "node_modules",
+)
+
+pkg_tar(
+    name = "relative_links_tar",
+    srcs = [
+      ":node_modules",
+    ],
+)
+
+pkg_tar(
+    name = "relative_links_re_tar",
+    deps = [
+      ":relative_links_tar",
     ],
 )
