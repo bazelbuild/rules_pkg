@@ -15,6 +15,7 @@
 """Rules to aid testing"""
 
 load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
+load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@rules_python//python:defs.bzl", "py_binary")
 
@@ -172,4 +173,37 @@ generic_negative_test = analysistest.make(
         ),
     },
     expect_failure = True,
+)
+
+def _link_tree_impl(ctx):
+    # out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
+
+    links = []
+    prefix = ctx.attr.package_dir or ""
+    if prefix and not prefix.endswith('/'):
+        prefix = prefix + "/"
+    for link, target in ctx.attr.links.items():
+        print('  %s -> %s ' % (link, target))
+        links.append(
+            (PackageSymlinkInfo(destination = prefix + link, target = target),
+             ctx.label))
+    return [PackageFilegroupInfo(pkg_symlinks = links)]
+
+link_tree = rule(
+    doc = """Helper rule to create a lot of fake symlinks.
+
+The inspiration is to create test data for the kinds of layouts needed by
+nodejs.  See. https://pnpm.io/symlinked-node-modules-structure
+    """,
+    implementation = _link_tree_impl,
+    attrs = {
+        "links": attr.string_dict(
+            doc = """Set of (virtual) links to create.
+
+The keys of links are paths to create.  The values are the target of the links.""",
+            mandatory = True,
+        ),
+        "package_dir": attr.string(doc = """Prefix to apply to all link paths."""),
+    },
+    provides = [PackageFilegroupInfo],
 )
