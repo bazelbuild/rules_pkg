@@ -36,9 +36,13 @@ for a in rest_args_iter:
 os.makedirs(dirname, exist_ok=True)
 
 for fname, contents in files_contents_map.items():
+    path = os.path.join(dirname, fname)
     os.makedirs(
-        os.path.join(dirname, os.path.dirname(fname)),
+        os.path.dirname(path),
         exist_ok=True,
     )
-    with open(os.path.join(dirname, fname), 'w') as fh:
-        fh.write(contents)
+    if contents.startswith('@@'):
+        os.symlink(contents[2:], path)
+    else:
+        with open(path, 'w') as fh:
+            fh.write(contents)

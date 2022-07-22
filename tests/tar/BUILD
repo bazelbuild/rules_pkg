@@ -405,19 +405,36 @@ link_tree(
     links = {
         "foo": ".pnpm/foo@1.0.0/node_modules/foo",
         ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
-        ".pnpm/bar@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
         ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
         ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
-        ".pnpm/foo@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
-        ".pnpm/qar@2.0.0/node_modules/qar": "STORE/qar",
     },
     package_dir = "node_modules",
 )
 
+directory(
+    name = "tree_artifact_with_links",
+    contents = "hello there",
+    filenames = [
+        "foo/hello.txt",
+        "foo/bar/baz",
+    ],
+    links = {
+        "foo/bar/hello":  "../hello.txt",
+        "foo/bar/alt_baz":  "baz",
+        "foo/alt_baz":  "bar/baz",
+    },
+)
+
+
+# This target has symlinks 3 ways.
+# - mklinks rules.
+# - source files that are symlinks
+# - tree artifacts
 pkg_tar(
     name = "relative_links_tar",
     srcs = [
         ":node_modules",
+        ":tree_artifact_with_links",
         "//tests:file_and_link",
     ],
 )
