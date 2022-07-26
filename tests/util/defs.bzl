@@ -134,10 +134,11 @@ This is intended only for testing the manifest creation features.""",
 )
 
 def write_content_manifest(name, srcs, **kwargs):
+    use_short_path = kwargs.pop("use_short_path", True)
     _write_content_manifest(
         name = name,
         srcs = srcs,
-        use_short_path = True,
+        use_short_path = use_short_path,
         out = name + ".manifest",
         **kwargs,
     )

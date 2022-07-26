@@ -340,8 +340,8 @@ def add_from_default_info(
             fmode = "0755" if f == the_executable else default_mode
             add_single_file(
                 content_map,
-                d_path,
-                f,
+                dest_path = d_path,
+                src = f,
                 origin = src.label,
                 mode = fmode,
                 user = default_user,
