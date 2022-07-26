@@ -1,5 +1,5 @@
 [
-[0,"an_executable.exe","tests/an_executable.exe","0755",null,null]
+[0,"an_executable.exe","tests/an_executable.exe","0755",null,null],
 [0,"an_executable.runfiles/tests/BUILD","tests/BUILD","",null,null],
-[0,"an_executable.runfiles/tests/an_executable.exe","tests/an_executable.exe","0755",null,null],
+[0,"an_executable.runfiles/tests/an_executable.exe","tests/an_executable.exe","0755",null,null]
 ]
