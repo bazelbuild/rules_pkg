@@ -132,6 +132,7 @@ write_content_manifest(
     srcs = [
         "//tests:an_executable",
     ],
+    include_runfiles = True,
 )
 
 alias(

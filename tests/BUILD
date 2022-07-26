@@ -70,8 +70,9 @@ py_test(
 )
 
 cc_binary(
-  name = "an_executable",
-  srcs = ["foo.cc"],
+    name = "an_executable",
+    srcs = ["foo.cc"],
+    data = ["BUILD"],
 )
 
 py_test(

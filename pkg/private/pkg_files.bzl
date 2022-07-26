@@ -259,6 +259,11 @@ def add_label_list(
       default_group: fallback mode to use for Package*Info elements without group
     """
 
+    if hasattr(ctx.attr, "include_runfiles"):
+        include_runfiles = ctx.attr.include_runfiles
+    else:
+        include_runfiles = False
+
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
@@ -286,6 +291,7 @@ def add_label_list(
                 default_mode = default_mode,
                 default_user = default_user,
                 default_group = default_group,
+                include_runfiles = include_runfiles,
             )
 
 
@@ -297,7 +303,8 @@ def add_from_default_info(
         data_path_without_prefix,
         default_mode = None,
         default_user = None,
-        default_group = None):
+        default_group = None,
+        include_runfiles = False):
     """Helper method to add the DefaultInfo of a target to a content_map.
 
     Args:
@@ -309,6 +316,7 @@ def add_from_default_info(
       default_mode: fallback mode to use for Package*Info elements without mode
       default_user: fallback user to use for Package*Info elements without user
       default_group: fallback mode to use for Package*Info elements without group
+      include_runfiles: Include runfiles
     """
     if not DefaultInfo in src:
         return
@@ -340,6 +348,24 @@ def add_from_default_info(
                 group = default_group,
             )
 
+    # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map
+    # for all the explicitly named targets in srcs
+    if include_runfiles:
+        runfiles = src[DefaultInfo].default_runfiles
+        if runfiles:
+            base_path = d_path + '.runfiles'
+            for rf in runfiles.files.to_list():
+               dest = base_path + '/' + rf.short_path
+               fmode = "0755" if rf == the_executable else default_mode
+               _check_dest(content_map, dest, rf, src.label)
+               content_map[dest] = _DestFile(
+                   src = rf,
+                   entry_type = ENTRY_IS_FILE,
+                   origin = src.label,
+                   mode = fmode,
+                   user = default_user,
+                   group = default_group,
+               )
 
 def get_my_executable(src):
     """If a target represents an executable, return its file handle.
