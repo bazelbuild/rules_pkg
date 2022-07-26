@@ -263,7 +263,6 @@ def add_label_list(
         include_runfiles = ctx.attr.include_runfiles
     else:
         include_runfiles = False
-
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
@@ -347,25 +346,22 @@ def add_from_default_info(
                 user = default_user,
                 group = default_group,
             )
-
-    # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map
-    # for all the explicitly named targets in srcs
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
         if runfiles:
             base_path = d_path + '.runfiles'
             for rf in runfiles.files.to_list():
-               dest = base_path + '/' + rf.short_path
-               fmode = "0755" if rf == the_executable else default_mode
-               _check_dest(content_map, dest, rf, src.label)
-               content_map[dest] = _DestFile(
-                   src = rf,
-                   entry_type = ENTRY_IS_FILE,
-                   origin = src.label,
-                   mode = fmode,
-                   user = default_user,
-                   group = default_group,
-               )
+                d_path = base_path + '/' + rf.short_path
+                fmode = "0755" if rf == the_executable else default_mode
+                _check_dest(content_map, d_path, rf, src.label)
+                content_map[d_path] = _DestFile(
+                    src = rf,
+                    entry_type = ENTRY_IS_FILE,
+                    origin = src.label,
+                    mode = fmode,
+                    user = default_user,
+                    group = default_group,
+                )
 
 def get_my_executable(src):
     """If a target represents an executable, return its file handle.
