@@ -5,7 +5,7 @@
 Most of the time, Bazel users do not need to know the path to the artifacts
 created for any given target. A notable exception is for users of packaging
 rules. You typically create an RPM or Debian packaged file for the explicit
-purpose of taking it from your machine and giving it to someon else.
+purpose of taking it from your machine and giving it to someone else.
 
 Users often create scripts to push `bazel build` outputs to other places and
 need to know the path to those outputs. This can be a challenge for rules which

@@ -30,7 +30,7 @@ load(
     "write_manifest",
 )
 
-_stamp_condition = str(Label("//pkg/private:private_stamp_detect"))
+_stamp_condition = Label("//pkg/private:private_stamp_detect")
 
 def _pkg_zip_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)

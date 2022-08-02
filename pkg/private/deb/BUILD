@@ -16,7 +16,7 @@
 All interfaces are subject to change at any time.
 """
 
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -50,6 +50,16 @@ py_binary(
     srcs = ["make_deb.py"],
     python_version = "PY3",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/private:helpers",
+    ],
+)
+
+py_library(
+    name = "make_deb_lib",
+    srcs = ["make_deb.py"],
+    srcs_version = "PY3",
+    visibility = ["//tests/deb:__pkg__"],
     deps = [
         "//pkg/private:helpers",
     ],
