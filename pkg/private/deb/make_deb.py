@@ -30,7 +30,7 @@ else:
 
 from pkg.private import helpers
 
-# list of debian fields : (name, mandatory, wrap[, default])
+# list of debian fields : (name, mandatory, is_multiline[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
 
 DEBIAN_FIELDS = [
@@ -117,21 +117,34 @@ def AddArFileEntry(fileobj, filename,
     fileobj.write(b'\n')  # 2-byte alignment padding
 
 
-def MakeDebianControlField(name, value, wrap=False):
-  """Add a field to a debian control file."""
-  result = name + ': '
+def MakeDebianControlField(name: str, value: str, is_multiline:bool=False) -> str:
+  """Add a field to a debian control file.
+
+  https://www.debian.org/doc/debian-policy/ch-controlfields.html#syntax-of-control-files
+
+  Args:
+    name: Control field name
+    value: Value for that
+  """
   if isinstance(value, bytes):
     value = value.decode('utf-8')
   if isinstance(value, list):
     value = u', '.join(value)
-  if wrap:
-    result += u' '.join(value.split('\n'))
-    result = textwrap.fill(result,
-                           break_on_hyphens=False,
-                           break_long_words=False)
-  else:
-    result += value
-  return result.replace(u'\n', u'\n ') + u'\n'
+  value = value.rstrip()
+  if not is_multiline:
+    value = value.strip()
+    if '\n' in value:
+      raise ValueError(
+          '\\n is not allowed in simple control fields (%s)' % value)
+
+  lines = value.split('\n')
+  result = name + ': ' +lines[0].strip() + '\n'
+  for line in lines[1:]:
+    if not line.startswith(' '):
+      result += ' '
+    result += line
+    result += '\n'
+  return result
 
 
 def CreateDebControl(extrafiles=None, **kwargs):
@@ -140,9 +153,11 @@ def CreateDebControl(extrafiles=None, **kwargs):
   controlfile = u''
   for values in DEBIAN_FIELDS:
     fieldname = values[0]
+    mandatory = values[1]
+    is_multiline = values[2]
     key = fieldname[0].lower() + fieldname[1:].replace('-', '')
-    if values[1] or (key in kwargs and kwargs[key]):
-      controlfile += MakeDebianControlField(fieldname, kwargs[key], values[2])
+    if mandatory or (key in kwargs and kwargs[key]):
+      controlfile += MakeDebianControlField(fieldname, kwargs[key], is_multiline)
   # Create the control.tar file
   tar = io.BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
@@ -246,7 +261,7 @@ def GetChecksumsFromFile(filename, hash_fns=None):
 def CreateChanges(output,
                   deb_file,
                   architecture,
-                  short_description,
+                  description,
                   maintainer,
                   package,
                   version,
@@ -273,21 +288,22 @@ def CreateChanges(output,
       MakeDebianControlField('Urgency', urgency),
       MakeDebianControlField('Maintainer', maintainer),
       MakeDebianControlField('Changed-By', maintainer),
-      MakeDebianControlField('Description',
-                             '\n%s - %s' % (package, short_description)),
-      MakeDebianControlField('Changes',
-                             ('\n%s (%s) %s; urgency=%s'
-                              '\nChanges are tracked in revision control.') %
-                             (package, version, distribution, urgency)),
+      # The description in the changes file is strange
+      'Description:\n %s - %s\n' % (package, description.split('\n')[0]),
+      MakeDebianControlField('Changes', (
+          '\n %s (%s) %s; urgency=%s'
+          '\n Changes are tracked in revision control.') % (
+              package, version, distribution, urgency),
+          is_multiline=True),
       MakeDebianControlField(
-          'Files', '\n' + ' '.join(
+          'Files', '\n ' + ' '.join(
               [checksums['md5'], debsize, section, priority, deb_basename])),
       MakeDebianControlField(
           'Checksums-Sha1',
-          '\n' + ' '.join([checksums['sha1'], debsize, deb_basename])),
+          '\n ' + ' '.join([checksums['sha1'], debsize, deb_basename])),
       MakeDebianControlField(
           'Checksums-Sha256',
-          '\n' + ' '.join([checksums['sha256'], debsize, deb_basename]))
+          '\n ' + ' '.join([checksums['sha256'], debsize, deb_basename]))
   ])
   with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
@@ -373,7 +389,7 @@ def main():
       output=options.changes,
       deb_file=options.output,
       architecture=options.architecture,
-      short_description=helpers.GetFlagValue(options.description).split('\n')[0],
+      description=helpers.GetFlagValue(options.description),
       maintainer=helpers.GetFlagValue(options.maintainer), package=options.package,
       version=helpers.GetFlagValue(options.version), section=options.section,
       priority=options.priority, distribution=options.distribution,

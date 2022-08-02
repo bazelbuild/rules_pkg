@@ -97,7 +97,8 @@ class TarFileWriter(object):
       self.fileobj = self.compressor_proc.stdin
     self.name = name
 
-    self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj)
+    self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
+                            format=tarfile.GNU_FORMAT) 
     self.members = set()
     self.directories = set()
     # Preseed the added directory list with things we should not add. If we

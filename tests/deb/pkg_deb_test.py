@@ -63,7 +63,7 @@ class PkgDebTest(unittest.TestCase):
     super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
-    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/fizzbuzz_test_all.deb')
+    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/fizzbuzz_4.5.6_all.deb')
     self.deb_file = DebInspect(self.deb_path)
 
   def assert_control_content(self, expected, match_order=False):
@@ -163,7 +163,7 @@ class PkgDebTest(unittest.TestCase):
     # pass on Windows Until we rewrite how description is passed
     if sys.platform != 'win32':
       fields.extend([
-	  'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é',
+	  'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more\n',
 	  'Maintainer: soméone@somewhere.com',
       ])
     for field in fields:
@@ -214,7 +214,7 @@ class PkgDebTest(unittest.TestCase):
 
   def test_changes(self):
     changes_path = self.runfiles.Rlocation(
-        'rules_pkg/tests/deb/fizzbuzz_test_all.changes')
+        'rules_pkg/tests/deb/fizzbuzz_4.5.6_all.changes')
     with open(changes_path, 'r', encoding='utf-8') as f:
       content = f.read()
       for field in (
@@ -222,6 +222,31 @@ class PkgDebTest(unittest.TestCase):
           'Distribution: trusty'):
         if content.find(field) < 0:
           self.fail('Missing template field: <%s> in <%s>' % (field, content))
+
+      # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
+      # pass on Windows until we rewrite how description is passed.
+      if sys.platform == 'win32':
+        return
+
+      # From the spec:
+      #   In a .changes file, the Description field contains a summary of the
+      #   descriptions for the packages being uploaded. For this case, the first
+      #   line of the field value (the part on the same line as Description:) is
+      #   always empty. It is a multiline field, with one line per package. Each
+      #   line is indented by one space and contains the name of a binary package,
+      #   a space, a hyphen (-), a space, and the short description line from that
+      #   package.
+      d_expect = 'Description:\n fizzbuzz - toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n'
+      d_start = content.find(d_expect)
+      if d_start < 0:
+        self.fail(
+            'Could not find expected description (%s) in\n=====%s=====' %
+            (d_expect, content))
+      # Check that the next line is the start of a new description, rather than
+      # a continuation.
+      self.assertTrue(
+          content[d_start + len(d_expect)].isupper(),
+          'Description has unexpected characters at end (%s)' % content)
 
 
 if __name__ == '__main__':
