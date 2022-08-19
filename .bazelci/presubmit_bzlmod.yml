@@ -1,0 +1,115 @@
+
+common: &common
+  working_directory: ..
+  build_flags:
+    - "--experimental_enable_bzlmod"
+  test_flags:
+    - "--experimental_enable_bzlmod"
+
+#
+# Bazel releases
+#
+lts: &lts
+  bazel: latest
+
+rolling: &rolling
+  bazel: rolling
+
+#
+# Groups of tests, by platform
+#
+
+# rpmbuild(8) is not available or installed on most platforms
+default_tests: &default_tests
+  test_targets:
+    - "//distro/..."
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
+    - "-//tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
+
+default_tests_with_rpm: &default_tests_with_rpm
+  test_targets:
+    - "//distro/..."
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
+
+win_tests: &win_tests
+  test_targets:
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
+    - "-//tests:package_naming_aggregate_test"
+    - "-//tests:path_test"
+    # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
+    # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
+    - "-//tests/mappings:utf8_manifest_test"
+    - "-//tests/mappings/filter_directory/..."
+    # See #387
+    - "-//tests/install/..."
+    # rpmbuild(8) is not supported on Windows
+    - "-//tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
+
+#
+# Commmon features by platform
+#
+ubuntu1804: &ubuntu
+  platform: ubuntu1804
+  <<: *common
+  <<: *default_tests
+  build_targets:
+    - "//distro:distro"
+    - "//distro:relnotes"
+    - "//doc_build:*"
+
+centos7: &centos
+  platform: centos7
+  <<: *common
+  <<: *default_tests_with_rpm
+
+macos: &macos
+  platform: macos
+  <<: *common
+  <<: *default_tests
+
+windows: &windows
+  platform: windows
+  <<: *common
+  <<: *win_tests
+
+#
+# Finally, the cross product of bazel releases X platforms
+#
+tasks:
+  rolling_ubuntu:
+    name: rolling_ubuntu
+    <<: *ubuntu
+    <<: *rolling
+  rolling_macos:
+    name: rolling_macos
+    <<: *macos
+    # It seems there is no rolling Bazel for macos.
+    bazel: last_green
+  rolling_windows:
+    name: rolling_windows
+    <<: *windows
+    <<: *rolling
+  lts_centos:
+    name: lts_centos
+    <<: *centos
+    <<: *lts
+  lts_macos:
+    name: lts_macos
+    <<: *macos
+    <<: *lts
+  lts_ubuntu:
+    name: lts_ubuntu
+    <<: *ubuntu
+    <<: *lts
+  lts_windows:
+    name: lts_windows
+    <<: *windows
+    <<: *lts
