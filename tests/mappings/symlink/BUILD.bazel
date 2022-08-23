@@ -1,0 +1,19 @@
+load(":node_modules_tree.bzl", "node_modules_tree")
+load("//pkg/private/tar:tar.bzl", "pkg_tar")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
+node_modules_tree(
+    name = "tree"
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [
+        ":tree"
+    ]
+)
+
+build_test(
+    name = "test",
+    targets = [":tar"],
+)
