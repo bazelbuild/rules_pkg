@@ -17,6 +17,10 @@ provide all the tools we need to get the precise path of an output.
 ## Using cquery to find the exact path to the outputs created for a target.
 
 We can use Bazel's cquery command to find information about a target.
+
+In Bazel 5.3.0 or later, there is a [`--output=files` flag](https://bazel.build/query/cquery#files-output) that provides this info directly. ([PR](https://github.com/bazelbuild/bazel/pull/15552))
+
+Older versions of Bazel require a small Starlark program to be supplied.
 Specifically we use
 [cquery's Starlark output](https://docs.bazel.build/versions/main/cquery.html#cquery-starlark-dialect)
 to inspect a target and print exactly what we need. Let's try it:
