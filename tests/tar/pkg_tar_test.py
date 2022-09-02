@@ -58,10 +58,16 @@ class PkgTarTest(unittest.TestCase):
             value = info.isdir()
           else:
             value = getattr(info, k)
+          if k == 'mode':
+            p_value = '0o%o' % value
+            p_v = '0o%o' % v
+          else:
+            p_value = str(value)
+            p_v = str(v)
           error_msg = ' '.join([
-              'Value `%s` for key `%s` of file' % (value, k),
+              'Value `%s` for key `%s` of file' % (p_value, k),
               '%s in archive %s does' % (info.name, file_path),
-              'not match expected value `%s`' % v
+              'not match expected value `%s`' % p_v
               ])
           self.assertEqual(value, v, error_msg)
           if value != v:
@@ -210,13 +216,13 @@ class PkgTarTest(unittest.TestCase):
 
     content = [
       {'name': 'a_tree', 'isdir': True},
-      {'name': 'a_tree/generate_tree', 'isdir': True},
-      {'name': 'a_tree/generate_tree/a', 'isdir': True},
+      {'name': 'a_tree/generate_tree', 'isdir': True, 'mode': 0o755},
+      {'name': 'a_tree/generate_tree/a', 'isdir': True, 'mode': 0o755},
       {'name': 'a_tree/generate_tree/a/a'},
-      {'name': 'a_tree/generate_tree/a/b', 'isdir': True},
+      {'name': 'a_tree/generate_tree/a/b', 'isdir': True, 'mode': 0o755},
       {'name': 'a_tree/generate_tree/a/b/c'},
-      {'name': 'a_tree/generate_tree/b', 'isdir': True},
-      {'name': 'a_tree/generate_tree/b/c', 'isdir': True},
+      {'name': 'a_tree/generate_tree/b', 'isdir': True, 'mode': 0o755},
+      {'name': 'a_tree/generate_tree/b/c', 'isdir': True, 'mode': 0o755},
       {'name': 'a_tree/generate_tree/b/c/d'},
       {'name': 'a_tree/generate_tree/b/d'},
       {'name': 'a_tree/generate_tree/b/e'},
