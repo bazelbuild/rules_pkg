@@ -39,6 +39,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "glob_for_texts",
+    srcs = glob(["**/*.txt"]),
+)
+
 py_test(
     name = "archive_test",
     srcs = [
