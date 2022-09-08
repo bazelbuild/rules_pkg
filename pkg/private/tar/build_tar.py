@@ -263,9 +263,12 @@ class TarFile(object):
       else:
         f_mode = mode
       if not content_path:
+        # This is an intermediate directory. Bazel has no API to specify modes
+        # for this, so the least surprising thing we can do is make it the
+        # canonical rwxr-xr-x
         self.add_empty_file(
             path,
-            mode=f_mode,
+            mode=0o755,
             ids=ids,
             names=names,
             kind=tarfile.DIRTYPE)

@@ -148,6 +148,17 @@ manifest_golden_test(
     target = "executable_manifest",
 )
 
+write_content_manifest(
+    name = "glob_for_texts_manifest",
+    srcs = ["//tests:glob_for_texts"],
+)
+
+manifest_golden_test(
+    name = "glob_for_texts_manifest_test",
+    expected = "glob_for_texts_manifest.golden",
+    target = "glob_for_texts_manifest",
+)
+
 link_tree(
     name = "node_modules",
     links = {
