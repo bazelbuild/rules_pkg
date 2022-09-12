@@ -65,17 +65,23 @@ _DestFile = provider(
 def _check_dest(content_map, dest, src, origin):
     old_entry = content_map.get(dest)
 
-    # TODO(#385): This is insufficient but good enough for now. We should
-    # compare over all the attributes too. That will detect problems where
-    # people specify the owner in one place, but another overly broad glob
-    # brings in the file with a different owner.
     if old_entry and old_entry.src != src:
-        # buildifier: disable=print
-        print("Duplicate output path: <%s>, declared in %s and %s" % (
-            dest,
-            origin,
-            content_map[dest].origin,
-        ))
+        # TODO(#385): This is insufficient but good enough for now.
+        # Ideally, we should
+        #   - If the origin paths are different, then fail (breaking change)
+        #   - If the origin paths are the same, then warn if any of the attributes
+        #     (mode, owner, architecture) are different as we are going to pick
+        #     one, but not necessairly the one that the user intended.
+        #     This would also detect problems where people specify the owner in
+        #     one place, but another overly broad glob brings in the file with
+        #     a different owner.
+        if origin != old_entry.origin:
+            # buildifier: disable=print
+            print("Duplicate output path: <%s>, declared in %s and %s" % (
+                dest,
+                origin,
+                old_entry.origin,
+            ))
 
 def _merge_attributes(info, mode, user, group):
     if hasattr(info, "attributes"):
