@@ -1,0 +1,6 @@
+[
+[0, "file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt", "tests/testdata/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt", "", null, null],
+[0, "hello.txt", "tests/testdata/hello.txt", "", null, null],
+[0, "loremipsum.txt", "tests/testdata/loremipsum.txt", "", null, null],
+[0, "test_tar_package_dir_file.txt", "tests/testdata/test_tar_package_dir_file.txt", "", null, null]
+]
