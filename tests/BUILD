@@ -40,6 +40,15 @@ filegroup(
 )
 
 filegroup(
+    name = "file_and_link",
+    srcs = [
+        "BUILD",
+        "testdata/outer_BUILD",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "glob_for_texts",
     srcs = glob(["**/*.txt"]),
 )

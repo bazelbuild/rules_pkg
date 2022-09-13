@@ -27,7 +27,7 @@ load(
     "pkg_mkdirs",
     "strip_prefix",
 )
-load("//tests/util:defs.bzl", "directory", "write_content_manifest")
+load("//tests/util:defs.bzl", "directory", "link_tree", "write_content_manifest")
 load("@rules_python//python:defs.bzl", "py_test")
 
 package(default_applicable_licenses = ["//:license"])
@@ -157,4 +157,31 @@ manifest_golden_test(
     name = "glob_for_texts_manifest_test",
     expected = "glob_for_texts_manifest.golden",
     target = "glob_for_texts_manifest",
+)
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/bar@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        ".pnpm/foo@1.0.0/node_modules/qar": "../../qar@2.0.0/node_modules/qar",
+        ".pnpm/qar@2.0.0/node_modules/qar": "STORE/qar",
+    },
+    package_dir = "node_modules",
+)
+
+write_content_manifest(
+    name = "node_modules_manifest",
+    srcs = [
+        ":node_modules",
+    ],
+)
+
+manifest_golden_test(
+    name = "link_tree_test",
+    expected = "node_modules_manifest.golden",
+    target = "node_modules_manifest",
 )
