@@ -113,8 +113,6 @@ cc_binary in complexity, but does not depend on a large toolchain.""",
 )
 
 def _link_tree_impl(ctx):
-    # out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
-
     links = []
     prefix = ctx.attr.package_dir or ""
     if prefix and not prefix.endswith('/'):

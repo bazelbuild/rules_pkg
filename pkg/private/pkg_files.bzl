@@ -387,9 +387,6 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
     """
     dest = dest_path.strip("/")
     _check_dest(content_map, dest, src, origin)
-    print("SRC file", dir(src))
-    print(src.dirname, src.basename, src.is_directory, src.is_source, src.path, src.short_path)
-    # DEBUG: /usr/local/google/home/aiuto/ws/rules_pkg/pkg/private/pkg_files.bzl:391:10: SRC file ["basename", "dirname", "extension", "is_directory", "is_source", "owner", "path", "root", "short_path", "tree_relative_path"]
     content_map[dest] = _DestFile(
         src = src,
         origin = origin,
