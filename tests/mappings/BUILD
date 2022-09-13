@@ -111,6 +111,7 @@ pkg_files(
         "//tests/testdata/utf8:files",
     ],
     strip_prefix = strip_prefix.from_pkg(),
+    visibility = ["//tests:__subpackages__"],
 )
 
 write_content_manifest(

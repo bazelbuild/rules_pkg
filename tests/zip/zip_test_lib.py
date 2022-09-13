@@ -37,16 +37,16 @@ def seconds_to_ziptime(s):
 
 class ZipTest(unittest.TestCase):
 
-  def setUp(self):
-    super(ZipTest, self).setUp()
-    self.data_files = runfiles.Create()
-
   def get_test_zip(self, zip_file):
     """Get the file path to a generated zip in the runfiles."""
 
     return self.data_files.Rlocation(
         "rules_pkg/tests/zip/" + zip_file
     )
+
+  def setUp(self):
+    super(ZipTest, self).setUp()
+    self.data_files = runfiles.Create()
 
 
 class ZipContentsTestBase(ZipTest):
@@ -91,4 +91,5 @@ class ZipContentsTestBase(ZipTest):
             # legacy rule implementation.
             attr = 0o555
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
-                           oct(attr))
+                           oct(attr),
+                           info.filename)

@@ -14,11 +14,10 @@
 # -*- coding: utf-8 -*-
 
 load("@rules_python//python:defs.bzl", "py_test")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(":my_package_name.bzl", "my_package_naming")
 load(":path_test.bzl", "path_tests")
 load("//pkg:deb.bzl", "pkg_deb")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "strip_prefix")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
 
@@ -51,6 +50,22 @@ filegroup(
 filegroup(
     name = "glob_for_texts",
     srcs = glob(["**/*.txt"]),
+)
+
+#
+# Data source for Unicode handling tests
+#
+pkg_files(
+    name = "utf8_files",
+    srcs = [
+        "//tests/testdata/utf8:files",
+    ],
+    # Note: This is temporary. We need to fix a latent bug where
+    # we are using 555 as the default for many things. That was the
+    # Google internal behavior.
+    attributes = pkg_attributes(mode = "0o555"),
+    strip_prefix = strip_prefix.from_pkg(),
+    visibility = ["//tests:__subpackages__"],
 )
 
 py_test(
