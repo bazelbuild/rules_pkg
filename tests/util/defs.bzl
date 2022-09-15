@@ -171,15 +171,19 @@ This is intended only for testing the manifest creation features.""",
             """,
             default = True,
         ),
+        "include_runfiles": attr.bool(),
     },
 )
 
-def write_content_manifest(name, srcs):
+def write_content_manifest(name, srcs, **kwargs):
+    out = kwargs.pop("out", name + ".manifest")
+    use_short_path = kwargs.pop("use_short_path", True)
     _write_content_manifest(
         name = name,
         srcs = srcs,
-        use_short_path = True,
-        out = name + ".manifest",
+        out = out,
+        use_short_path = use_short_path,
+        **kwargs,
     )
 
 ############################################################

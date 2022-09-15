@@ -1,3 +1,5 @@
 [
-[0, "an_executable", "tests/an_executable", "0755", null, null]
+[0,"an_executable.runfiles/tests/BUILD","tests/BUILD","",null,null],
+[0,"an_executable.runfiles/tests/an_executable","tests/an_executable","0755",null,null],
+[0,"an_executable","tests/an_executable","0755",null,null]
 ]

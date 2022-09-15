@@ -126,12 +126,13 @@ manifest_golden_test(
     target = "utf8",
 )
 
-# Test handling of executable files
+# Test handling of executable + runfiles
 write_content_manifest(
     name = "executable_manifest",
     srcs = [
         "//tests:an_executable",
     ],
+    include_runfiles = True,
 )
 
 alias(
