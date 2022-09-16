@@ -68,17 +68,21 @@ def _check_dest(content_map, dest, src, origin):
         return
     if old_entry.src == src or old_entry.origin == origin:
         return
+
     # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob
     # brings in the file with a different owner.
     if old_entry.src.path != src.path:
         # buildifier: disable=print
-        print("Duplicate output path: <%s>, declared in %s and %s" % (
-            dest,
-            origin,
-            content_map[dest].origin),
-            "\n  SRC:", src
+        print(
+            "Duplicate output path: <%s>, declared in %s and %s" % (
+                dest,
+                origin,
+                content_map[dest].origin,
+            ),
+            "\n  SRC:",
+            src,
         )
 
 def _merge_attributes(info, mode, user, group):
@@ -141,8 +145,14 @@ def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode
         for psl in pkg_filegroup_info.pkg_symlinks:
             _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
 
-def process_src(content_map, files, src, origin, default_mode, default_user,
-                default_group):
+def process_src(
+        content_map,
+        files,
+        src,
+        origin,
+        default_mode,
+        default_user,
+        default_group):
     """Add an entry to the content map.
 
     Args:
@@ -157,6 +167,7 @@ def process_src(content_map, files, src, origin, default_mode, default_user,
     Returns:
       True if src was a Package*Info and added to content_map.
     """
+
     # Gather the files for every srcs entry here, even if it is not from
     # a pkg_* rule.
     if DefaultInfo in src:
@@ -270,6 +281,7 @@ def add_label_list(
         include_runfiles = ctx.attr.include_runfiles
     else:
         include_runfiles = False
+
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
@@ -299,7 +311,6 @@ def add_label_list(
                 default_group = default_group,
                 include_runfiles = include_runfiles,
             )
-
 
 def add_from_default_info(
         content_map,
@@ -356,9 +367,9 @@ def add_from_default_info(
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
         if runfiles:
-            base_path = d_path + '.runfiles'
+            base_path = d_path + ".runfiles"
             for rf in runfiles.files.to_list():
-                d_path = base_path + '/' + rf.short_path
+                d_path = base_path + "/" + rf.short_path
                 fmode = "0755" if rf == the_executable else default_mode
                 _check_dest(content_map, d_path, rf, src.label)
                 content_map[d_path] = _DestFile(
@@ -388,6 +399,7 @@ def get_my_executable(src):
     if not hasattr(di, "files_to_run"):
         return None
     ftr = di.files_to_run
+
     # The docs lead you to believe that you could look at
     # files_to_run.executable, but that is filled out even for source
     # files.
@@ -397,7 +409,6 @@ def get_my_executable(src):
         # DEBUG print("Got an manifest executable", ftr.executable)
         return ftr.executable
     return None
-
 
 def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
@@ -496,6 +507,7 @@ def _encode_manifest_entry(dest, df, use_short_path):
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
+
     elif hasattr(df, "link_to"):
         src = df.link_to
         entry_type = ENTRY_IS_LINK
