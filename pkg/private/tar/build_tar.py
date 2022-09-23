@@ -34,7 +34,9 @@ def normpath(path):
   Args:
     path: (str) path to normalize.
   """
-  return os.path.normpath(path).replace(os.path.sep, '/')
+  # DO NOT SUBMIT
+  return os.path.normpath(path)
+  # return os.path.normpath(path).replace(os.path.sep, '/')
 
 
 class TarFile(object):
