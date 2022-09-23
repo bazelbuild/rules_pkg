@@ -289,7 +289,9 @@ class TarFileWriter(object):
 
         in_name = tarinfo.name
         if prefix:
-          in_name = os.path.normpath(prefix + in_name).replace(os.path.sep, '/')
+          # DO NOT SUBMIT
+          # in_name = os.path.normpath(prefix + in_name).replace(os.path.sep, '/')
+          in_name = os.path.normpath(prefix + in_name)
         tarinfo.name = in_name
         self.add_parents(
             path=tarinfo.name,
