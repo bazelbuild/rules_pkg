@@ -118,7 +118,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir = "/package",
+    package_dir = "/my/package",
 )
 
 pkg_tar(
