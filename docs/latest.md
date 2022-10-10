@@ -47,8 +47,8 @@ See
 for examples of how `out`, `package_file_name`, and `package_variables`
 interact.
 
-<div class="since"><i>Since 0.7.2</i></div>: File name substitution now supports the $(var) syntax.
-<div class="since"><i>Since 0.7.2</i></div>: File name substitution now supports direct use of [ctx.var](https://bazel.build/rules/lib/ctx#var).
+<div class="since"><i>Since 0.8.0</i></div>: File name substitution now supports the $(var) syntax.
+<div class="since"><i>Since 0.8.0</i></div>: File name substitution now supports direct use of [ctx.var](https://bazel.build/rules/lib/ctx#var).
 
 
 <a name="mapping-attrs"></a>

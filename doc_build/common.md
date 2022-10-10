@@ -18,8 +18,8 @@ See
 for examples of how `out`, `package_file_name`, and `package_variables`
 interact.
 
-@since(0.7.2): File name substitution now supports the $(var) syntax.
-@since(0.7.2): File name substitution now supports direct use of [ctx.var](https://bazel.build/rules/lib/ctx#var).
+@since(0.8.0): File name substitution now supports the $(var) syntax.
+@since(0.8.0): File name substitution now supports direct use of [ctx.var](https://bazel.build/rules/lib/ctx#var).
 
 
 <a name="mapping-attrs"></a>
