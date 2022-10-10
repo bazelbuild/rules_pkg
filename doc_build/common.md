@@ -9,7 +9,7 @@ These attributes are used in several rules within this module.
 | Name              | Description                                                                                                                                                                     | Type                                                               | Mandatory       | Default                                   |
 | :-------------    | :-------------                                                                                                                                                                  | :-------------:                                                    | :-------------: | :-------------                            |
 | out               | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink.            | String                                                             | required        |                                           |
-| package_file_name | The name of the file which will contain the package. The name may contain variables in the form `{var}`. The values for substitution are specified through `package_variables`. | String                                                             | optional        | package type specific                     |
+| package_file_name | The name of the file which will contain the package. The name may contain variables in the forms `{var}` and $(var)`. The values for substitution are specified through `package_variables` or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var). | String | optional | package type specific |
 | package_variables | A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.                                                                                           | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional        | None                                      |
 | attributes        | Attributes to set on entities created within packages.  Not to be confused with bazel rule attributes.  See 'Mapping "Attributes"' below                                        | Undefined.                                                         | optional        | Varies.  Consult individual rule documentation for details. |
 
@@ -17,6 +17,10 @@ See
 [examples/naming_package_files](https://github.com/bazelbuild/rules_pkg/tree/main/examples/naming_package_files)
 for examples of how `out`, `package_file_name`, and `package_variables`
 interact.
+
+@since(0.7.2): File name substitution now supports the $(var) syntax.
+@since(0.7.2): File name substitution now supports direct use of [ctx.var](https://bazel.build/rules/lib/ctx#var).
+
 
 <a name="mapping-attrs"></a>
 ### Mapping "Attributes"
