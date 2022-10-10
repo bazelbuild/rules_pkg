@@ -18,11 +18,14 @@
 load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("//tests/util:defs.bzl", "directory", "fake_artifact")
+load("//tests/util:defs.bzl", "directory", "link_tree", "fake_artifact")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-package(default_applicable_licenses = ["//:license"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
 
 py_test(
     name = "tar_writer_test",
@@ -115,7 +118,7 @@ pkg_tar(
     srcs = [
         ":etc/nsswitch.conf",
     ],
-    package_dir = "/package",
+    package_dir = "/my/package",
 )
 
 pkg_tar(
@@ -394,5 +397,51 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+    },
+    package_dir = "node_modules",
+)
+
+directory(
+    name = "tree_artifact_with_links",
+    contents = "hello there",
+    filenames = [
+        "foo/hello.txt",
+        "foo/bar/baz",
+    ],
+    links = {
+        "foo/bar/hello":  "../hello.txt",
+        "foo/bar/alt_baz":  "baz",
+        "foo/alt_baz":  "bar/baz",
+    },
+)
+
+
+# This target has symlinks 3 ways.
+# - mklinks rules.
+# - source files that are symlinks
+# - tree artifacts
+pkg_tar(
+    name = "relative_links_tar",
+    srcs = [
+        ":node_modules",
+        ":tree_artifact_with_links",
+        "//tests:file_and_link",
+    ],
+)
+
+pkg_tar(
+    name = "relative_links_re_tar",
+    deps = [
+        ":relative_links_tar",
     ],
 )

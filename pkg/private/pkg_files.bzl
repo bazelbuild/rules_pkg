@@ -64,18 +64,26 @@ _DestFile = provider(
 
 def _check_dest(content_map, dest, src, origin):
     old_entry = content_map.get(dest)
+    if not old_entry:
+        return
+    if old_entry.src == src or old_entry.origin == origin:
+        return
 
     # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob
     # brings in the file with a different owner.
-    if old_entry and old_entry.src != src:
+    if old_entry.src.path != src.path:
         # buildifier: disable=print
-        print("Duplicate output path: <%s>, declared in %s and %s" % (
-            dest,
-            origin,
-            content_map[dest].origin,
-        ))
+        print(
+            "Duplicate output path: <%s>, declared in %s and %s" % (
+                dest,
+                origin,
+                content_map[dest].origin,
+            ),
+            "\n  SRC:",
+            src,
+        )
 
 def _merge_attributes(info, mode, user, group):
     if hasattr(info, "attributes"):
@@ -127,15 +135,24 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
     )
 
 def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):
-    for d in pkg_filegroup_info.pkg_dirs:
-        _process_pkg_dirs(content_map, d[0], d[1], default_mode, default_user, default_group)
-    for pf in pkg_filegroup_info.pkg_files:
-        _process_pkg_files(content_map, pf[0], pf[1], default_mode, default_user, default_group)
-    for psl in pkg_filegroup_info.pkg_symlinks:
-        _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
+    if hasattr(pkg_filegroup_info, "pkg_dirs"):
+        for d in pkg_filegroup_info.pkg_dirs:
+            _process_pkg_dirs(content_map, d[0], d[1], default_mode, default_user, default_group)
+    if hasattr(pkg_filegroup_info, "pkg_files"):
+        for pf in pkg_filegroup_info.pkg_files:
+            _process_pkg_files(content_map, pf[0], pf[1], default_mode, default_user, default_group)
+    if hasattr(pkg_filegroup_info, "pkg_symlinks"):
+        for psl in pkg_filegroup_info.pkg_symlinks:
+            _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
 
-def process_src(content_map, files, src, origin, default_mode, default_user,
-                default_group):
+def process_src(
+        content_map,
+        files,
+        src,
+        origin,
+        default_mode,
+        default_user,
+        default_group):
     """Add an entry to the content map.
 
     Args:
@@ -150,6 +167,7 @@ def process_src(content_map, files, src, origin, default_mode, default_user,
     Returns:
       True if src was a Package*Info and added to content_map.
     """
+
     # Gather the files for every srcs entry here, even if it is not from
     # a pkg_* rule.
     if DefaultInfo in src:
@@ -259,6 +277,11 @@ def add_label_list(
       default_group: fallback mode to use for Package*Info elements without group
     """
 
+    if hasattr(ctx.attr, "include_runfiles"):
+        include_runfiles = ctx.attr.include_runfiles
+    else:
+        include_runfiles = False
+
     # Compute the relative path
     data_path = compute_data_path(
         ctx,
@@ -286,8 +309,8 @@ def add_label_list(
                 default_mode = default_mode,
                 default_user = default_user,
                 default_group = default_group,
+                include_runfiles = include_runfiles,
             )
-
 
 def add_from_default_info(
         content_map,
@@ -297,7 +320,8 @@ def add_from_default_info(
         data_path_without_prefix,
         default_mode = None,
         default_user = None,
-        default_group = None):
+        default_group = None,
+        include_runfiles = False):
     """Helper method to add the DefaultInfo of a target to a content_map.
 
     Args:
@@ -309,6 +333,7 @@ def add_from_default_info(
       default_mode: fallback mode to use for Package*Info elements without mode
       default_user: fallback user to use for Package*Info elements without user
       default_group: fallback mode to use for Package*Info elements without group
+      include_runfiles: Include runfiles
     """
     if not DefaultInfo in src:
         return
@@ -332,14 +357,29 @@ def add_from_default_info(
             fmode = "0755" if f == the_executable else default_mode
             add_single_file(
                 content_map,
-                d_path,
-                f,
+                dest_path = d_path,
+                src = f,
                 origin = src.label,
                 mode = fmode,
                 user = default_user,
                 group = default_group,
             )
-
+    if include_runfiles:
+        runfiles = src[DefaultInfo].default_runfiles
+        if runfiles:
+            base_path = d_path + ".runfiles"
+            for rf in runfiles.files.to_list():
+                d_path = base_path + "/" + rf.short_path
+                fmode = "0755" if rf == the_executable else default_mode
+                _check_dest(content_map, d_path, rf, src.label)
+                content_map[d_path] = _DestFile(
+                    src = rf,
+                    entry_type = ENTRY_IS_FILE,
+                    origin = src.label,
+                    mode = fmode,
+                    user = default_user,
+                    group = default_group,
+                )
 
 def get_my_executable(src):
     """If a target represents an executable, return its file handle.
@@ -359,6 +399,7 @@ def get_my_executable(src):
     if not hasattr(di, "files_to_run"):
         return None
     ftr = di.files_to_run
+
     # The docs lead you to believe that you could look at
     # files_to_run.executable, but that is filled out even for source
     # files.
@@ -368,7 +409,6 @@ def get_my_executable(src):
         # DEBUG print("Got an manifest executable", ftr.executable)
         return ftr.executable
     return None
-
 
 def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
@@ -467,6 +507,7 @@ def _encode_manifest_entry(dest, df, use_short_path):
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
+
     elif hasattr(df, "link_to"):
         src = df.link_to
         entry_type = ENTRY_IS_LINK

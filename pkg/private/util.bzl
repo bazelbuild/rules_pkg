@@ -78,12 +78,12 @@ def substitute_package_variables(ctx, attribute_value):
 
     if type(attribute_value) != "string":
         fail("attempt to substitute package_variables in the attribute value %s which is not a string" % attribute_value)
+    vars = dict(ctx.var)
+    if ctx.attr.package_variables:
+        package_variables = ctx.attr.package_variables[PackageVariablesInfo]
+        vars.update(package_variables.values)
 
-    if not ctx.attr.package_variables:
-        # Nothing to substitute. Return the attribute value as is.
-        if attribute_value.find("{") >= 0:
-            fail("package_variables is required when using '{' in attribute value %s" % attribute_value)
-        return attribute_value
-
-    package_variables = ctx.attr.package_variables[PackageVariablesInfo]
-    return attribute_value.format(**package_variables.values)
+    # Map $(var) to {x} and then use format for substitution.
+    # This is brittle and I hate it. We should have template substitution
+    # in the Starlark runtime.
+    return attribute_value.replace("$(", "{").replace(")", "}").format(**vars)

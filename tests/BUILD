@@ -40,6 +40,15 @@ filegroup(
 )
 
 filegroup(
+    name = "file_and_link",
+    srcs = [
+        "BUILD",
+        "testdata/outer_BUILD",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "glob_for_texts",
     srcs = glob(["**/*.txt"]),
 )
@@ -75,8 +84,9 @@ py_test(
 )
 
 cc_binary(
-  name = "an_executable",
-  srcs = ["foo.cc"],
+    name = "an_executable",
+    srcs = ["foo.cc"],
+    data = ["BUILD"],
 )
 
 py_test(
