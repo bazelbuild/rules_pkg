@@ -134,7 +134,8 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     package = "fizzbuzz",
     version = "7",
-    # A bogus concept we are just testing the substitution capability.
+    # This does not make sense for architecture, but for testing, compilation
+    # mode is more stable thatn cpu.
     architecture = "$(COMPILATION_MODE)",
 )
 
