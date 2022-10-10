@@ -273,6 +273,7 @@ pkg_tar_impl = rule(
 <li>stamp = 1: Use the time of the build as the modification time of each file in the archive.
 <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching.
 <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag.
+@since(0.5.0)
 """,
             default = 0,
         ),

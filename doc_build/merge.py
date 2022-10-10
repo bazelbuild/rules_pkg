@@ -25,6 +25,7 @@ import typing
 
 ID_RE = re.compile(r'<a id="#(.*)">')
 WRAPS_RE = re.compile(r'@wraps\((.*)\)')
+SINCE_RE = re.compile(r'@since\((.*)\)')
 CENTER_RE = re.compile(r'<p align="center">([^<]*)</p>')
 
 
@@ -52,6 +53,8 @@ def merge_text(text: str, out) -> None:
     out: an output file stream.
   """
   for line in text.split('\n'):
+    line = SINCE_RE.sub(r'<div class="since"><i>Since \1</i></div>', line)
+
     if line.startswith('| :'):
       line = fix_stardoc_table_align(line)
     # Compensate for https://github.com/bazelbuild/stardoc/issues/118.
