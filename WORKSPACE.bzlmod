@@ -1,0 +1,37 @@
+
+### INTERNAL ONLY - lines after this are not included in the release packaging.
+#
+# Include dependencies which are only needed for development here.
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "platforms",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.5/platforms-0.0.5.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.5/platforms-0.0.5.tar.gz",
+    ],
+    sha256 = "379113459b0feaf6bfbb584a91874c065078aa673222846ac765f86661c27407",
+)
+
+local_repository(
+    name = "mappings_test_external_repo",
+    path = "tests/mappings/external_repo",
+)
+
+# TODO(aiuto): bzlmod chokes on @rules_pkg// in the toolchain labels.
+# Find rpmbuild if it exists.
+# load("//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
+#
+#find_system_rpmbuild(
+#    name = "rules_pkg_rpmbuild",
+#    verbose = False,
+#)
+
+# Needed for making our release notes
+#load("//toolchains/git:git_configure.bzl", "experimental_find_system_git")
+#
+#experimental_find_system_git(
+#    name = "rules_pkg_git",
+#    verbose = False,
+#)

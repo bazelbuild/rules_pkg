@@ -11,6 +11,14 @@ tasks:
     platform: ubuntu1804
     <<: *common
   macos:
+    platform: macos
     <<: *common
   windows:
+    platform: windows
+    <<: *common
+  bzlmod:
+    name: bzlmod
+    platform: ubuntu1804
+    build_flags:
+      - "--experimental_enable_bzlmod"
     <<: *common
