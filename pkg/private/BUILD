@@ -55,9 +55,8 @@ exports_files(
 config_setting(
     name = "private_stamp_detect",
     values = {"stamp": "1"},
-    # Depended on by //src/main/java/com/google/devtools/build/lib/skyframe/serialization/autocodec:bootstrap_autocode in @bazelbuild/bazel.
-    # That's a pkg_tar which calls the pkg_tar macro in rules_pkg/pkg/private/tar/tar.bzl which sets the select().
-    # When --incompatible_config_setting_private_default_visibility is set, that fails unless this is public.
+    # When --incompatible_config_setting_private_default_visibility is set, this fails unless this is public.
+    # TODO: refactor to clear up confusion that this is a "private" target with public access.
     visibility = ["//visibility:public"],
 )
 
