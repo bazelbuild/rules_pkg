@@ -16,7 +16,10 @@
 # that we get the expected file names.
 set -e
 
-declare -r DATA_DIR="${TEST_SRCDIR}/rules_pkg/tests"
+# Portably find the absolute path to the test data, even if this code has been
+# vendored in to a source tree and re-rooted.
+TEST_PACKAGE="$(echo ${TEST_TARGET} | sed -e 's/:.*$//' -e 's@//@@')"
+declare -r DATA_DIR="${TEST_SRCDIR}/${TEST_WORKSPACE}/${TEST_PACKAGE}"
 
 for pkg in test_naming_some_value.deb test_naming_some_value.tar test_naming_some_value.zip ; do
   ls -l "${DATA_DIR}/$pkg"
