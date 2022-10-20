@@ -26,6 +26,12 @@ bazel_skylib_workspace()
 #
 # Include dependencies which are only needed for development here.
 
+# Used to test invoking rules with targets in an external repo.
+local_repository(
+    name = "mappings_test_external_repo",
+    path = "tests/mappings/external_repo",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -65,14 +71,3 @@ http_archive(
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
-
-# TODO(nacl): remove this when the "new" framework is ready.
-local_repository(
-    name = "experimental_test_external_repo",
-    path = "pkg/experimental/tests/external_repo",
-)
-
-local_repository(
-    name = "mappings_test_external_repo",
-    path = "tests/mappings/external_repo",
-)
