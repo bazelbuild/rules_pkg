@@ -25,7 +25,7 @@ import typing
 
 ID_RE = re.compile(r'<a id="#(.*)">')
 WRAPS_RE = re.compile(r'@wraps\((.*)\)')
-SINCE_RE = re.compile(r'@since\((.*)\)')
+SINCE_RE = re.compile(r'@since\(([^)]*)\)')
 CENTER_RE = re.compile(r'<p align="center">([^<]*)</p>')
 
 
