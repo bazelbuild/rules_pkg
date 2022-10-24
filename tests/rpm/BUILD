@@ -373,6 +373,7 @@ diff_test(
 py_library(
     name = "rpm_util",
     srcs = ["rpm_util.py"],
+    imports = ["../.."],
     visibility = [":__subpackages__"],
 )
 

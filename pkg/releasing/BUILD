@@ -36,6 +36,7 @@ py_library(
         "__init__.py",
         "release_tools.py",
     ],
+    imports = ["../.."],
     srcs_version = "PY3",
 )
 
@@ -44,6 +45,7 @@ py_binary(
     srcs = [
         "print_rel_notes.py",
     ],
+    imports = ["../.."],
     python_version = "PY3",
     deps = [
         ":release_utils",

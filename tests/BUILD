@@ -49,6 +49,7 @@ py_test(
     srcs = [
         "archive_test.py",
     ],
+    imports = [".."],
     data = [
         "//tests:testdata/empty.ar",
         "//tests:testdata/a_ab.ar",
@@ -82,6 +83,7 @@ cc_binary(
 py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
+    imports = [".."],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
