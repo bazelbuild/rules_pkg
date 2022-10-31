@@ -252,11 +252,24 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tar-with-runfiles.tar', content)
 
+
   def test_tar_leading_dotslash(self):
     content = [
       {'name': './loremipsum.txt'},
     ]
     self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
+
+  def test_tar_using_pfgs(self):
+    content = [
+      {'name': '.'},
+      {'name': './compressor.py', 'isdir': False,
+       'mode': 0o444, 'uname': 'user', 'gname': 'group'},
+      {'name': './a_dir', 'isdir': True,
+       'mode': 0o755, 'uname': 'user', 'gname': 'group'},
+      {'name': './foo', 'linkname': 'bar',
+       'mode': 0o555, 'uname':  'user', 'gname': 'group'},
+    ]
+    self.assertTarFileContent('test-tar-using-pfgs.tar', content)
 
 
 if __name__ == '__main__':

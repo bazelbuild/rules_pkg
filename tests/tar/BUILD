@@ -19,6 +19,14 @@ load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "link_tree", "fake_artifact")
+load(
+    "//pkg:mappings.bzl",
+    "pkg_attributes",
+    "pkg_filegroup",
+    "pkg_files",
+    "pkg_mkdirs",
+    "pkg_mklink",
+)
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
@@ -329,6 +337,7 @@ py_test(
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
+        ":test-tar-using-pfgs",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -445,3 +454,45 @@ pkg_tar(
         ":relative_links_tar",
     ],
 )
+
+pkg_files(
+    name = "tar-files",
+    srcs = [
+        "compressor.py",
+    ],
+    attributes = pkg_attributes(
+        mode = "0444",
+        user = "user",
+        group = "group",
+    ),
+)
+pkg_mkdirs(
+    name = "tar-directories",
+    dirs = ["a_dir"],
+    attributes = pkg_attributes(
+        mode = "0755",
+        user = "user",
+        group = "group",
+    ),
+)
+
+pkg_mklink(
+    name = "tar-symlink",
+    src = "foo",
+    dest = "bar",
+    attributes = pkg_attributes(
+        mode = "0555",
+        user = "user",
+        group = "group",
+    ),
+)
+
+pkg_tar(
+    name = "test-tar-using-pfgs",
+    srcs = [
+        ":tar-files",
+        ":tar-directories",
+        ":tar-symlink",
+    ],
+)
+
