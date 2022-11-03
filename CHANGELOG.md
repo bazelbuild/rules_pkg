@@ -1,3 +1,23 @@
+# Release 0.8.0
+
+**New Features**
+-   Allow $(var) substitution in filenames (#620)
+    * Allow $(var) substitution in filenames and include everything in ctx.var in the substitution dictionary.
+    Fixes #20
+-   Basic bzlmod setup
+    - CI runs for both traditional and bzlmod
+    - Shows it working for one example
+    - Has only runtime deps
+    - rpm and git toolchains not done yet
+-   Rough prototype of @since processing. (#617)
+-   First cut at runfiles support in pkg_* rules (#605)
+
+**Bug Fixes**
+-   Fix config_setting visibility failure when using `--incompatible_config_setting_private_default_visibility`
+-   Cosmetic. Improve the error messageing for duplicate files in check_dest. (#616)
+-   Adjust tar tests to have a test case for #297 (#618)
+-   Do not warn if the origin paths are the same. (#615)
+
 # Release 0.7.0
 
 ## New Features
