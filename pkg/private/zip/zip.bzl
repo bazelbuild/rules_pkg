@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation of various packaging."""
+"""Zip archive creation rule and associated logic."""
 
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
@@ -25,7 +25,7 @@ load(
     "substitute_package_variables",
 )
 load(
-    "//pkg/private:pkg_files_new.bzl",
+    "//pkg/private:pkg_files.bzl",
     "add_label_list",
     "write_manifest",
 )

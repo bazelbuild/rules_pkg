@@ -261,12 +261,11 @@ class PkgTarTest(unittest.TestCase):
 
   def test_tar_using_pfgs(self):
     content = [
-      {'name': '.'},
-      {'name': './compressor.py', 'isdir': False,
-       'mode': 0o444, 'uname': 'user', 'gname': 'group'},
-      {'name': './a_dir', 'isdir': True,
+      {'name': 'a_dir', 'isdir': True,
        'mode': 0o755, 'uname': 'user', 'gname': 'group'},
-      {'name': './foo', 'linkname': 'bar',
+      {'name': 'compressor.py', 'isdir': False,
+       'mode': 0o444, 'uname': 'user', 'gname': 'group'},
+      {'name': 'foo', 'linkname': 'bar',
        'mode': 0o555, 'uname':  'user', 'gname': 'group'},
     ]
     self.assertTarFileContent('test-tar-using-pfgs.tar', content)

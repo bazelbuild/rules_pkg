@@ -1,4 +1,4 @@
-# Copyright 2021 The Bazel Authors. All rights reserved.
+# Copyright 2022 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
         user = attrs[1],
         group = attrs[2],
         origin = origin,
-        link_to = pkg_symlink_info.destination,
+        link_to = pkg_symlink_info.target,
         attrs = kwargs,
     )
 

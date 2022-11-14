@@ -478,8 +478,8 @@ pkg_mkdirs(
 
 pkg_mklink(
     name = "tar-symlink",
-    src = "foo",
-    dest = "bar",
+    link_name = "foo",
+    target = "bar",
     attributes = pkg_attributes(
         mode = "0555",
         user = "user",
