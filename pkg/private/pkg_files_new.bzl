@@ -41,13 +41,19 @@ load(
     "PackageSymlinkInfo",
 )
 
-# Possible values for entry_type
-# These must be kept in sync with the declarations in private/manifest.py.
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an empty dir
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
-ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
+# {
+#   "label": "//:foo-config",
+#   "type": "FILE",
+#   "source": "bazel-out/k8-linux-fastbuild/foo", // or whatever bazel provides us
+#   "destination": "{PREFIX}/etc/foo", // Templated destination
+#   "mode": "rw-r--r--", // or 0644
+#   "user": "root",
+#   "group": "root",
+#   "rpm_filetag": "%config" // Custom attribute for pkg_rpm
+#   "zip_compression": "STORE" // Theoretical custom attribute for pkg_zip
+#   "unix_extended_permissions": "+i" // Theoretical custom attribute for UNIX-style installers (set immutable bit) 
+#  },
+
 
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
@@ -57,8 +63,9 @@ _DestFile = provider(
         "user": "user, or empty",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "entry_type": "int. See ENTRY_IS_* values above.",
+        "entry_type": "string representing the entry type",
         "origin": "target which added this",
+        "attrs": "dict: other attributes",
     },
 )
 
@@ -85,6 +92,7 @@ def _check_dest(content_map, dest, src, origin):
             src,
         )
 
+# TODO-NOW: support combining other, more general attributes
 def _merge_attributes(info, mode, user, group):
     if hasattr(info, "attributes"):
         attrs = info.attributes
@@ -93,45 +101,49 @@ def _merge_attributes(info, mode, user, group):
         group = attrs.get("group") or group
     return (mode, user, group)
 
-def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
+def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group, **kwargs):
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
         _check_dest(content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
-            entry_type = ENTRY_IS_DIR,
+            entry_type = "dir",
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
             origin = origin,
+            attrs = kwargs,
         )
 
-def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group):
+def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group, **kwargs):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
         _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
-            entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
+            entry_type = "tree" if src.is_directory else "file",
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
             origin = origin,
+            attrs = kwargs,
         )
 
-def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
+def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group, **kwargs):
     dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
+        entry_type = "symlink",
         mode = attrs[0],
         user = attrs[1],
         group = attrs[2],
         origin = origin,
-        link_to = pkg_symlink_info.target,
+        link_to = pkg_symlink_info.destination,
+        attrs = kwargs,
     )
 
 def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):
@@ -228,7 +240,7 @@ def add_directory(content_map, dir_path, origin, mode = None, user = None, group
     """
     content_map[dir_path.strip("/")] = _DestFile(
         src = None,
-        entry_type = ENTRY_IS_DIR,
+        entry_type = "dir",
         origin = origin,
         mode = mode,
         user = user,
@@ -250,7 +262,7 @@ def add_empty_file(content_map, dest_path, origin, mode = None, user = None, gro
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
-        entry_type = ENTRY_IS_EMPTY_FILE,
+        entry_type = "empty-file",
         origin = origin,
         mode = mode,
         user = user,
@@ -426,6 +438,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
     _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
+        entry_type = "file",
         origin = origin,
         mode = mode,
         user = user,
@@ -449,7 +462,7 @@ def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, g
     content_map[dest] = _DestFile(
         src = None,
         link_to = src,
-        entry_type = ENTRY_IS_LINK,
+        entry_type = "symlink",
         origin = origin,
         mode = mode,
         user = user,
@@ -471,13 +484,13 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
     content_map[dest_path] = _DestFile(
         src = src,
         origin = origin,
-        entry_type = ENTRY_IS_TREE,
+        entry_type = "tree",
         mode = mode,
         user = user,
         group = group,
     )
 
-def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
+def write_manifest(ctx, manifest_file, content_map, use_short_path=False, pretty_print=False):
     """Write a content map to a manifest file.
 
     The format of this file is currently undocumented, as it is a private
@@ -496,28 +509,36 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False):
         manifest_file,
         "[\n" + ",\n".join(
             [
-                _encode_manifest_entry(dst, content_map[dst], use_short_path)
+                _encode_manifest_entry(dst, content_map[dst], use_short_path, pretty_print)
                 for dst in sorted(content_map.keys())
-            ],
-        ) + "\n]\n",
+            ]
+        ) + "\n]\n"
     )
 
-def _encode_manifest_entry(dest, df, use_short_path):
-    entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
+def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
+    entry_type = df.entry_type if hasattr(df, "entry_type") else "file"
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
 
     elif hasattr(df, "link_to"):
         src = df.link_to
-        entry_type = ENTRY_IS_LINK
+        entry_type = "symlink"
     else:
         src = None
-    return json.encode([
-        entry_type,
-        dest.strip("/"),
-        src,
-        df.mode or "",
-        df.user or None,
-        df.group or None,
-    ])
+    data = {
+        "origin": str(df.origin),
+        "type": df.entry_type,
+        "src": src,
+        "dest": dest.strip("/"),
+        "mode": df.mode or "",
+        "user": df.user or None,
+        "group": df.group or None,
+    }
+    if hasattr(df, "attrs"):
+        data.update(df.attrs)
+
+    if pretty_print:
+        return json.encode_indent(data) 
+    else:
+        return json.encode(data)
