@@ -129,7 +129,14 @@ class ZipWriter(object):
       zip_file: ZipFile to write to
       entry: manifest entry
     """
-    entry_type, dest, src, mode, user, group = entry
+    #entry_type, dest, src, mode, user, group = entry
+
+    entry_type = entry['type']
+    dest = entry['dest']
+    src = entry['src']
+    mode = entry['mode']
+    user = entry['user']
+    group = entry['group']
 
     # Use the pkg_tar mode/owner remaping as a fallback
     non_abs_path = dest.strip('/')
@@ -154,7 +161,7 @@ class ZipWriter(object):
       self.zip_file.writestr(entry_info, src)
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
-    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+    elif entry_type == manifest.ENTRY_IS_EMPTY_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
       self.zip_file.writestr(entry_info, '')
     else:

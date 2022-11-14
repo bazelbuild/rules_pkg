@@ -18,11 +18,11 @@
 import collections
 
 # These must be kept in sync with the declarations in private/pkg_files.bzl
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an owned dir, possibly empty
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
-ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
+ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = "dir"  # Entry is an empty dir
+ENTRY_IS_TREE = "tree" # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
 ManifestEntry = collections.namedtuple("ManifestEntry",
                                        ['entry_type', 'dest', 'src', 'mode', 'user', 'group'])

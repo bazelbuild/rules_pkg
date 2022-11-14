@@ -25,7 +25,7 @@ load(
     "substitute_package_variables",
 )
 load(
-    "//pkg/private:pkg_files.bzl",
+    "//pkg/private:pkg_files_new.bzl",
     "add_label_list",
     "write_manifest",
 )

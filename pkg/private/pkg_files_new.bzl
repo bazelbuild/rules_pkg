@@ -43,7 +43,7 @@ load(
 
 # {
 #   "label": "//:foo-config",
-#   "type": "FILE",
+#   "type": "file",
 #   "source": "bazel-out/k8-linux-fastbuild/foo", // or whatever bazel provides us
 #   "destination": "{PREFIX}/etc/foo", // Templated destination
 #   "mode": "rw-r--r--", // or 0644
@@ -54,6 +54,11 @@ load(
 #   "unix_extended_permissions": "+i" // Theoretical custom attribute for UNIX-style installers (set immutable bit) 
 #  },
 
+ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = "dir"  # Entry is an empty dir
+ENTRY_IS_TREE = "tree" # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
@@ -63,7 +68,7 @@ _DestFile = provider(
         "user": "user, or empty",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "entry_type": "string representing the entry type",
+        "entry_type": "string.  See ENTRY_IS_* values above.",
         "origin": "target which added this",
         "attrs": "dict: other attributes",
     },
@@ -108,7 +113,7 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
         _check_dest(content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
-            entry_type = "dir",
+            entry_type = ENTRY_IS_DIR,
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
@@ -123,7 +128,7 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
         _check_dest(content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
-            entry_type = "tree" if src.is_directory else "file",
+            entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
@@ -137,7 +142,7 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
-        entry_type = "symlink",
+        entry_type = ENTRY_IS_LINK,
         mode = attrs[0],
         user = attrs[1],
         group = attrs[2],
@@ -240,7 +245,7 @@ def add_directory(content_map, dir_path, origin, mode = None, user = None, group
     """
     content_map[dir_path.strip("/")] = _DestFile(
         src = None,
-        entry_type = "dir",
+        entry_type = ENTRY_IS_DIR,
         origin = origin,
         mode = mode,
         user = user,
@@ -262,7 +267,7 @@ def add_empty_file(content_map, dest_path, origin, mode = None, user = None, gro
     _check_dest(content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
-        entry_type = "empty-file",
+        entry_type = ENTRY_IS_EMPTY_FILE,
         origin = origin,
         mode = mode,
         user = user,
@@ -438,7 +443,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
     _check_dest(content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
-        entry_type = "file",
+        entry_type = ENTRY_IS_FILE,
         origin = origin,
         mode = mode,
         user = user,
@@ -462,7 +467,7 @@ def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, g
     content_map[dest] = _DestFile(
         src = None,
         link_to = src,
-        entry_type = "symlink",
+        entry_type = ENTRY_IS_LINK,
         origin = origin,
         mode = mode,
         user = user,
@@ -484,7 +489,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
     content_map[dest_path] = _DestFile(
         src = src,
         origin = origin,
-        entry_type = "tree",
+        entry_type = ENTRY_IS_TREE,
         mode = mode,
         user = user,
         group = group,
@@ -516,14 +521,14 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path=False, pretty
     )
 
 def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
-    entry_type = df.entry_type if hasattr(df, "entry_type") else "file"
+    entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     if df.src:
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
 
     elif hasattr(df, "link_to"):
         src = df.link_to
-        entry_type = "symlink"
+        entry_type = ENTRY_IS_LINK
     else:
         src = None
     data = {
