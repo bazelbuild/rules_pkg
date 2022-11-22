@@ -15,10 +15,10 @@
 """Tests for pkg_tar."""
 
 # buildifier: disable=bzl-visibility
-load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("//tests/util:defs.bzl", "directory", "link_tree", "fake_artifact")
+load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
@@ -113,9 +113,16 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_mklink(
+    name = "mylink",
+    link_name = "mylink",
+    target = "dangling",
+)
+
 pkg_tar(
     name = "test_tar_package_dir",
     srcs = [
+        ":mylink",
         ":etc/nsswitch.conf",
     ],
     package_dir = "/my/package",
@@ -419,12 +426,11 @@ directory(
         "foo/bar/baz",
     ],
     links = {
-        "foo/bar/hello":  "../hello.txt",
-        "foo/bar/alt_baz":  "baz",
-        "foo/alt_baz":  "bar/baz",
+        "foo/bar/hello": "../hello.txt",
+        "foo/bar/alt_baz": "baz",
+        "foo/alt_baz": "bar/baz",
     },
 )
-
 
 # This target has symlinks 3 ways.
 # - mklinks rules.

@@ -217,6 +217,7 @@ class TarFileWriterTest(unittest.TestCase):
     expected_content = [
         {"name": "my"},
         {"name": "my/package"},
+        {"name": "my/package/mylink"},
         {"name": "my/package/nsswitch.conf"},
     ]
     self.assertTarFileContent(package_dir, expected_content)

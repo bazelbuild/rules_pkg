@@ -176,9 +176,9 @@ class TarFile(object):
       names: (username, groupname) for the file to set ownership.  An empty
         file will be created as `destfile` in the layer.
     """
-    symlink = normpath(symlink)
+    dest = self.normalize_path(symlink)
     self.tarfile.add_file(
-        symlink,
+        dest,
         tarfile.SYMTYPE,
         link=destination,
         mode = mode,
