@@ -97,12 +97,12 @@ class ZipWriter(object):
     self.zip_file.close()
     self.zip_file = None
 
-  def make_zipinfo(self, path: str, mode):
+  def make_zipinfo(self, path: str, mode: str):
     """Create a Zipinfo.
 
     Args:
       path: file path
-      mode: file mode (int or str)
+      mode: file mode
     """
     entry_info = zipfile.ZipInfo(filename=path, date_time=self.time_stamp)
     # See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
@@ -114,10 +114,7 @@ class ZipWriter(object):
     # permission and file type bits, while the low order two contain MS-DOS FAT
     # file attributes.
     if mode:
-      if isinstance(mode, str):
-        f_mode = int(mode, 8)
-      else:
-        f_mode = mode
+      f_mode = int(mode, 8)
     else:
       f_mode = self.default_mode
     entry_info.external_attr = f_mode << 16
@@ -198,7 +195,7 @@ class ZipWriter(object):
       if content_path:
         # If mode is unspecified, derive the mode from the file's mode.
         if mode is None:
-          f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+          f_mode = "0o755" if os.access(content_path, os.X_OK) else self.default_mode
         else:
           f_mode = mode
         entry_info = self.make_zipinfo(path=path, mode=f_mode)
@@ -210,16 +207,16 @@ class ZipWriter(object):
         dir_path = path
         if not dir_path.endswith('/'):
           dir_path += '/'
-        entry_info = self.make_zipinfo(path=dir_path, mode=0o755)
+        entry_info = self.make_zipinfo(path=dir_path, mode="0o755")
         entry_info.compress_type = zipfile.ZIP_STORED
         # Set directory bits
         entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
         self.zip_file.writestr(entry_info, '')
 
-def _load_manifest(args, manifest_fp):
+def _load_manifest(prefix, manifest_fp):
   manifest_map = {}
   for entry in json.load(manifest_fp):
-    entry[1] = _combine_paths(args.directory, entry[1])
+    entry[1] = _combine_paths(prefix, entry[1])
     manifest_map[entry[1]] = entry
   manifest_keys = list(manifest_map.keys())
   # Add all parent directories of entries that have not been added explicitly.
@@ -241,7 +238,7 @@ def main(args):
     default_mode = int(args.mode, 8)
 
   with open(args.manifest, 'r') as manifest_fp:
-    manifest = _load_manifest(args, manifest_fp)
+    manifest = _load_manifest(args.directory, manifest_fp)
     with ZipWriter(
         args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
       for entry in manifest:
