@@ -195,7 +195,6 @@ def _pkg_tar_impl(ctx):
         args.add("--stamp_from", ctx.version_file.path)
         files.append(ctx.version_file)
 
-    file_inputs = depset(transitive = file_deps)
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     files.append(manifest_file)
     write_manifest(ctx, manifest_file, content_map)
@@ -204,10 +203,12 @@ def _pkg_tar_impl(ctx):
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = False)
 
+    inputs = depset(direct = ctx.files.deps + files, transitive = file_deps)
+
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
-        inputs = file_inputs.to_list() + ctx.files.deps + files,
+        inputs = inputs,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
         executable = ctx.executable.build_tar,
         arguments = [args],
