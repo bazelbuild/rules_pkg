@@ -70,6 +70,7 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     self.assertZipFileContent("test_zip_package_dir0.zip", [
         {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
         {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
+        {"filename": "abc/def/mylink", "attr": 0o777},
     ])
 
   def test_package_dir_substitution(self):

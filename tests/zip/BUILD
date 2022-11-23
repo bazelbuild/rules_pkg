@@ -199,10 +199,17 @@ filegroup(
     ],
 )
 
+pkg_mklink(
+    name = "mylink",
+    link_name = "mylink",
+    target = "dangling",
+)
+
 # All of these should produce the same zip file.
 [pkg_zip(
     name = "test_zip_package_dir" + str(idx),
     srcs = [
+        ":mylink",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
