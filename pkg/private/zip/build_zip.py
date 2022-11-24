@@ -20,7 +20,6 @@ import os
 import zipfile
 
 from pkg.private import build_info
-from pkg.private import helpers
 from pkg.private import manifest
 
 ZIP_EPOCH = 315532800
@@ -98,7 +97,7 @@ class ZipWriter(object):
     self.zip_file.close()
     self.zip_file = None
 
-  def make_zipinfo(self, path: str, mode: int):
+  def make_zipinfo(self, path: str, mode: str):
     """Create a Zipinfo.
 
     Args:
@@ -121,19 +120,17 @@ class ZipWriter(object):
     entry_info.external_attr = f_mode << 16
     return entry_info
 
-  def add_manifest_entry(self, options, entry):
+  def add_manifest_entry(self, entry):
     """Add an entry to the zip file.
 
     Args:
-      options: parsed options
       zip_file: ZipFile to write to
       entry: manifest entry
     """
     entry_type, dest, src, mode, user, group = entry
 
     # Use the pkg_tar mode/owner remaping as a fallback
-    non_abs_path = dest.strip('/')
-    dst_path = _combine_paths(options.directory, non_abs_path)
+    dst_path = dest.strip('/')
     if entry_type == manifest.ENTRY_IS_DIR and not dst_path.endswith('/'):
       dst_path += '/'
     entry_info = self.make_zipinfo(path=dst_path, mode=mode)
@@ -189,24 +186,47 @@ class ZipWriter(object):
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
+      to_write[dest_dir] = None
       for file in files:
         to_write[dest_dir + file] = root + '/' + file
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
-      # If mode is unspecified, derive the mode from the file's mode.
-      if mode is None:
-        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
-      else:
-        f_mode = mode
-      entry_info = self.make_zipinfo(path=path, mode=f_mode)
-      entry_info.compress_type = zipfile.ZIP_DEFLATED
-      if not content_path:
-        self.zip_file.writestr(entry_info, '')
-      else:
+      if content_path:
+        # If mode is unspecified, derive the mode from the file's mode.
+        if mode is None:
+          f_mode = "0o755" if os.access(content_path, os.X_OK) else self.default_mode
+        else:
+          f_mode = mode
+        entry_info = self.make_zipinfo(path=path, mode=f_mode)
+        entry_info.compress_type = zipfile.ZIP_DEFLATED
         with open(content_path, 'rb') as src:
           self.zip_file.writestr(entry_info, src.read())
+      else:
+        # Implicitly created directory
+        dir_path = path
+        if not dir_path.endswith('/'):
+          dir_path += '/'
+        entry_info = self.make_zipinfo(path=dir_path, mode="0o755")
+        entry_info.compress_type = zipfile.ZIP_STORED
+        # Set directory bits
+        entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
+        self.zip_file.writestr(entry_info, '')
 
+def _load_manifest(prefix, manifest_fp):
+  manifest_map = {}
+  for entry in json.load(manifest_fp):
+    entry[1] = _combine_paths(prefix, entry[1])
+    manifest_map[entry[1]] = entry
+  manifest_keys = list(manifest_map.keys())
+  # Add all parent directories of entries that have not been added explicitly.
+  for dest in manifest_keys:
+      parent = dest
+      for _ in range(dest.count("/")):
+        parent, _, _ = parent.rpartition("/")
+        if parent and parent not in manifest_map:
+            manifest_map[parent] = [manifest.ENTRY_IS_DIR, parent, None, "0o755", None, None]
+  return sorted(manifest_map.values(), key = lambda x: x[1])
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
@@ -218,11 +238,11 @@ def main(args):
     default_mode = int(args.mode, 8)
 
   with open(args.manifest, 'r') as manifest_fp:
-    manifest = json.load(manifest_fp)
+    manifest = _load_manifest(args.directory, manifest_fp)
     with ZipWriter(
         args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
       for entry in manifest:
-        zip_out.add_manifest_entry(args, entry)
+        zip_out.add_manifest_entry(entry)
 
 
 if __name__ == '__main__':

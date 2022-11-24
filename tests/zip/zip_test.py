@@ -38,6 +38,8 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
           {"filename": "foodir/", "isdir": True, "attr": 0o711},
           {"filename": "hello.txt", "crc": HELLO_CRC},
           {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/", "isdir": True, "attr": 0o755},
+          {"filename": "usr/bin/", "isdir": True, "attr": 0o755},
           {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
       ]
     else:
@@ -46,6 +48,8 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
           {"filename": "foodir/", "isdir": True, "attr": 0o711},
           {"filename": "hello.txt", "crc": HELLO_CRC},
           {"filename": "loremipsum.txt", "crc": LOREM_CRC},
+          {"filename": "usr/", "isdir": True, "attr": 0o755},
+          {"filename": "usr/bin/", "isdir": True, "attr": 0o755},
           {"filename": "usr/bin/foo", "isexe": True, "data": "/usr/local/foo/foo.real"},
       ]
 
@@ -68,6 +72,8 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
 
   def test_package_dir(self):
     self.assertZipFileContent("test_zip_package_dir0.zip", [
+        {"filename": "abc/", "isdir": True, "attr": 0o755},
+        {"filename": "abc/def/", "isdir": True, "attr": 0o755},
         {"filename": "abc/def/hello.txt", "crc": HELLO_CRC},
         {"filename": "abc/def/loremipsum.txt", "crc": LOREM_CRC},
         {"filename": "abc/def/mylink", "attr": 0o777},
@@ -75,6 +81,9 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
 
   def test_package_dir_substitution(self):
     self.assertZipFileContent("test_zip_package_dir_substitution.zip", [
+        {"filename": "level1/", "isdir": True, "attr": 0o755},
+        {"filename": "level1/some_value/", "isdir": True, "attr": 0o755},
+        {"filename": "level1/some_value/level3/", "isdir": True, "attr": 0o755},
         {"filename": "level1/some_value/level3/hello.txt", "crc": HELLO_CRC},
         {"filename": "level1/some_value/level3/loremipsum.txt", "crc": LOREM_CRC},
     ])
@@ -96,13 +105,19 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
 
   def test_zip_strip_prefix_dot(self):
     self.assertZipFileContent("test-zip-strip_prefix-dot.zip", [
+        {"filename": "zipcontent/", "isdir": True, "attr": 0o755},
         {"filename": "zipcontent/loremipsum.txt", "crc": LOREM_CRC},
     ])
 
   def test_zip_tree(self):
     self.assertZipFileContent("test_zip_tree.zip", [
+        {"filename": "generate_tree/", "isdir": True, "attr": 0o755},
+        {"filename": "generate_tree/a/", "isdir": True, "attr": 0o755},
         {"filename": "generate_tree/a/a"},
+        {"filename": "generate_tree/a/b/", "isdir": True, "attr": 0o755},
         {"filename": "generate_tree/a/b/c"},
+        {"filename": "generate_tree/b/", "isdir": True, "attr": 0o755},
+        {"filename": "generate_tree/b/c/", "isdir": True, "attr": 0o755},
         {"filename": "generate_tree/b/c/d"},
         {"filename": "generate_tree/b/d"},
         {"filename": "generate_tree/b/e"},
