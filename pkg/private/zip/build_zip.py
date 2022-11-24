@@ -137,7 +137,9 @@ class ZipWriter(object):
 
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
-      with open(src.encode('utf-8'), 'rb') as src:
+      # Using utf-8 for the file names is for python <3.7 compatibility.
+      src = src.encode('utf-8')
+      with open(src, 'rb') as src:
         self.zip_file.writestr(entry_info, src.read())
     elif entry_type == manifest.ENTRY_IS_DIR:
       entry_info.compress_type = zipfile.ZIP_STORED
@@ -148,6 +150,7 @@ class ZipWriter(object):
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
       entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
+      src = src.encode('utf-8')
       self.zip_file.writestr(entry_info, src)
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
@@ -213,7 +216,7 @@ class ZipWriter(object):
         entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
         self.zip_file.writestr(entry_info, '')
 
-def _load_manifest(prefix, manifest_content):
+def _parse_manifest(prefix, manifest_content):
   manifest_map = {}
   for entry in json.loads(manifest_content):
     entry[1] = _combine_paths(prefix, entry[1])
@@ -238,8 +241,10 @@ def main(args):
     default_mode = int(args.mode, 8)
 
   with open(args.manifest, 'r', encoding='utf-8') as manifest_fp:
+    # Subtle: decode the content here rather than in json.load() because the
+    # load in older python releases does not know how to decode.
     manifest_content = manifest_fp.read()
-    manifest = _load_manifest(args.directory, manifest_content)
+    manifest = _parse_manifest(args.directory, manifest_content)
     with ZipWriter(
         args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
       for entry in manifest:
