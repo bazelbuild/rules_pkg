@@ -213,9 +213,9 @@ class ZipWriter(object):
         entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
         self.zip_file.writestr(entry_info, '')
 
-def _load_manifest(prefix, manifest):
+def _load_manifest(prefix, manifest_content):
   manifest_map = {}
-  for entry in json.loads(manifest):
+  for entry in json.loads(manifest_content):
     entry[1] = _combine_paths(prefix, entry[1])
     manifest_map[entry[1]] = entry
   manifest_keys = list(manifest_map.keys())
