@@ -137,7 +137,7 @@ class ZipWriter(object):
 
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
-      with open(src, 'rb') as src:
+      with open(src.encode('utf-8'), 'rb') as src:
         self.zip_file.writestr(entry_info, src.read())
     elif entry_type == manifest.ENTRY_IS_DIR:
       entry_info.compress_type = zipfile.ZIP_STORED
