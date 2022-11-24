@@ -237,7 +237,7 @@ def main(args):
   if args.mode:
     default_mode = int(args.mode, 8)
 
-  with open(args.manifest, 'r') as manifest_fp:
+  with open(args.manifest, 'r', encoding='utf-8') as manifest_fp:
     manifest = _load_manifest(args.directory, manifest_fp)
     with ZipWriter(
         args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
