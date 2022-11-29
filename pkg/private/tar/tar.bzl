@@ -228,6 +228,9 @@ def _pkg_tar_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
+        OutputGroupInfo(
+            manifest = [manifest_file], 
+        ),
         PackageArtifactInfo(
             label = ctx.label.name,
             file = output_file,
