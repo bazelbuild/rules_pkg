@@ -78,6 +78,7 @@ pkg_deb(
     ],
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more",
     distribution = "trusty",
+    license = "Apache-2.0",
     maintainer = "soméone@somewhere.com",
     package = "fizzbuzz",
     preinst = "deb_preinst",

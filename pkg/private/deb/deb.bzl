@@ -130,6 +130,8 @@ def _pkg_deb_impl(ctx):
         args += ["--section=" + ctx.attr.section]
     if ctx.attr.homepage:
         args += ["--homepage=" + ctx.attr.homepage]
+    if ctx.attr.license:
+        args += ["--license=" + ctx.attr.license]
 
     args += ["--distribution=" + ctx.attr.distribution]
     args += ["--urgency=" + ctx.attr.urgency]
@@ -284,6 +286,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.""",
         ),
         "homepage": attr.string(doc = """The homepage of the project."""),
+        "license": attr.string(doc = """The license of the project."""),
 
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
