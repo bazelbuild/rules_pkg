@@ -34,7 +34,7 @@ HAS_XZ_SUPPORT = True
 
 # Filetype to restrict inputs
 tar_filetype = (
-    [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"] if HAS_XZ_SUPPORT else [".tar", ".tar.gz", ".tgz", ".tar.bz2"]
+    [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz", ".txz"] if HAS_XZ_SUPPORT else [".tar", ".tar.gz", ".tgz", ".tar.bz2"]
 )
 SUPPORTED_TAR_COMPRESSIONS = (
     ["", "gz", "bz2", "xz"] if HAS_XZ_SUPPORT else ["", "gz", "bz2"]
@@ -98,6 +98,8 @@ def _pkg_tar_impl(ctx):
                 compression = ctx.attr.extension
             if compression == "tgz":
                 compression = "gz"
+            if compression == "txz":
+                compression = "xz"
             if compression:
                 if compression in SUPPORTED_TAR_COMPRESSIONS:
                     args.add("--compression", compression)
