@@ -71,3 +71,15 @@ http_archive(
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "rules_pkg_migration_deps",
+    requirements_lock = "//migration:migration_deps_lock.txt",
+)
+
+load("@rules_pkg_migration_deps//:requirements.bzl", migration_install_deps = "install_deps")
+
+migration_install_deps()
+
