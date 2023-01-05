@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mklink")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mklink", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//:foo_defs.bzl", "shared_object_path_selector")
 
@@ -56,6 +56,8 @@ pkg_files(
         ":fooctl",
     ],
     # Where it should be in the final package
+    srcs_strip_prefix = strip_prefix.flatten(),
+    # Where it should be in the final package
     prefix = select(shared_object_path_selector) + "/bin",
     # Should this work?
     # runfiles_prefix = select(shared_object_path_selector) + "/bin/runfiles",
@@ -66,6 +68,7 @@ pkg_files(
     srcs = [
         ":foolib",
     ],
+    srcs_strip_prefix = strip_prefix.flatten(),
     prefix = "usr/lib/foo",
 )
 
@@ -83,6 +86,7 @@ pkg_files(
     srcs = [
         ":man",
     ],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "man",
         mode = "0444",

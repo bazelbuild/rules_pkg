@@ -32,7 +32,7 @@ pkg_files(
     # Where it should be in the final package
     prefix = "usr/share/doc/foo",
     # Required, but why?: see #354
-    strip_prefix = strip_prefix.from_pkg(),
+    srcs_strip_prefix = strip_prefix.from_pkg(),
 )
 
 pkg_filegroup(

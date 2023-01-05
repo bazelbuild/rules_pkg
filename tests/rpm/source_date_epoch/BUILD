@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@rules_python//python:defs.bzl", "py_test")
-load("//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("//pkg:rpm.bzl", "pkg_rpm")
 
 ############################################################################
@@ -72,6 +72,7 @@ pkg_filegroup(
 pkg_files(
     name = "pf",
     srcs = [":files"],
+    srcs_strip_prefix = strip_prefix.flatten(),
     prefix = "test_dir",
 )
 

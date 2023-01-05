@@ -23,6 +23,7 @@ load(
     "pkg_files",
     "pkg_mkdirs",
     "pkg_mklink",
+    "strip_prefix",
 )
 load("//pkg:rpm.bzl", "pkg_rpm")
 load("analysis_tests.bzl", "analysis_tests")
@@ -65,6 +66,7 @@ pkg_files(
     srcs = [
         ":ars",
     ],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "root",
         mode = "0755",
@@ -82,6 +84,7 @@ genrule(
 pkg_files(
     name = "config_file",
     srcs = [":config_empty"],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "root",
         mode = "0644",
@@ -329,6 +332,7 @@ pkg_files(
     srcs = [
         ":config_empty",
     ],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(mode = "0644"),
     prefix = "dir",
 )

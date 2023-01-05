@@ -279,7 +279,7 @@ pkg_files(
     srcs = [
         ":generate_tree",
     ],
-    strip_prefix = "generate_tree",
+    srcs_strip_prefix = "generate_tree",
 )
 
 pkg_tar(

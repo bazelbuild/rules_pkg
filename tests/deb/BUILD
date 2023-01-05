@@ -17,7 +17,7 @@
 
 load("@rules_python//python:defs.bzl", "py_test")
 load(":deb_tests.bzl", "package_naming_test")
-load("//pkg:mappings.bzl", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_mklink", "strip_prefix")
 load("//pkg:deb.bzl", "pkg_deb")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")

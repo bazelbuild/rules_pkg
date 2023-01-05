@@ -107,7 +107,7 @@ pkg_files(
         mode = "0644",
         user = "root",
     ),
-    strip_prefix = strip_prefix.from_pkg(""),
+    srcs_strip_prefix = strip_prefix.from_pkg(""),
 )
 
 directory(
@@ -125,6 +125,7 @@ directory(
 pkg_files(
     name = "test_files_from_rules",
     srcs = [":my_files"],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "root",
         mode = "0644",
@@ -246,6 +247,7 @@ pkg_files(
     srcs = [
         ":test_dir1",
     ],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(
         group = "root",
         mode = "0644",
