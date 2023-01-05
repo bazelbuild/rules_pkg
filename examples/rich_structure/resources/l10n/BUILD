@@ -28,7 +28,6 @@ pkg_files(
         # We know they should be read only. We don't know who should own them.
         mode = "0444",
     ),
-    srcs_strip_prefix = strip_prefix.from_pkg(),
 )
 
 # Use the English catalog again under a different name.
@@ -44,7 +43,6 @@ pkg_files(
         mode = "0444",
     ),
     prefix = "foo/en_GB",
-    srcs_strip_prefix = strip_prefix.from_pkg(),
 )
 
 # This gathers together all our message catalogs, and adds a prefix based
