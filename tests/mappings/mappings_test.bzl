@@ -94,7 +94,7 @@ pkg_files_contents_test = analysistest.make(
 )
 
 def _test_pkg_files_contents():
-    # Test stripping when no arguments are provided (same as strip_prefix.files_only())
+    # Test stripping when no arguments are provided (same as strip_prefix.flatten())
     pkg_files(
         name = "pf_no_strip_prefix_g",
         srcs = ["testdata/hello.txt"],
@@ -120,17 +120,17 @@ def _test_pkg_files_contents():
         ),
     )
 
-    # And now, files_only = True
+    # And now, flatten = True
     pkg_files(
-        name = "pf_files_only_g",
+        name = "pf_flatten_g",
         srcs = ["testdata/hello.txt"],
-        strip_prefix = strip_prefix.files_only(),
+        srcs_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
 
     pkg_files_contents_test(
-        name = "pf_files_only",
-        target_under_test = ":pf_files_only_g",
+        name = "pf_flatten",
+        target_under_test = ":pf_flatten_g",
         expected_dests = ["hello.txt"],
     )
 
@@ -148,7 +148,7 @@ def _test_pkg_files_contents():
             "testdata/hello.txt",
             ":testdata/test_script",
         ],
-        strip_prefix = strip_prefix.from_pkg("testdata/"),
+        srcs_strip_prefix = strip_prefix.from_pkg("testdata/"),
         tags = ["manual"],
     )
 
@@ -174,7 +174,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_from_root_g",
         srcs = [":testdata/test_script"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        srcs_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
 
@@ -194,7 +194,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_attributes_mode_overlay_if_not_provided_g",
         srcs = ["foo"],
-        strip_prefix = strip_prefix.from_pkg(),
+        srcs_strip_prefix = strip_prefix.from_pkg(),
         attributes = pkg_attributes(
             user = "foo",
             group = "bar",
@@ -219,6 +219,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_destination_collision_invalid_g",
         srcs = ["foo", "bar/foo"],
+        srcs_strip_prefix = strip_prefix.flatten(),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -230,7 +231,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_strip_prefix_from_package_invalid_g",
         srcs = ["foo/foo", "bar/foo"],
-        strip_prefix = strip_prefix.from_pkg("bar"),
+        srcs_strip_prefix = strip_prefix.from_pkg("bar"),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -242,7 +243,7 @@ def _test_pkg_files_contents():
     pkg_files(
         name = "pf_strip_prefix_from_root_invalid_g",
         srcs = ["foo", "bar"],
-        strip_prefix = strip_prefix.from_root("not/the/root"),
+        srcs_strip_prefix = strip_prefix.from_root("not/the/root"),
         tags = ["manual"],
     )
     generic_negative_test(
@@ -293,7 +294,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_label_strip_from_pkg_g",
         srcs = [":test_base_fg"],
         excludes = ["//tests/mappings:testdata/config"],
-        strip_prefix = strip_prefix.from_pkg("testdata"),
+        srcs_strip_prefix = strip_prefix.from_pkg("testdata"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -306,7 +307,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_filename_strip_from_pkg_g",
         srcs = [":test_base_fg"],
         excludes = ["testdata/config"],
-        strip_prefix = strip_prefix.from_pkg("testdata"),
+        srcs_strip_prefix = strip_prefix.from_pkg("testdata"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -320,7 +321,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_label_strip_from_root_g",
         srcs = [":test_base_fg"],
         excludes = ["//tests/mappings:testdata/config"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        srcs_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -333,7 +334,7 @@ def _test_pkg_files_exclusions():
         name = "pf_exclude_by_filename_strip_from_root_g",
         srcs = [":test_base_fg"],
         excludes = ["testdata/config"],
-        strip_prefix = strip_prefix.from_root("tests/mappings"),
+        srcs_strip_prefix = strip_prefix.from_root("tests/mappings"),
         tags = ["manual"],
     )
     pkg_files_contents_test(
@@ -874,7 +875,7 @@ def _test_pkg_filegroup(name):
 
 def _strip_prefix_test_impl(ctx):
     env = unittest.begin(ctx)
-    asserts.equals(env, ".", strip_prefix.files_only())
+    asserts.equals(env, ".", strip_prefix.flatten())
     asserts.equals(env, "path", strip_prefix.from_pkg("path"))
     asserts.equals(env, "path", strip_prefix.from_pkg("/path"))
     asserts.equals(env, "/path", strip_prefix.from_root("path"))
@@ -903,7 +904,7 @@ def mappings_analysis_tests():
             # buildifier: don't sort
             # Simple tests
             ":pf_no_strip_prefix",
-            ":pf_files_only",
+            ":pf_flatten",
             ":pf_strip_testdata_from_pkg",
             ":pf_strip_prefix_from_root",
             ":pf_attributes_mode_overlay_if_not_provided",

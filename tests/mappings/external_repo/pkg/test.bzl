@@ -57,7 +57,7 @@ def test_referencing_remote_file(name):
         prefix = "usr/share",
         srcs = ["@//tests:loremipsum_txt"],
         # The prefix in rules_pkg.  Why yes, this is knotty
-        strip_prefix = strip_prefix.from_root("tests"),
+        srcs_strip_prefix = strip_prefix.from_root("tests"),
         tags = ["manual"],
     )
 
