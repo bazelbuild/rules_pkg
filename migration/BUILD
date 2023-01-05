@@ -16,6 +16,18 @@ load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@rules_pkg_migration_deps//:requirements.bzl", "requirement")
 
+filegroup(
+    name = "standard_package",
+    srcs = glob([
+      "*.py"
+    ] + [
+        "BUILD",
+        "migration_deps.txt",
+        "migration_deps_lock.txt",
+    ]),
+    visibility = ["//distro:__pkg__"],
+)
+
 py_binary(
     name = "strip_prefix",
     srcs = ["migrate_strip_prefix.py"],
