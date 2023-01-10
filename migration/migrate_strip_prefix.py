@@ -23,7 +23,7 @@ import libcst as cst
 import libcst.codemod as codemod
 import libcst.matchers as cstm
 
-class PkgFilesStripPrefixTransformer(codemod.ContextAwareTransformer):
+class PkgFilesStripPrefixTransformer(codemod.VisitorBasedCodemodCommand):
     def __init__(self, context):
         super().__init__(context)
         self.load_node = None
@@ -32,8 +32,8 @@ class PkgFilesStripPrefixTransformer(codemod.ContextAwareTransformer):
     @cstm.call_if_inside(cstm.Call(func = cstm.Name("pkg_files")))
     @cstm.leave(cstm.Arg(keyword = cstm.Name("strip_prefix")))
     def rename_strip_prefix_to_srcs_strip_prefix(self,
-                                                  original_node: cst.Arg,
-                                                  updated_node: cst.Arg) -> cst.Arg:
+                                                 original_node: cst.Arg,
+                                                 updated_node: cst.Arg) -> cst.Arg:
         return updated_node.with_changes(keyword = cst.Name("srcs_strip_prefix"))
 
 
@@ -67,7 +67,7 @@ class PkgFilesStripPrefixTransformer(codemod.ContextAwareTransformer):
                 )
             )
         )
-        may_need_to_amend_load = True
+        self.may_need_to_amend_load = True
         return cst.FlattenSentinel([
             updated_node,
             new_node,
@@ -233,6 +233,8 @@ def main(argv):
     # NOTE: this can't be interrupted, because the underlying transform
     # execution catches KeyboardInterrupt and
     # parallel_exec_transform_with_prettyprint thinks of it as a "skip".
+    #
+    # See also https://github.com/Instagram/LibCST/issues/849
     print("")
     print("!!! Interrupt with C-\\ !!!")
     print("")
@@ -241,8 +243,9 @@ def main(argv):
     res = codemod.parallel_exec_transform_with_prettyprint(
         transformer,
         paths,
-        # TODO(nacl): We cannot parallelize this due to issues pickling some objects
-        # in libcst.  File a bug for this.
+        # FIXME: We cannot parallelize this due to issues with some of the
+        # matchers in libcst.  See also
+        # https://github.com/Instagram/LibCST/issues/848.
         jobs = 1, # defaults to None, which means "use all cores"
         unified_diff = args.diff,
         # Otherwise libcst can't calculate module paths and emits (for us)
