@@ -228,6 +228,10 @@ def _pkg_tar_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
+        # NB: this is not a committed public API.
+        # The format of this file is subject to change without notice,
+        # or this OutputGroup might be totally removed.
+        # Depend on it at your own risk!
         OutputGroupInfo(
             manifest = [manifest_file], 
         ),
