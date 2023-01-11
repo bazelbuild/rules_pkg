@@ -152,19 +152,20 @@ class PkgDebTest(unittest.TestCase):
   def test_description(self):
     control = self.deb_file.get_deb_ctl_file('control')
     fields = [
-	'Package: fizzbuzz',
-	'Depends: dep1, dep2',
-	'Built-Using: some_test_data',
-	'Replaces: oldpkg',
-	'Breaks: oldbrokenpkg',
-	'Provides: hello',
+        'Package: fizzbuzz',
+        'Depends: dep1, dep2',
+        'Built-Using: some_test_data',
+        'Replaces: oldpkg',
+        'Breaks: oldbrokenpkg',
+        'Provides: hello',
+        'License: Apache-2.0',
     ]
     # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
     # pass on Windows Until we rewrite how description is passed
     if sys.platform != 'win32':
       fields.extend([
-	  'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more\n',
-	  'Maintainer: soméone@somewhere.com',
+          'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more\n',
+          'Maintainer: soméone@somewhere.com',
       ])
     for field in fields:
       if control.find(field) < 0:

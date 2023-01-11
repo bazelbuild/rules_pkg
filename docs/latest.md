@@ -92,7 +92,7 @@ Rule for creating Debian packages.
 <pre>
 pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-architecture_file">architecture_file</a>, <a href="#pkg_deb-breaks">breaks</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>,
              <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>, <a href="#pkg_deb-description">description</a>,
-             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
+             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-license">license</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
              <a href="#pkg_deb-package_file_name">package_file_name</a>, <a href="#pkg_deb-package_variables">package_variables</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>,
              <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-provides">provides</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-replaces">replaces</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>, <a href="#pkg_deb-triggers">triggers</a>,
              <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
@@ -123,6 +123,7 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
 | <a id="pkg_deb-distribution"></a>distribution |  "distribution: See http://www.debian.org/doc/debian-policy.   | String | optional | "unstable" |
 | <a id="pkg_deb-enhances"></a>enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | <a id="pkg_deb-homepage"></a>homepage |  The homepage of the project.   | String | optional | "" |
+| <a id="pkg_deb-license"></a>license |  The license of the project.   | String | optional | "" |
 | <a id="pkg_deb-maintainer"></a>maintainer |  The maintainer of the package.   | String | required |  |
 | <a id="pkg_deb-out"></a>out |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="pkg_deb-package"></a>package |  The name of the package   | String | required |  |
