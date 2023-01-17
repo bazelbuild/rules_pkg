@@ -11,9 +11,6 @@ lts: &lts
 rolling: &rolling
   bazel: rolling
 
-bazel5: &bazel5
-  bazel: 5.2.0
-
 #
 # Groups of tests, by platform
 #
@@ -112,7 +109,3 @@ tasks:
     name: lts_windows
     <<: *windows
     <<: *lts
-  bzl5_windows:
-    name: bzl5_windows
-    <<: *windows
-    <<: *bazel5
