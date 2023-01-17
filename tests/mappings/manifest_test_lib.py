@@ -23,9 +23,6 @@ class ContentManifestTest(unittest.TestCase):
 
   run_files = runfiles.Create()
 
-  # Debug
-  maxDiff = None
-
   def assertManifestsMatch(self, expected, got):
     """Check two manifest files for equality.
 
