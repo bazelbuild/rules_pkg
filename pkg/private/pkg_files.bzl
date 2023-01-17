@@ -514,9 +514,13 @@ def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
     else:
         src = None
 
-    # Bazel 6 or newer stringifies local labels with a beginning repository of
-    # "@", which is equivalent to the repository in which the bazel command was
-    # run.
+    # Bazel 6 has a new flag "--incompatible_unambiguous_label_stringification"
+    # (https://github.com/bazelbuild/bazel/issues/15916) that causes labels in
+    # the repository in which Bazel was run to be stringified with a preceding
+    # "@".  In older versions, this flag did not exist.
+    #
+    # Since this causes all sorts of chaos with our tests, be consistent across
+    # all Bazel versions.
     origin_str = str(df.origin)
     if not origin_str.startswith('@'):
         origin_str = '@' + origin_str
