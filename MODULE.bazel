@@ -1,6 +1,6 @@
 module(
     name = "rules_pkg",
-    version = "0.7.1",  # Must sync with version.bzl.
+    version = "0.8.0",  # Must sync with version.bzl.
     repo_name = "rules_pkg",
 )
 
