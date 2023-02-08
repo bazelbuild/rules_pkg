@@ -33,9 +33,9 @@ class ContentManifestTest(unittest.TestCase):
     e_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + expected)
     with open(e_file, mode='rb') as e_fp:
       expected = json.load(e_fp)
-    expected_dict = {x[1]: x for x in expected}
+    expected_dict = {x["dest"]: x for x in expected}
     g_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + got)
     with open(g_file, mode='rb') as g_fp:
       got = json.load(g_fp)
-    got_dict = {x[1]: x for x in got}
+    got_dict = {x["dest"]: x for x in got}
     self.assertEqual(expected_dict, got_dict)

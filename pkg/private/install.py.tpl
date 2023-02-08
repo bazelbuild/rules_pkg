@@ -18,7 +18,6 @@
 # and will not function on its own.  See pkg/install.bzl for more details.
 
 import argparse
-import json
 import logging
 import os
 import shutil
@@ -125,32 +124,31 @@ class NativeInstaller(object):
             self.include_manifest(fh)
 
     def include_manifest(self, manifest_fh):
-        manifest_entries = json.load(manifest_fh)
+        manifest_entries = manifest.read_entries_from(manifest_fh)
 
         for entry in manifest_entries:
             # Swap out the source with the actual "runfile" location if we're
             # called as a part of the build rather than "bazel run"
-            if not CALLED_FROM_BAZEL_RUN and entry[2] is not None:
-                entry[2] = os.path.join(RUNFILE_PREFIX, entry[2])
+            if not CALLED_FROM_BAZEL_RUN and entry.src is not None:
+                entry.src = os.path.join(RUNFILE_PREFIX, entry.src)
             # Prepend the destdir path to all installation paths, if one is
             # specified.
             if self.destdir is not None:
-                entry[1] = os.path.join(self.destdir, entry[1])
-            entry_struct = manifest.ManifestEntry(*entry)
-            self.entries.append(entry_struct)
+                entry.dest = os.path.join(self.destdir, entry.dest)
+            self.entries.append(entry)
 
     def do_the_thing(self):
         for entry in self.entries:
-            if entry.entry_type == manifest.ENTRY_IS_FILE:
+            if entry.type == manifest.ENTRY_IS_FILE:
                 self._install_file(entry)
-            elif entry.entry_type == manifest.ENTRY_IS_LINK:
+            elif entry.type == manifest.ENTRY_IS_LINK:
                 self._install_symlink(entry)
-            elif entry.entry_type == manifest.ENTRY_IS_DIR:
+            elif entry.type == manifest.ENTRY_IS_DIR:
                 self._install_directory(entry)
-            elif entry.entry_type == manifest.ENTRY_IS_TREE:
+            elif entry.type == manifest.ENTRY_IS_TREE:
                 self._install_treeartifact(entry)
             else:
-                raise ValueError("Unrecognized entry type %d" % entry.entry_type)
+                raise ValueError("Unrecognized entry type '{}'".format(entry.type))
 
 
 def main(args):

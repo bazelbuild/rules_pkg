@@ -15,7 +15,6 @@
 
 import argparse
 import datetime
-import json
 import os
 import zipfile
 
@@ -127,7 +126,13 @@ class ZipWriter(object):
       zip_file: ZipFile to write to
       entry: manifest entry
     """
-    entry_type, dest, src, mode, user, group = entry
+
+    entry_type = entry.type
+    dest = entry.dest
+    src = entry.src
+    mode = entry.mode
+    user = entry.user
+    group = entry.group
 
     # Use the pkg_tar mode/owner remaping as a fallback
     dst_path = dest.strip('/')
@@ -151,7 +156,7 @@ class ZipWriter(object):
       self.zip_file.writestr(entry_info, src)
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
-    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+    elif entry_type == manifest.ENTRY_IS_EMPTY_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
       self.zip_file.writestr(entry_info, '')
     else:
@@ -215,18 +220,31 @@ class ZipWriter(object):
 
 def _load_manifest(prefix, manifest_fp):
   manifest_map = {}
-  for entry in json.load(manifest_fp):
-    entry[1] = _combine_paths(prefix, entry[1])
-    manifest_map[entry[1]] = entry
+  for entry in manifest.read_entries_from(manifest_fp):
+    entry.dest = _combine_paths(prefix, entry.dest)
+    manifest_map[entry.dest] = entry
+
+  # We modify the dictionary as we're iterating over it, so we need to listify
+  # the keys here.
   manifest_keys = list(manifest_map.keys())
   # Add all parent directories of entries that have not been added explicitly.
   for dest in manifest_keys:
       parent = dest
+      # TODO: use pathlib instead of string manipulation?
       for _ in range(dest.count("/")):
         parent, _, _ = parent.rpartition("/")
         if parent and parent not in manifest_map:
-            manifest_map[parent] = [manifest.ENTRY_IS_DIR, parent, None, "0o755", None, None]
-  return sorted(manifest_map.values(), key = lambda x: x[1])
+            manifest_map[parent] = manifest.ManifestEntry(
+              type = manifest.ENTRY_IS_DIR,
+              dest = parent,
+              src = "",
+              mode = "0o755",
+              user =  None,
+              group = None,
+              origin = "parent directory of {}".format(manifest_map[dest].origin),
+            )
+
+  return sorted(manifest_map.values(), key = lambda x: x.dest)
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
