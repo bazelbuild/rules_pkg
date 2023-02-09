@@ -37,16 +37,16 @@ def seconds_to_ziptime(s):
 
 class ZipTest(unittest.TestCase):
 
+  def setUp(self):
+    super(ZipTest, self).setUp()
+    self.data_files = runfiles.Create()
+
   def get_test_zip(self, zip_file):
     """Get the file path to a generated zip in the runfiles."""
 
     return self.data_files.Rlocation(
         "rules_pkg/tests/zip/" + zip_file
     )
-
-  def setUp(self):
-    super(ZipTest, self).setUp()
-    self.data_files = runfiles.Create()
 
 
 class ZipContentsTestBase(ZipTest):
