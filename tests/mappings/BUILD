@@ -84,8 +84,6 @@ pkg_files(
     ],
 )
 
-# TODO: this seems to write the JSON in a particular order; regardless of input
-# order.  Investigate when opportune, or make the test order-agnostic.
 write_content_manifest(
     name = "all",
     srcs = [
