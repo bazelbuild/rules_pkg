@@ -49,8 +49,15 @@ class ManifestEntry(object):
 
 def read_entries_from(fh):
     """Return a list of ManifestEntry's from `fh`"""
-    raw_entries = json.load(fh)
+    # Subtle: decode the content with read() rather than in json.load() because
+    # the load in older python releases (< 3.7?) does not know how to decode.
+    raw_entries = json.loads(fh.read())
     return [ManifestEntry(**entry) for entry in raw_entries]
+
+def read_entries_from_file(manifest_path):
+    """Return a list of ManifestEntry's from the manifset file at `path`"""
+    with open(manifest_path, 'r', encoding='utf-8') as fh:
+        return read_entries_from(fh)
 
 def entry_type_to_string(et):
     """Entry type stringifier"""

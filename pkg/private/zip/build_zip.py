@@ -221,9 +221,10 @@ class ZipWriter(object):
         entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
         self.zip_file.writestr(entry_info, '')
 
-def _parse_manifest(prefix, manifest_content):
+def _load_manifest(prefix, manifest_path):
   manifest_map = {}
-  for entry in manifest.read_entries_from(manifest_fp):
+
+  for entry in manifest.read_entries_from_file(manifest_path):
     entry.dest = _combine_paths(prefix, entry.dest)
     manifest_map[entry.dest] = entry
 
@@ -258,15 +259,11 @@ def main(args):
   if args.mode:
     default_mode = int(args.mode, 8)
 
-  with open(args.manifest, 'r', encoding='utf-8') as manifest_fp:
-    # Subtle: decode the content here rather than in json.load() because the
-    # load in older python releases does not know how to decode.
-    manifest_content = manifest_fp.read()
-    manifest = _parse_manifest(args.directory, manifest_content)
-    with ZipWriter(
-        args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
-      for entry in manifest:
-        zip_out.add_manifest_entry(entry)
+  manifest = _load_manifest(args.directory, args.manifest)
+  with ZipWriter(
+      args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
+    for entry in manifest:
+      zip_out.add_manifest_entry(entry)
 
 
 if __name__ == '__main__':
