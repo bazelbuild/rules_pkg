@@ -127,6 +127,8 @@ def _pkg_tar_impl(ctx):
             default_mode = None,
             default_user = None,
             default_group = None,
+            default_uid = None,
+            default_gid = None,
         ):
             src_files = src[DefaultInfo].files.to_list()
             if ctx.attr.include_runfiles:

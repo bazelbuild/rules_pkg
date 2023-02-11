@@ -15,6 +15,7 @@
 """Tests for pkg_tar."""
 
 # buildifier: disable=bzl-visibility
+load("//pkg:mappings.bzl", "pkg_attributes")
 load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
@@ -122,8 +123,8 @@ pkg_mklink(
 pkg_tar(
     name = "test_tar_package_dir",
     srcs = [
-        ":mylink",
         ":etc/nsswitch.conf",
+        ":mylink",
     ],
     package_dir = "/my/package",
 )
@@ -323,19 +324,21 @@ py_test(
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
+        ":test-tar-long-filename",
         ":test-tar-mtime.tar",
+        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
-        ":test_tar_leading_dotslash",
-        ":test_tar_package_dir_substitution.tar",
-        ":test-tar-long-filename",
-        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
+        ":test-pkg-tar-with-attributes",
+        ":test-pkg-tar-from-pkg-files-with-attributes",
+        ":test_tar_leading_dotslash",
+        ":test_tar_package_dir_substitution.tar",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -374,6 +377,37 @@ pkg_tar(
         "//tests:testdata/loremipsum.txt",
     ],
     extension = ".tar.gz",
+)
+
+pkg_files(
+    name = "test-pkg-files-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    attributes = pkg_attributes(
+        group = "1000",
+        uid = "0",
+        gid = "1000",
+        mode = "0440",
+        user = "0",
+    ),
+    prefix = "/foo/bar",
+)
+
+pkg_tar(
+    name = "test-pkg-tar-from-pkg-files-with-attributes",
+    srcs = [
+        ":test-pkg-files-with-attributes",
+    ],
+)
+
+pkg_tar(
+    name = "test-pkg-tar-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    owner = "0.1000",
+    package_dir = "/foo/bar",
 )
 
 pkg_tar(

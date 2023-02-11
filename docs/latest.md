@@ -63,19 +63,22 @@ attributes = pkg_attributes(
     mode = "0644",
     user = "root",
     group = "wheel",
+    uid = "5",
+    gid = "7",
     my_custom_attribute = "some custom value",
 )
 ```
 
 `mode`, `user`, and `group` correspond to common UNIX-style filesystem
-permissions.  Attributes should always be specified using the `pkg_attributes`
-helper macro.
+permissions. `uid` and `gid` correspond to the numeric uid/gid.  Attributes
+should always be specified using the `pkg_attributes` helper macro.
 
 Each mapping rule has some default mapping attributes.  At this time, the only
 default is "mode", which will be set if it is not otherwise overridden by the user.
 
 If `user` and `group` are not specified, then defaults for them will be chosen
-by the underlying package builder.  Any specific behavior from package builders
+by the underlying package builder.  If `uid` and `gid` are not specified,
+they will default to 0.  Any specific behavior from package builders
 should not be relied upon.
 
 Any other attributes should be specified as additional arguments to

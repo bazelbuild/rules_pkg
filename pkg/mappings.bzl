@@ -72,15 +72,21 @@ strip_prefix = struct(
     from_root = _sp_from_root,
 )
 
-def pkg_attributes(mode = None, user = None, group = None, **kwargs):
+def pkg_attributes(
+        mode = None,
+        user = None,
+        group = None,
+        uid = None,
+        gid = None,
+        **kwargs):
     """Format attributes for use in package mapping rules.
 
     If "mode" is not provided, it will default to the mapping rule's default
     mode.  These vary per mapping rule; consult the respective documentation for
     more details.
 
-    Not providing any of "user", or "group" will result in the package builder
-    choosing one for you.  The chosen value should not be relied upon.
+    Not providing any of "user", "group", "uid", or "gid" will result in the package
+    builder choosing one for you.  The chosen value should not be relied upon.
 
     Well-known attributes outside of the above are documented in the rules_pkg
     reference.
@@ -92,6 +98,8 @@ def pkg_attributes(mode = None, user = None, group = None, **kwargs):
       mode: string: UNIXy octal permissions, as a string.
       user: string: Filesystem owning user.
       group: string: Filesystem owning group.
+      uid: string: Filesystem owning uid.
+      gid: string: Filesystem owning gid.
       **kwargs: any other desired attributes.
 
     Returns:
@@ -105,6 +113,10 @@ def pkg_attributes(mode = None, user = None, group = None, **kwargs):
         ret["user"] = user
     if group:
         ret["group"] = group
+    if uid:
+        ret["uid"] = uid
+    if gid:
+        ret["gid"] = gid
     return json.encode(ret)
 
 ####
