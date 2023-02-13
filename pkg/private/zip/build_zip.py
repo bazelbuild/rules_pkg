@@ -193,14 +193,15 @@ class ZipWriter(object):
         dest_dir = dest
       to_write[dest_dir] = None
       for file in files:
+        content_path = os.path.abspath(os.path.join(root, file))
         if os.name == "nt":
           # "To specify an extended-length path, use the `\\?\` prefix. For
           # example, `\\?\D:\very long path`."[1]
           #
           # [1]: https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
-          to_write[dest_dir + file] = "\\\\?\\" + os.path.abspath(os.path.join(root, file))
+          to_write[dest_dir + file] = "\\\\?\\" + content_path
         else:
-          to_write[dest_dir + file] = root + '/' + file
+          to_write[dest_dir + file] = content_path
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
