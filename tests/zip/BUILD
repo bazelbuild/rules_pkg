@@ -13,7 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink", "strip_prefix")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")

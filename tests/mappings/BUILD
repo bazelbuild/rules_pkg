@@ -62,6 +62,7 @@ directory(
 pkg_files(
     name = "directory-with-contents",
     srcs = ["treeartifact"],
+    srcs_strip_prefix = strip_prefix.flatten(),
     attributes = pkg_attributes(mode = "0644"),
 )
 
@@ -82,6 +83,7 @@ pkg_files(
     srcs = [
         "mappings_test.bzl",
     ],
+srcs_strip_prefix = strip_prefix.flatten(),
 )
 
 write_content_manifest(
@@ -108,7 +110,7 @@ pkg_files(
     srcs = [
         "//tests/testdata/utf8:files",
     ],
-    strip_prefix = strip_prefix.from_pkg(),
+    srcs_strip_prefix = strip_prefix.from_pkg(),
 )
 
 write_content_manifest(

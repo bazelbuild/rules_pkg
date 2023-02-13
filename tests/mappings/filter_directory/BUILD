@@ -14,7 +14,7 @@
 
 load("@rules_python//python:defs.bzl", "py_test")
 load(":defs.bzl", "inspect_directory_test")
-load("//pkg:mappings.bzl", "filter_directory")
+load("//pkg:mappings.bzl", "filter_directory", "strip_prefix")
 load("//tests/util:defs.bzl", "directory")
 
 # TODO: the below tests only check for rule success and confirmation that

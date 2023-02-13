@@ -36,6 +36,7 @@ pkg_tar(
     srcs = [
         ":small_workspace",
         "//:standard_package",
+        "//migration:standard_package",
         "//pkg:standard_package",
         "//pkg/private:standard_package",
         "//pkg/private/deb:standard_package",

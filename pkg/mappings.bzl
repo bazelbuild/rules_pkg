@@ -36,7 +36,7 @@ _PKGFILEGROUP_STRIP_ALL = "."
 
 REMOVE_BASE_DIRECTORY = "\0"
 
-def _sp_files_only():
+def _sp_flatten():
     return _PKGFILEGROUP_STRIP_ALL
 
 def _sp_from_pkg(path = ""):
@@ -52,11 +52,11 @@ def _sp_from_root(path = ""):
         return "/" + path
 
 strip_prefix = struct(
-    _doc = """pkg_files `strip_prefix` helper.  Instructs `pkg_files` what to do with directory prefixes of files.
+    _doc = """pkg_files `srcs_strip_prefix` helper.  Instructs `pkg_files` what to do with directory prefixes of files.
 
     Each member is a function that equates to:
 
-    - `files_only()`: strip all directory components from all paths
+    - `flatten()`: strip all directory components from all paths
 
     - `from_pkg(path)`: strip all directory components up to the current
       package, plus what's in `path`, if provided.
@@ -67,7 +67,7 @@ strip_prefix = struct(
     Prefix stripping is applied to each `src` in a `pkg_files` rule
     independently.
  """,
-    files_only = _sp_files_only,
+    flatten = _sp_flatten,
     from_pkg = _sp_from_pkg,
     from_root = _sp_from_root,
 )
@@ -198,15 +198,15 @@ def _pkg_files_impl(ctx):
     # Exclude excludes
     srcs = [f for f in ctx.files.srcs if f not in ctx.files.excludes]
 
-    if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
+    if ctx.attr.srcs_strip_prefix == _PKGFILEGROUP_STRIP_ALL:
         src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
-    elif ctx.attr.strip_prefix.startswith("/"):
+    elif ctx.attr.srcs_strip_prefix.startswith("/"):
         # Relative to workspace/repository root
         src_dest_paths_map = {src: paths.join(
             ctx.attr.prefix,
             _do_strip_prefix(
                 _path_relative_to_repo_root(src),
-                ctx.attr.strip_prefix[1:],
+                ctx.attr.srcs_strip_prefix[1:],
                 src,
             ),
         ) for src in srcs}
@@ -216,7 +216,7 @@ def _pkg_files_impl(ctx):
             ctx.attr.prefix,
             _do_strip_prefix(
                 _path_relative_to_package(src),
-                ctx.attr.strip_prefix,
+                ctx.attr.srcs_strip_prefix,
                 src,
             ),
         ) for src in srcs}
@@ -337,19 +337,18 @@ pkg_files = rule(
             """,
             default = "",
         ),
-        "strip_prefix": attr.string(
-            doc = """What prefix of a file's path to discard prior to installation.
+        "srcs_strip_prefix": attr.string(
+            doc = """What prefix of a file's source path to discard prior to installation.
 
             This specifies what prefix of an incoming file's path should not be
             included in the output package at after being appended to the
             install prefix (the `prefix` attribute).  Note that this is only
-            applied to full directory names, see `strip_prefix` for more
-            details.
+            applied to full directory names, see the `strip_prefix` struct
+            for more details.
 
-            Use the `strip_prefix` struct to define this attribute.  If this
-            attribute is not specified, all directories will be stripped from
-            all files prior to being included in packages
-            (`strip_prefix.files_only()`).
+            Use the `strip_prefix` psuedo-structure to define this attribute.
+            If this attribute is not specified, paths will be preserved relative
+            to their current package (equivalent to `strip_prefix.from_pkg()`).
 
             If prefix stripping fails on any file provided in `srcs`, the build
             will fail.
@@ -359,7 +358,7 @@ pkg_files = rule(
             TreeArtifacts (directory outputs), or the directories themselves.
             See also #269.
             """,
-            default = strip_prefix.files_only(),
+            default = strip_prefix.from_pkg(),
         ),
         "excludes": attr.label_list(
             doc = """List of files or labels to exclude from the inputs to this rule.
@@ -377,13 +376,13 @@ pkg_files = rule(
             `pkg_file`s relative to the `prefix` attribute.  Keys to the
             dict are source files/labels, values are destinations relative to
             the `prefix`, ignoring whatever value was provided for
-            `strip_prefix`.
+            `srcs_strip_prefix`.
 
             If the key refers to a TreeArtifact (directory output), you may
             specify the constant `REMOVE_BASE_DIRECTORY` as the value, which
             will result in all containing files and directories being installed
             relative to the otherwise specified install prefix (via the `prefix`
-            and `strip_prefix` attributes), not the directory name.
+            and `srcs_strip_prefix` attributes), not the directory name.
             
             The following keys are rejected:
 
