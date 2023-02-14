@@ -268,9 +268,9 @@ class PkgTarTest(unittest.TestCase):
 
   def test_pkg_files_with_attributes(self):
     content = [
-      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': '0', 'gname': '1000'},
-      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': '0', 'gname': '1000'},
-      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': '0', 'gname': '1000'},
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
     ]
     self.assertTarFileContent('test-pkg-tar-from-pkg-files-with-attributes.tar', content)
 

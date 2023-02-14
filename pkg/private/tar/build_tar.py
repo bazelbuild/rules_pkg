@@ -305,8 +305,8 @@ class TarFile(object):
       else:
         # Use group that legacy tar process would assign
         attrs['names'] = (entry.user, attrs.get('names')[1])
-    if entry.uid:
-      if entry.gid:
+    if entry.uid is not None:
+      if entry.gid is not None:
         attrs['ids'] = (entry.uid, entry.gid)
       else:
         attrs['ids'] = (entry.uid, entry.uid)

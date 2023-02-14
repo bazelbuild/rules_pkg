@@ -385,11 +385,11 @@ pkg_files(
         "//tests:testdata/loremipsum.txt",
     ],
     attributes = pkg_attributes(
-        group = "1000",
-        uid = "0",
-        gid = "1000",
+        gid = 1000,
+        group = "grp",
         mode = "0440",
-        user = "0",
+        uid = 0,
+        user = "person",
     ),
     prefix = "/foo/bar",
 )

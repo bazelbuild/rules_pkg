@@ -96,10 +96,10 @@ def pkg_attributes(
 
     Args:
       mode: string: UNIXy octal permissions, as a string.
-      user: string: Filesystem owning user.
-      group: string: Filesystem owning group.
-      uid: string: Filesystem owning uid.
-      gid: string: Filesystem owning gid.
+      user: string: Filesystem owning user name.
+      group: string: Filesystem owning group name.
+      uid: int: Filesystem owning user id.
+      gid: int: Filesystem owning group id.
       **kwargs: any other desired attributes.
 
     Returns:
@@ -113,10 +113,21 @@ def pkg_attributes(
         ret["user"] = user
     if group:
         ret["group"] = group
-    if uid:
+    if uid != None:
+        if type(uid) != type(0):
+            fail('Got "' + str(uid) + '" instead of integer uid')
         ret["uid"] = uid
-    if gid:
+    if gid != None:
+        if type(gid) != type(0):
+            fail('Got "' + str(gid) + '" instead of integer gid')
         ret["gid"] = gid
+
+    if user != None and user.isdigit() and uid == None:
+        print("Warning: found numeric username and no uid, did you mean to specify the uid instead?")
+
+    if group != None and group.isdigit() and gid == None:
+        print("Warning: found numeric group and no gid, did you mean to specify the gid instead?")
+
     return json.encode(ret)
 
 ####

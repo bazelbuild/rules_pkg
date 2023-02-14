@@ -91,8 +91,12 @@ def _merge_attributes(info, mode, user, group, uid, gid):
         mode = attrs.get("mode") or mode
         user = attrs.get("user") or user
         group = attrs.get("group") or group
-        uid = attrs.get("uid") or uid
-        gid = attrs.get("gid") or gid
+        new_uid = attrs.get("uid")
+        if new_uid != None:
+          uid = new_uid
+        new_gid = attrs.get("gid")
+        if new_gid != None:
+          gid = new_gid
     return (mode, user, group, uid, gid)
 
 def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
@@ -175,7 +179,7 @@ def process_src(
       default_user: fallback user to use for Package*Info elements without user
       default_group: fallback mode to use for Package*Info elements without group
       default_uid: fallback uid to use for Package*Info elements without uid
-      default_gid: fallback gid to use for Package*Info elements without guid
+      default_gid: fallback gid to use for Package*Info elements without gid
 
     Returns:
       True if src was a Package*Info and added to content_map.
@@ -576,8 +580,8 @@ def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
         "mode": df.mode or "",
         "user": df.user or None,
         "group": df.group or None,
-        "uid": df.uid or None,
-        "gid": df.gid or None,
+        "uid": df.uid,
+        "gid": df.gid,
         "origin": origin_str,
     }
 

@@ -63,8 +63,8 @@ attributes = pkg_attributes(
     mode = "0644",
     user = "root",
     group = "wheel",
-    uid = "5",
-    gid = "7",
+    uid = 5,
+    gid = 7,
     my_custom_attribute = "some custom value",
 )
 ```
