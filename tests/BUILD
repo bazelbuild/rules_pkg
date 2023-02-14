@@ -63,6 +63,7 @@ pkg_files(
     # Note: This is temporary. We need to fix a latent bug where
     # we are using 555 as the default for many things. That was the
     # Google internal behavior.
+    # See https://github.com/bazelbuild/rules_pkg/issues/302 for thoughts.
     attributes = pkg_attributes(mode = "0o555"),
     strip_prefix = strip_prefix.from_pkg(),
     visibility = ["//tests:__subpackages__"],

@@ -87,6 +87,8 @@ organization will commit to maintaining that feature and responding to issues.
 
 -   We use Python 3. We are not trying to support Python 2 at all.
 -   Always import with a full path from the root of the source tree.
+-   Compatibility back to python 3.6 (for CentOS 7 and Ubuntu 18.04 LTS) is
+    required.
 
 ### Dependencies
 

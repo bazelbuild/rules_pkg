@@ -143,9 +143,8 @@ class ZipWriter(object):
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
       # Using utf-8 for the file names is for python <3.7 compatibility.
-      src = src.encode('utf-8')
-      with open(src, 'rb') as src:
-        self.zip_file.writestr(entry_info, src.read())
+      with open(src.encode('utf-8'), 'rb') as src_content:
+        self.zip_file.writestr(entry_info, src_content.read())
     elif entry_type == manifest.ENTRY_IS_DIR:
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
@@ -155,8 +154,7 @@ class ZipWriter(object):
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
       entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
-      src = src.encode('utf-8')
-      self.zip_file.writestr(entry_info, src)
+      self.zip_file.writestr(entry_info, src.encode('utf-8'))
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
     elif entry_type == manifest.ENTRY_IS_EMPTY_FILE:

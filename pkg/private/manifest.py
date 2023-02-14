@@ -55,7 +55,7 @@ def read_entries_from(fh):
     return [ManifestEntry(**entry) for entry in raw_entries]
 
 def read_entries_from_file(manifest_path):
-    """Return a list of ManifestEntry's from the manifset file at `path`"""
+    """Return a list of ManifestEntry's from the manifest file at `path`"""
     with open(manifest_path, 'r', encoding='utf-8') as fh:
         return read_entries_from(fh)
 
