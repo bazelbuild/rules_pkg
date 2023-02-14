@@ -256,7 +256,6 @@ py_test(
     python_version = "PY3",
     deps = [
         ":zip_test_lib",
-        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
@@ -276,6 +275,25 @@ py_test(
         ":test_zip_basic_timestamp_before_epoch.zip",
         ":test_zip_package_dir1.zip",
         ":test_zip_package_dir2.zip",
+    ],
+    python_version = "PY3",
+    deps = [
+        ":zip_test_lib",
+    ],
+)
+
+pkg_zip(
+    name = "unicode_names",
+    srcs = ["//tests:utf8_files"]
+)
+
+py_test(
+    name = "unicode_test",
+    srcs = [
+        "unicode_test.py",
+    ],
+    data = [
+        ":unicode_names",
     ],
     python_version = "PY3",
     deps = [

@@ -91,4 +91,5 @@ class ZipContentsTestBase(ZipTest):
             # legacy rule implementation.
             attr = 0o555
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
-                           oct(attr))
+                           oct(attr),
+                           msg = info.filename)

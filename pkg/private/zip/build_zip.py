@@ -142,8 +142,9 @@ class ZipWriter(object):
 
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = zipfile.ZIP_DEFLATED
-      with open(src, 'rb') as src:
-        self.zip_file.writestr(entry_info, src.read())
+      # Using utf-8 for the file names is for python <3.7 compatibility.
+      with open(src.encode('utf-8'), 'rb') as src_content:
+        self.zip_file.writestr(entry_info, src_content.read())
     elif entry_type == manifest.ENTRY_IS_DIR:
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
@@ -153,7 +154,7 @@ class ZipWriter(object):
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
       entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
-      self.zip_file.writestr(entry_info, src)
+      self.zip_file.writestr(entry_info, src.encode('utf-8'))
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
     elif entry_type == manifest.ENTRY_IS_EMPTY_FILE:
@@ -226,9 +227,10 @@ class ZipWriter(object):
         entry_info.external_attr |= (UNIX_DIR_BIT << 16) | MSDOS_DIR_BIT
         self.zip_file.writestr(entry_info, '')
 
-def _load_manifest(prefix, manifest_fp):
+def _load_manifest(prefix, manifest_path):
   manifest_map = {}
-  for entry in manifest.read_entries_from(manifest_fp):
+
+  for entry in manifest.read_entries_from_file(manifest_path):
     entry.dest = _combine_paths(prefix, entry.dest)
     manifest_map[entry.dest] = entry
 
@@ -263,12 +265,11 @@ def main(args):
   if args.mode:
     default_mode = int(args.mode, 8)
 
-  with open(args.manifest, 'r') as manifest_fp:
-    manifest = _load_manifest(args.directory, manifest_fp)
-    with ZipWriter(
-        args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
-      for entry in manifest:
-        zip_out.add_manifest_entry(entry)
+  manifest = _load_manifest(args.directory, args.manifest)
+  with ZipWriter(
+      args.output, time_stamp=ts, default_mode=default_mode) as zip_out:
+    for entry in manifest:
+      zip_out.add_manifest_entry(entry)
 
 
 if __name__ == '__main__':

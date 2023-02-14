@@ -47,6 +47,7 @@ win_tests: &win_tests
     # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
     - "-//tests/mappings:utf8_manifest_test"
     - "-//tests/mappings/filter_directory/..."
+    - "-//tests/zip:unicode_test"
     # See #387
     - "-//tests/install/..."
     # rpmbuild(8) is not supported on Windows
