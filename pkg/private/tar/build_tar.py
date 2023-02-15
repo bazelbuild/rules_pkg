@@ -27,7 +27,7 @@ from pkg.private.tar import tar_writer
 
 def normpath(path):
   """Normalize a path to the format we need it.
-  
+
   os.path.normpath changes / to \ on windows, but tarfile needs / style paths.
 
   Args:
@@ -264,11 +264,6 @@ class TarFile(object):
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
-      # If mode is unspecified, derive the mode from the file's mode.
-      if mode is None:
-        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
-      else:
-        f_mode = mode
       if not content_path:
         # This is an intermediate directory. Bazel has no API to specify modes
         # for this, so the least surprising thing we can do is make it the
@@ -280,6 +275,11 @@ class TarFile(object):
             names=names,
             kind=tarfile.DIRTYPE)
       else:
+        # If mode is unspecified, derive the mode from the file's mode.
+        if mode is None:
+          f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+        else:
+          f_mode = mode
         self.tarfile.add_file(
             path,
             file_content=content_path,
@@ -413,7 +413,7 @@ def main():
 
   # Add objects to the tar file
   with TarFile(
-      options.output, 
+      options.output,
       directory = helpers.GetFlagValue(options.directory),
       compression = options.compression,
       compressor = options.compressor,
