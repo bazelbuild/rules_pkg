@@ -16,6 +16,7 @@
 
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
+load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
@@ -263,6 +264,25 @@ pkg_tar(
     deps = [
         ":test-tar-long-filename",
     ],
+)
+
+verify_archive_test(
+    name = "repackaging_long_filename_test",
+    target = ":test-tar-repackaging-long-filename",
+    must_contain = [
+        "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    # there is really no need for these cases. I just want to use all the test capabilities.
+    must_not_contain = [
+        "i_am_not here",
+    ],
+    must_contain_regex = [
+        ".*can_i_repackage_a_file_with_a_long_name/$",
+    ],
+    must_not_contain_regex = [
+        "^five.is.right.out",
+    ],
+    max_size = 2,
 )
 
 pkg_tar(
