@@ -110,9 +110,9 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
-            origin = origin,
             uid = attrs[3],
             gid = attrs[4],
+            origin = origin,
         )
 
 def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
@@ -126,9 +126,9 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
-            origin = origin,
             uid = attrs[3],
             gid = attrs[4],
+            origin = origin,
         )
 
 def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
@@ -141,10 +141,10 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
         mode = attrs[0],
         user = attrs[1],
         group = attrs[2],
-        origin = origin,
-        link_to = pkg_symlink_info.target,
         uid = attrs[3],
         gid = attrs[4],
+        origin = origin,
+        link_to = pkg_symlink_info.target,
     )
 
 def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
