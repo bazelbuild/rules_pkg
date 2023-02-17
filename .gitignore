@@ -1,3 +1,4 @@
 .bazeliskrc
 .ijwb
 bazel-*
+__pycache__/

@@ -28,6 +28,13 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
+py_binary(
+    name = "helper",
+    srcs = ["helper.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+)
+
 py_test(
     name = "tar_writer_test",
     srcs = [
@@ -47,7 +54,26 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
+        ":helper",
         "//pkg/private/tar:tar_writer",
+        "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+py_test(
+    name = "build_tar_test",
+    srcs = [
+        "build_tar_test.py",
+    ],
+    data = [
+        "//tests:testdata/hello.txt",
+        "//tests:testdata/subdir/world.txt",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":helper",
+        "//pkg/private/tar:build_tar",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
