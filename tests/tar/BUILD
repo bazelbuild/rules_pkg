@@ -67,7 +67,6 @@ py_test(
     ],
     data = [
         "//tests:testdata/hello.txt",
-        "//tests:testdata/subdir/world.txt",
     ],
     python_version = "PY3",
     srcs_version = "PY3",

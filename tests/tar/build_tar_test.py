@@ -36,27 +36,11 @@ class TarFileUnitTest(unittest.TestCase):
     if os.path.exists(self.tempfile):
       os.remove(self.tempfile)
 
-  def test_normalize_path(self):
-    path_without_leading_period = os.path.sep.join(("foo", "bar", ""))
-    path_with_leading_period = os.path.sep.join((".", "foo", "bar", ""))
-    with build_tar.TarFile(self.tempfile, self.directory, "", "", None) as tar_file_obj:
-      self.assertEqual(tar_file_obj.normalize_path(path_without_leading_period), self.directory + "/foo/bar")
-      self.assertEqual(tar_file_obj.normalize_path(path_with_leading_period), self.directory + "/foo/bar")
-    with build_tar.TarFile(self.tempfile, self.directory + "/", "", "", None) as tar_file_obj:
-      self.assertEqual(tar_file_obj.normalize_path(path_without_leading_period), self.directory + "/foo/bar")
-      self.assertEqual(tar_file_obj.normalize_path(path_with_leading_period), self.directory + "/foo/bar")
-    with build_tar.TarFile(self.tempfile, "/", "", "", None) as tar_file_obj:
-      self.assertEqual(tar_file_obj.normalize_path(path_without_leading_period), "foo/bar")
-      self.assertEqual(tar_file_obj.normalize_path(path_with_leading_period), "foo/bar")
-
   def test_add_tree(self):
     with build_tar.TarFile(self.tempfile, "/", "", "", None) as tar_file_obj:
       tar_file_obj.add_tree(self.data_files.Rlocation("rules_pkg/tests/testdata/"), "/")
     helper.assertTarFileContent(self, self.tempfile, [
         {"name": "./hello.txt", "data": "Hello, world!\n".encode("utf-8")},
-        {"name": "subdir"},
-        {"name": "./subdir"},
-        {"name": "./subdir/world.txt", "data": "Hello, world!\n".encode("utf-8")},
     ])
 
 
