@@ -66,7 +66,7 @@ py_test(
         "build_tar_test.py",
     ],
     data = [
-        "//tests:testdata/hello.txt",
+        "//tests:testdata/build_tar/world",
     ],
     python_version = "PY3",
     srcs_version = "PY3",

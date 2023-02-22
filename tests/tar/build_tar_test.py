@@ -28,8 +28,8 @@ class TarFileUnitTest(unittest.TestCase):
     super(TarFileUnitTest, self).setUp()
     self.tempfile = os.path.join(os.environ["TEST_TMPDIR"], "test.tar")
     self.data_files = runfiles.Create()
-    test_file_name = "hello.txt"
-    self.directory = self.data_files.Rlocation("rules_pkg/tests/testdata/" + test_file_name)
+    test_file_name = "world"
+    self.directory = self.data_files.Rlocation("rules_pkg/tests/testdata/build_tar/" + test_file_name)
     # Remove the file name to get directory.
     if (self.directory.endswith(test_file_name)):
       self.directory = self.directory[:-len(test_file_name)]
@@ -45,7 +45,7 @@ class TarFileUnitTest(unittest.TestCase):
     with build_tar.TarFile(self.tempfile, "/", "", "", None) as tar_file_obj:
       tar_file_obj.add_tree(self.directory + "/", "/")
     helper.assertTarFileContent(self, self.tempfile, [
-        {"name": "./hello.txt", "data": "Hello, world!\n".encode("utf-8")},
+        {"name": "./world", "data": "Hello, world!\n".encode("utf-8")},
     ])
 
 
