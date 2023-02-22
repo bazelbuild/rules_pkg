@@ -28,8 +28,13 @@ class TarFileUnitTest(unittest.TestCase):
     super(TarFileUnitTest, self).setUp()
     self.tempfile = os.path.join(os.environ["TEST_TMPDIR"], "test.tar")
     self.data_files = runfiles.Create()
+    test_file_name = "hello.txt"
+    self.directory = self.data_files.Rlocation("rules_pkg/tests/testdata/" + test_file_name)
+    # Remove the file name to get directory.
+    if (self.directory.endswith(test_file_name)):
+      self.directory = self.directory[:-len(test_file_name)]
     # Keep the trailing slash stripped. Add slash manually when needed.
-    self.directory = self.data_files.Rlocation("rules_pkg/tests/testdata/").strip('/')
+    self.directory = self.directory.rstrip("/")
 
   def tearDown(self):
     super(TarFileUnitTest, self).tearDown()
@@ -38,7 +43,7 @@ class TarFileUnitTest(unittest.TestCase):
 
   def test_add_tree(self):
     with build_tar.TarFile(self.tempfile, "/", "", "", None) as tar_file_obj:
-      tar_file_obj.add_tree(self.data_files.Rlocation("rules_pkg/tests/testdata/"), "/")
+      tar_file_obj.add_tree(self.directory + "/", "/")
     helper.assertTarFileContent(self, self.tempfile, [
         {"name": "./hello.txt", "data": "Hello, world!\n".encode("utf-8")},
     ])
