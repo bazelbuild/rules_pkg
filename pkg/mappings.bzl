@@ -287,11 +287,9 @@ pkg_files = rule(
     This rule provides a specification for the locations and attributes of
     targets when they are packaged. No outputs are created other than Providers
     that are intended to be consumed by other packaging rules, such as
-    `pkg_rpm`.
-
-    Labels associated with these rules are not passed directly to packaging
-    rules, instead, they should be passed to an associated `pkg_filegroup` rule,
-    which in turn should be passed to packaging rules.
+    `pkg_rpm`. `pkg_files` targets may be consumed by other `pkg_files` or
+    `pkg_filegroup` to build up complex layouts, or directly by top level
+    packaging rules such as `pkg_files`.
 
     Consumers of `pkg_files`s will, where possible, create the necessary
     directory structure for your files so you do not have to unless you have
