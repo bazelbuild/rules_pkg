@@ -232,6 +232,9 @@ class TarFile(object):
 
     # Again, we expect /-style paths.
     dest = normpath(dest)
+    # normpath may be ".", and dest paths should not start with "./"
+    dest = '' if dest == '.' else dest + '/'
+
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -246,9 +249,9 @@ class TarFile(object):
       dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
       if rel_path_from_top:
-        dest_dir = dest + '/' + rel_path_from_top + '/'
+        dest_dir = dest + rel_path_from_top + '/'
       else:
-        dest_dir = dest + '/'
+        dest_dir = dest
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
