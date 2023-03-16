@@ -258,6 +258,14 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
 
+  def test_tar_with_tree_artifact_and_strip_prefix(self):
+    content = [
+      {'name': 'a', 'isdir': True},
+      {'name': 'a/a'},
+      {'name': 'a/b'},
+    ]
+    self.assertTarFileContent('test-tree-input-with-strip-prefix.tar', content)
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -356,6 +356,7 @@ py_test(
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
+        ":test-tree-input-with-strip-prefix",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -470,4 +471,22 @@ pkg_tar(
     deps = [
         ":relative_links_tar",
     ],
+)
+
+directory(
+    name = "generate_tree_with_prefix",
+    contents = "hello there",
+    filenames = [
+        "a/a",
+        "a/b",
+    ],
+    outdir = "tree_prefix_to_strip",
+)
+
+pkg_tar(
+    name = "test-tree-input-with-strip-prefix",
+    srcs = [
+        ":generate_tree_with_prefix",
+    ],
+    strip_prefix = "tree_prefix_to_strip",
 )
