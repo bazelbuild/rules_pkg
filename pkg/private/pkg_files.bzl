@@ -60,7 +60,7 @@ _DestFile = provider(
     },
 )
 
-def _check_dest(content_map, dest, src, origin):
+def _check_dest(ctx, content_map, dest, src, origin):
     old_entry = content_map.get(dest)
     if not old_entry:
         return
@@ -72,16 +72,20 @@ def _check_dest(content_map, dest, src, origin):
     # people specify the owner in one place, but another overly broad glob
     # brings in the file with a different owner.
     if old_entry.src.path != src.path:
-        # buildifier: disable=print
-        print(
-            "Duplicate output path: <%s>, declared in %s and %s" % (
+        msg = "Duplicate output path: <%s>, declared in %s and %s\n  SRC: %s" % (
                 dest,
                 origin,
                 content_map[dest].origin,
-            ),
-            "\n  SRC:",
-            src,
-        )
+                src,
+            )
+        if ctx.attr.allow_duplicates_with_different_content:
+            # buildifier: disable=print
+            print("WARNING:", msg)
+        else:
+            # When we default to this behaviour, we should consider telling
+            # users the attribute to set to deal with this.
+            # For now though, let's not, since they've explicitly opted in.
+            fail(msg)
 
 def _merge_attributes(info, mode, user, group):
     if hasattr(info, "attributes"):
@@ -91,11 +95,11 @@ def _merge_attributes(info, mode, user, group):
         group = attrs.get("group") or group
     return (mode, user, group)
 
-def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
+def _process_pkg_dirs(ctx, content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
-        _check_dest(content_map, dest, None, origin)
+        _check_dest(ctx, content_map, dest, None, origin)
         content_map[dest] = _DestFile(
             src = None,
             entry_type = ENTRY_IS_DIR,
@@ -105,11 +109,11 @@ def _process_pkg_dirs(content_map, pkg_dirs_info, origin, default_mode, default_
             origin = origin,
         )
 
-def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, default_user, default_group):
+def _process_pkg_files(ctx, content_map, pkg_files_info, origin, default_mode, default_user, default_group):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
-        _check_dest(content_map, dest, src, origin)
+        _check_dest(ctx, content_map, dest, src, origin)
         content_map[dest] = _DestFile(
             src = src,
             entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
@@ -119,10 +123,10 @@ def _process_pkg_files(content_map, pkg_files_info, origin, default_mode, defaul
             origin = origin,
         )
 
-def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
+def _process_pkg_symlink(ctx, content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
     dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
-    _check_dest(content_map, dest, None, origin)
+    _check_dest(ctx, content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_LINK,
@@ -133,18 +137,19 @@ def _process_pkg_symlink(content_map, pkg_symlink_info, origin, default_mode, de
         link_to = pkg_symlink_info.target,
     )
 
-def _process_pkg_filegroup(content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):
+def _process_pkg_filegroup(ctx, content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
         for d in pkg_filegroup_info.pkg_dirs:
-            _process_pkg_dirs(content_map, d[0], d[1], default_mode, default_user, default_group)
+            _process_pkg_dirs(ctx, content_map, d[0], d[1], default_mode, default_user, default_group)
     if hasattr(pkg_filegroup_info, "pkg_files"):
         for pf in pkg_filegroup_info.pkg_files:
-            _process_pkg_files(content_map, pf[0], pf[1], default_mode, default_user, default_group)
+            _process_pkg_files(ctx, content_map, pf[0], pf[1], default_mode, default_user, default_group)
     if hasattr(pkg_filegroup_info, "pkg_symlinks"):
         for psl in pkg_filegroup_info.pkg_symlinks:
-            _process_pkg_symlink(content_map, psl[0], psl[1], default_mode, default_user, default_group)
+            _process_pkg_symlink(ctx, content_map, psl[0], psl[1], default_mode, default_user, default_group)
 
 def process_src(
+        ctx,
         content_map,
         files,
         src,
@@ -174,6 +179,7 @@ def process_src(
     found_info = False
     if PackageFilesInfo in src:
         _process_pkg_files(
+            ctx,
             content_map,
             src[PackageFilesInfo],
             origin,
@@ -184,6 +190,7 @@ def process_src(
         found_info = True
     if PackageFilegroupInfo in src:
         _process_pkg_filegroup(
+            ctx,
             content_map,
             src[PackageFilegroupInfo],
             origin,
@@ -194,6 +201,7 @@ def process_src(
         found_info = True
     if PackageSymlinkInfo in src:
         _process_pkg_symlink(
+            ctx,
             content_map,
             src[PackageSymlinkInfo],
             origin,
@@ -204,6 +212,7 @@ def process_src(
         found_info = True
     if PackageDirsInfo in src:
         _process_pkg_dirs(
+            ctx,
             content_map,
             src[PackageDirsInfo],
             origin,
@@ -234,10 +243,11 @@ def add_directory(content_map, dir_path, origin, mode = None, user = None, group
         group = group,
     )
 
-def add_empty_file(content_map, dest_path, origin, mode = None, user = None, group = None):
+def add_empty_file(ctx, content_map, dest_path, origin, mode = None, user = None, group = None):
     """Add a single file to the content map.
 
     Args:
+      ctx: rule context.
       content_map: The content map
       dest_path: Where to place the file in the package.
       origin: The rule instance adding this entry
@@ -246,7 +256,7 @@ def add_empty_file(content_map, dest_path, origin, mode = None, user = None, gro
       group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip("/")
-    _check_dest(content_map, dest, None, origin)
+    _check_dest(ctx, content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_EMPTY_FILE,
@@ -290,6 +300,7 @@ def add_label_list(
 
     for src in srcs:
         if not process_src(
+            ctx,
             content_map,
             file_deps,
             src = src,
@@ -300,6 +311,7 @@ def add_label_list(
         ):
             # Add in the files of srcs which are not pkg_* types
             add_from_default_info(
+                ctx,
                 content_map,
                 file_deps,
                 src,
@@ -312,6 +324,7 @@ def add_label_list(
             )
 
 def add_from_default_info(
+        ctx,
         content_map,
         file_deps,
         src,
@@ -324,6 +337,7 @@ def add_from_default_info(
     """Helper method to add the DefaultInfo of a target to a content_map.
 
     Args:
+      ctx: rule context.
       content_map: (r/w) The content map to update.
       file_deps: (r/w) The list of file Depsets that srcs depend on.
       src: A source object.
@@ -355,6 +369,7 @@ def add_from_default_info(
         else:
             fmode = "0755" if f == the_executable else default_mode
             add_single_file(
+                ctx,
                 content_map,
                 dest_path = d_path,
                 src = f,
@@ -370,7 +385,7 @@ def add_from_default_info(
             for rf in runfiles.files.to_list():
                 d_path = base_path + "/" + rf.short_path
                 fmode = "0755" if rf == the_executable else default_mode
-                _check_dest(content_map, d_path, rf, src.label)
+                _check_dest(ctx, content_map, d_path, rf, src.label)
                 content_map[d_path] = _DestFile(
                     src = rf,
                     entry_type = ENTRY_IS_FILE,
@@ -409,10 +424,11 @@ def get_my_executable(src):
         return ftr.executable
     return None
 
-def add_single_file(content_map, dest_path, src, origin, mode = None, user = None, group = None):
+def add_single_file(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add an single file to the content map.
 
     Args:
+      ctx: rule context.
       content_map: The content map
       dest_path: Where to place the file in the package.
       src: Source object. Must have len(src[DefaultInfo].files) == 1
@@ -422,7 +438,7 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
       group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip("/")
-    _check_dest(content_map, dest, src, origin)
+    _check_dest(ctx, content_map, dest, src, origin)
     content_map[dest] = _DestFile(
         src = src,
         entry_type = ENTRY_IS_FILE,
@@ -432,10 +448,11 @@ def add_single_file(content_map, dest_path, src, origin, mode = None, user = Non
         group = group,
     )
 
-def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, group = None):
+def add_symlink(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None):
     """Add a symlink to the content map.
 
     Args:
+      ctx: rule context.
       content_map: The content map
       dest_path: Where to place the file in the package.
       src: Path to link to.
@@ -445,7 +462,7 @@ def add_symlink(content_map, dest_path, src, origin, mode = None, user = None, g
       group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip("/")
-    _check_dest(content_map, dest, None, origin)
+    _check_dest(ctx, content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
         link_to = src,
