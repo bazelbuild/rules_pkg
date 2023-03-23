@@ -660,6 +660,9 @@ def _pkg_rpm_impl(ctx):
     )
 
     return [
+        OutputGroupInfo(
+            rpm = [output_file]
+        ),
         DefaultInfo(
             files = depset(outputs),
         ),
