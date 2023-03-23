@@ -659,10 +659,17 @@ def _pkg_rpm_impl(ctx):
         tools = tools,
     )
 
+    changes = []
+    if ctx.attr.changelog:
+        changes = [ctx.attr.changelog]
+
+    output_groups = {
+        "out": [default_file],
+        "rpm": [output_file],
+        "changes": changes
+    }
     return [
-        OutputGroupInfo(
-            rpm = [output_file]
-        ),
+        OutputGroupInfo(**output_groups),
         DefaultInfo(
             files = depset(outputs),
         ),
