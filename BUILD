@@ -44,6 +44,7 @@ filegroup(
     ]) + [
         "BUILD",
         "LICENSE",
+        "MODULE.bazel",
     ],
     visibility = ["//distro:__pkg__"],
 )
