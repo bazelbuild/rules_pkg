@@ -288,7 +288,7 @@ def CreateChanges(output,
 
   changesdata = u''.join([
       MakeDebianControlField('Format', '1.8'),
-      MakeDebianControlField('Date', time.ctime(timestamp)),
+      MakeDebianControlField('Date', time.asctime(time.gmtime(timestamp))),
       MakeDebianControlField('Source', package),
       MakeDebianControlField('Binary', package),
       MakeDebianControlField('Architecture', architecture),
@@ -333,7 +333,8 @@ def GetFlagValues(flagvalues):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Helper for building deb packages')
+      description='Helper for building deb packages',
+      fromfile_prefix_chars='@')
 
   parser.add_argument('--output', required=True,
                       help='The output file, mandatory')
