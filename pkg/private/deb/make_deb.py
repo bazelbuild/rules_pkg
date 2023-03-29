@@ -139,7 +139,7 @@ def MakeDebianControlField(name: str, value: str, is_multiline:bool=False) -> st
           '\\n is not allowed in simple control fields (%s)' % value)
 
   lines = value.split('\n')
-  result = name + ': ' +lines[0].strip() + '\n'
+  result = (name + ': ' +lines[0].strip()).strip() + '\n'
   for line in lines[1:]:
     if not line.startswith(' '):
       result += ' '
@@ -298,13 +298,16 @@ def CreateChanges(output,
           is_multiline=True),
       MakeDebianControlField(
           'Files', '\n ' + ' '.join(
-              [checksums['md5'], debsize, section, priority, deb_basename])),
+              [checksums['md5'], debsize, section, priority, deb_basename]),
+              is_multiline=True),
       MakeDebianControlField(
           'Checksums-Sha1',
-          '\n ' + ' '.join([checksums['sha1'], debsize, deb_basename])),
+          '\n ' + ' '.join([checksums['sha1'], debsize, deb_basename]),
+          is_multiline=True),
       MakeDebianControlField(
           'Checksums-Sha256',
-          '\n ' + ' '.join([checksums['sha256'], debsize, deb_basename]))
+          '\n ' + ' '.join([checksums['sha256'], debsize, deb_basename]),
+          is_multiline=True)
   ])
   with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
