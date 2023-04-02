@@ -183,12 +183,13 @@ def _package_naming_test_impl(ctx):
     packaged_file = None
     packaged_file_found = False
     default_name_found = False
+
     for f in target_under_test[DefaultInfo].files.to_list():
-        if f == pai.file:
+        if f == pai_file:
             packaged_file_found = True
         if f.basename == pai_name:
             packaged_file = f
-        elif f.basename == ctx.attr.expected_default_name and not default_name_found:
+        if f.basename == ctx.attr.expected_name:
             default_name_found = True
 
     asserts.true(
@@ -206,7 +207,7 @@ def _package_naming_test_impl(ctx):
     asserts.true(
         env,
         default_name_found,
-        "Expected package file with default name '{}' is not in DefaultInfo".format(ctx.attr.expected_default_name),
+        "Expected package file with default name '{}' is not in DefaultInfo".format(ctx.attr.expected_name),
     )
 
     return analysistest.end(env)
@@ -215,7 +216,6 @@ package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {
         "expected_name": attr.string(),
-        "expected_default_name": attr.string(),
     },
 )
 
@@ -256,7 +256,6 @@ def _test_naming(name):
         name = name + "_no_extra",
         target_under_test = ":" + name + "_no_extra_rpm",
         expected_name = name + "_no_extra_rpm-1.0-1.noarch.rpm",
-        expected_default_name = name + "_no_extra_rpm" + ".rpm",
     )
 
     ##################################################
@@ -280,7 +279,6 @@ def _test_naming(name):
         name = name + "_with_different_name",
         target_under_test = ":" + name + "_with_different_name_rpm",
         expected_name = name + "-foo-bar.rpm",
-        expected_default_name = name + "_with_different_name_rpm" + ".rpm",
     )
 
     ##################################################

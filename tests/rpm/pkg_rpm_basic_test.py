@@ -42,11 +42,11 @@ class PkgRpmBasicTest(unittest.TestCase):
     def setUp(self):
         self.runfiles = runfiles.Create()
         self.test_rpm_path = self.runfiles.Rlocation(
-            "rules_pkg/tests/rpm/test_rpm.rpm")
+            "rules_pkg/tests/rpm/test_rpm-1.1.1-2222.noarch.rpm")
         self.test_rpm_direct_path = self.runfiles.Rlocation(
-            "rules_pkg/tests/rpm/test_rpm_direct.rpm")
+            "rules_pkg/tests/rpm/test_rpm_direct-1.1.1-2222.noarch.rpm")
         self.test_rpm_bzip2_path = self.runfiles.Rlocation(
-            "rules_pkg/tests/rpm/test_rpm-bzip2.rpm")
+            "rules_pkg/tests/rpm/test_rpm_bzip2-1.1.1-2222.noarch.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
