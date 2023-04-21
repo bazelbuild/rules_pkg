@@ -23,8 +23,8 @@
    repository](https://help.github.com/articles/working-with-forks/).
 -  Wait for a repository owner to assign you a reviewer. We strive to do that
    within 4 business days, but it may take longer. If your review gets lost
-   you can escalate by sending a mail to
-   [bazel-dev@googlegroups.com](mailto:bazel-dev@googlegroups.com).
+   you can escalate by starting a thread on
+   [GitHub Discussions](https://github.com/bazelbuild/bazel/discussions).
 -  Work with the reviewer to complete a code review. For each change, create a
    new commit and push it to make changes to your pull request.
 -  A maintainer will approve the PR and merge it.
