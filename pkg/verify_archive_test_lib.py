@@ -51,7 +51,7 @@ class VerifyArchiveTest(unittest.TestCase):
     """Check that the archive contains at least min_size entries.
 
     Args:
-        min_size: The minium number of targets we expect.
+        min_size: The minimum number of targets we expect.
     """
     actual_size = len(self.paths)
     self.assertGreaterEqual(
