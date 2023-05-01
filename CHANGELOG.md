@@ -264,7 +264,7 @@ and Ulf Adams
 -   Author: aiuto <aiuto@google.com>
     Date:   Fri Aug 7 11:33:01 2020 -0400
     use runfiles for pkg_tar_test to enable on Windows (#215)
-    This is a precursor to geting pkg_tar_test to run on Windows.
+    This is a precursor to getting pkg_tar_test to run on Windows.
     There are still problems to resolve.
 -   commit 933fa6fc7fc49788af04a60558722180818d091f
 
@@ -306,8 +306,8 @@ and Ulf Adams
     Drop dependency on xzcat (#205)
     We simply switch to use tarfile mode 'r:*' so that the Python runtime can pick the correct decompression.
     This simplifies the code enormously.
-    The removed lines expressed concerns about the peformance of the python3 implementaion of xz decompression.
-    Those comments are fairly old, and were addressed in recent Python implementions as noted here: https://bugs.python.org/issue18003
+    The removed lines expressed concerns about the performance of the python3 implementation of xz decompression.
+    Those comments are fairly old, and were addressed in recent Python implementations as noted here: https://bugs.python.org/issue18003
 -   commit 67d64ba774b3e4c33061cf7a95215112c65657a9
 
 -   Author: aiuto <aiuto@google.com>

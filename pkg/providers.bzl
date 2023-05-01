@@ -37,7 +37,7 @@ PackageFilesInfo = provider(
 
 Keys are strings representing attribute identifiers, values are
 arbitrary data structures that represent the associated data.  These are
-most often strings, but are not explicity defined.
+most often strings, but are not explicitly defined.
 
 For known attributes and data type expectations, see the Common
 Attributes documentation in the `rules_pkg` reference.

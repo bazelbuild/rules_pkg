@@ -52,7 +52,7 @@ def GetFlagValue(flagvalue, strip=True):
   """Converts a raw flag string to a useable value.
 
   1. Expand @filename style flags to the content of filename.
-  2. Cope with Python3 strangness of sys.argv.
+  2. Cope with Python3 strangeness of sys.argv.
      sys.argv is not actually proper str types on Unix with Python3
      The bytes of the arg are each directly transcribed to the characters of
      the str. It is actually more complex than that, as described in the docs.
