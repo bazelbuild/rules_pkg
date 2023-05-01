@@ -109,7 +109,7 @@ class FilterDirectoryInternalTest(unittest.TestCase):
     def test_invalid_prefixes(self):
         self.assertFilterDirectoryFails(
             prefix="/absolute/path",
-            message="--prefix with aboslute paths should be rejected",
+            message="--prefix with absolute paths should be rejected",
         )
 
         self.assertFilterDirectoryFails(

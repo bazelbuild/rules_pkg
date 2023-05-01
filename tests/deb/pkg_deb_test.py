@@ -111,7 +111,7 @@ class PkgDebTest(unittest.TestCase):
           if k == 'data':
             value = f.extractfile(info).read()
           elif k == 'name':
-            # The test data uses / as path sep, but the tarbal is in OS native
+            # The test data uses / as path sep, but the tarball is in OS native
             # format. This aligns the tarball name back to what we expect.
             value = name_in_tar_file.replace(os.path.sep, '/')
           elif k == 'isdir':

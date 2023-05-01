@@ -293,7 +293,7 @@ class TarFile(object):
             gname=names[1])
 
   def add_manifest_entry(self, entry, file_attributes):
-    # Use the pkg_tar mode/owner remaping as a fallback
+    # Use the pkg_tar mode/owner remapping as a fallback
     non_abs_path = entry.dest.strip('/')
     if file_attributes:
       attrs = file_attributes(non_abs_path)

@@ -16,7 +16,7 @@
 Type: @rules_pkg//toolchains/git:git_toolchain_type
 
 Toolchains:
-- git_missing_toolchain: provides a fallback toolchain for exec plaforms
+- git_missing_toolchain: provides a fallback toolchain for exec platforms
   where git might not be available.
 
 - git_auto_toolchain: a toolchain that uses the installed git. See
