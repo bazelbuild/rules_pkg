@@ -1,5 +1,5 @@
 [
-    {"type": "file", "dest": "an_executable.exe.runfiles/tests/BUILD", "src": "tests/BUILD", "mode": "", "user": null, "group": null, "origin": "@//tests:an_executable"},
-    {"type": "file", "dest": "an_executable.exe.runfiles/tests/an_executable.exe", "src": "tests/an_executable.exe", "mode": "0755", "user": null, "group": null, "origin": "@//tests:an_executable"},
-    {"type": "file", "dest": "an_executable.exe", "src": "tests/an_executable.exe", "mode": "0755", "user": null, "group": null, "origin": "@//tests:an_executable"}
+    {"type": "file", "dest": "an_executable.exe.runfiles/tests/BUILD", "src": "tests/BUILD", "mode": "", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"},
+    {"type": "file", "dest": "an_executable.exe.runfiles/tests/an_executable.exe", "src": "tests/an_executable.exe", "mode": "0755", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"},
+    {"type": "file", "dest": "an_executable.exe", "src": "tests/an_executable.exe", "mode": "0755", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"}
 ]

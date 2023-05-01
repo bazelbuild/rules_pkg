@@ -251,6 +251,8 @@ def _load_manifest(prefix, manifest_path):
               mode = "0o755",
               user =  None,
               group = None,
+              uid = None,
+              gid = None,
               origin = "parent directory of {}".format(manifest_map[dest].origin),
             )
 

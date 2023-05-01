@@ -258,6 +258,23 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
 
+
+  def test_pkg_tar_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+    ]
+    self.assertTarFileContent('test-pkg-tar-with-attributes.tar', content)
+
+  def test_pkg_files_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+    ]
+    self.assertTarFileContent('test-pkg-tar-from-pkg-files-with-attributes.tar', content)
+
   def test_tar_with_tree_artifact_and_strip_prefix(self):
     content = [
       {'name': 'a', 'isdir': True},

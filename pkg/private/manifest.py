@@ -33,15 +33,19 @@ class ManifestEntry(object):
     mode: str
     user: str
     group: str
+    uid: int
+    gid: int
     origin: str = None
 
-    def __init__(self, type, dest, src, mode, user, group, origin = None):
+    def __init__(self, type, dest, src, mode, user, group, uid = None, gid = None, origin = None):
         self.type = type
         self.dest = dest
         self.src = src
         self.mode = mode
         self.user = user
         self.group = group
+        self.uid = uid
+        self.gid = gid
         self.origin = origin
 
     def __repr__(self):
