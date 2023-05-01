@@ -91,7 +91,7 @@ _pkg_install_script = rule(
     doc = """Create an executable package installation script.
 
     The outputs of this rule are a single python script intended to be used as
-    an input to a `py_binary` target.  All files necesary to run the script are
+    an input to a `py_binary` target.  All files necessary to run the script are
     included as runfiles.
     """,
     implementation = _pkg_install_script_impl,

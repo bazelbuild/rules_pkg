@@ -1,4 +1,4 @@
-"""Impementation for print_rel_notes."""
+"""Implementation for print_rel_notes."""
 
 def print_rel_notes(
         name,

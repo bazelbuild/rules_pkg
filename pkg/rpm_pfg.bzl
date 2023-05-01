@@ -142,7 +142,7 @@ def _make_absolute_if_not_already_or_is_macro(path):
     # this can be inlined easily.
     return path if path.startswith(("/", "%")) else "/" + path
 
-#### Input processing helper functons.
+#### Input processing helper functions.
 
 # TODO(nacl, #459): These are redundant with functions and structures in
 # pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
@@ -659,7 +659,17 @@ def _pkg_rpm_impl(ctx):
         tools = tools,
     )
 
+    changes = []
+    if ctx.attr.changelog:
+        changes = [ctx.attr.changelog]
+
+    output_groups = {
+        "out": [default_file],
+        "rpm": [output_file],
+        "changes": changes
+    }
     return [
+        OutputGroupInfo(**output_groups),
         DefaultInfo(
             files = depset(outputs),
         ),

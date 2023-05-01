@@ -134,7 +134,7 @@ class ZipWriter(object):
     user = entry.user
     group = entry.group
 
-    # Use the pkg_tar mode/owner remaping as a fallback
+    # Use the pkg_tar mode/owner remapping as a fallback
     dst_path = dest.strip('/')
     if entry_type == manifest.ENTRY_IS_DIR and not dst_path.endswith('/'):
       dst_path += '/'

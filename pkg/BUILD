@@ -100,3 +100,13 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
+
+# This might be public, but use at your own risk
+py_library(
+    name = "verify_archive_test_lib",
+    srcs = ["verify_archive_test_lib.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+)
+
+exports_files(["verify_archive_test_main.py.tpl"])

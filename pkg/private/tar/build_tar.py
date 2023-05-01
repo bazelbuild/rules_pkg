@@ -27,7 +27,7 @@ from pkg.private.tar import tar_writer
 
 def normpath(path):
   """Normalize a path to the format we need it.
-  
+
   os.path.normpath changes / to \ on windows, but tarfile needs / style paths.
 
   Args:
@@ -232,6 +232,9 @@ class TarFile(object):
 
     # Again, we expect /-style paths.
     dest = normpath(dest)
+    # normpath may be ".", and dest paths should not start with "./"
+    dest = '' if dest == '.' else dest + '/'
+
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -246,9 +249,9 @@ class TarFile(object):
       dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
       if rel_path_from_top:
-        dest_dir = dest + '/' + rel_path_from_top + '/'
+        dest_dir = dest + rel_path_from_top + '/'
       else:
-        dest_dir = dest + '/'
+        dest_dir = dest
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
@@ -264,11 +267,6 @@ class TarFile(object):
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
-      # If mode is unspecified, derive the mode from the file's mode.
-      if mode is None:
-        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
-      else:
-        f_mode = mode
       if not content_path:
         # This is an intermediate directory. Bazel has no API to specify modes
         # for this, so the least surprising thing we can do is make it the
@@ -280,6 +278,11 @@ class TarFile(object):
             names=names,
             kind=tarfile.DIRTYPE)
       else:
+        # If mode is unspecified, derive the mode from the file's mode.
+        if mode is None:
+          f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+        else:
+          f_mode = mode
         self.tarfile.add_file(
             path,
             file_content=content_path,
@@ -290,7 +293,7 @@ class TarFile(object):
             gname=names[1])
 
   def add_manifest_entry(self, entry, file_attributes):
-    # Use the pkg_tar mode/owner remaping as a fallback
+    # Use the pkg_tar mode/owner remapping as a fallback
     non_abs_path = entry.dest.strip('/')
     if file_attributes:
       attrs = file_attributes(non_abs_path)
@@ -418,7 +421,7 @@ def main():
 
   # Add objects to the tar file
   with TarFile(
-      options.output, 
+      options.output,
       directory = helpers.GetFlagValue(options.directory),
       compression = options.compression,
       compressor = options.compressor,

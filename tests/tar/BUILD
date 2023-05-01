@@ -17,6 +17,7 @@
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_attributes")
 load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
+load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
@@ -266,6 +267,25 @@ pkg_tar(
     ],
 )
 
+verify_archive_test(
+    name = "repackaging_long_filename_test",
+    target = ":test-tar-repackaging-long-filename",
+    must_contain = [
+        "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    # there is really no need for these cases. I just want to use all the test capabilities.
+    must_not_contain = [
+        "i_am_not here",
+    ],
+    must_contain_regex = [
+        ".*can_i_repackage_a_file_with_a_long_name/$",
+    ],
+    must_not_contain_regex = [
+        "^five.is.right.out",
+    ],
+    max_size = 2,
+)
+
 pkg_tar(
     name = "test-tar-tree-artifact",
     srcs = [
@@ -332,13 +352,14 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
+        ":test_tar_leading_dotslash",
+        ":test_tar_package_dir_substitution.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
         ":test-pkg-tar-with-attributes",
         ":test-pkg-tar-from-pkg-files-with-attributes",
-        ":test_tar_leading_dotslash",
-        ":test_tar_package_dir_substitution.tar",
+        ":test-tree-input-with-strip-prefix",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -484,4 +505,22 @@ pkg_tar(
     deps = [
         ":relative_links_tar",
     ],
+)
+
+directory(
+    name = "generate_tree_with_prefix",
+    contents = "hello there",
+    filenames = [
+        "a/a",
+        "a/b",
+    ],
+    outdir = "tree_prefix_to_strip",
+)
+
+pkg_tar(
+    name = "test-tree-input-with-strip-prefix",
+    srcs = [
+        ":generate_tree_with_prefix",
+    ],
+    strip_prefix = "tree_prefix_to_strip",
 )

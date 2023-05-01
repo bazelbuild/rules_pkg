@@ -186,7 +186,7 @@ def main(args):
     installer = NativeInstaller(destdir=args.destdir)
 
     if not CALLED_FROM_BAZEL_RUN and RUNFILE_PREFIX is None:
-        logging.critical("RUNFILES_DIR must be set in your enviornment when this is run as a bazel build tool.")
+        logging.critical("RUNFILES_DIR must be set in your environment when this is run as a bazel build tool.")
         logging.critical("This is most likely an issue on Windows.  See https://github.com/bazelbuild/rules_pkg/issues/387.")
         return 1
 
