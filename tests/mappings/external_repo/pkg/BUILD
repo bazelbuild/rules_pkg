@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@//tests/util:defs.bzl", "fake_artifact")
 load("test.bzl", "test_referencing_remote_file")
 
