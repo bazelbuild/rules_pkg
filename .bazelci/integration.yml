@@ -7,7 +7,6 @@ rolling: &rolling
 
 common: &common
   platform: ubuntu1804
-  working_directory: /workdir
   build_targets:
   - "distro:*"
 
