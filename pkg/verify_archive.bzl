@@ -69,10 +69,10 @@ _gen_verify_archive_test_main = rule(
             doc = """List of regexes that must not be in the archive.""",
         ),
         "min_size": attr.int(
-            doc = """Miniumn number of entries in the archive."""
+            doc = """Minimum number of entries in the archive."""
         ),
         "max_size": attr.int(
-            doc = """Miniumn number of entries in the archive."""
+            doc = """Maximum number of entries in the archive."""
         ),
 
         # Implicit dependencies.
