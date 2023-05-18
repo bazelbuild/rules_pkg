@@ -630,6 +630,8 @@ def _pkg_rpm_impl(ctx):
     #### Remaining setup
 
     additional_rpmbuild_args = []
+    if ctx.attr.rpmbuild_args:
+        additional_rpmbuild_args.extend(ctx.attr.rpmbuild_args)
     if ctx.attr.binary_payload_compression:
         additional_rpmbuild_args.extend([
             "--define",
@@ -1000,6 +1002,9 @@ pkg_rpm = rule(
         ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
+        ),
+        "rpmbuild_args": attr.string_list(
+            doc = """Additional arguments to pass to rpmbuild (such as `--rpmrc=path/to/rpmrc`)""",
         ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
