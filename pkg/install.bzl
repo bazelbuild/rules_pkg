@@ -28,13 +28,17 @@ def _pkg_install_script_impl(ctx):
     files_to_run = []
     content_map = {}
     for src in ctx.attr.srcs:
-        process_src(content_map,
-                    files_to_run,
-                    src = src,
-                    origin = src.label,
-                    default_mode = "0644",
-                    default_user = None,
-                    default_group = None)
+        process_src(
+            content_map,
+            files_to_run,
+            src = src,
+            origin = src.label,
+            default_mode = "0644",
+            default_user = None,
+            default_group = None,
+            default_uid = None,
+            default_gid = None,
+        )
 
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-install-manifest.json")
 

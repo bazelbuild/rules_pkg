@@ -72,15 +72,21 @@ strip_prefix = struct(
     from_root = _sp_from_root,
 )
 
-def pkg_attributes(mode = None, user = None, group = None, **kwargs):
+def pkg_attributes(
+        mode = None,
+        user = None,
+        group = None,
+        uid = None,
+        gid = None,
+        **kwargs):
     """Format attributes for use in package mapping rules.
 
     If "mode" is not provided, it will default to the mapping rule's default
     mode.  These vary per mapping rule; consult the respective documentation for
     more details.
 
-    Not providing any of "user", or "group" will result in the package builder
-    choosing one for you.  The chosen value should not be relied upon.
+    Not providing any of "user", "group", "uid", or "gid" will result in the package
+    builder choosing one for you.  The chosen value should not be relied upon.
 
     Well-known attributes outside of the above are documented in the rules_pkg
     reference.
@@ -90,8 +96,10 @@ def pkg_attributes(mode = None, user = None, group = None, **kwargs):
 
     Args:
       mode: string: UNIXy octal permissions, as a string.
-      user: string: Filesystem owning user.
-      group: string: Filesystem owning group.
+      user: string: Filesystem owning user name.
+      group: string: Filesystem owning group name.
+      uid: int: Filesystem owning user id.
+      gid: int: Filesystem owning group id.
       **kwargs: any other desired attributes.
 
     Returns:
@@ -105,6 +113,21 @@ def pkg_attributes(mode = None, user = None, group = None, **kwargs):
         ret["user"] = user
     if group:
         ret["group"] = group
+    if uid != None:
+        if type(uid) != type(0):
+            fail('Got "' + str(uid) + '" instead of integer uid')
+        ret["uid"] = uid
+    if gid != None:
+        if type(gid) != type(0):
+            fail('Got "' + str(gid) + '" instead of integer gid')
+        ret["gid"] = gid
+
+    if user != None and user.isdigit() and uid == None:
+        print("Warning: found numeric username and no uid, did you mean to specify the uid instead?")
+
+    if group != None and group.isdigit() and gid == None:
+        print("Warning: found numeric group and no gid, did you mean to specify the gid instead?")
+
     return json.encode(ret)
 
 ####
