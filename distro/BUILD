@@ -87,6 +87,7 @@ py_test(
     data = [
         "testdata/BUILD.tpl",
         ":distro",
+        "//:standard_package",
     ],
     local = True,
     python_version = "PY3",
