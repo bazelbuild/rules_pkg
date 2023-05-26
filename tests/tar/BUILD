@@ -283,6 +283,8 @@ verify_archive_test(
     must_not_contain_regex = [
         "^five.is.right.out",
     ],
+    max_size = 2,
+)
 
 test_suite(
     name = "verify_archive_test_suite",
