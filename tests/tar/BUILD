@@ -283,7 +283,13 @@ verify_archive_test(
     must_not_contain_regex = [
         "^five.is.right.out",
     ],
-    max_size = 2,
+
+test_suite(
+    name = "verify_archive_test_suite",
+    tests = [
+        ":repackaging_long_filename_test",
+        "@tar_tests_external_repo//pkg:external_archive_test",
+    ],
 )
 
 pkg_tar(

@@ -122,7 +122,7 @@ def verify_archive_test(name, target,
         data = [target],
         python_version = "PY3",
         deps = [
-            "//pkg:verify_archive_test_lib",
+            Label("//pkg:verify_archive_test_lib"),
             "@bazel_tools//tools/python/runfiles",
         ],
     )
