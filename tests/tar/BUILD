@@ -159,6 +159,16 @@ pkg_tar(
     ownername = "titi.tata",
     ownernames = {"etc/nsswitch.conf": "tata.titi"},
     owners = {"etc/nsswitch.conf": "24.42"},
+    xattr = [
+        "security.capability=0x0100000200000001000000000000000000000000", # setcap cap_sys_resource+ep tool && getfattr -d -e hex -m - tool
+    ],
+    xattrs = {
+        "etc/nsswitch.conf": [
+            "user.foo=\"foo\"", # String
+            "user.bar=0x626172", # Hex
+            "user.baz=YmF6", # Base64
+        ],
+    },
     package_dir = "/",
     strip_prefix = ".",
     symlinks = {"usr/bin/java": "/path/to/bin/java"},

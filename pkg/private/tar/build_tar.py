@@ -14,6 +14,7 @@
 """This tool build tar files from a list of inputs."""
 
 import argparse
+import base64
 import os
 import tarfile
 import tempfile
@@ -36,13 +37,31 @@ def normpath(path):
   return os.path.normpath(path).replace(os.path.sep, '/')
 
 
+def parse_xattr(xattr_list):
+  xattrs = {}
+  if xattr_list:
+    for item in xattr_list:
+      idx = item.index("=")
+      if idx < 0:
+        raise ValueError("Unexpected xattr item format {} (want key=value)".format(item))
+      key = item[:idx]
+      raw = item[idx+1:]
+      if raw.startswith("0x"):
+        xattrs[key] = bytes.fromhex(raw[2:]).decode('latin-1')
+      elif raw.startswith('"') and raw.endswith('"') and len(raw) >= 2:
+        xattrs[key] = raw[1:-1]
+      else:
+        xattrs[key] = base64.b64decode(raw).decode('latin-1')
+  return xattrs
+
+
 class TarFile(object):
   """A class to generates a TAR file."""
 
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, default_mtime):
+  def __init__(self, output, directory, compression, compressor, default_mtime, use_xattr):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -50,13 +69,15 @@ class TarFile(object):
     self.compression = compression
     self.compressor = compressor
     self.default_mtime = default_mtime
+    self.use_xattr = use_xattr
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
         self.output,
         self.compression,
         self.compressor,
-        default_mtime=self.default_mtime)
+        default_mtime=self.default_mtime,
+        use_xattr=self.use_xattr)
     return self
 
   def __exit__(self, t, v, traceback):
@@ -74,7 +95,7 @@ class TarFile(object):
       dest = self.directory + dest
     return dest
 
-  def add_file(self, f, destfile, mode=None, ids=None, names=None):
+  def add_file(self, f, destfile, mode=None, ids=None, names=None, xattr=None):
     """Add a file to the tar file.
 
     Args:
@@ -85,6 +106,7 @@ class TarFile(object):
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.
+       xattr: (strings) xattr list in getfattr-like output style.
     """
     dest = self.normalize_path(destfile)
     # If mode is unspecified, derive the mode from the file's mode.
@@ -101,14 +123,16 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        xattr=xattr)
 
   def add_empty_file(self,
                      destfile,
                      mode=None,
                      ids=None,
                      names=None,
-                     kind=tarfile.REGTYPE):
+                     kind=tarfile.REGTYPE,
+                     xattr=None):
     """Add a file to the tar file.
 
     Args:
@@ -118,6 +142,7 @@ class TarFile(object):
        names: (username, groupname) for the file to set ownership.
        kind: type of the file. tarfile.DIRTYPE for directory.  An empty file
          will be created as `destfile` in the layer.
+       xattr: (strings) xattr list in getfattr-like output style.
     """
     dest = destfile.lstrip('/')  # Remove leading slashes
     # If mode is unspecified, assume read only
@@ -136,9 +161,10 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        xattr=xattr)
 
-  def add_empty_dir(self, destpath, mode=None, ids=None, names=None):
+  def add_empty_dir(self, destpath, mode=None, ids=None, names=None, xattr=None):
     """Add a directory to the tar file.
 
     Args:
@@ -147,9 +173,10 @@ class TarFile(object):
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership.  An empty
          file will be created as `destfile` in the layer.
+       xattr: (strings) xattr list in getfattr-like output style.
     """
     self.add_empty_file(
-        destpath, mode=mode, ids=ids, names=names, kind=tarfile.DIRTYPE)
+        destpath, mode=mode, ids=ids, names=names, kind=tarfile.DIRTYPE, xattr=xattr)
 
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
@@ -163,7 +190,7 @@ class TarFile(object):
     """
     self.tarfile.add_tar(tar, numeric=True, prefix=self.directory)
 
-  def add_link(self, symlink, destination, mode=None, ids=None, names=None):
+  def add_link(self, symlink, destination, mode=None, ids=None, names=None, xattr=None):
     """Add a symbolic link pointing to `destination`.
 
     Args:
@@ -174,6 +201,7 @@ class TarFile(object):
       ids: (uid, gid) for the file to set ownership
       names: (username, groupname) for the file to set ownership.  An empty
         file will be created as `destfile` in the layer.
+      xattr: (strings) xattr list in getfattr-like output style.
     """
     dest = self.normalize_path(symlink)
     self.tarfile.add_file(
@@ -184,7 +212,8 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        xattr=xattr)
 
   def add_deb(self, deb):
     """Extract a debian package in the output tar.
@@ -211,7 +240,7 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
-  def add_tree(self, tree_top, destpath, mode=None, ids=None, names=None):
+  def add_tree(self, tree_top, destpath, mode=None, ids=None, names=None, xattr=None):
     """Add a tree artifact to the tar file.
 
     Args:
@@ -222,6 +251,7 @@ class TarFile(object):
        ids: (uid, gid) for the file to set ownership
        names: (username, groupname) for the file to set ownership. `f` will be
          copied to `self.directory/destfile` in the layer.
+       xattr: (strings) xattr list in getfattr-like output style.
     """
     # We expect /-style paths.
     tree_top = normpath(tree_top)
@@ -374,6 +404,14 @@ def main():
       '--owner_names', action='append',
       help='Specify the owner names of individual files, e.g. '
            'path/to/file=root.root.')
+  parser.add_argument(
+      '--xattr', action='append',
+      help='Specify the xattr of all files, e.g. '
+           'security.capability=0x0100000200000001000000000000000000000000')
+  parser.add_argument(
+      '--file_xattr', action='append',
+      help='Specify the xattr of individual files, e.g. '
+           'path/to/file=security.capability=0x0100000200000001000000000000000000000000')
   parser.add_argument('--stamp_from', default='',
                       help='File to find BUILD_STAMP in')
   options = parser.parse_args()
@@ -404,6 +442,18 @@ def main():
         f = f[1:]
       names_map[f] = (user, group)
 
+  default_xattr = parse_xattr(options.xattr)
+  xattr_map = {}
+  if options.file_xattr:
+    xattr_by_file = {}
+    for file_xattr in options.file_xattr:
+      (f, xattr) = helpers.SplitNameValuePairAtSeparator(file_xattr, '=')
+      xattrs = xattr_by_file.get(f, [])
+      xattrs.append(xattr)
+      xattr_by_file[f] = xattrs
+    for f in xattr_by_file:
+      xattr_map[f] = parse_xattr(xattr_by_file[f])
+
   default_ids = options.owner.split('.', 1)
   default_ids = (int(default_ids[0]), int(default_ids[1]))
   ids_map = {}
@@ -425,7 +475,8 @@ def main():
       directory = helpers.GetFlagValue(options.directory),
       compression = options.compression,
       compressor = options.compressor,
-      default_mtime=default_mtime) as output:
+      default_mtime=default_mtime,
+      use_xattr=bool(xattr_map or default_xattr)) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
@@ -434,6 +485,7 @@ def main():
           'mode': mode_map.get(filename, default_mode),
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
+          'xattr': {**xattr_map.get(filename, {}), **default_xattr}
       }
 
     if options.manifest:
