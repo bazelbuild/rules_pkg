@@ -77,7 +77,7 @@ _gen_verify_archive_test_main = rule(
 
         # Implicit dependencies.
         "_template": attr.label(
-            default = "Label("//pkg:verify_archive_test_main.py.tpl"),
+            default = Label("//pkg:verify_archive_test_main.py.tpl"),
             allow_single_file = True,
         ),
     },
