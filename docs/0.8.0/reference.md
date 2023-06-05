@@ -297,7 +297,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar
 | <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional | 0 |
-| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
+| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  (note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.) | String | optional | "" |
 | <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 
 
