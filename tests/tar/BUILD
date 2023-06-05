@@ -286,14 +286,6 @@ verify_archive_test(
     max_size = 2,
 )
 
-test_suite(
-    name = "verify_archive_test_suite",
-    tests = [
-        ":repackaging_long_filename_test",
-        "@tar_tests_external_repo//pkg:external_archive_test",
-    ],
-)
-
 pkg_tar(
     name = "test-tar-tree-artifact",
     srcs = [

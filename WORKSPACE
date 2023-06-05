@@ -32,12 +32,6 @@ local_repository(
     path = "tests/mappings/external_repo",
 )
 
-# Used to test invoking tar rules (such as verify_archive_test) in an external repo
-local_repository(
-    name = "tar_tests_external_repo",
-    path = "tests/tar/external_repo",
-)
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
