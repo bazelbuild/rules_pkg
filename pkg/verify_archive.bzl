@@ -77,7 +77,7 @@ _gen_verify_archive_test_main = rule(
 
         # Implicit dependencies.
         "_template": attr.label(
-            default = "@rules_pkg//pkg:verify_archive_test_main.py.tpl",
+            default = "Label("//pkg:verify_archive_test_main.py.tpl"),
             allow_single_file = True,
         ),
     },
@@ -122,7 +122,7 @@ def verify_archive_test(name, target,
         data = [target],
         python_version = "PY3",
         deps = [
-            Label("//pkg:verify_archive_test_lib"),
+            "@rules_pkg//pkg:verify_archive_test_lib",
             "@bazel_tools//tools/python/runfiles",
         ],
     )
