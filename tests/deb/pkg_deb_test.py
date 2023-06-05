@@ -249,6 +249,32 @@ class PkgDebTest(unittest.TestCase):
           content[d_start + len(d_expect)].isupper(),
           'Description has unexpected characters at end (%s)' % content)
 
+      self.maxDiff = None
+      expect = '''Format: 1\.8
+Date: Thu Jan  1 \d{2}:00:00 1970
+Source: fizzbuzz
+Binary: fizzbuzz
+Architecture: all
+Version: 4\.5\.6
+Distribution: trusty
+Urgency: low
+Maintainer: soméone@somewhere.com
+Changed-By: soméone@somewhere.com
+Description:
+ fizzbuzz - toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é
+Changes:
+ fizzbuzz \(4\.5\.6\) trusty; urgency=low
+ Changes are tracked in revision control\.
+Files:
+ [a-f0-9]{32} \d{4} contrib/devel optional fizzbuzz_4\.5\.6_all\.deb
+Checksums-Sha1:
+ [a-f0-9]{40} \d{4} fizzbuzz_4\.5\.6_all\.deb
+Checksums-Sha256:
+ [a-f0-9]{64} \d{4} fizzbuzz_4\.5\.6_all\.deb
+'''
+
+      self.assertRegex(content, expect)
+
 
 if __name__ == '__main__':
   unittest.main()
