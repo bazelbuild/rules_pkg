@@ -248,7 +248,9 @@ def _pkg_tar_impl(ctx):
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
-        "strip_prefix": attr.string(),
+        "strip_prefix": attr.string(
+            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)"""
+        ),
         "package_dir": attr.string(
             doc = """Prefix to be prepend to all paths written."""
         ),
