@@ -15,18 +15,13 @@
 
 import unittest
 
-import json
 import re
 import tarfile
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
-
 class VerifyArchiveTest(unittest.TestCase):
   """Test harness to see if we wrote the content manifest correctly."""
-  
-  #run_files = runfiles.Create()
-  #target_path = VerifyArchiveTest.run_files.Rlocation('rules_pkg/' + target)
+
 
   def setUp(self):
     super(VerifyArchiveTest, self).setUp()

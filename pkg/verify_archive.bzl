@@ -119,7 +119,4 @@ def verify_archive_test(name, target,
         main = test_src,
         data = [target],
         python_version = "PY3",
-        deps = [
-            "@bazel_tools//tools/python/runfiles",
-        ],
     )
