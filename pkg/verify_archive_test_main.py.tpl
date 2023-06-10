@@ -13,8 +13,6 @@
 # limitations under the License.
 """Tests for generated content manifest."""
 
-import unittest
-
 import re
 import tarfile
 import unittest
