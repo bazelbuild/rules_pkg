@@ -115,14 +115,8 @@ def verify_archive_test(name, target,
     )
     py_test(
         name = name,
-        # Hey reviewer!!! What if we just added the source to the test lib
-        # here, so we would not have to make the library for that public?
         srcs = [":" + test_src],
         main = test_src,
         data = [target],
         python_version = "PY3",
-        deps = [
-            "//pkg:verify_archive_test_lib",
-            "@bazel_tools//tools/python/runfiles",
-        ],
     )
