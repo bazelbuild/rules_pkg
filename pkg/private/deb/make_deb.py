@@ -288,7 +288,7 @@ def CreateChanges(output,
 
   changesdata = u''.join([
       MakeDebianControlField('Format', '1.8'),
-      MakeDebianControlField('Date', time.ctime(timestamp)),
+      MakeDebianControlField('Date', time.asctime(time.gmtime(timestamp))),
       MakeDebianControlField('Source', package),
       MakeDebianControlField('Binary', package),
       MakeDebianControlField('Architecture', architecture),
