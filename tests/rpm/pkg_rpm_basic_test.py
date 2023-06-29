@@ -19,8 +19,9 @@ import subprocess
 import csv
 import io
 import os
-import rpm_util
+
 from rules_python.python.runfiles import runfiles
+from tests.rpm import rpm_util
 
 # This provides some tests for built RPMs, mostly by taking the built RPM and
 # running rpm queries on it.
