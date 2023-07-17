@@ -17,7 +17,6 @@
 load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
 load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("@rules_python//python:defs.bzl", "py_binary")
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
