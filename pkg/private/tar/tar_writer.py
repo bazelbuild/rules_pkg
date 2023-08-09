@@ -87,7 +87,7 @@ class TarFileWriter(object):
         # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
         # Instead, we manually reimplement gzopen from tarfile.py and set mtime.
         self.fileobj = gzip.GzipFile(
-            filename=name, mode='w', compresslevel=9, mtime=self.default_mtime)
+            filename=name, mode='w', compresslevel=6, mtime=self.default_mtime)
     self.compressor_proc = None
     if self.compressor_cmd:
       mode = 'w|'
