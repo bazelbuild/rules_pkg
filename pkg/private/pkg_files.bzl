@@ -166,8 +166,8 @@ def process_src(
         default_mode,
         default_user,
         default_group,
-        default_uid,
-        default_gid):
+        default_uid = None,
+        default_gid = None):
     """Add an entry to the content map.
 
     Args:
