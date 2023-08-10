@@ -31,11 +31,11 @@ class ContentManifestTest(unittest.TestCase):
         got_path: The path to the content we got.
     """
     e_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + expected_path)
-    with open(e_file, mode='rb') as e_fp:
+    with open(e_file, mode='rb', encoding='utf-8') as e_fp:
       expected = json.load(e_fp)
     expected_dict = {x["dest"]: x for x in expected}
     g_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + got_path)
-    with open(g_file, mode='rb') as g_fp:
+    with open(g_file, mode='rb', encoding='utf-8') as g_fp:
       got = json.load(g_fp)
     got_dict = {x["dest"]: x for x in got}
     print(got_dict)
