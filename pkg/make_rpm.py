@@ -178,13 +178,14 @@ class RpmBuilder(object):
   RPMS_DIR = 'RPMS'
   DIRS = [SOURCE_DIR, BUILD_DIR, RPMS_DIR, TEMP_DIR]
 
-  def __init__(self, name, version, release, arch, rpmbuild_path,
-               source_date_epoch=None,
+  def __init__(self, name, version, release, arch, target_arch,
+               rpmbuild_path, source_date_epoch=None,
                debug=False):
     self.name = name
     self.version = helpers.GetFlagValue(version)
     self.release = helpers.GetFlagValue(release)
     self.arch = arch
+    self.target_arch = target_arch
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
     self.rpm_path = None
@@ -354,6 +355,10 @@ class RpmBuilder(object):
         '--buildroot=%s' % buildroot,
     ]  # yapf: disable
 
+    # Target platform
+    if self.target_arch:
+      args += ['--target=%s' % self.target_arch]
+
     # Macro-based RPM parameter substitution, if necessary inputs provided.
     if self.preamble_file:
       args += ['--define', 'build_rpm_options %s' % self.preamble_file]
@@ -462,7 +467,10 @@ def main(argv):
                       help='The release of the software being packaged.')
   parser.add_argument(
       '--arch',
-      help='The CPU architecture of the software being packaged.')
+      help='The CPU architecture of the machine on which it is built. '
+           'If the package is not architecture dependent, set this to "noarch".')
+  parser.add_argument('--target_arch',
+      help='The CPU architecture of the target platform the software being packaged for.')
   parser.add_argument('--spec_file', required=True,
                       help='The file containing the RPM specification.')
   parser.add_argument('--out_file', required=True,
@@ -501,7 +509,7 @@ def main(argv):
   try:
     builder = RpmBuilder(options.name,
                          options.version, options.release,
-                         options.arch, options.rpmbuild,
+                         options.arch, options.target_arch, options.rpmbuild,
                          source_date_epoch=options.source_date_epoch,
                          debug=options.debug)
     builder.AddFiles(options.files)
