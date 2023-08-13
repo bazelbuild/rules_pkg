@@ -149,6 +149,19 @@ pkg_rpm(
     version = "1.1.1",
 )
 
+pkg_rpm(
+    name = "test_rpm_alien",
+    srcs = [
+        ":test_pfg",
+    ],
+    target_architecture = "alien",
+    description = """pkg_rpm test rpm for alien target platform description""",
+    license = "Apache 2.0",
+    release = "2222",
+    summary = "pkg_rpm test rpm for alien target platform summary",
+    version = "1.1.1",
+)
+
 # Just like the above one, except the compression is changed.
 pkg_rpm(
     name = "test_rpm-bzip2",
@@ -305,6 +318,7 @@ sh_library(
     testonly = True,
     srcs = [
         ":test_rpm",
+        ":test_rpm_alien",
         ":test_rpm-bzip2",
         ":test_rpm_direct",
         ":test_rpm_manifest",

@@ -43,6 +43,8 @@ class PkgRpmBasicTest(unittest.TestCase):
         self.runfiles = runfiles.Create()
         self.test_rpm_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm.rpm")
+        self.test_rpm_alien_path = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_alien.rpm")
         self.test_rpm_direct_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_direct.rpm")
         self.test_rpm_bzip2_path = self.runfiles.Rlocation(
@@ -79,6 +81,25 @@ echo postun
             output = subprocess.check_output([
                 "rpm", "-qp", "--queryformat", "%{" + fieldname + "}",
                 self.test_rpm_path
+            ])
+
+            self.assertEqual(
+                output, expected,
+                "RPM Tag {} does not match expected value".format(fieldname))
+
+    def test_basic_headers_alien_target(self):
+        fields = {
+            "NAME": b"test_rpm_alien",
+            "VERSION": b"1.1.1",
+            "RELEASE": b"2222",
+            "ARCH": b"alien",
+            "GROUP": b"Unspecified",
+            "SUMMARY": b"pkg_rpm test rpm for alien target platform summary",
+        }
+        for fieldname, expected in fields.items():
+            output = subprocess.check_output([
+                "rpm", "-qp", "--queryformat", "%{" + fieldname + "}",
+                self.test_rpm_alien_path 
             ])
 
             self.assertEqual(

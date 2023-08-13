@@ -142,7 +142,7 @@ def _make_absolute_if_not_already_or_is_macro(path):
     # this can be inlined easily.
     return path if path.startswith(("/", "%")) else "/" + path
 
-#### Input processing helper functons.
+#### Input processing helper functions.
 
 # TODO(nacl, #459): These are redundant with functions and structures in
 # pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
@@ -251,7 +251,7 @@ def _pkg_rpm_impl(ctx):
             rpm_name,
             ctx.attr.version,
             ctx.attr.release,
-            ctx.attr.architecture,
+            ctx.attr.architecture if ctx.attr.architecture else ctx.attr.target_architecture,
         )
 
     outputs, output_file, output_name = setup_output_files(
@@ -431,6 +431,9 @@ def _pkg_rpm_impl(ctx):
     files.append(spec_file)
 
     args.append("--out_file=" + output_file.path)
+
+    if ctx.attr.target_architecture:
+        args.append("--target_arch=" + ctx.attr.target_architecture)
 
     # Add data files.
     if ctx.file.changelog:
@@ -666,7 +669,7 @@ def _pkg_rpm_impl(ctx):
     output_groups = {
         "out": [default_file],
         "rpm": [output_file],
-        "changes": changes
+        "changes": changes,
     }
     return [
         OutputGroupInfo(**output_groups),
@@ -791,19 +794,28 @@ pkg_rpm = rule(
         # funny if it's not provided.  The contents of the RPM are believed to
         # be set as expected, though.
         "architecture": attr.string(
-            doc = """Package architecture.
+            doc = """Host architecture.
 
             This currently sets the `BuildArch` tag, which influences the output
             architecture of the package.
 
             Typically, `BuildArch` only needs to be set when the package is
-            known to be cross-platform (e.g. written in an interpreted
-            language), or, less common, when it is known that the application is
-            only valid for specific architectures.
+            not architecture dependent (e.g. written in an interpreted
+            language).
 
             When no attribute is provided, this will default to your host's
             architecture.  This is usually what you want.
 
+            """,
+        ),
+        "target_architecture": attr.string(
+            doc = """Package architecture.
+
+            This currently sets the value for the "--target" argument to "rpmbuild" 
+            to specify platform package is built for.
+
+            When no attribute is provided, this will default to your host's
+            architecture.
             """,
         ),
         "license": attr.string(
