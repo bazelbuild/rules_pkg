@@ -32,11 +32,11 @@ class ContentManifestTest(unittest.TestCase):
     """
     e_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + expected_path)
     with open(e_file, mode='rt', encoding='utf-8') as e_fp:
-      expected = json.load(e_fp)
+      expected = json.loads(e_fp.read())
     expected_dict = {x['dest']: x for x in expected}
     g_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + got_path)
     with open(g_file, mode='rt', encoding='utf-8') as g_fp:
-      got = json.load(g_fp)
+      got = json.loads(g_fp.read())
     got_dict = {x['dest']: x for x in got}
     print(got_dict)
     # self.assertEqual(expected_dict, got_dict)
