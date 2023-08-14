@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 import sys
 
 def SplitNameValuePairAtSeparator(arg, sep):
@@ -48,7 +49,7 @@ def SplitNameValuePairAtSeparator(arg, sep):
   # if we leave the loop, the character sep was not found unquoted
   return (head, '')
 
-def GetFlagValue(flagvalue, strip=True):
+def GetFlagValue(flagvalue, strip=True, stamp=None):
   """Converts a raw flag string to a useable value.
 
   1. Expand @filename style flags to the content of filename.
@@ -63,6 +64,7 @@ def GetFlagValue(flagvalue, strip=True):
   Args:
     flagvalue: (str) raw flag value
     strip: (bool) Strip white space.
+    stamp: (dict) Stamp variables for inline values
 
   Returns:
     Python2: unicode
@@ -84,6 +86,17 @@ def GetFlagValue(flagvalue, strip=True):
       if sys.version_info[0] > 2:
         flagvalue = os.fsencode(flagvalue).decode('utf-8')
 
+    if stamp != None:
+      flagvalue = re.sub(r'\{(\w+)\}', lambda m: stamp.get(m.group(1), m.group(0)), flagvalue)
+
     if strip:
       return flagvalue.strip()
   return flagvalue
+
+def ParseStamp(data):
+  vars = dict()
+  for line in data.split("\n"):
+    sep = line.find(' ')
+    if sep >= 0:
+      vars[line[:sep]] = line[sep+1:]
+  return vars

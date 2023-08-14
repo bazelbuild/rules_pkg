@@ -17,6 +17,7 @@ load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
+_stamp_condition = Label("//pkg/private:private_stamp_detect")
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""
@@ -106,6 +107,12 @@ def _pkg_deb_impl(ctx):
         args += ["--description=" + ctx.attr.description]
     else:
         fail("Neither description_file nor description attribute was specified")
+
+    # Files for stamping variables
+    if ctx.attr.private_stamp_detect:
+        args += ["--stamp=@" + ctx.version_file.path]
+        args += ["--stamp=@" + ctx.info_file.path]
+        files += [ctx.version_file, ctx.info_file]
 
     # Built using can also be specified by a file or inlined (but is not mandatory)
     if ctx.attr.built_using_file:
@@ -344,6 +351,10 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             providers = [PackageVariablesInfo],
         ),
 
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
+
         # Implicit dependencies.
         "_make_deb": attr.label(
             default = Label("//pkg/private/deb:make_deb"),
@@ -362,5 +373,9 @@ def pkg_deb(name, out = None, **kwargs):
     pkg_deb_impl(
         name = name,
         out = out,
+        private_stamp_detect = select({
+            _stamp_condition: True,
+            "//conditions:default": False,
+        }),
         **kwargs
     )
