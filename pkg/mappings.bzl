@@ -145,8 +145,8 @@ def _do_strip_prefix(path, to_strip, src_file):
 
     if path_norm.startswith(to_strip_norm):
         return path_norm[len(to_strip_norm):]
-    elif src_file.is_directory and (path_norm + '/') == to_strip_norm:
-        return ''
+    elif src_file.is_directory and (path_norm + "/") == to_strip_norm:
+        return ""
     else:
         # Avoid user surprise by failing if prefix stripping doesn't work as
         # expected.
@@ -219,7 +219,13 @@ def _pkg_files_impl(ctx):
     # The input sources are already known.  Let's calculate the destinations...
 
     # Exclude excludes
-    srcs = [f for f in ctx.files.srcs if f not in ctx.files.excludes]
+    srcs = []  # srcs is source File objects, not Targets
+    file_to_target = {}
+    for src in ctx.attr.srcs:
+        for f in src[DefaultInfo].files.to_list():
+            if f not in ctx.files.excludes:
+                srcs.append(f)
+                file_to_target[f] = src
 
     if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
         src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
@@ -282,6 +288,25 @@ def _pkg_files_impl(ctx):
 
         else:
             src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
+
+    # At this point, we have a fully valid src -> dest mapping for all the
+    # explicitly named targets in srcs. Now we can fill in their runfiles.
+    if ctx.attr.include_runfiles:
+        for src in srcs:
+            target = file_to_target[src]
+            runfiles = target[DefaultInfo].default_runfiles
+            if runfiles:
+                base_path = src_dest_paths_map[src] + ".runfiles"
+                for rf in runfiles.files.to_list():
+                    dest_path = paths.join(base_path, rf.short_path)
+
+                    # print("Add runfile:", rf.path, 'as', dest_path)
+                    have_it = src_dest_paths_map.get(rf)
+                    if have_it:
+                        if have_it != dest_path:
+                            print("same source mapped to different locations", rf, have_it, dest_path)
+                    else:
+                        src_dest_paths_map[rf] = dest_path
 
     # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
@@ -426,6 +451,14 @@ pkg_files = rule(
             default = {},
             allow_files = True,
         ),
+        "include_runfiles": attr.bool(
+            doc = """Add runfiles for all srcs.
+
+            The runfiles are in the paths that Bazel uses. For example, for the
+            target `//my_prog:foo`, we would see files under paths like
+            `foo.runfiles/<repo name>/my_prog/<file>`
+            """,
+        ),
     },
     provides = [PackageFilesInfo],
 )
@@ -560,30 +593,29 @@ pkg_mklink_impl = rule(
     provides = [PackageSymlinkInfo],
 )
 
-def pkg_mklink(name, link_name, target, attributes=None, src=None, **kwargs):
-  """Create a symlink.
+def pkg_mklink(name, link_name, target, attributes = None, src = None, **kwargs):
+    """Create a symlink.
 
-  Args:
-    name: target name
-    target: target path that the link should point to.
-    link_name: the path in the package that should point to the target.
-    attributes: file attributes.
-  """
-  if src:
-    if target:
-      fail("You can not specify both target and src.")
-    # buildifier: disable=print
-    print("Warning: pkg_mklink.src is deprecated. Use target.")
-    target = src
-  pkg_mklink_impl(
-      name = name,
-      target = target,
-      link_name = link_name,
-      attributes = attributes,
-      **kwargs,
-  )
+    Args:
+      name: target name
+      target: target path that the link should point to.
+      link_name: the path in the package that should point to the target.
+      attributes: file attributes.
+    """
+    if src:
+        if target:
+            fail("You can not specify both target and src.")
 
-
+        # buildifier: disable=print
+        print("Warning: pkg_mklink.src is deprecated. Use target.")
+        target = src
+    pkg_mklink_impl(
+        name = name,
+        target = target,
+        link_name = link_name,
+        attributes = attributes,
+        **kwargs
+    )
 
 def _pkg_filegroup_impl(ctx):
     files = []

@@ -1,5 +1,7 @@
 [
-    {"type": "file", "dest": "an_executable.runfiles/tests/BUILD", "src": "tests/BUILD", "mode": "", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"},
-    {"type": "file", "dest": "an_executable.runfiles/tests/an_executable", "src": "tests/an_executable", "mode": "0755", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"},
-    {"type": "file", "dest": "an_executable", "src": "tests/an_executable", "mode": "0755", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests:an_executable"}
+{"dest":"an_executable.runfiles/tests/BUILD","gid":null,"group":null,"mode":"","origin":"@//tests:an_executable","src":"tests/BUILD","type":"file","uid":null,"user":null},
+{"dest":"an_executable.runfiles/tests/an_executable","gid":null,"group":null,"mode":"0755","origin":"@//tests:an_executable","src":"tests/an_executable","type":"file","uid":null,"user":null},
+{"dest":"an_executable.runfiles/tests/testdata/hello.txt","gid":null,"group":null,"mode":"","origin":"@//tests:an_executable","src":"tests/testdata/hello.txt","type":"file","uid":null,"user":null},
+{"dest":"an_executable","gid":null,"group":null,"mode":"0755","origin":"@//tests:an_executable","src":"tests/an_executable","type":"file","uid":null,"user":null},
+{"dest":"mappings_test.bzl","gid":null,"group":null,"mode":"","origin":"@//tests/mappings:mappings_test.bzl","src":"tests/mappings/mappings_test.bzl","type":"file","uid":null,"user":null}
 ]
