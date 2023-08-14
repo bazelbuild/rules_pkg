@@ -107,6 +107,10 @@ def _pkg_deb_impl(ctx):
     else:
         fail("Neither description_file nor description attribute was specified")
 
+    if ctx.attr.changelog:
+        args += ["--changelog=@" + ctx.file.changelog.path]
+        files += [ctx.file.changelog]
+
     # Built using can also be specified by a file or inlined (but is not mandatory)
     if ctx.attr.built_using_file:
         if ctx.attr.built_using:
@@ -214,6 +218,11 @@ pkg_deb_impl = rule(
             doc = """config file used for debconf integration.
             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
             allow_single_file = True,
+        ),
+        "changelog": attr.label(
+            doc = """The package changelog.
+            See https://www.debian.org/doc/debian-policy/ch-source.html#s-dpkgchangelog.""",
+            allow_single_file = True
         ),
         "description": attr.string(
             doc = """The package description. Must not be used with `description_file`.""",

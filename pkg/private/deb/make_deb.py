@@ -198,6 +198,7 @@ def CreateDeb(output,
               templates=None,
               triggers=None,
               conffiles=None,
+              changelog=None,
               **kwargs):
   """Create a full debian package."""
   extrafiles = OrderedDict()
@@ -217,6 +218,8 @@ def CreateDeb(output,
     extrafiles['triggers'] = (triggers, 0o644)
   if conffiles:
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
+  if changelog:
+    extrafiles['changelog'] = (changelog, 0o644)
   control = CreateDebControl(extrafiles=extrafiles, **kwargs)
 
   # Write the final AR archive (the deb package)
@@ -367,6 +370,9 @@ def main():
   parser.add_argument(
       '--conffile', action='append',
       help='List of conffiles (prefix item with @ to provide a path)')
+  parser.add_argument(
+      "--changelog",
+      help='The changelog file (prefix item with @ to provide a path).')
   AddControlFlags(parser)
   options = parser.parse_args()
 
@@ -381,6 +387,7 @@ def main():
       templates=helpers.GetFlagValue(options.templates, False),
       triggers=helpers.GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
+      changelog=GetFlagValues(options.changelog),
       package=options.package,
       version=helpers.GetFlagValue(options.version),
       description=helpers.GetFlagValue(options.description),
