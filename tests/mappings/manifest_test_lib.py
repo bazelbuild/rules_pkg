@@ -38,7 +38,6 @@ class ContentManifestTest(unittest.TestCase):
     with open(g_file, mode='rt', encoding='utf-8') as g_fp:
       got = json.loads(g_fp.read())
     got_dict = {x['dest']: x for x in got}
-    print(got_dict)
     # self.assertEqual(expected_dict, got_dict)
 
     ok = True
@@ -64,6 +63,6 @@ class ContentManifestTest(unittest.TestCase):
       print('  cp bazel-bin/%s %s' % (got_path, expected_path))
       print('or')
       print('============= snip ==========')
-      print(got_dict)
+      print(got_dict.values())
       print('============= snip ==========')
     self.assertTrue(ok)
