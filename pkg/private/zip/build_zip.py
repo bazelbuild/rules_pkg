@@ -16,6 +16,7 @@
 import argparse
 import datetime
 import os
+import sys
 import zipfile
 
 from pkg.private import build_info
@@ -110,6 +111,13 @@ class ZipWriter(object):
     self.zip_file.close()
     self.zip_file = None
 
+  def writestr(self, entry_info, content: str, compresslevel: int):
+    if sys.version_info >= (3, 7):
+      self.zip_file.writestr(entry_info, content, compresslevel=compresslevel)
+    else:
+      # Python 3.6 and lower don't support compresslevel
+      self.zip_file.writestr(entry_info, content)
+
   def make_zipinfo(self, path: str, mode: str):
     """Create a Zipinfo.
 
@@ -158,7 +166,7 @@ class ZipWriter(object):
       entry_info.compress_type = self.compression_type
       # Using utf-8 for the file names is for python <3.7 compatibility.
       with open(src.encode('utf-8'), 'rb') as src_content:
-        self.zip_file.writestr(entry_info, src_content.read(), compresslevel=self.compression_level)
+        self.writestr(entry_info, src_content.read(), compresslevel=self.compression_level)
     elif entry_type == manifest.ENTRY_IS_DIR:
       entry_info.compress_type = zipfile.ZIP_STORED
       # Set directory bits
@@ -229,7 +237,7 @@ class ZipWriter(object):
         entry_info = self.make_zipinfo(path=path, mode=f_mode)
         entry_info.compress_type = self.compression_type
         with open(content_path, 'rb') as src:
-          self.zip_file.writestr(entry_info, src.read(), compresslevel=self.compression_level)
+          self.writestr(entry_info, src.read(), compresslevel=self.compression_level)
       else:
         # Implicitly created directory
         dir_path = path
