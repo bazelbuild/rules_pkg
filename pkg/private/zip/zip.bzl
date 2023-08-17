@@ -40,6 +40,8 @@ def _pkg_zip_impl(ctx):
     args.add("-d", substitute_package_variables(ctx, ctx.attr.package_dir))
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
+    args.add("-c", str(ctx.attr.compression_type))
+    args.add("-l", ctx.attr.compression_level)
     inputs = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
@@ -114,6 +116,15 @@ Due to limitations in the format of zip files, values before
 Jan 1, 1980 will be rounded up and the precision in the zip file is
 limited to a granularity of 2 seconds.""",
             default = 315532800,
+        ),
+        "compression_level": attr.int(
+            default = 6,
+            doc = "The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used"
+        ),
+        "compression_type": attr.string(
+            default = "deflated",
+            doc = "The compression to use. Note that lzma and bzip2 might not be supported by all readers.",
+            values = ["deflated", "lzma", "bzip2", "stored"]
         ),
 
         # Common attributes

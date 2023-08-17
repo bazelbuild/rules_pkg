@@ -123,6 +123,27 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
         {"filename": "generate_tree/b/e"},
     ])
 
+  def test_compression_deflated(self):
+    self.assertZipFileContent("test_zip_deflated_level_3.zip", [
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 312},
+    ])
+
+  def test_compression_bzip2(self):
+    self.assertZipFileContent("test_zip_bzip2.zip", [
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 340},
+    ])
+
+  def test_compression_lzma(self):
+    self.assertZipFileContent("test_zip_lzma.zip", [
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 378},
+    ])
+
+  def test_compression_stored(self):
+    self.assertZipFileContent("test_zip_stored.zip", [
+          {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 543},
+    ])
+
+
 
 if __name__ == "__main__":
   unittest.main()
