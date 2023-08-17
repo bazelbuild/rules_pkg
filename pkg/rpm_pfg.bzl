@@ -368,6 +368,10 @@ def _pkg_rpm_impl(ctx):
     files.append(description_file)
     args.append("--description=" + description_file.path)
 
+    if ctx.attr.changelog:
+        files.append(ctx.file.changelog)
+        args.append("--changelog=" + ctx.file.changelog.path)
+
     #### Non-procedurally-generated scriptlets
 
     substitutions = {}
@@ -432,11 +436,7 @@ def _pkg_rpm_impl(ctx):
 
     args.append("--out_file=" + output_file.path)
 
-    # Add data files.
-    if ctx.file.changelog:
-        files.append(ctx.file.changelog)
-        args.append(ctx.file.changelog.path)
-
+    # Add data files
     files += ctx.files.srcs
 
     #### Consistency checking; input processing
