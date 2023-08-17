@@ -15,6 +15,7 @@
 
 import argparse
 import datetime
+import logging
 import os
 import sys
 import zipfile
@@ -117,6 +118,8 @@ class ZipWriter(object):
     else:
       # Python 3.6 and lower don't support compresslevel
       self.zip_file.writestr(entry_info, content)
+      if compresslevel != 6:
+        logging.warn("Custom compresslevel is not supported with python < 3.7")
 
   def make_zipinfo(self, path: str, mode: str):
     """Create a Zipinfo.

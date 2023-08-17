@@ -123,7 +123,8 @@ limited to a granularity of 2 seconds.""",
         ),
         "compression_type": attr.string(
             default = "deflated",
-            doc = "The compression to use. Note that lzma and bzip2 might not be supported by all readers.",
+            doc = """The compression to use. Note that lzma and bzip2 might not be supported by all readers.
+The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED""",
             values = ["deflated", "lzma", "bzip2", "stored"]
         ),
 
