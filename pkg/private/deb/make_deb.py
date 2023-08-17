@@ -371,7 +371,7 @@ def main():
       '--conffile', action='append',
       help='List of conffiles (prefix item with @ to provide a path)')
   parser.add_argument(
-      "--changelog",
+      '--changelog',
       help='The changelog file (prefix item with @ to provide a path).')
   AddControlFlags(parser)
   options = parser.parse_args()
@@ -387,7 +387,7 @@ def main():
       templates=helpers.GetFlagValue(options.templates, False),
       triggers=helpers.GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
-      changelog=GetFlagValues(options.changelog),
+      changelog=helpers.GetFlagValue(options.changelog, False),
       package=options.package,
       version=helpers.GetFlagValue(options.version),
       description=helpers.GetFlagValue(options.description),
