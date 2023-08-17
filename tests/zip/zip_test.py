@@ -15,6 +15,7 @@
 import datetime
 import filecmp
 import os
+import sys
 import unittest
 import zipfile
 
@@ -124,9 +125,15 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     ])
 
   def test_compression_deflated(self):
-    self.assertZipFileContent("test_zip_deflated_level_3.zip", [
-          {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 312},
-    ])
+    if sys.version_info >= (3, 7):
+      self.assertZipFileContent("test_zip_deflated_level_3.zip", [
+            {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 312},
+      ])
+    else:
+      # Python 3.6 doesn't support setting compresslevel, so the file size differs
+      self.assertZipFileContent("test_zip_deflated_level_3.zip", [
+            {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 309},
+      ])
 
   def test_compression_bzip2(self):
     self.assertZipFileContent("test_zip_bzip2.zip", [
