@@ -198,6 +198,7 @@ class RpmBuilder(object):
     self.description_file = None
     self.install_script_file = None
     self.file_list_path = None
+    self.changelog = None
 
     self.pre_scriptlet = None
     self.post_scriptlet = None
@@ -230,6 +231,7 @@ class RpmBuilder(object):
                    post_scriptlet_path=None,
                    preun_scriptlet_path=None,
                    postun_scriptlet_path=None,
+                   changelog_file=None,
                    file_list_path=None):
     """Create the needed structure in the workdir."""
 
@@ -270,7 +272,12 @@ class RpmBuilder(object):
       'POST_SCRIPTLET': "%post\n" + self.post_scriptlet,
       'PREUN_SCRIPTLET': "%preun\n" + self.preun_scriptlet,
       'POSTUN_SCRIPTLET': "%postun\n" + self.postun_scriptlet,
+      'CHANGELOG': ""
     }
+
+    if changelog_file:
+      self.changelog = SlurpFile(os.path.join(original_dir, changelog_file))
+      tpl_replacements["CHANGELOG"] = "%changelog\n" + self.changelog
 
     # If the spec file has "Version" and "Release" tags specified in the spec
     # file's preamble, the values are filled in immediately afterward.  These go
@@ -423,6 +430,7 @@ class RpmBuilder(object):
             preun_scriptlet_path=None,
             postun_scriptlet_path=None,
             file_list_path=None,
+            changelog_file=None,
             rpmbuild_args=None):
     """Build the RPM described by the spec_file, with other metadata in keyword arguments"""
 
@@ -442,7 +450,8 @@ class RpmBuilder(object):
                         pre_scriptlet_path=pre_scriptlet_path,
                         post_scriptlet_path=post_scriptlet_path,
                         preun_scriptlet_path=preun_scriptlet_path,
-                        postun_scriptlet_path=postun_scriptlet_path)
+                        postun_scriptlet_path=postun_scriptlet_path,
+                        changelog_file=changelog_file)
       status = self.CallRpmBuild(dirname, rpmbuild_args or [])
       self.SaveResult(out_file)
 
@@ -491,6 +500,8 @@ def main(argv):
                       help='File containing the RPM %preun scriptlet, if to be substituted')
   parser.add_argument('--postun_scriptlet',
                       help='File containing the RPM %postun scriptlet, if to be substituted')
+  parser.add_argument('--changelog',
+                      help='File containing the RPM changelog text')
 
   parser.add_argument('--rpmbuild_arg', dest='rpmbuild_args', action='append',
                       help='Any additional arguments to pass to rpmbuild')
@@ -514,6 +525,7 @@ def main(argv):
                          post_scriptlet_path=options.post_scriptlet,
                          preun_scriptlet_path=options.preun_scriptlet,
                          postun_scriptlet_path=options.postun_scriptlet,
+                         changelog_file=options.changelog,
                          rpmbuild_args=options.rpmbuild_args)
   except NoRpmbuildFoundError:
     print('ERROR: rpmbuild is required but is not present in PATH')
