@@ -22,8 +22,6 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 package(default_applicable_licenses = ["//:license"])
 
-licenses(["notice"])
-
 py_library(
     name = "zip_test_lib",
     srcs = [

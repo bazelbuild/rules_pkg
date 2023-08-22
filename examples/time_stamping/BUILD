@@ -13,8 +13,6 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 pkg_tar(
