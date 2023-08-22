@@ -45,9 +45,9 @@ spec_filetype = [".spec", ".spec.in", ".spec.tpl"]
 #
 # TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
 _INSTALL_FILE_STANZA_FMT = """
-install -d %{{buildroot}}/$(dirname {1})
-cp {0} %{{buildroot}}/{1}
-"""
+install -d "%{{buildroot}}/$(dirname '{1}')"
+cp '{0}' '%{{buildroot}}/{1}'
+""".strip()
 
 # TODO(nacl): __install
 # {0} is the directory name
@@ -55,8 +55,8 @@ cp {0} %{{buildroot}}/{1}
 # This may not be strictly necessary, given that they'll be created in the
 # CPIO when rpmbuild processes the `%files` list.
 _INSTALL_DIR_STANZA_FMT = """
-install -d %{{buildroot}}/{0}
-"""
+install -d '%{{buildroot}}/{0}'
+""".strip()
 
 # {0} is the name of the link, {1} is the target, {2} is the desired symlink "mode".
 #
@@ -74,12 +74,17 @@ install -d %{{buildroot}}/{0}
 # XXX: This may not apply all that well to users of cygwin and mingw.  We'll
 # deal with that when the time comes.
 _INSTALL_SYMLINK_STANZA_FMT = """
-%{{__install}} -d %{{buildroot}}/$(dirname {0})
-%{{__ln_s}} {1} %{{buildroot}}/{0}
+%{{__install}} -d "%{{buildroot}}/$(dirname '{0}')"
+%{{__ln_s}} '{1}' '%{{buildroot}}/{0}'
 %if "%_host_os" != "linux"
-    %{{__chmod}} -h {2} %{{buildroot}}/{0}
+    %{{__chmod}} -h {2} '%{{buildroot}}/{0}'
 %endif
-"""
+""".strip()
+
+# {0} is the file tag, {1} is the the path to file
+_FILE_MODE_STANZA_FMT = """
+{0} "{1}"
+""".strip()
 
 def _package_contents_metadata(origin_label, grouping_label):
     """Named construct for helping to identify conflicting packaged contents"""
@@ -170,7 +175,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map,
             })
         else:
             # Files are well-known.  Take care of them right here.
-            rpm_files_list.append(file_base + " " + abs_dest)
+            rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
             install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
                 src.path,
                 abs_dest,
@@ -185,7 +190,7 @@ def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, 
             dest_check_map[dest] = metadata
 
         abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
-        rpm_files_list.append(file_base + " " + abs_dirname)
+        rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dirname))
 
         install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
             abs_dirname,
@@ -199,7 +204,7 @@ def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_ma
         dest_check_map[psi.destination] = metadata
 
     abs_dest = _make_absolute_if_not_already_or_is_macro(psi.destination)
-    rpm_files_list.append(file_base + " " + abs_dest)
+    rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
     install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
         abs_dest,
         psi.target,

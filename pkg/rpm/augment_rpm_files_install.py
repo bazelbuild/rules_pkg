@@ -22,10 +22,14 @@ import os
 import sys
 import json
 
-# NOTE: Keep this in sync with the same variable in rpm.bzl
+# NOTE: Keep those two in sync with the same variables in rpm_pfg.bzl
 _INSTALL_FILE_STANZA_FMT = """
-install -d %{{buildroot}}/$(dirname {1})
-cp {0} %{{buildroot}}/{1}
+install -d "%{{buildroot}}/$(dirname '{1}')"
+cp '{0}' '%{{buildroot}}/{1}'
+""".strip()
+
+_FILE_MODE_STANZA_FMT = """
+{0} "{1}"
 """.strip()
 
 # Cheapo arg parsing.  Currently this script is single-purpose.
@@ -69,9 +73,7 @@ with open(dir_data_path, 'r') as fh:
                     os.path.join(root, f),
                     full_dest
                 ))
-                dir_files_segments.append(
-                    d["tags"] + " " + full_dest
-                )
+                dir_files_segments.append(_FILE_MODE_STANZA_FMT.format(d["tags"], full_dest))
 
 with open(existing_install_script_path, 'r') as fh:
     existing_install_script = fh.read()
