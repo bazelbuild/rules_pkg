@@ -80,6 +80,8 @@ class ZipContentsTestBase(ZipTest):
         elif "isexe" in expected:
           got_mode = (info.external_attr >> 16) & UNIX_RX_BITS
           self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
+        elif "size" in expected:
+          self.assertEqual(info.compress_size, expected["size"])
 
         else:
           if "attr" in expected:
