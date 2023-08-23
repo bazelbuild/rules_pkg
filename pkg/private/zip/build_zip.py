@@ -23,6 +23,15 @@ import zipfile
 from pkg.private import build_info
 from pkg.private import manifest
 
+try:
+  import lzma  # pylint: disable=g-import-not-at-top, unused-import
+  HAS_LZMA = True
+except ImportError:
+  HAS_LZMA = False
+
+COMPRESSIONS = ('stored', 'deflated', 'bzip2', 'lzma') if HAS_LZMA else ('stored', 'deflated', 'bzip2')
+
+
 ZIP_EPOCH = 315532800
 
 # Unix dir bit and Windows dir bit. Magic from zip spec
@@ -93,11 +102,12 @@ class ZipWriter(object):
     self.time_stamp = time_stamp
     self.default_mode = default_mode
     compressions = {
-      "deflated": zipfile.ZIP_DEFLATED,
-      "lzma": zipfile.ZIP_LZMA,
-      "bzip2": zipfile.ZIP_BZIP2,
-      "stored": zipfile.ZIP_STORED
+      'deflated': zipfile.ZIP_DEFLATED,
+      'bzip2': zipfile.ZIP_BZIP2,
+      'stored': zipfile.ZIP_STORED,
     }
+    if HAS_LZMA:
+      compressions['lzma'] = zipfile.ZIP_LZMA
     self.compression_type = compressions[compression_type]
     self.compression_level = compression_level
     self.zip_file = zipfile.ZipFile(self.output_path, mode='w', compression=self.compression_type)
