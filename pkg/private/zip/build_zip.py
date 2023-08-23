@@ -24,13 +24,16 @@ from pkg.private import build_info
 from pkg.private import manifest
 
 try:
+  import bz2  # pylint: disable=g-import-not-at-top, unused-import
+  HAS_BZIP2 = True
+except ImportError:
+  HAS_BZIP2 = False
+
+try:
   import lzma  # pylint: disable=g-import-not-at-top, unused-import
   HAS_LZMA = True
 except ImportError:
   HAS_LZMA = False
-
-COMPRESSIONS = ('stored', 'deflated', 'bzip2', 'lzma') if HAS_LZMA else ('stored', 'deflated', 'bzip2')
-
 
 ZIP_EPOCH = 315532800
 
@@ -104,10 +107,16 @@ class ZipWriter(object):
     compressions = {
       'deflated': zipfile.ZIP_DEFLATED,
       'bzip2': zipfile.ZIP_BZIP2,
-      'stored': zipfile.ZIP_STORED,
+      'stored': zipfile.ZIP_STORED
     }
+    if HAS_BZIP2:
+      compressions['bzip2'] = zipfile.ZIP_BZIP2
+    else:
+      compressions['bzip2'] = zipfile.ZIP_DEFLATED
     if HAS_LZMA:
       compressions['lzma'] = zipfile.ZIP_LZMA
+    else:
+      compressions['lzma'] = compressions['bzip2']
     self.compression_type = compressions[compression_type]
     self.compression_level = compression_level
     self.zip_file = zipfile.ZipFile(self.output_path, mode='w', compression=self.compression_type)
