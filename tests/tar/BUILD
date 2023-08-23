@@ -463,51 +463,6 @@ py_test(
     ],
 )
 
-link_tree(
-    name = "node_modules",
-    links = {
-        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
-        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
-        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
-        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
-    },
-    package_dir = "node_modules",
-)
-
-directory(
-    name = "tree_artifact_with_links",
-    contents = "hello there",
-    filenames = [
-        "foo/hello.txt",
-        "foo/bar/baz",
-    ],
-    links = {
-        "foo/bar/hello": "../hello.txt",
-        "foo/bar/alt_baz": "baz",
-        "foo/alt_baz": "bar/baz",
-    },
-)
-
-# This target has symlinks 3 ways.
-# - mklinks rules.
-# - source files that are symlinks
-# - tree artifacts
-pkg_tar(
-    name = "relative_links_tar",
-    srcs = [
-        ":node_modules",
-        ":tree_artifact_with_links",
-        "//tests:file_and_link",
-    ],
-)
-
-pkg_tar(
-    name = "relative_links_re_tar",
-    deps = [
-        ":relative_links_tar",
-    ],
-)
-
 directory(
     name = "generate_tree_with_prefix",
     contents = "hello there",
@@ -545,4 +500,99 @@ pkg_tar(
     srcs = [
         ":tree_artifact_to_rename",
     ],
+)
+
+#
+# Test with symlinks
+#
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+    },
+    package_dir = "node_modules",
+)
+
+directory(
+    name = "tree_artifact_with_links",
+    contents = "hello there",
+    filenames = [
+        "foo/hello.txt",
+        "foo/bar/baz",
+    ],
+    links = {
+        "foo/bar/hello": "../hello.txt",
+        "foo/bar/alt_baz": "baz",
+        "foo/alt_baz": "bar/baz",
+    },
+)
+
+# This target has symlinks 3 ways.
+# - mklinks rules.
+# - source files that are symlinks
+# - tree artifacts
+pkg_tar(
+    name = "relative_links_tar",
+    srcs = [
+        ":node_modules",
+        ":tree_artifact_with_links",
+        "//tests:file_and_link",
+    ],
+    symlinks = {
+        "tree_artifact/toss_in_another": "/foo",
+    },
+)
+
+verify_archive_test(
+    name = "relative_links_test",
+    target = ":relative_links_tar",
+    min_size = 10,
+    must_contain = [
+        "BUILD",
+        "outer_BUILD",
+        "node_modules/.pnpm/bar@1.0.0/node_modules/bar",
+    ],
+    verify_links = {
+        "node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        "tree_artifact/toss_in_another": "/foo",
+    },
+)
+
+pkg_tar(
+    name = "relative_links_re_tar",
+    deps = [
+        ":relative_links_tar",
+    ],
+    symlinks = {
+        # We expect package_dir to apply to this
+        "tree_artifact/toss_in_another": "some_target",
+        # But we protect the user from duplicationg package_dir in their
+        # link. That was the old behavior of symlink.
+        "new/base/something/this": "that",
+    },
+    package_dir = "new/base",
+)
+
+verify_archive_test(
+    name = "relative_links_re_test",
+    target = ":relative_links_re_tar",
+    min_size = 10,
+    must_contain = [
+        "new/base/BUILD",
+        "new/base/outer_BUILD",
+        "new/base/node_modules/.pnpm/bar@1.0.0/node_modules/bar",
+    ],
+    must_not_contain = [
+        "BUILD",
+        "new/base/new/base/something/this",
+    ],
+    verify_links = {
+        "new/base/node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        "new/base/tree_artifact/toss_in_another": "some_target",
+        "new/base/something/this": "that",
+    },
 )

@@ -38,6 +38,7 @@ def _gen_verify_archive_test_main_impl(ctx):
             "${MUST_NOT_CONTAIN_REGEX}": str(ctx.attr.must_not_contain_regex),
             "${MIN_SIZE}": str(ctx.attr.min_size),
             "${MAX_SIZE}": str(ctx.attr.max_size),
+            "${VERIFY_LINKS}": str(ctx.attr.verify_links),
         },
     )
     return [
@@ -74,6 +75,9 @@ _gen_verify_archive_test_main = rule(
         "max_size": attr.int(
             doc = """Maximum number of entries in the archive."""
         ),
+        "verify_links": attr.string_dict(
+            doc = """Dict keyed by paths which must appear, and be symlinks to their values.""",
+        ),
 
         # Implicit dependencies.
         "_template": attr.label(
@@ -86,7 +90,8 @@ _gen_verify_archive_test_main = rule(
 def verify_archive_test(name, target,
                         must_contain=None, must_contain_regex=None,
                         must_not_contain=None, must_not_contain_regex=None,
-                        min_size=1, max_size=-1):
+                        min_size=1, max_size=-1,
+                        verify_links=None):
     """Tests that an archive contains specific file patterns.
 
     This test is used to verify that an archive contains the expected content.
@@ -99,6 +104,7 @@ def verify_archive_test(name, target,
       must_not_contain_regex: A list of path regexes which must not appear in the archive.
       min_size: The minimum number of entries which must be in the archive.
       max_size: The maximum number of entries which must be in the archive.
+      verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
     """
     test_src = name + "__internal_main.py" 
     _gen_verify_archive_test_main(
@@ -112,6 +118,7 @@ def verify_archive_test(name, target,
         must_not_contain_regex = must_not_contain_regex,
         min_size = min_size,
         max_size = max_size,
+        verify_links = verify_links,
     )
     py_test(
         name = name,

@@ -36,10 +36,13 @@ class VerifyArchiveTest(unittest.TestCase):
 
   def load_tar(self, path):
     self.paths = []
+    self.links = {}
     with tarfile.open(path, 'r:*') as f:
       i = 0
       for info in f:
         self.paths.append(info.name)
+        if info.linkname:
+          self.links[info.name] = info.linkname
 
   def assertMinSize(self, min_size):
     """Check that the archive contains at least min_size entries.
@@ -60,6 +63,8 @@ class VerifyArchiveTest(unittest.TestCase):
     Args:
         max_size: The maximum number of targets we expect.
     """
+    if max_size < 0:
+      return
     actual_size = len(self.paths)
     self.assertLessEqual(
         len(self.paths),
@@ -100,6 +105,14 @@ class VerifyArchiveTest(unittest.TestCase):
         if r_comp.match(path):
           self.fail('Found disallowed pattern (%s) in the archive' % pattern)
 
+  def verify_links(self, verify_links):
+    for link, target in verify_links.items():
+      if link not in self.paths:
+        self.fail('Required link (%s) is not in the archive' % link)
+      if self.links[link] != target:
+        self.fail('link (%s) points to the wrong place. Expected (%s) got (%s)' %
+            (link, target, self.links[link]))
+
 
 class ${TEST_NAME}(VerifyArchiveTest):
 
@@ -124,6 +137,9 @@ class ${TEST_NAME}(VerifyArchiveTest):
 
   def test_must_not_contain(self):
     self.check_must_not_contain_regex(${MUST_NOT_CONTAIN_REGEX})
+
+  def test_verify_links(self):
+    self.verify_links(${VERIFY_LINKS})
 
 
 if __name__ == '__main__':
