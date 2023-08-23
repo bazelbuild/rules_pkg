@@ -89,6 +89,23 @@ def parse_date(ts):
   return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
 
 
+def _get_compression(requested_compression):
+  compressions = {
+    'deflated': zipfile.ZIP_DEFLATED,
+    'bzip2': zipfile.ZIP_BZIP2,
+    'stored': zipfile.ZIP_STORED
+  }
+  if HAS_BZIP2:
+    compressions['bzip2'] = zipfile.ZIP_BZIP2
+  else:
+    compressions['bzip2'] = zipfile.ZIP_DEFLATED
+  if HAS_LZMA:
+    compressions['lzma'] = zipfile.ZIP_LZMA
+  else:
+    compressions['lzma'] = compressions['bzip2']
+  return compressions[requested_compression]
+
+
 class ZipWriter(object):
 
   def __init__(self, output_path: str, time_stamp: int, default_mode: int, compression_type: str, compression_level: int):
@@ -104,20 +121,7 @@ class ZipWriter(object):
     self.output_path = output_path
     self.time_stamp = time_stamp
     self.default_mode = default_mode
-    compressions = {
-      'deflated': zipfile.ZIP_DEFLATED,
-      'bzip2': zipfile.ZIP_BZIP2,
-      'stored': zipfile.ZIP_STORED
-    }
-    if HAS_BZIP2:
-      compressions['bzip2'] = zipfile.ZIP_BZIP2
-    else:
-      compressions['bzip2'] = zipfile.ZIP_DEFLATED
-    if HAS_LZMA:
-      compressions['lzma'] = zipfile.ZIP_LZMA
-    else:
-      compressions['lzma'] = compressions['bzip2']
-    self.compression_type = compressions[compression_type]
+    self.compression_type = _get_compression(compression_type)
     self.compression_level = compression_level
     self.zip_file = zipfile.ZipFile(self.output_path, mode='w', compression=self.compression_type)
 
