@@ -140,14 +140,15 @@ def _pkg_tar_impl(ctx):
             # Add in the files of srcs which are not pkg_* types
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
+
+                # Note: This extra remap is the bottleneck preventing this
+                # large block from being a utility method as shown below.
+                # Should we disallow mixing pkg_files in srcs with remap?
+                # I am fine with that if it makes the code more readable.
+                dest = _remap(remap_paths, d_path)
                 if f.is_directory:
-                    add_tree_artifact(content_map, d_path, f, src.label)
+                    add_tree_artifact(content_map, dest, f, src.label)
                 else:
-                    # Note: This extra remap is the bottleneck preventing this
-                    # large block from being a utility method as shown below.
-                    # Should we disallow mixing pkg_files in srcs with remap?
-                    # I am fine with that if it makes the code more readable.
-                    dest = _remap(remap_paths, d_path)
                     add_single_file(content_map, dest, f, src.label)
 
     # TODO(aiuto): I want the code to look like this, but we don't have lambdas.

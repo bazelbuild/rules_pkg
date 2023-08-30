@@ -360,6 +360,7 @@ py_test(
         ":test-pkg-tar-with-attributes",
         ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-tree-input-with-strip-prefix",
+        ":test-remap-paths-tree-artifact",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -523,4 +524,25 @@ pkg_tar(
         ":generate_tree_with_prefix",
     ],
     strip_prefix = "tree_prefix_to_strip",
+)
+
+
+directory(
+    name = "tree_artifact_to_rename",
+    contents = "hello there",
+    filenames = [
+        "a",
+        "rename_me/should_not_rename"
+    ],
+    outdir = "rename_me",
+)
+
+pkg_tar(
+    name = "test-remap-paths-tree-artifact",
+    remap_paths = {
+        "/rename_me": "a_new_name",
+    },
+    srcs = [
+        ":tree_artifact_to_rename",
+    ],
 )
