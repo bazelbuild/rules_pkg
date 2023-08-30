@@ -1,4 +1,4 @@
-# rules_pkg - 0.8.2
+# rules_pkg - 0.10.0
 
 <div class="toc">
   <h2>Common Attributes</h2>
@@ -63,22 +63,19 @@ attributes = pkg_attributes(
     mode = "0644",
     user = "root",
     group = "wheel",
-    uid = 5,
-    gid = 7,
     my_custom_attribute = "some custom value",
 )
 ```
 
 `mode`, `user`, and `group` correspond to common UNIX-style filesystem
-permissions. `uid` and `gid` correspond to the numeric uid/gid.  Attributes
-should always be specified using the `pkg_attributes` helper macro.
+permissions.  Attributes should always be specified using the `pkg_attributes`
+helper macro.
 
 Each mapping rule has some default mapping attributes.  At this time, the only
 default is "mode", which will be set if it is not otherwise overridden by the user.
 
 If `user` and `group` are not specified, then defaults for them will be chosen
-by the underlying package builder.  If `uid` and `gid` are not specified,
-they will default to 0.  Any specific behavior from package builders
+by the underlying package builder.  Any specific behavior from package builders
 should not be relied upon.
 
 Any other attributes should be specified as additional arguments to
@@ -94,11 +91,11 @@ Rule for creating Debian packages.
 
 <pre>
 pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-architecture_file">architecture_file</a>, <a href="#pkg_deb-breaks">breaks</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>,
-             <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>, <a href="#pkg_deb-description">description</a>,
-             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-license">license</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
-             <a href="#pkg_deb-package_file_name">package_file_name</a>, <a href="#pkg_deb-package_variables">package_variables</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>,
-             <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-provides">provides</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-replaces">replaces</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>, <a href="#pkg_deb-triggers">triggers</a>,
-             <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
+             <a href="#pkg_deb-changelog">changelog</a>, <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>,
+             <a href="#pkg_deb-description">description</a>, <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-license">license</a>, <a href="#pkg_deb-maintainer">maintainer</a>,
+             <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>, <a href="#pkg_deb-package_file_name">package_file_name</a>, <a href="#pkg_deb-package_variables">package_variables</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>,
+             <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>, <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-provides">provides</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-replaces">replaces</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>,
+             <a href="#pkg_deb-triggers">triggers</a>, <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
 </pre>
 
 
@@ -114,6 +111,7 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
 | <a id="pkg_deb-breaks"></a>breaks |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | <a id="pkg_deb-built_using"></a>built_using |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | String | optional | "" |
 | <a id="pkg_deb-built_using_file"></a>built_using_file |  The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_deb-changelog"></a>changelog |  The package changelog.             See https://www.debian.org/doc/debian-policy/ch-source.html#s-dpkgchangelog.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_deb-conffiles"></a>conffiles |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | List of strings | optional | [] |
 | <a id="pkg_deb-conffiles_file"></a>conffiles_file |  The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed. See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_deb-config"></a>config |  config file used for debconf integration.             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -301,7 +299,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar
 | <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional | 0 |
-| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
+| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  (note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)   | String | optional | "" |
 | <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 
 
@@ -437,7 +435,7 @@ Package contents grouping rule.
 ## pkg_files
 
 <pre>
-pkg_files(<a href="#pkg_files-name">name</a>, <a href="#pkg_files-attributes">attributes</a>, <a href="#pkg_files-excludes">excludes</a>, <a href="#pkg_files-prefix">prefix</a>, <a href="#pkg_files-renames">renames</a>, <a href="#pkg_files-srcs">srcs</a>, <a href="#pkg_files-strip_prefix">strip_prefix</a>)
+pkg_files(<a href="#pkg_files-name">name</a>, <a href="#pkg_files-attributes">attributes</a>, <a href="#pkg_files-excludes">excludes</a>, <a href="#pkg_files-include_runfiles">include_runfiles</a>, <a href="#pkg_files-prefix">prefix</a>, <a href="#pkg_files-renames">renames</a>, <a href="#pkg_files-srcs">srcs</a>, <a href="#pkg_files-strip_prefix">strip_prefix</a>)
 </pre>
 
 General-purpose package target-to-destination mapping rule.
@@ -462,6 +460,7 @@ General-purpose package target-to-destination mapping rule.
 | <a id="pkg_files-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | <a id="pkg_files-attributes"></a>attributes |  Attributes to set on packaged files.<br><br>            Always use <code>pkg_attributes()</code> to set this rule attribute.<br><br>            If not otherwise overridden, the file's mode will be set to UNIX             "0644", or the target platform's equivalent.<br><br>            Consult the "Mapping Attributes" documentation in the rules_pkg             reference for more details.   | String | optional | "{}" |
 | <a id="pkg_files-excludes"></a>excludes |  List of files or labels to exclude from the inputs to this rule.<br><br>            Mostly useful for removing files from generated outputs or             preexisting <code>filegroup</code>s.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| <a id="pkg_files-include_runfiles"></a>include_runfiles |  Add runfiles for all srcs.<br><br>            The runfiles are in the paths that Bazel uses. For example, for the             target <code>//my_prog:foo</code>, we would see files under paths like             <code>foo.runfiles/&lt;repo name&gt;/my_prog/&lt;file&gt;</code>   | Boolean | optional | False |
 | <a id="pkg_files-prefix"></a>prefix |  Installation prefix.<br><br>            This may be an arbitrary string, but it should be understandable by             the packaging system you are using to have the desired outcome.  For             example, RPM macros like <code>%{_libdir}</code> may work correctly in paths             for RPM packages, not, say, Debian packages.<br><br>            If any part of the directory structure of the computed destination             of a file provided to <code>pkg_filegroup</code> or any similar rule does not             already exist within a package, the package builder will create it             for you with a reasonable set of default permissions (typically             <code>0755 root.root</code>).<br><br>            It is possible to establish directory structures with arbitrary             permissions using <code>pkg_mkdirs</code>.   | String | optional | "" |
 | <a id="pkg_files-renames"></a>renames |  Destination override map.<br><br>            This attribute allows the user to override destinations of files in             <code>pkg_file</code>s relative to the <code>prefix</code> attribute.  Keys to the             dict are source files/labels, values are destinations relative to             the <code>prefix</code>, ignoring whatever value was provided for             <code>strip_prefix</code>.<br><br>            If the key refers to a TreeArtifact (directory output), you may             specify the constant <code>REMOVE_BASE_DIRECTORY</code> as the value, which             will result in all containing files and directories being installed             relative to the otherwise specified install prefix (via the <code>prefix</code>             and <code>strip_prefix</code> attributes), not the directory name.<br><br>            The following keys are rejected:<br><br>            - Any label that expands to more than one file (mappings must be               one-to-one).<br><br>            - Any label or file that was either not provided or explicitly               <code>exclude</code>d.<br><br>            The following values result in undefined behavior:<br><br>            - "" (the empty string)<br><br>            - "."<br><br>            - Anything containing ".."   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
 | <a id="pkg_files-srcs"></a>srcs |  Files/Labels to include in the outputs of these rules   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | required |  |
@@ -536,7 +535,7 @@ Define a symlink  within packages
 ## pkg_attributes
 
 <pre>
-pkg_attributes(<a href="#pkg_attributes-mode">mode</a>, <a href="#pkg_attributes-user">user</a>, <a href="#pkg_attributes-group">group</a>, <a href="#pkg_attributes-kwargs">kwargs</a>)
+pkg_attributes(<a href="#pkg_attributes-mode">mode</a>, <a href="#pkg_attributes-user">user</a>, <a href="#pkg_attributes-group">group</a>, <a href="#pkg_attributes-uid">uid</a>, <a href="#pkg_attributes-gid">gid</a>, <a href="#pkg_attributes-kwargs">kwargs</a>)
 </pre>
 
 Format attributes for use in package mapping rules.
@@ -545,8 +544,8 @@ If "mode" is not provided, it will default to the mapping rule's default
 mode.  These vary per mapping rule; consult the respective documentation for
 more details.
 
-Not providing any of "user", or "group" will result in the package builder
-choosing one for you.  The chosen value should not be relied upon.
+Not providing any of "user", "group", "uid", or "gid" will result in the package
+builder choosing one for you.  The chosen value should not be relied upon.
 
 Well-known attributes outside of the above are documented in the rules_pkg
 reference.
@@ -561,8 +560,10 @@ rules (e.g. `pkg_files`).
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="pkg_attributes-mode"></a>mode |  string: UNIXy octal permissions, as a string.   |  <code>None</code> |
-| <a id="pkg_attributes-user"></a>user |  string: Filesystem owning user.   |  <code>None</code> |
-| <a id="pkg_attributes-group"></a>group |  string: Filesystem owning group.   |  <code>None</code> |
+| <a id="pkg_attributes-user"></a>user |  string: Filesystem owning user name.   |  <code>None</code> |
+| <a id="pkg_attributes-group"></a>group |  string: Filesystem owning group name.   |  <code>None</code> |
+| <a id="pkg_attributes-uid"></a>uid |  int: Filesystem owning user id.   |  <code>None</code> |
+| <a id="pkg_attributes-gid"></a>gid |  int: Filesystem owning group id.   |  <code>None</code> |
 | <a id="pkg_attributes-kwargs"></a>kwargs |  any other desired attributes.   |  none |
 
 **RETURNS**
