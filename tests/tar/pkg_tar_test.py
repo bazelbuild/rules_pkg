@@ -283,6 +283,15 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-tree-input-with-strip-prefix.tar', content)
 
+  def test_remap_paths_tree_artifact(self):
+    content = [
+      {'name': 'a_new_name', 'isdir': True},
+      {'name': 'a_new_name/a'},
+      {'name': 'a_new_name/rename_me', 'isdir': True},
+      {'name': 'a_new_name/rename_me/should_not_rename'},
+    ]
+    self.assertTarFileContent('test-remap-paths-tree-artifact.tar', content)
+
 
 if __name__ == '__main__':
   unittest.main()
