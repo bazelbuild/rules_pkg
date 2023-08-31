@@ -103,7 +103,8 @@ pkg_zip_impl = rule(
             default = "0555",
         ),
         "package_dir": attr.string(
-            doc = """The prefix to add to all all paths in the archive.""",
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables in the forms {var} and $(var). The values for substitution are specified through `package_variables` or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var).""",
             default = "/",
         ),
         "strip_prefix": attr.string(),

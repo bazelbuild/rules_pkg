@@ -39,7 +39,7 @@ These attributes are used in several rules within this module.
 | :-------------    | :-------------                                                                                                                                                                  | :-------------:                                                    | :-------------: | :-------------                            |
 | out               | Name of the output file. This file will always be created and used to access the package content. If `package_file_name` is also specified, `out` will be a symlink.            | String                                                             | required        |                                           |
 | package_file_name | The name of the file which will contain the package. The name may contain variables in the forms `{var}` and $(var)`. The values for substitution are specified through `package_variables` or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var). | String | optional | package type specific |
-| package_variables | A target that provides `PackageVariablesInfo` to substitute into `package_file_name`.                                                                                           | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional        | None                                      |
+| package_variables | A target that provides `PackageVariablesInfo` to substitute into `package_file_name`. `pkg_zip` and `pkg_tar` also support this in `package_dir`                                | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional        | None                                      |
 | attributes        | Attributes to set on entities created within packages.  Not to be confused with bazel rule attributes.  See 'Mapping "Attributes"' below                                        | Undefined.                                                         | optional        | Varies.  Consult individual rule documentation for details. |
 
 See
@@ -290,7 +290,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar
 | <a id="pkg_tar-ownername"></a>ownername |  -   | String | optional | "." |
 | <a id="pkg_tar-ownernames"></a>ownernames |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-owners"></a>owners |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar-package_dir"></a>package_dir |  Prefix to be prepend to all paths written.   | String | optional | "" |
+| <a id="pkg_tar-package_dir"></a>package_dir |  Prefix to be prepend to all paths written. The name may contain variables in the forms {var} and $(var). The values for substitution are specified through <code>package_variables</code> or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var).   | String | optional | "" |
 | <a id="pkg_tar-package_dir_file"></a>package_dir_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar-package_file_name"></a>package_file_name |  See Common Attributes   | String | optional | "" |
 | <a id="pkg_tar-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -313,8 +313,8 @@ Zip archive creation rule and associated logic.
 ## pkg_zip
 
 <pre>
-pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-mode">mode</a>, <a href="#pkg_zip-out">out</a>, <a href="#pkg_zip-package_dir">package_dir</a>, <a href="#pkg_zip-package_file_name">package_file_name</a>, <a href="#pkg_zip-package_variables">package_variables</a>,
-             <a href="#pkg_zip-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_zip-srcs">srcs</a>, <a href="#pkg_zip-stamp">stamp</a>, <a href="#pkg_zip-strip_prefix">strip_prefix</a>, <a href="#pkg_zip-timestamp">timestamp</a>)
+pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-compression_level">compression_level</a>, <a href="#pkg_zip-compression_type">compression_type</a>, <a href="#pkg_zip-mode">mode</a>, <a href="#pkg_zip-out">out</a>, <a href="#pkg_zip-package_dir">package_dir</a>, <a href="#pkg_zip-package_file_name">package_file_name</a>,
+             <a href="#pkg_zip-package_variables">package_variables</a>, <a href="#pkg_zip-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_zip-srcs">srcs</a>, <a href="#pkg_zip-stamp">stamp</a>, <a href="#pkg_zip-strip_prefix">strip_prefix</a>, <a href="#pkg_zip-timestamp">timestamp</a>)
 </pre>
 
 
@@ -325,9 +325,11 @@ pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-mode">mode</a>, <a h
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_zip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_zip-compression_level"></a>compression_level |  The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used   | Integer | optional | 6 |
+| <a id="pkg_zip-compression_type"></a>compression_type |  The compression to use. Note that lzma and bzip2 might not be supported by all readers. The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED   | String | optional | "deflated" |
 | <a id="pkg_zip-mode"></a>mode |  The default mode for all files in the archive.   | String | optional | "0555" |
 | <a id="pkg_zip-out"></a>out |  output file name. Default: name + ".zip".   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_zip-package_dir"></a>package_dir |  The prefix to add to all all paths in the archive.   | String | optional | "/" |
+| <a id="pkg_zip-package_dir"></a>package_dir |  Prefix to be prepend to all paths written. The name may contain variables in the forms {var} and $(var). The values for substitution are specified through <code>package_variables</code> or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var).   | String | optional | "/" |
 | <a id="pkg_zip-package_file_name"></a>package_file_name |  See Common Attributes   | String | optional | "" |
 | <a id="pkg_zip-package_variables"></a>package_variables |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_zip-private_stamp_detect"></a>private_stamp_detect |  -   | Boolean | optional | False |
