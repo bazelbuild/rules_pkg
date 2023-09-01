@@ -594,4 +594,5 @@ verify_archive_test(
         "new/base/tree_artifact/toss_in_another": "some_target",
         "new/base/something/this": "that",
     },
+    tags = ["nowindows"],
 )
