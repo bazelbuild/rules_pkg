@@ -94,6 +94,7 @@ def verify_archive_test(
         must_not_contain_regex = None,
         min_size = 1,
         max_size = -1,
+        tags = None,
         verify_links = None):
     """Tests that an archive contains specific file patterns.
 
@@ -107,6 +108,7 @@ def verify_archive_test(
       must_not_contain_regex: A list of path regexes which must not appear in the archive.
       min_size: The minimum number of entries which must be in the archive.
       max_size: The maximum number of entries which must be in the archive.
+      tags: standard meaning
       verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
     """
     test_src = name + "__internal_main.py"
@@ -121,6 +123,7 @@ def verify_archive_test(
         must_not_contain_regex = must_not_contain_regex,
         min_size = min_size,
         max_size = max_size,
+        tags = tags,
         verify_links = verify_links,
     )
     py_test(
