@@ -236,7 +236,7 @@ def _pkg_tar_impl(ctx):
         # or this OutputGroup might be totally removed.
         # Depend on it at your own risk!
         OutputGroupInfo(
-            manifest = [manifest_file], 
+            manifest = [manifest_file],
         ),
         PackageArtifactInfo(
             label = ctx.label.name,
@@ -250,13 +250,13 @@ pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(
-            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)"""
+            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)""",
         ),
         "package_dir": attr.string(
             doc = """Prefix to be prepend to all paths written.
             This is applied as a final step, while writing to the archive.
             Any other attributes (e.g. symlinks) which specify a path, must do so relative to package_dir.
-            """
+            """,
         ),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(
@@ -265,17 +265,19 @@ pkg_tar_impl = rule(
         ),
         "srcs": attr.label_list(
             doc = """Inputs which will become part of the tar archive.""",
-            allow_files = True),
+            allow_files = True,
+        ),
         "files": attr.label_keyed_string_dict(
-            doc="""Obsolete. Do not use.""",
-            allow_files = True),
+            doc = """Obsolete. Do not use.""",
+            allow_files = True,
+        ),
         "mode": attr.string(default = "0555"),
         "modes": attr.string_dict(),
         "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
         "owner": attr.string(
             doc = """Default numeric owner.group to apply to files when not set via pkg_attribures.""",
-            default = "0.0"
+            default = "0.0",
         ),
         "ownername": attr.string(default = "."),
         "owners": attr.string_dict(),
@@ -287,7 +289,7 @@ pkg_tar_impl = rule(
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
         "compressor": attr.label(
-            doc = """External tool which can compress the archive.""", 
+            doc = """External tool which can compress the archive.""",
             executable = True,
             cfg = "exec",
         ),
@@ -331,6 +333,7 @@ def pkg_tar(name, **kwargs):
 
     @wraps(pkg_tar_impl)
     """
+
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.
     if "srcs" not in kwargs:

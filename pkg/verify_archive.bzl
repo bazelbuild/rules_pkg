@@ -23,7 +23,6 @@ The execution time is O(# expected patterns * size of archive).
 
 load("@rules_python//python:defs.bzl", "py_test")
 
-
 def _gen_verify_archive_test_main_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._template,
@@ -56,7 +55,6 @@ _gen_verify_archive_test_main = rule(
             allow_single_file = True,
             mandatory = True,
         ),
-
         "must_contain": attr.string_list(
             doc = "List of paths which all must appear in the archive.",
         ),
@@ -70,10 +68,10 @@ _gen_verify_archive_test_main = rule(
             doc = """List of regexes that must not be in the archive.""",
         ),
         "min_size": attr.int(
-            doc = """Minimum number of entries in the archive."""
+            doc = """Minimum number of entries in the archive.""",
         ),
         "max_size": attr.int(
-            doc = """Maximum number of entries in the archive."""
+            doc = """Maximum number of entries in the archive.""",
         ),
         "verify_links": attr.string_dict(
             doc = """Dict keyed by paths which must appear, and be symlinks to their values.""",
@@ -87,11 +85,16 @@ _gen_verify_archive_test_main = rule(
     },
 )
 
-def verify_archive_test(name, target,
-                        must_contain=None, must_contain_regex=None,
-                        must_not_contain=None, must_not_contain_regex=None,
-                        min_size=1, max_size=-1,
-                        verify_links=None):
+def verify_archive_test(
+        name,
+        target,
+        must_contain = None,
+        must_contain_regex = None,
+        must_not_contain = None,
+        must_not_contain_regex = None,
+        min_size = 1,
+        max_size = -1,
+        verify_links = None):
     """Tests that an archive contains specific file patterns.
 
     This test is used to verify that an archive contains the expected content.
@@ -106,11 +109,11 @@ def verify_archive_test(name, target,
       max_size: The maximum number of entries which must be in the archive.
       verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
     """
-    test_src = name + "__internal_main.py" 
+    test_src = name + "__internal_main.py"
     _gen_verify_archive_test_main(
         name = name + "_internal_main",
         target = target,
-        test_name = name.replace('-', '_') + "Test",
+        test_name = name.replace("-", "_") + "Test",
         out = test_src,
         must_contain = must_contain,
         must_contain_regex = must_contain_regex,

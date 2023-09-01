@@ -269,21 +269,21 @@ pkg_tar(
 
 verify_archive_test(
     name = "repackaging_long_filename_test",
-    target = ":test-tar-repackaging-long-filename",
+    max_size = 2,
     must_contain = [
         "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    must_contain_regex = [
+        ".*can_i_repackage_a_file_with_a_long_name/$",
     ],
     # there is really no need for these cases. I just want to use all the test capabilities.
     must_not_contain = [
         "i_am_not here",
     ],
-    must_contain_regex = [
-        ".*can_i_repackage_a_file_with_a_long_name/$",
-    ],
     must_not_contain_regex = [
         "^five.is.right.out",
     ],
-    max_size = 2,
+    target = ":test-tar-repackaging-long-filename",
 )
 
 pkg_tar(
@@ -341,6 +341,9 @@ py_test(
         "pkg_tar_test.py",
     ],
     data = [
+        ":test-pkg-tar-from-pkg-files-with-attributes",
+        ":test-pkg-tar-with-attributes",
+        ":test-remap-paths-tree-artifact",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
@@ -352,15 +355,12 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
-        ":test_tar_leading_dotslash",
-        ":test_tar_package_dir_substitution.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
-        ":test-pkg-tar-with-attributes",
-        ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-tree-input-with-strip-prefix",
-        ":test-remap-paths-tree-artifact",
+        ":test_tar_leading_dotslash",
+        ":test_tar_package_dir_substitution.tar",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -481,25 +481,24 @@ pkg_tar(
     strip_prefix = "tree_prefix_to_strip",
 )
 
-
 directory(
     name = "tree_artifact_to_rename",
     contents = "hello there",
     filenames = [
         "a",
-        "rename_me/should_not_rename"
+        "rename_me/should_not_rename",
     ],
     outdir = "rename_me",
 )
 
 pkg_tar(
     name = "test-remap-paths-tree-artifact",
-    remap_paths = {
-        "/rename_me": "a_new_name",
-    },
     srcs = [
         ":tree_artifact_to_rename",
     ],
+    remap_paths = {
+        "/rename_me": "a_new_name",
+    },
 )
 
 #
@@ -549,13 +548,13 @@ pkg_tar(
 
 verify_archive_test(
     name = "relative_links_test",
-    target = ":relative_links_tar",
     min_size = 10,
     must_contain = [
         "BUILD",
         "outer_BUILD",
         "node_modules/.pnpm/bar@1.0.0/node_modules/bar",
     ],
+    target = ":relative_links_tar",
     verify_links = {
         "node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
         "tree_artifact/toss_in_another": "/foo",
@@ -564,9 +563,7 @@ verify_archive_test(
 
 pkg_tar(
     name = "relative_links_re_tar",
-    deps = [
-        ":relative_links_tar",
-    ],
+    package_dir = "new/base",
     symlinks = {
         # We expect package_dir to apply to this
         "tree_artifact/toss_in_another": "some_target",
@@ -574,12 +571,13 @@ pkg_tar(
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },
-    package_dir = "new/base",
+    deps = [
+        ":relative_links_tar",
+    ],
 )
 
 verify_archive_test(
     name = "relative_links_re_test",
-    target = ":relative_links_re_tar",
     min_size = 10,
     must_contain = [
         "new/base/BUILD",
@@ -590,6 +588,7 @@ verify_archive_test(
         "BUILD",
         "new/base/new/base/something/this",
     ],
+    target = ":relative_links_re_tar",
     verify_links = {
         "new/base/node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
         "new/base/tree_artifact/toss_in_another": "some_target",
