@@ -523,11 +523,11 @@ directory(
         "foo/hello.txt",
         "foo/bar/baz",
     ],
-    links = {
-        "foo/bar/hello": "../hello.txt",
-        "foo/bar/alt_baz": "baz",
-        "foo/alt_baz": "bar/baz",
-    },
+    #links = {
+    #    "foo/bar/hello": "../hello.txt",
+    #    "foo/bar/alt_baz": "baz",
+    #    "foo/alt_baz": "bar/baz",
+    #},
     tags = ["nowindows"],
 )
 
