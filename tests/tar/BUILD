@@ -523,12 +523,12 @@ directory(
         "foo/hello.txt",
         "foo/bar/baz",
     ],
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/750)
     #links = {
     #    "foo/bar/hello": "../hello.txt",
     #    "foo/bar/alt_baz": "baz",
     #    "foo/alt_baz": "bar/baz",
     #},
-    tags = ["nowindows"],
 )
 
 # This target has symlinks 3 ways.
@@ -545,7 +545,6 @@ pkg_tar(
     symlinks = {
         "tree_artifact/toss_in_another": "/foo",
     },
-    tags = ["nowindows"],
 )
 
 verify_archive_test(
@@ -574,7 +573,6 @@ pkg_tar(
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },
-    tags = ["nowindows"],
     deps = [
         ":relative_links_tar",
     ],
