@@ -39,6 +39,8 @@ default_tests_with_rpm: &default_tests_with_rpm
 win_tests: &win_tests
   test_flags:
     - "--test_tag_filters=-nowindows"
+  build_flags:
+    - "--build_tag_filters=-nowindows"
   test_targets:
     - "//pkg/..."
     - "//tests/..."
