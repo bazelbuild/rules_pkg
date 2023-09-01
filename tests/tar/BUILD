@@ -554,6 +554,7 @@ verify_archive_test(
         "outer_BUILD",
         "node_modules/.pnpm/bar@1.0.0/node_modules/bar",
     ],
+    tags = ["nowindows"],
     target = ":relative_links_tar",
     verify_links = {
         "node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
@@ -571,7 +572,6 @@ pkg_tar(
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },
-    tags = ["nowindows"],
     deps = [
         ":relative_links_tar",
     ],
