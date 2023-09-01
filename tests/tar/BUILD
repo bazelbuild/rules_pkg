@@ -571,6 +571,7 @@ pkg_tar(
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },
+    tags = ["nowindows"],
     deps = [
         ":relative_links_tar",
     ],
@@ -588,11 +589,11 @@ verify_archive_test(
         "BUILD",
         "new/base/new/base/something/this",
     ],
+    tags = ["nowindows"],
     target = ":relative_links_re_tar",
     verify_links = {
         "new/base/node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
         "new/base/tree_artifact/toss_in_another": "some_target",
         "new/base/something/this": "that",
     },
-    tags = ["nowindows"],
 )
