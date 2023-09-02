@@ -215,7 +215,7 @@ def _pkg_tar_impl(ctx):
         progress_message = "Writing: %s" % output_file.path,
         inputs = inputs,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
-        executable = ctx.executable.build_tar,
+        executable = ctx.executable._build_tar,
         arguments = [args],
         outputs = [output_file],
         env = {
@@ -297,7 +297,7 @@ pkg_tar_impl = rule(
         "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
-        "build_tar": attr.label(
+        "_build_tar": attr.label(
             default = Label("//pkg/private/tar:build_tar"),
             cfg = "exec",
             executable = True,

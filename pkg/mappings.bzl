@@ -123,9 +123,11 @@ def pkg_attributes(
         ret["gid"] = gid
 
     if user != None and user.isdigit() and uid == None:
+        # buildifier: disable=print
         print("Warning: found numeric username and no uid, did you mean to specify the uid instead?")
 
     if group != None and group.isdigit() and gid == None:
+        # buildifier: disable=print
         print("Warning: found numeric group and no gid, did you mean to specify the gid instead?")
 
     return json.encode(ret)
@@ -304,6 +306,7 @@ def _pkg_files_impl(ctx):
                     have_it = src_dest_paths_map.get(rf)
                     if have_it:
                         if have_it != dest_path:
+                            # buildifier: disable=print
                             print("same source mapped to different locations", rf, have_it, dest_path)
                     else:
                         src_dest_paths_map[rf] = dest_path
@@ -593,8 +596,11 @@ pkg_mklink_impl = rule(
     provides = [PackageSymlinkInfo],
 )
 
+#buildifier: disable=function-docstring-args
 def pkg_mklink(name, link_name, target, attributes = None, src = None, **kwargs):
     """Create a symlink.
+
+    @wraps(pkg_mklink_impl)
 
     Args:
       name: target name

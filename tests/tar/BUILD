@@ -166,7 +166,6 @@ pkg_tar(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "//pkg/private/tar:build_tar",
     deps = [
         ":test-tar-basic-%s" % ext,
         ":test_tar_naming",
