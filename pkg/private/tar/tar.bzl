@@ -254,7 +254,7 @@ pkg_tar_impl = rule(
         ),
         "package_dir": attr.string(
             doc = """Prefix to be prepend to all paths written.
-The name may contain variables in the forms {var} and $(var). The values for substitution are specified through `package_variables` or taken from [ctx.var](https://bazel.build/rules/lib/ctx#var).""",
+The name may contain variables, same as [package_file_name](#package_file_name)""",
         ),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
@@ -279,9 +279,9 @@ The name may contain variables in the forms {var} and $(var). The values for sub
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
