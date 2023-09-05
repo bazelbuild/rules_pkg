@@ -253,7 +253,8 @@ pkg_tar_impl = rule(
             doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)"""
         ),
         "package_dir": attr.string(
-            doc = """Prefix to be prepend to all paths written."""
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables, same as [package_file_name](#package_file_name)""",
         ),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
@@ -278,9 +279,9 @@ pkg_tar_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
