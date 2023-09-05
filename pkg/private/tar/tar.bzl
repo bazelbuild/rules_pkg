@@ -257,7 +257,7 @@ pkg_tar_impl = rule(
 
             This is applied as a final step, while writing to the archive.
             Any other attributes (e.g. symlinks) which specify a path, must do so relative to package_dir.
-            The value may contain variables. See [package_file_name](#package_file_name) for examples.""",
+            The value may contain variables. See [package_file_name](#package_file_name) for examples.
             """,
         ),
         "package_dir_file": attr.label(allow_single_file = True),
