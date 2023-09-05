@@ -103,7 +103,8 @@ pkg_zip_impl = rule(
             default = "0555",
         ),
         "package_dir": attr.string(
-            doc = """The prefix to add to all all paths in the archive.""",
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables, same as [package_file_name](#package_file_name)""",
             default = "/",
         ),
         "strip_prefix": attr.string(),
@@ -133,9 +134,9 @@ The list of compressions is the same as Python's ZipFile: https://docs.python.or
             doc = """output file name. Default: name + ".zip".""",
             mandatory = True,
         ),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(

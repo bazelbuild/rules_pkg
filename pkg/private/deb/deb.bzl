@@ -341,15 +341,15 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
 
         # Common attributes
         "out": attr.output(
-            doc = """See Common Attributes""",
+            doc = """See [Common Attributes](#out)""",
             mandatory = True
         ),
         "package_file_name": attr.string(
-            doc = """See Common Attributes.
+            doc = """See [Common Attributes](#package_file_name).
             Default: "{package}-{version}-{architecture}.deb""",
         ),
         "package_variables": attr.label(
-            doc = """See Common Attributes""",
+            doc = """See [Common Attributes](#package_variables)""",
             providers = [PackageVariablesInfo],
         ),
 
