@@ -254,8 +254,10 @@ pkg_tar_impl = rule(
         ),
         "package_dir": attr.string(
             doc = """Prefix to be prepend to all paths written.
+
             This is applied as a final step, while writing to the archive.
             Any other attributes (e.g. symlinks) which specify a path, must do so relative to package_dir.
+            The value may contain variables. See [package_file_name](#package_file_name) for examples.""",
             """,
         ),
         "package_dir_file": attr.label(allow_single_file = True),
@@ -299,9 +301,9 @@ pkg_tar_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
