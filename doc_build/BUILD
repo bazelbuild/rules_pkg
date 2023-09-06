@@ -67,7 +67,7 @@ genrule(
     name = "reference",
     srcs = ["%s.md" % rule for rule, _ in ORDER],
     outs = ["reference.md"],
-    cmd = "$(location :merge) $(SRCS) >$@ 2>/tmp/toast",
+    cmd = "$(location :merge) $(SRCS) >$@",
     tools = [":merge"],
 )
 
