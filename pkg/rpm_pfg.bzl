@@ -27,7 +27,6 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
@@ -678,11 +677,6 @@ def _pkg_rpm_impl(ctx):
         DefaultInfo(
             files = depset(outputs),
         ),
-        PackageArtifactInfo(
-            file = output_file,
-            file_name = output_name,
-            label = ctx.label.name,
-        ),
     ]
 
 # Define the rule.
@@ -1022,6 +1016,5 @@ pkg_rpm = rule(
     },
     executable = False,
     implementation = _pkg_rpm_impl,
-    provides = [PackageArtifactInfo],
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
 )

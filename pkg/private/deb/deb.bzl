@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for creating Debian packages."""
 
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
@@ -171,11 +171,6 @@ def _pkg_deb_impl(ctx):
         DefaultInfo(
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
-        ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
         ),
     ]
 
@@ -361,7 +356,6 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_deb(name, out = None, **kwargs):
