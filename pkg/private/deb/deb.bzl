@@ -177,6 +177,18 @@ def _pkg_deb_impl(ctx):
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
+    doc = """
+    Create a Debian package.
+
+    This rule produces 2 artifacts: a .deb and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specificially depend on only the .deb or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the Debian package or a symlink to the actual package.
+    - `deb` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
+    """,
     attrs = {
         # @unsorted-dict-items
         "data": attr.label(

@@ -709,6 +709,14 @@ pkg_rpm = rule(
 
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
+    This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specificially depend on only the .rpm or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the RPM or a symlink to the actual package.
+    - `rpm` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
     """,
     # @unsorted-dict-items
     attrs = {
