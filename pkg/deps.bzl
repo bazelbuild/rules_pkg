@@ -31,6 +31,15 @@ def rules_pkg_dependencies():
     )
 
     http_archive(
+        name = "platforms",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        ],
+        sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
+    )
+
+    http_archive(
         name = "rules_python",
         sha256 = "0a8003b044294d7840ac7d9d73eef05d6ceb682d7516781a4ec62eeb34702578",
         strip_prefix = "rules_python-0.24.0",
