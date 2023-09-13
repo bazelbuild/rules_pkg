@@ -34,7 +34,6 @@ Concepts and terms:
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
@@ -57,6 +56,8 @@ _DestFile = provider(
         "link_to": "path to link to. src must not be set",
         "entry_type": "string.  See ENTRY_IS_* values above.",
         "origin": "target which added this",
+        "uid": "uid, or empty",
+        "gid": "gid, or empty",
     },
 )
 
@@ -87,16 +88,23 @@ def _check_dest(ctx, content_map, dest, src, origin):
             # For now though, let's not, since they've explicitly opted in.
             fail(msg)
 
-def _merge_attributes(info, mode, user, group):
+def _merge_attributes(info, mode, user, group, uid, gid):
     if hasattr(info, "attributes"):
         attrs = info.attributes
         mode = attrs.get("mode") or mode
         user = attrs.get("user") or user
         group = attrs.get("group") or group
-    return (mode, user, group)
 
-def _process_pkg_dirs(ctx, content_map, pkg_dirs_info, origin, default_mode, default_user, default_group):
-    attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group)
+        new_uid = attrs.get("uid")
+        if new_uid != None:
+          uid = new_uid
+        new_gid = attrs.get("gid")
+        if new_gid != None:
+          gid = new_gid
+    return (mode, user, group, uid, gid)
+
+def _process_pkg_dirs(ctx, content_map, pkg_dirs_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
+    attrs = _merge_attributes(pkg_dirs_info, default_mode, default_user, default_group, default_uid, default_gid)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
         _check_dest(ctx, content_map, dest, None, origin)
@@ -106,11 +114,13 @@ def _process_pkg_dirs(ctx, content_map, pkg_dirs_info, origin, default_mode, def
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
+            uid = attrs[3],
+            gid = attrs[4],
             origin = origin,
         )
 
-def _process_pkg_files(ctx, content_map, pkg_files_info, origin, default_mode, default_user, default_group):
-    attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group)
+def _process_pkg_files(ctx content_map, pkg_files_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
+    attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group, default_uid, default_gid)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
         _check_dest(ctx, content_map, dest, src, origin)
@@ -120,12 +130,14 @@ def _process_pkg_files(ctx, content_map, pkg_files_info, origin, default_mode, d
             mode = attrs[0],
             user = attrs[1],
             group = attrs[2],
+            uid = attrs[3],
+            gid = attrs[4],
             origin = origin,
         )
 
-def _process_pkg_symlink(ctx, content_map, pkg_symlink_info, origin, default_mode, default_user, default_group):
+def _process_pkg_symlink(ctx, content_map, pkg_symlink_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
     dest = pkg_symlink_info.destination.strip("/")
-    attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group)
+    attrs = _merge_attributes(pkg_symlink_info, default_mode, default_user, default_group, default_uid, default_gid)
     _check_dest(ctx, content_map, dest, None, origin)
     content_map[dest] = _DestFile(
         src = None,
@@ -133,20 +145,22 @@ def _process_pkg_symlink(ctx, content_map, pkg_symlink_info, origin, default_mod
         mode = attrs[0],
         user = attrs[1],
         group = attrs[2],
+        uid = attrs[3],
+        gid = attrs[4],
         origin = origin,
         link_to = pkg_symlink_info.target,
     )
 
-def _process_pkg_filegroup(ctx, content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group):
+def _process_pkg_filegroup(ctx, content_map, pkg_filegroup_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
         for d in pkg_filegroup_info.pkg_dirs:
-            _process_pkg_dirs(ctx, content_map, d[0], d[1], default_mode, default_user, default_group)
+            _process_pkg_dirs(ctx, content_map, d[0], d[1], default_mode, default_user, default_group, default_uid, default_gid)
     if hasattr(pkg_filegroup_info, "pkg_files"):
         for pf in pkg_filegroup_info.pkg_files:
-            _process_pkg_files(ctx, content_map, pf[0], pf[1], default_mode, default_user, default_group)
+            _process_pkg_files(ctx, content_map, pf[0], pf[1], default_mode, default_user, default_group, default_uid, default_gid)
     if hasattr(pkg_filegroup_info, "pkg_symlinks"):
         for psl in pkg_filegroup_info.pkg_symlinks:
-            _process_pkg_symlink(ctx, content_map, psl[0], psl[1], default_mode, default_user, default_group)
+            _process_pkg_symlink(ctx, content_map, psl[0], psl[1], default_mode, default_user, default_group, default_uid, default_gid)
 
 def process_src(
         ctx,
@@ -156,7 +170,9 @@ def process_src(
         origin,
         default_mode,
         default_user,
-        default_group):
+        default_group,
+        default_uid = None,
+        default_gid = None):
     """Add an entry to the content map.
 
     Args:
@@ -167,6 +183,8 @@ def process_src(
       default_mode: fallback mode to use for Package*Info elements without mode
       default_user: fallback user to use for Package*Info elements without user
       default_group: fallback mode to use for Package*Info elements without group
+      default_uid: fallback uid to use for Package*Info elements without uid
+      default_gid: fallback gid to use for Package*Info elements without gid
 
     Returns:
       True if src was a Package*Info and added to content_map.
@@ -186,6 +204,8 @@ def process_src(
             default_mode = default_mode,
             default_user = default_user,
             default_group = default_group,
+            default_uid = default_uid,
+            default_gid = default_gid,
         )
         found_info = True
     if PackageFilegroupInfo in src:
@@ -197,6 +217,8 @@ def process_src(
             default_mode = default_mode,
             default_user = default_user,
             default_group = default_group,
+            default_uid = default_uid,
+            default_gid = default_gid,
         )
         found_info = True
     if PackageSymlinkInfo in src:
@@ -208,6 +230,8 @@ def process_src(
             default_mode = default_mode,
             default_user = default_user,
             default_group = default_group,
+            default_uid = default_uid,
+            default_gid = default_gid,
         )
         found_info = True
     if PackageDirsInfo in src:
@@ -219,11 +243,13 @@ def process_src(
             default_mode = "0555",
             default_user = default_user,
             default_group = default_group,
+            default_uid = default_uid,
+            default_gid = default_gid,
         )
         found_info = True
     return found_info
 
-def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None):
+def add_directory(content_map, dir_path, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an empty directory to the content map.
 
     Args:
@@ -241,9 +267,11 @@ def add_directory(content_map, dir_path, origin, mode = None, user = None, group
         mode = mode,
         user = user,
         group = group,
+        uid = uid,
+        gid = gid,
     )
 
-def add_empty_file(ctx, content_map, dest_path, origin, mode = None, user = None, group = None):
+def add_empty_file(ctx, content_map, dest_path, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add a single file to the content map.
 
     Args:
@@ -264,6 +292,8 @@ def add_empty_file(ctx, content_map, dest_path, origin, mode = None, user = None
         mode = mode,
         user = user,
         group = group,
+        uid = uid,
+        gid = gid,
     )
 
 def add_label_list(
@@ -273,7 +303,9 @@ def add_label_list(
         srcs,
         default_mode = None,
         default_user = None,
-        default_group = None):
+        default_group = None,
+        default_uid = None,
+        default_gid = None):
     """Helper method to add a list of labels (typically 'srcs') to a content_map.
 
     Args:
@@ -284,6 +316,8 @@ def add_label_list(
       default_mode: fallback mode to use for Package*Info elements without mode
       default_user: fallback user to use for Package*Info elements without user
       default_group: fallback mode to use for Package*Info elements without group
+      default_uid: fallback uid to use for Package*Info elements without uid
+      default_gid: fallback gid to use for Package*Info elements without guid
     """
 
     if hasattr(ctx.attr, "include_runfiles"):
@@ -308,6 +342,8 @@ def add_label_list(
             default_mode = default_mode,
             default_user = default_user,
             default_group = default_group,
+            default_uid = default_uid,
+            default_gid = default_gid,
         ):
             # Add in the files of srcs which are not pkg_* types
             add_from_default_info(
@@ -320,6 +356,8 @@ def add_label_list(
                 default_mode = default_mode,
                 default_user = default_user,
                 default_group = default_group,
+                default_uid = default_uid,
+                default_gid = default_gid,
                 include_runfiles = include_runfiles,
             )
 
@@ -333,6 +371,8 @@ def add_from_default_info(
         default_mode = None,
         default_user = None,
         default_group = None,
+        default_uid = None,
+        default_gid = None,
         include_runfiles = False):
     """Helper method to add the DefaultInfo of a target to a content_map.
 
@@ -393,6 +433,8 @@ def add_from_default_info(
                     mode = fmode,
                     user = default_user,
                     group = default_group,
+                    uid = default_uid,
+                    gid = default_gid,
                 )
 
 def get_my_executable(src):
@@ -424,7 +466,8 @@ def get_my_executable(src):
         return ftr.executable
     return None
 
-def add_single_file(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None):
+
+def add_single_file(ctx content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an single file to the content map.
 
     Args:
@@ -446,9 +489,12 @@ def add_single_file(ctx, content_map, dest_path, src, origin, mode = None, user 
         mode = mode,
         user = user,
         group = group,
+        uid = uid,
+        gid = gid,
     )
 
-def add_symlink(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None):
+def add_symlink(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
+
     """Add a symlink to the content map.
 
     Args:
@@ -471,9 +517,11 @@ def add_symlink(ctx, content_map, dest_path, src, origin, mode = None, user = No
         mode = mode,
         user = user,
         group = group,
+        uid = uid,
+        gid = gid,
     )
 
-def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None):
+def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an tree artifact (directory output) to the content map.
 
     Args:
@@ -492,6 +540,8 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         mode = mode,
         user = user,
         group = group,
+        uid = uid,
+        gid = gid,
     )
 
 def write_manifest(ctx, manifest_file, content_map, use_short_path=False, pretty_print=False):
@@ -549,6 +599,8 @@ def _encode_manifest_entry(dest, df, use_short_path, pretty_print=False):
         "mode": df.mode or "",
         "user": df.user or None,
         "group": df.group or None,
+        "uid": df.uid,
+        "gid": df.gid,
         "origin": origin_str,
     }
 

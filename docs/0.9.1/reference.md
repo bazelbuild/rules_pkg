@@ -1,4 +1,4 @@
-# rules_pkg - 0.8.0
+# rules_pkg - 0.9.1
 
 <div class="toc">
   <h2>Common Attributes</h2>
@@ -92,7 +92,7 @@ Rule for creating Debian packages.
 <pre>
 pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">architecture</a>, <a href="#pkg_deb-architecture_file">architecture_file</a>, <a href="#pkg_deb-breaks">breaks</a>, <a href="#pkg_deb-built_using">built_using</a>, <a href="#pkg_deb-built_using_file">built_using_file</a>,
              <a href="#pkg_deb-conffiles">conffiles</a>, <a href="#pkg_deb-conffiles_file">conffiles_file</a>, <a href="#pkg_deb-config">config</a>, <a href="#pkg_deb-conflicts">conflicts</a>, <a href="#pkg_deb-data">data</a>, <a href="#pkg_deb-depends">depends</a>, <a href="#pkg_deb-depends_file">depends_file</a>, <a href="#pkg_deb-description">description</a>,
-             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
+             <a href="#pkg_deb-description_file">description_file</a>, <a href="#pkg_deb-distribution">distribution</a>, <a href="#pkg_deb-enhances">enhances</a>, <a href="#pkg_deb-homepage">homepage</a>, <a href="#pkg_deb-license">license</a>, <a href="#pkg_deb-maintainer">maintainer</a>, <a href="#pkg_deb-out">out</a>, <a href="#pkg_deb-package">package</a>,
              <a href="#pkg_deb-package_file_name">package_file_name</a>, <a href="#pkg_deb-package_variables">package_variables</a>, <a href="#pkg_deb-postinst">postinst</a>, <a href="#pkg_deb-postrm">postrm</a>, <a href="#pkg_deb-predepends">predepends</a>, <a href="#pkg_deb-preinst">preinst</a>, <a href="#pkg_deb-prerm">prerm</a>,
              <a href="#pkg_deb-priority">priority</a>, <a href="#pkg_deb-provides">provides</a>, <a href="#pkg_deb-recommends">recommends</a>, <a href="#pkg_deb-replaces">replaces</a>, <a href="#pkg_deb-section">section</a>, <a href="#pkg_deb-suggests">suggests</a>, <a href="#pkg_deb-templates">templates</a>, <a href="#pkg_deb-triggers">triggers</a>,
              <a href="#pkg_deb-urgency">urgency</a>, <a href="#pkg_deb-version">version</a>, <a href="#pkg_deb-version_file">version_file</a>)
@@ -123,6 +123,7 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
 | <a id="pkg_deb-distribution"></a>distribution |  "distribution: See http://www.debian.org/doc/debian-policy.   | String | optional | "unstable" |
 | <a id="pkg_deb-enhances"></a>enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional | [] |
 | <a id="pkg_deb-homepage"></a>homepage |  The homepage of the project.   | String | optional | "" |
+| <a id="pkg_deb-license"></a>license |  The license of the project.   | String | optional | "" |
 | <a id="pkg_deb-maintainer"></a>maintainer |  The maintainer of the package.   | String | required |  |
 | <a id="pkg_deb-out"></a>out |  See Common Attributes   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="pkg_deb-package"></a>package |  The name of the package   | String | required |  |
@@ -297,14 +298,14 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar
 | <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional | 0 |
-| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  (note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.) | String | optional | "" |
+| <a id="pkg_tar-strip_prefix"></a>strip_prefix |  -   | String | optional | "" |
 | <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 
 
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-Rules for manipulation of various packaging.
+Zip archive creation rule and associated logic.
 
 <a id="#pkg_zip"></a>
 
@@ -441,11 +442,9 @@ General-purpose package target-to-destination mapping rule.
     This rule provides a specification for the locations and attributes of
     targets when they are packaged. No outputs are created other than Providers
     that are intended to be consumed by other packaging rules, such as
-    `pkg_rpm`.
-
-    Labels associated with these rules are not passed directly to packaging
-    rules, instead, they should be passed to an associated `pkg_filegroup` rule,
-    which in turn should be passed to packaging rules.
+    `pkg_rpm`. `pkg_files` targets may be consumed by other `pkg_files` or
+    `pkg_filegroup` to build up complex layouts, or directly by top level
+    packaging rules such as `pkg_files`.
 
     Consumers of `pkg_files`s will, where possible, create the necessary
     directory structure for your files so you do not have to unless you have

@@ -99,10 +99,26 @@ py_test(
     srcs_version = "PY3",
 )
 
+cc_library(
+    name = "liba",
+    srcs = ["a.cc"],
+    data = ["testdata/hello.txt"],
+)
+
+cc_library(
+    name = "libb",
+    srcs = ["b.cc"],
+    data = ["testdata/hello.txt"],
+)
+
 cc_binary(
     name = "an_executable",
     srcs = ["foo.cc"],
     data = ["BUILD"],
+    deps = [
+        ":liba",
+        ":libb",
+    ],
 )
 
 py_test(

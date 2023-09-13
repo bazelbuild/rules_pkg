@@ -17,7 +17,7 @@
 Type: @rules_pkg//toolchains/rpm:rpmbuild_toolchain_type
 
 Toolchains:
-- rpmbuild_missing_toolchain: provides a fallback toolchain for exec plaforms
+- rpmbuild_missing_toolchain: provides a fallback toolchain for exec platforms
   where rpmbuild might not be available.
 
 - rpmbuild_auto_toolchain: a toolchain that uses the installed rpmbuild. See

@@ -258,6 +258,23 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
 
+
+  def test_pkg_tar_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+    ]
+    self.assertTarFileContent('test-pkg-tar-with-attributes.tar', content)
+
+  def test_pkg_files_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+    ]
+    self.assertTarFileContent('test-pkg-tar-from-pkg-files-with-attributes.tar', content)
+
   def test_tar_with_tree_artifact_and_strip_prefix(self):
     content = [
       {'name': 'a', 'isdir': True},
@@ -265,6 +282,15 @@ class PkgTarTest(unittest.TestCase):
       {'name': 'a/b'},
     ]
     self.assertTarFileContent('test-tree-input-with-strip-prefix.tar', content)
+
+  def test_remap_paths_tree_artifact(self):
+    content = [
+      {'name': 'a_new_name', 'isdir': True},
+      {'name': 'a_new_name/a'},
+      {'name': 'a_new_name/rename_me', 'isdir': True},
+      {'name': 'a_new_name/rename_me/should_not_rename'},
+    ]
+    self.assertTarFileContent('test-remap-paths-tree-artifact.tar', content)
 
 
 if __name__ == '__main__':

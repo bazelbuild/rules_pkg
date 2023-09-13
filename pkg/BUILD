@@ -38,6 +38,7 @@ filegroup(
     srcs = glob([
         "*.bzl",
         "*.py",
+        "*.tpl",
     ]) + [
         "BUILD",
         "//pkg/legacy:standard_package",
@@ -98,14 +99,6 @@ py_binary(
     name = "filter_directory",
     srcs = ["filter_directory.py"],
     python_version = "PY3",
-    visibility = ["//visibility:public"],
-)
-
-# This might be public, but use at your own risk
-py_library(
-    name = "verify_archive_test_lib",
-    srcs = ["verify_archive_test_lib.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
 

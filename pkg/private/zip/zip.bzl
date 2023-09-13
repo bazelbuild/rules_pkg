@@ -16,7 +16,6 @@
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageVariablesInfo",
 )
 load(
@@ -40,6 +39,8 @@ def _pkg_zip_impl(ctx):
     args.add("-d", substitute_package_variables(ctx, ctx.attr.package_dir))
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
+    args.add("-c", str(ctx.attr.compression_type))
+    args.add("-l", ctx.attr.compression_level)
     inputs = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
@@ -81,11 +82,6 @@ def _pkg_zip_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 pkg_zip_impl = rule(
@@ -101,7 +97,8 @@ pkg_zip_impl = rule(
             default = "0555",
         ),
         "package_dir": attr.string(
-            doc = """The prefix to add to all all paths in the archive.""",
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables, same as [package_file_name](#package_file_name)""",
             default = "/",
         ),
         "strip_prefix": attr.string(),
@@ -115,15 +112,25 @@ Jan 1, 1980 will be rounded up and the precision in the zip file is
 limited to a granularity of 2 seconds.""",
             default = 315532800,
         ),
+        "compression_level": attr.int(
+            default = 6,
+            doc = "The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used"
+        ),
+        "compression_type": attr.string(
+            default = "deflated",
+            doc = """The compression to use. Note that lzma and bzip2 might not be supported by all readers.
+The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED""",
+            values = ["deflated", "lzma", "bzip2", "stored"]
+        ),
 
         # Common attributes
         "out": attr.output(
             doc = """output file name. Default: name + ".zip".""",
             mandatory = True,
         ),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
@@ -155,7 +162,6 @@ builds were accidentally doing it. Never explicitly set this to true for new cod
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_zip(name, out = None, **kwargs):

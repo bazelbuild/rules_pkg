@@ -46,6 +46,12 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
       **Change Log**
       ${changelog}
 
+      **MODULE.bazel setup**
+
+      ```
+      bazel_dep(name = "${repo}", version = "${version}")
+      ```
+
       **WORKSPACE setup**
 
       ```

@@ -129,6 +129,7 @@ manifest_golden_test(
 write_content_manifest(
     name = "executable_manifest",
     srcs = [
+        "mappings_test.bzl",
         "//tests:an_executable",
     ],
     include_runfiles = True,

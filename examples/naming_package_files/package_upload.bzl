@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Example of how we can use PackageArtifactInfo to find an output name."""
-
-load("@rules_pkg//pkg:providers.bzl", "PackageArtifactInfo")
+"""Example of how we can use OutputGroupInfo to find an output name."""
 
 def _debian_upload_impl(ctx):
     # Find out the basename of the deb file we created.
-    pai = ctx.attr.package[PackageArtifactInfo]
-    package_basename = pai.file_name.split(".")[0]
+    ogi = ctx.attr.package[OutputGroupInfo]
+    deb = ogi.deb.to_list()[0]
+    changes = ogi.changes.to_list()[0]
+    package_basename = deb.basename.split(".")[0]
     content = ["# Uploading %s" % package_basename]
-    for f in ctx.attr.package[DefaultInfo].default_runfiles.files.to_list():
+    for f in [deb, changes]:
         if f.basename.startswith(package_basename):
             content.append("gsutil cp %s gs://%s/%s" % (
                 f.path,
@@ -31,12 +31,12 @@ def _debian_upload_impl(ctx):
 
 debian_upload = rule(
     implementation = _debian_upload_impl,
-    doc = """A demonstraion of consuming PackageArtifactInfo to get a file name.""",
+    doc = """A demonstraion of consuming OutputGroupInfo to get a file name.""",
     attrs = {
         "package": attr.label(
             doc = "Package to upload",
             mandatory = True,
-            providers = [PackageArtifactInfo],
+            providers = [OutputGroupInfo],
         ),
         "host": attr.string(
             doc = "Host to upload to",
