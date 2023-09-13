@@ -34,7 +34,6 @@ Concepts and terms:
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",

@@ -27,7 +27,6 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
@@ -678,11 +677,6 @@ def _pkg_rpm_impl(ctx):
         DefaultInfo(
             files = depset(outputs),
         ),
-        PackageArtifactInfo(
-            file = output_file,
-            file_name = output_name,
-            label = ctx.label.name,
-        ),
     ]
 
 # Define the rule.
@@ -715,6 +709,14 @@ pkg_rpm = rule(
 
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
+    This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specificially depend on only the .rpm or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the RPM or a symlink to the actual package.
+    - `rpm` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
     """,
     # @unsorted-dict-items
     attrs = {
@@ -1022,6 +1024,5 @@ pkg_rpm = rule(
     },
     executable = False,
     implementation = _pkg_rpm_impl,
-    provides = [PackageArtifactInfo],
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
 )

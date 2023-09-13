@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for creating Debian packages."""
 
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
@@ -172,16 +172,23 @@ def _pkg_deb_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
+    doc = """
+    Create a Debian package.
+
+    This rule produces 2 artifacts: a .deb and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specificially depend on only the .deb or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the Debian package or a symlink to the actual package.
+    - `deb` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
+    """,
     attrs = {
         # @unsorted-dict-items
         "data": attr.label(
@@ -361,7 +368,6 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_deb(name, out = None, **kwargs):
