@@ -119,7 +119,7 @@ def _process_pkg_dirs(ctx, content_map, pkg_dirs_info, origin, default_mode, def
             origin = origin,
         )
 
-def _process_pkg_files(ctx content_map, pkg_files_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
+def _process_pkg_files(ctx, content_map, pkg_files_info, origin, default_mode, default_user, default_group, default_uid, default_gid):
     attrs = _merge_attributes(pkg_files_info, default_mode, default_user, default_group, default_uid, default_gid)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
@@ -467,7 +467,7 @@ def get_my_executable(src):
     return None
 
 
-def add_single_file(ctx content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
+def add_single_file(ctx, content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an single file to the content map.
 
     Args:
