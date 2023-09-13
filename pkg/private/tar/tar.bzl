@@ -14,7 +14,7 @@
 """Rules for making .tar files."""
 
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
@@ -238,11 +238,6 @@ def _pkg_tar_impl(ctx):
         OutputGroupInfo(
             manifest = [manifest_file],
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 # A rule for creating a tar file, see README.md
@@ -327,7 +322,6 @@ pkg_tar_impl = rule(
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_tar(name, **kwargs):
