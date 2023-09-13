@@ -16,7 +16,6 @@
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageVariablesInfo",
 )
 load(
@@ -82,11 +81,6 @@ def _pkg_zip_impl(ctx):
         DefaultInfo(
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
-        ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
         ),
     ]
 
@@ -160,7 +154,6 @@ The list of compressions is the same as Python's ZipFile: https://docs.python.or
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_zip(name, out = None, **kwargs):

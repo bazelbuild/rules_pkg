@@ -29,10 +29,7 @@ def setup_output_files(ctx, package_file_name = None, default_output_file = None
     Callers should:
        - write to `output_file`
        - add `outputs` to their returned `DefaultInfo(files)` provider
-       - return a `PackageArtifactInfo` provider of the form:
-            label: `ctx.label.name`
-            file: `output_file`
-            file_name: `output_name`
+       - Possibly add a distinguishing element to OutputGroups
 
     Args:
       ctx: rule context
