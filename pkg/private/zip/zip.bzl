@@ -142,6 +142,14 @@ The list of compressions is the same as Python's ZipFile: https://docs.python.or
             default = 0,
         ),
 
+        "allow_duplicates_with_different_content": attr.bool(
+            default=True,
+            doc="""If true, will allow you to reference multiple pkg_* which conflict
+(writing different content or metadata to the same destination).
+Such behaviour is always incorrect, but we provide a flag to support it in case old
+builds were accidentally doing it. Never explicitly set this to true for new code.
+"""
+        ),
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
         "private_stamp_detect": attr.bool(default = False),

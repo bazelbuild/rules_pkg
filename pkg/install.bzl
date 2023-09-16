@@ -29,6 +29,7 @@ def _pkg_install_script_impl(ctx):
     content_map = {}
     for src in ctx.attr.srcs:
         process_src(
+            ctx,
             content_map,
             files_to_run,
             src = src,
