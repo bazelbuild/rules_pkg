@@ -120,6 +120,7 @@ def _pkg_tar_impl(ctx):
     # Start with all the pkg_* inputs
     for src in ctx.attr.srcs:
         if not process_src(
+            ctx,
             content_map,
             file_deps,
             src = src,
@@ -149,7 +150,12 @@ def _pkg_tar_impl(ctx):
                 if f.is_directory:
                     add_tree_artifact(content_map, dest, f, src.label)
                 else:
-                    add_single_file(content_map, dest, f, src.label)
+                    # Note: This extra remap is the bottleneck preventing this
+                    # large block from being a utility method as shown below.
+                    # Should we disallow mixing pkg_files in srcs with remap?
+                    # I am fine with that if it makes the code more readable.
+                    dest = _remap(remap_paths, d_path)
+                    add_single_file(ctx, content_map, dest, f, src.label)
 
     # TODO(aiuto): I want the code to look like this, but we don't have lambdas.
     # transform_path = lambda f: _remap(
@@ -164,6 +170,7 @@ def _pkg_tar_impl(ctx):
             fail("Each input must describe exactly one file.", attr = "files")
         file_deps.append(depset([target_files[0]]))
         add_single_file(
+            ctx,
             content_map,
             f_dest_path,
             target_files[0],
@@ -183,13 +190,14 @@ def _pkg_tar_impl(ctx):
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
     for empty_file in ctx.attr.empty_files:
-        add_empty_file(content_map, empty_file, ctx.label)
+        add_empty_file(ctx, content_map, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(content_map, empty_dir, ctx.label)
     for f in ctx.files.deps:
         args.add("--tar", f.path)
     for link in ctx.attr.symlinks:
         add_symlink(
+            ctx,
             content_map,
             link,
             ctx.attr.symlinks[link],
@@ -278,6 +286,14 @@ The name may contain variables, same as [package_file_name](#package_file_name)"
         "package_variables": attr.label(
             doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
+        ),
+        "allow_duplicates_with_different_content": attr.bool(
+            default=True,
+            doc="""If true, will allow you to reference multiple pkg_* which conflict
+(writing different content or metadata to the same destination).
+Such behaviour is always incorrect, but we provide a flag to support it in case old
+builds were accidentally doing it. Never explicitly set this to true for new code.
+"""
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:
