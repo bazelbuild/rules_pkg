@@ -600,7 +600,7 @@ pkg_mklink_impl = rule(
 def pkg_mklink(name, link_name, target, attributes = None, src = None, **kwargs):
     """Create a symlink.
 
-    @wraps(pkg_mklink_impl)
+    Wraps [pkg_mklink_impl](#pkg_mklink_impl)
 
     Args:
       name: target name

@@ -42,6 +42,7 @@ def merge_file(file: str, out, wrapper_map:typing.Dict[str, str]) -> None:
     # If something wraps me, rewrite myself with the wrapper name.
     if this_pkg in wrapper_map:
       content = content.replace(this_pkg, wrapper_map[this_pkg])
+      del wrapper_map[this_pkg]
     merge_text(content, out)
 
 
@@ -76,6 +77,9 @@ def main(argv: typing.Sequence[str]) -> None:
   wrapper_map = {}
   for file in argv[1:]: 
     merge_file(file, sys.stdout, wrapper_map)
+  if wrapper_map:
+    print("We didn't use all the @wraps()", wrapper_map)
+    sys.exit(1)
 
 
 if __name__ == '__main__':

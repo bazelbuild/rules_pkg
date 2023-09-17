@@ -116,7 +116,7 @@ def _link_tree_impl(ctx):
     if prefix and not prefix.endswith('/'):
         prefix = prefix + "/"
     for link, target in ctx.attr.links.items():
-        print('  %s -> %s ' % (link, target))
+        # DBG print('  %s -> %s ' % (link, target))
         links.append(
             (PackageSymlinkInfo(destination = prefix + link, target = target),
              ctx.label))
