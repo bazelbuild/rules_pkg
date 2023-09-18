@@ -11,7 +11,6 @@ lts: &lts
 rolling: &rolling
   bazel: rolling
   build_flags:
-    - "--incompatible_use_platforms_repo_for_constraints"
     # Do this after stardoc is updated
     # - "--incompatible_disable_starlark_host_transitions"
 
