@@ -10,9 +10,6 @@ lts: &lts
 
 rolling: &rolling
   bazel: rolling
-  build_flags:
-    # Do this after stardoc is updated
-    # - "--incompatible_disable_starlark_host_transitions"
 
 #
 # Groups of tests, by platform
