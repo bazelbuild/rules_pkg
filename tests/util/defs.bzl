@@ -13,9 +13,9 @@
 # limitations under the License.
 """Rules to aid testing"""
 
-load("//pkg/private:pkg_files.bzl", "add_label_list", "create_mapping_context_from_ctx", "write_manifest")
-load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
+load("//pkg/private:pkg_files.bzl", "add_label_list", "create_mapping_context_from_ctx", "write_manifest")  # buildifier: disable=bzl-visibility
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)

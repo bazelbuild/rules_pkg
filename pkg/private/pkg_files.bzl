@@ -46,6 +46,7 @@ ENTRY_IS_DIR = "dir"  # Entry is an empty dir
 ENTRY_IS_TREE = "tree"  # Entry is a tree artifact: take tree from <src>
 ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
+# buildifier: disable=name-conventions
 _DestFile = provider(
     doc = """Information about each destination in the final package.""",
     fields = {
@@ -61,7 +62,8 @@ _DestFile = provider(
     },
 )
 
-MappingContext = provider(
+# buildifier: disable=name-conventions
+_MappingContext = provider(
     doc = """Fields passed to process_* methods.""",
     fields = {
         "content_map": "in/out The content_map we are building up",
@@ -74,14 +76,15 @@ MappingContext = provider(
         "strip_prefix": "strip_prefix",
 
         # Defaults
-        "default_mode": "Default mode to apply to files without a mode setting",
-        "default_user": "Default user name to apply to files without a user",
-        "default_group": "Default group name to apply to files without a group",
-        "default_uid": "Default numeric uid to apply to files without a uid",
-        "default_gid": "Default numeric gid to apply to files without a gid",
+        "default_mode": "Default mode to apply to file without a mode setting",
+        "default_user": "Default user name to apply to file without a user",
+        "default_group": "Default group name to apply to file without a group",
+        "default_uid": "Default numeric uid to apply to file without a uid",
+        "default_gid": "Default numeric gid to apply to file without a gid",
     },
 )
 
+# buildifier: disable=function-docstring-args
 def create_mapping_context_from_ctx(
         ctx,
         label,
@@ -89,6 +92,13 @@ def create_mapping_context_from_ctx(
         strip_prefix = None,
         include_runfiles = None,
         default_mode = None):
+    """Construct a MappingContext.
+
+    Args: See the provider definition.
+
+    Returns:
+        _MappingContext
+    """
     if allow_duplicates_with_different_content == None:
         allow_duplicates_with_different_content = ctx.attr.allow_duplicates_with_different_content if hasattr(ctx.attr, "allow_duplicates_with_different_content") else False
     if strip_prefix == None:
@@ -98,7 +108,7 @@ def create_mapping_context_from_ctx(
     if default_mode == None:
         default_mode = ctx.attr.mode if hasattr(ctx.attr, "default_mode") else ""
 
-    return MappingContext(
+    return _MappingContext(
         content_map = dict(),
         file_deps = list(),
         label = label,
@@ -286,16 +296,18 @@ def add_directory(mapping_context, dir_path, origin, mode = None, user = None, g
       mode: fallback mode to use for Package*Info elements without mode
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
+      uid: numeric uid
+      gid: numeric gid
     """
     mapping_context.content_map[dir_path.strip("/")] = _DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
         origin = origin,
         mode = mode,
-        user = user,
-        group = group,
-        uid = uid,
-        gid = gid,
+        user = user or mapping_context.default_user,
+        group = group or mapping_context.default_group,
+        uid = uid or mapping_context.default_uid,
+        gid = gid or mapping_context.default_gid,
     )
 
 def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None, group = None, uid = None, gid = None):
@@ -308,6 +320,8 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
       mode: fallback mode to use for Package*Info elements without mode
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
+      uid: numeric uid
+      gid: numeric gid
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
@@ -316,10 +330,10 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
         entry_type = ENTRY_IS_EMPTY_FILE,
         origin = origin,
         mode = mode,
-        user = user,
-        group = group,
-        uid = uid,
-        gid = gid,
+        user = user or mapping_context.default_user,
+        group = group or mapping_context.default_group,
+        uid = uid or mapping_context.default_uid,
+        gid = gid or mapping_context.default_gid,
     )
 
 def add_label_list(mapping_context, srcs):
@@ -458,6 +472,8 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
       mode: fallback mode to use for Package*Info elements without mode
       user: fallback user to use for Package*Info elements without user
       group: fallback mode to use for Package*Info elements without group
+      uid: numeric uid
+      gid: numeric gid
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, src, origin, mapping_context.allow_duplicates_with_different_content)
@@ -466,23 +482,24 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
         entry_type = ENTRY_IS_FILE,
         origin = origin,
         mode = mode,
-        user = user,
-        group = group,
-        uid = uid,
-        gid = gid,
+        user = user or mapping_context.default_user,
+        group = group or mapping_context.default_group,
+        uid = uid or mapping_context.default_uid,
+        gid = gid or mapping_context.default_gid,
     )
 
-def add_symlink(mapping_context, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
+def add_symlink(mapping_context, dest_path, src, origin):
     """Add a symlink to the content map.
+
+    TODO(aiuto): This is a vestage left from the pkg_tar use.  We could
+    converge code by having pkg_tar be a macro that expands symlinks to
+    pkg_symlink targets and srcs them in.
 
     Args:
       mapping_context: the MappingContext
       dest_path: Where to place the file in the package.
       src: Path to link to.
       origin: The rule instance adding this entry
-      mode: fallback mode to use for Package*Info elements without mode
-      user: fallback user to use for Package*Info elements without user
-      group: fallback mode to use for Package*Info elements without group
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
@@ -491,11 +508,11 @@ def add_symlink(mapping_context, dest_path, src, origin, mode = None, user = Non
         link_to = src,
         entry_type = ENTRY_IS_LINK,
         origin = origin,
-        mode = mode,
-        user = user,
-        group = group,
-        uid = uid,
-        gid = gid,
+        mode = mapping_context.default_mode,
+        user = mapping_context.default_user,
+        group = mapping_context.default_group,
+        uid = mapping_context.default_uid,
+        gid = mapping_context.default_gid,
     )
 
 def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
@@ -507,8 +524,10 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
       src: Source object. Must have len(src[DefaultInfo].files) == 1
       origin: The rule instance adding this entry
       mode: fallback mode to use for Package*Info elements without mode
-      user: fallback user to use for Package*Info elements without user
-      group: fallback mode to use for Package*Info elements without group
+      user: User name for the entry (probably unused)
+      group: group name for the entry (probably unused)
+      uid: User id for the entry (probably unused)
+      gid: Group id for the entry (probably unused)
     """
     content_map[dest_path] = _DestFile(
         src = src,
@@ -535,6 +554,7 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pret
       manifest_file: File object used as the output destination
       content_map: content_map (see concepts at top of file)
       use_short_path: write out the manifest file destinations in terms of "short" paths, suitable for `bazel run`.
+      pretty_print: indent the output nicely. Takes more space so it is off by default.
     """
     ctx.actions.write(
         manifest_file,
@@ -570,7 +590,7 @@ def _encode_manifest_entry(dest, df, use_short_path, pretty_print = False):
         origin_str = "@" + origin_str
 
     data = {
-        "type": df.entry_type,
+        "type": entry_type,
         "src": src,
         "dest": dest.strip("/"),
         "mode": df.mode or "",

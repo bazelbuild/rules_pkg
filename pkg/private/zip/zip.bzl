@@ -18,21 +18,21 @@ load(
     "PackageVariablesInfo",
 )
 load(
-    "//pkg/private:util.bzl",
-    "setup_output_files",
-    "substitute_package_variables",
-)
-load(
     "//pkg/private:pkg_files.bzl",
     "add_label_list",
     "create_mapping_context_from_ctx",
     "write_manifest",
 )
+load(
+    "//pkg/private:util.bzl",
+    "setup_output_files",
+    "substitute_package_variables",
+)
 
 _stamp_condition = Label("//pkg/private:private_stamp_detect")
 
 def _pkg_zip_impl(ctx):
-    outputs, output_file, output_name = setup_output_files(ctx)
+    outputs, output_file, _ = setup_output_files(ctx)
 
     args = ctx.actions.args()
     args.add("-o", output_file.path)
@@ -174,7 +174,9 @@ def pkg_zip(name, out = None, **kwargs):
     @wraps(pkg_zip_impl)
 
     Args:
-      out: output file name. Default: name + ".zip".
+        name: name
+        out: output file name. Default: name + ".zip".
+        **kwargs: the rest
     """
     if not out:
         out = name + ".zip"

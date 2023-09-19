@@ -17,9 +17,9 @@ This module provides an interface (`pkg_install`) for creating a `bazel
 run`-able installation script.
 """
 
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_src", "write_manifest")
-load("@rules_python//python:defs.bzl", "py_binary")
 
 def _pkg_install_script_impl(ctx):
     script_file = ctx.actions.declare_file(ctx.attr.name + ".py")

@@ -19,7 +19,6 @@ load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
     "add_empty_file",
-    "add_label_list",
     "add_single_file",
     "add_symlink",
     "add_tree_artifact",
@@ -60,7 +59,7 @@ def _pkg_tar_impl(ctx):
     # Files needed by rule implementation at runtime
     files = []
 
-    outputs, output_file, output_name = setup_output_files(ctx)
+    outputs, output_file, _ = setup_output_files(ctx)
 
     # Compute the relative path
     data_path = compute_data_path(ctx.label, ctx.attr.strip_prefix)
@@ -215,7 +214,8 @@ def _pkg_tar_impl(ctx):
 
     inputs = depset(
         direct = ctx.files.deps + files,
-        transitive = mapping_context.file_deps)
+        transitive = mapping_context.file_deps,
+    )
 
     ctx.actions.run(
         mnemonic = "PackageTar",
@@ -317,6 +317,7 @@ builds were accidentally doing it. Never explicitly set this to true for new cod
     },
 )
 
+# buildifier: disable=function-docstring-args
 def pkg_tar(name, **kwargs):
     """Creates a .tar file. See pkg_tar_impl.
 

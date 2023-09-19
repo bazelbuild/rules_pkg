@@ -14,16 +14,15 @@
 
 """Tests for path.bzl"""
 
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//pkg:mappings.bzl", "pkg_mkdirs")
 load("//pkg:path.bzl", "compute_data_path")
-load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 
 ##########
 # Test compute_data_path
 ##########
 def _compute_data_path_test_impl(ctx):
     env = analysistest.begin(ctx)
-    target_under_test = analysistest.target_under_test(env)
 
     # Subtle: This allows you to vendor the library into your own repo at some
     # arbitrary path.
