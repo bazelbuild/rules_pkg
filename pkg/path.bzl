@@ -61,12 +61,12 @@ def dest_path(f, strip_prefix, data_path_without_prefix = ""):
         return f_short_path[len(strip_prefix):]
     return f_short_path
 
-def compute_data_path(package, data_path):
+def compute_data_path(label, data_path):
     """Compute the relative data path prefix from the data_path attribute.
 
     Args:
-      package: package of the target
-      data_path: path to a file, relative to the package of the rule ctx.
+      label: target label
+      data_path: path to a file, relative to the package of the label.
     """
     if data_path:
         # Strip ./ from the beginning if specified.
@@ -76,11 +76,11 @@ def compute_data_path(package, data_path):
         if len(data_path) >= 2 and data_path[0:2] == "./":
             data_path = data_path[2:]
         if not data_path or data_path == ".":  # Relative to current package
-            return package
+            return label.package
         elif data_path[0] == "/":  # Absolute path
             return data_path[1:]
         else:  # Relative to a sub-directory
-            tmp_short_path_dirname = package
+            tmp_short_path_dirname = label.package
             if tmp_short_path_dirname:
                 return tmp_short_path_dirname + "/" + data_path
             return data_path

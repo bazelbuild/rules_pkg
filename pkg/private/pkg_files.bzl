@@ -82,7 +82,13 @@ MappingContext = provider(
     },
 )
 
-def create_mapping_context_from_ctx(ctx, content_map, file_deps, label, allow_duplicates_with_different_content = None, strip_prefix = None, include_runfiles = None, default_mode = None):
+def create_mapping_context_from_ctx(
+        ctx,
+        label,
+        allow_duplicates_with_different_content = None,
+        strip_prefix = None,
+        include_runfiles = None,
+        default_mode = None):
     if allow_duplicates_with_different_content == None:
         allow_duplicates_with_different_content = ctx.attr.allow_duplicates_with_different_content if hasattr(ctx.attr, "allow_duplicates_with_different_content") else False
     if strip_prefix == None:
@@ -93,20 +99,20 @@ def create_mapping_context_from_ctx(ctx, content_map, file_deps, label, allow_du
         default_mode = ctx.attr.mode if hasattr(ctx.attr, "default_mode") else ""
 
     return MappingContext(
-        content_map = content_map,
-        file_deps = file_deps,
+        content_map = dict(),
+        file_deps = list(),
         label = label,
         allow_duplicates_with_different_content = allow_duplicates_with_different_content,
         strip_prefix = strip_prefix,
         include_runfiles = include_runfiles,
         default_mode = default_mode,
-        # TODO: DO NOT SUBMIT
+        # TODO(aiuto): allow these to be passed in as needed. But, before doing
+        # that, explore defauilt_uid/gid as 0 rather than None
         default_user = "",
         default_group = "",
         default_uid = None,
         default_gid = None,
     )
-
 
 def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_content = False):
     old_entry = content_map.get(dest)
@@ -164,7 +170,7 @@ def _merge_context_attributes(info, mapping_context):
     default_gid = mapping_context.default_gid if hasattr(mapping_context, "default_gid") else ""
     return _merge_attributes(info, default_mode, default_user, default_group, default_uid, default_gid)
 
-def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin, default_mode):
+def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
     attrs = _merge_context_attributes(pkg_dirs_info, mapping_context)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
@@ -215,7 +221,7 @@ def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
 def _process_pkg_filegroup(mapping_context, pkg_filegroup_info, origin):
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
         for d in pkg_filegroup_info.pkg_dirs:
-            _process_pkg_dirs(mapping_context, d[0], d[1], mapping_context.default_mode)
+            _process_pkg_dirs(mapping_context, d[0], d[1])
     if hasattr(pkg_filegroup_info, "pkg_files"):
         for pf in pkg_filegroup_info.pkg_files:
             _process_pkg_files(mapping_context, pf[0], pf[1])
@@ -266,7 +272,6 @@ def process_src(mapping_context, src, origin):
             mapping_context,
             src[PackageDirsInfo],
             origin,
-            default_mode = "0555",
         )
         found_info = True
     return found_info
@@ -327,11 +332,11 @@ def add_label_list(mapping_context, srcs):
 
     # Compute the relative path
     data_path = compute_data_path(
-        mapping_context.label.package,
+        mapping_context.label,
         mapping_context.strip_prefix,
     )
     data_path_without_prefix = compute_data_path(
-        mapping_context.label.package,
+        mapping_context.label,
         ".",
     )
 

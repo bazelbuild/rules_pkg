@@ -47,12 +47,8 @@ def _pkg_zip_impl(ctx):
         args.add("--stamp_from", ctx.version_file.path)
         inputs.append(ctx.version_file)
 
-    content_map = {}  # content handled in the manifest
-    file_deps = []  # list of Depsets needed by srcs
     mapping_context = create_mapping_context_from_ctx(
         ctx,
-        content_map = content_map,
-        file_deps = file_deps,
         label = ctx.label,
         include_runfiles = ctx.attr.include_runfiles,
         strip_prefix = ctx.attr.strip_prefix,
@@ -62,12 +58,12 @@ def _pkg_zip_impl(ctx):
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     inputs.append(manifest_file)
-    write_manifest(ctx, manifest_file, content_map)
+    write_manifest(ctx, manifest_file, mapping_context.content_map)
     args.add("--manifest", manifest_file.path)
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
-    all_inputs = depset(direct = inputs, transitive = file_deps)
+    all_inputs = depset(direct = inputs, transitive = mapping_context.file_deps)
 
     ctx.actions.run(
         mnemonic = "PackageZip",

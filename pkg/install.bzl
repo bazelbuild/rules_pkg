@@ -25,9 +25,7 @@ def _pkg_install_script_impl(ctx):
     script_file = ctx.actions.declare_file(ctx.attr.name + ".py")
 
     fragments = []
-    files_to_run = []
-    content_map = {}
-    mapping_context = create_mapping_context_from_ctx(ctx, content_map, files_to_run, label = ctx.label, default_mode = "0644")
+    mapping_context = create_mapping_context_from_ctx(ctx, label = ctx.label, default_mode = "0644")
     for src in ctx.attr.srcs:
         process_src(
             mapping_context,
@@ -43,7 +41,7 @@ def _pkg_install_script_impl(ctx):
     # Note that these paths are different when used as tools run within a build.
     # See also
     # https://docs.bazel.build/versions/4.1.0/skylark/rules.html#tools-with-runfiles
-    write_manifest(ctx, manifest_file, content_map, use_short_path = True)
+    write_manifest(ctx, manifest_file, mapping_context.content_map, use_short_path = True)
 
     # Get the label of the actual py_binary used to run this script.
     #
@@ -71,7 +69,7 @@ def _pkg_install_script_impl(ctx):
 
     my_runfiles = ctx.runfiles(
         files = [manifest_file],
-        transitive_files = depset(transitive = files_to_run),
+        transitive_files = depset(transitive = mapping_context.file_deps),
     )
 
     return [

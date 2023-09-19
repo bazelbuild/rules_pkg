@@ -33,7 +33,7 @@ def _compute_data_path_test_impl(ctx):
     asserts.equals(
         env,
         expect,
-        compute_data_path(ctx.label.package, ctx.attr.in_path),
+        compute_data_path(ctx.label, ctx.attr.in_path),
     )
     return analysistest.end(env)
 

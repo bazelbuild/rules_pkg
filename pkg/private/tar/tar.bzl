@@ -63,8 +63,8 @@ def _pkg_tar_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
 
     # Compute the relative path
-    data_path = compute_data_path(ctx.label.package, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx.label.package, ".")
+    data_path = compute_data_path(ctx.label, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(ctx.label, ".")
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -115,13 +115,8 @@ def _pkg_tar_impl(ctx):
         args.add("--mtime", "portable")
 
     # Now we begin processing the files.
-    file_deps = []  # inputs we depend on
-    content_map = {}  # content handled in the manifest
-
     mapping_context = create_mapping_context_from_ctx(
         ctx,
-        content_map = content_map,
-        file_deps = file_deps,
         label = ctx.label,
         include_runfiles = False,  # TODO(aiuto): ctx.attr.include_runfiles,
         strip_prefix = ctx.attr.strip_prefix,
@@ -139,7 +134,7 @@ def _pkg_tar_impl(ctx):
             if ctx.attr.include_runfiles:
                 runfiles = src[DefaultInfo].default_runfiles
                 if runfiles:
-                    file_deps.append(runfiles.files)
+                    mapping_context.file_deps.append(runfiles.files)
                     src_files.extend(runfiles.files.to_list())
 
             # Add in the files of srcs which are not pkg_* types
@@ -152,7 +147,7 @@ def _pkg_tar_impl(ctx):
                 # I am fine with that if it makes the code more readable.
                 dest = _remap(remap_paths, d_path)
                 if f.is_directory:
-                    add_tree_artifact(content_map, dest, f, src.label)
+                    add_tree_artifact(mapping_context.content_map, dest, f, src.label)
                 else:
                     # Note: This extra remap is the bottleneck preventing this
                     # large block from being a utility method as shown below.
@@ -172,7 +167,7 @@ def _pkg_tar_impl(ctx):
         target_files = target.files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
-        file_deps.append(depset([target_files[0]]))
+        mapping_context.file_deps.append(depset([target_files[0]]))
         add_single_file(
             mapping_context,
             f_dest_path,
@@ -212,13 +207,15 @@ def _pkg_tar_impl(ctx):
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     files.append(manifest_file)
-    write_manifest(ctx, manifest_file, content_map)
+    write_manifest(ctx, manifest_file, mapping_context.content_map)
     args.add("--manifest", manifest_file.path)
 
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = False)
 
-    inputs = depset(direct = ctx.files.deps + files, transitive = file_deps)
+    inputs = depset(
+        direct = ctx.files.deps + files,
+        transitive = mapping_context.file_deps)
 
     ctx.actions.run(
         mnemonic = "PackageTar",

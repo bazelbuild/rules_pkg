@@ -145,11 +145,9 @@ The keys of links are paths to create.  The values are the target of the links."
 )
 
 def _write_content_manifest_impl(ctx):
-    content_map = {}  # content handled in the manifest
-    file_deps = []  # inputs we depend on
-    mapping_context = create_mapping_context_from_ctx(ctx, content_map, file_deps, ctx.label)
+    mapping_context = create_mapping_context_from_ctx(ctx, ctx.label)
     add_label_list(mapping_context, ctx.attr.srcs)
-    write_manifest(ctx, ctx.outputs.out, content_map, use_short_path = ctx.attr.use_short_path)
+    write_manifest(ctx, ctx.outputs.out, mapping_context.content_map, use_short_path = ctx.attr.use_short_path)
 
 _write_content_manifest = rule(
     doc = """Helper rule to write the content manifest for a pkg_*.
