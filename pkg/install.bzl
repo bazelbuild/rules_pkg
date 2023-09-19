@@ -18,7 +18,7 @@ run`-able installation script.
 """
 
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
-load("//pkg/private:pkg_files.bzl", "process_src", "write_manifest")
+load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_src", "write_manifest")
 load("@rules_python//python:defs.bzl", "py_binary")
 
 def _pkg_install_script_impl(ctx):
@@ -27,18 +27,12 @@ def _pkg_install_script_impl(ctx):
     fragments = []
     files_to_run = []
     content_map = {}
+    mapping_context = create_mapping_context_from_ctx(ctx, content_map, files_to_run, label = ctx.label, default_mode = "0644")
     for src in ctx.attr.srcs:
         process_src(
-            ctx,
-            content_map,
-            files_to_run,
+            mapping_context,
             src = src,
             origin = src.label,
-            default_mode = "0644",
-            default_user = None,
-            default_group = None,
-            default_uid = None,
-            default_gid = None,
         )
 
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-install-manifest.json")
@@ -56,7 +50,7 @@ def _pkg_install_script_impl(ctx):
     # This is super brittle, but I don't know how to otherwise get this
     # information without creating a circular dependency given the current state
     # of rules_python.
-    
+
     # The name of the binary is the name of this target, minus
     # "_install_script".
     label_str = str(ctx.label)[:-len("_install_script")]
@@ -147,7 +141,7 @@ def pkg_install(name, srcs, **kwargs):
     ```
     bazel run -- //path/to:install --help
     ```
-    
+
     WARNING: While this rule does function when being run from within a bazel
     rule, such use is not recommended.  If you do, **always** use the
     `--destdir` argument to specify the desired location for the installation to

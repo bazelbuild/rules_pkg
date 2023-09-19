@@ -23,6 +23,7 @@ load(
     "add_single_file",
     "add_symlink",
     "add_tree_artifact",
+    "create_mapping_context_from_ctx",
     "process_src",
     "write_manifest",
 )
@@ -62,8 +63,8 @@ def _pkg_tar_impl(ctx):
     outputs, output_file, output_name = setup_output_files(ctx)
 
     # Compute the relative path
-    data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx, ".")
+    data_path = compute_data_path(ctx.label.package, ctx.attr.strip_prefix)
+    data_path_without_prefix = compute_data_path(ctx.label.package, ".")
 
     # Find a list of path remappings to apply.
     remap_paths = ctx.attr.remap_paths
@@ -117,19 +118,22 @@ def _pkg_tar_impl(ctx):
     file_deps = []  # inputs we depend on
     content_map = {}  # content handled in the manifest
 
+    mapping_context = create_mapping_context_from_ctx(
+        ctx,
+        content_map = content_map,
+        file_deps = file_deps,
+        label = ctx.label,
+        include_runfiles = False,  # TODO(aiuto): ctx.attr.include_runfiles,
+        strip_prefix = ctx.attr.strip_prefix,
+        default_mode = ctx.attr.mode,
+    )
+
     # Start with all the pkg_* inputs
     for src in ctx.attr.srcs:
         if not process_src(
-            ctx,
-            content_map,
-            file_deps,
+            mapping_context,
             src = src,
             origin = src.label,
-            default_mode = None,
-            default_user = None,
-            default_group = None,
-            default_uid = None,
-            default_gid = None,
         ):
             src_files = src[DefaultInfo].files.to_list()
             if ctx.attr.include_runfiles:
@@ -155,12 +159,12 @@ def _pkg_tar_impl(ctx):
                     # Should we disallow mixing pkg_files in srcs with remap?
                     # I am fine with that if it makes the code more readable.
                     dest = _remap(remap_paths, d_path)
-                    add_single_file(ctx, content_map, dest, f, src.label)
+                    add_single_file(mapping_context, dest, f, src.label)
 
     # TODO(aiuto): I want the code to look like this, but we don't have lambdas.
     # transform_path = lambda f: _remap(
     #    remap_paths, dest_path(f, data_path, data_path_without_prefix))
-    # add_label_list(ctx, content_map, file_deps, ctx.attr.srcs, transform_path)
+    # add_label_list(mapping_context, ctx.attr.srcs, transform_path)
 
     # The files attribute is a map of labels to destinations. We can add them
     # directly to the content map.
@@ -170,8 +174,7 @@ def _pkg_tar_impl(ctx):
             fail("Each input must describe exactly one file.", attr = "files")
         file_deps.append(depset([target_files[0]]))
         add_single_file(
-            ctx,
-            content_map,
+            mapping_context,
             f_dest_path,
             target_files[0],
             target.label,
@@ -190,15 +193,14 @@ def _pkg_tar_impl(ctx):
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
     for empty_file in ctx.attr.empty_files:
-        add_empty_file(ctx, content_map, empty_file, ctx.label)
+        add_empty_file(mapping_context, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
-        add_directory(content_map, empty_dir, ctx.label)
+        add_directory(mapping_context, empty_dir, ctx.label)
     for f in ctx.files.deps:
         args.add("--tar", f.path)
     for link in ctx.attr.symlinks:
         add_symlink(
-            ctx,
-            content_map,
+            mapping_context,
             link,
             ctx.attr.symlinks[link],
             ctx.label,
@@ -244,7 +246,7 @@ def _pkg_tar_impl(ctx):
         # or this OutputGroup might be totally removed.
         # Depend on it at your own risk!
         OutputGroupInfo(
-            manifest = [manifest_file], 
+            manifest = [manifest_file],
         ),
     ]
 
@@ -253,7 +255,7 @@ pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
         "strip_prefix": attr.string(
-            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)"""
+            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)""",
         ),
         "package_dir": attr.string(
             doc = """Prefix to be prepend to all paths written.
@@ -288,12 +290,12 @@ The name may contain variables, same as [package_file_name](#package_file_name)"
             providers = [PackageVariablesInfo],
         ),
         "allow_duplicates_with_different_content": attr.bool(
-            default=True,
-            doc="""If true, will allow you to reference multiple pkg_* which conflict
+            default = True,
+            doc = """If true, will allow you to reference multiple pkg_* which conflict
 (writing different content or metadata to the same destination).
 Such behaviour is always incorrect, but we provide a flag to support it in case old
 builds were accidentally doing it. Never explicitly set this to true for new code.
-"""
+""",
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:
@@ -323,6 +325,7 @@ def pkg_tar(name, **kwargs):
 
     @wraps(pkg_tar_impl)
     """
+
     # Compatibility with older versions of pkg_tar that define files as
     # a flat list of labels.
     if "srcs" not in kwargs:

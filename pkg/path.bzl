@@ -27,7 +27,7 @@ def safe_short_path(file_):
     # Beginning with `file_.path`, remove optional `F.root.path`.
     working_path = file_.path
     if not file_.is_source:
-        working_path = working_path[len(file_.root.path)+1:]
+        working_path = working_path[len(file_.root.path) + 1:]
     return working_path
 
 def _short_path_dirname(path):
@@ -56,19 +56,18 @@ def dest_path(f, strip_prefix, data_path_without_prefix = ""):
 
         # Avoid stripping prefix if final directory is incomplete
         if prefix_last_dir not in f_short_path.split("/"):
-          strip_prefix = data_path_without_prefix
+            strip_prefix = data_path_without_prefix
 
         return f_short_path[len(strip_prefix):]
     return f_short_path
 
-def compute_data_path(ctx, data_path):
+def compute_data_path(package, data_path):
     """Compute the relative data path prefix from the data_path attribute.
 
     Args:
-      ctx: rule implementation ctx.
+      package: package of the target
       data_path: path to a file, relative to the package of the rule ctx.
     """
-    build_dir = ctx.label.package
     if data_path:
         # Strip ./ from the beginning if specified.
         # There is no way to handle .// correctly (no function that would make
@@ -77,11 +76,11 @@ def compute_data_path(ctx, data_path):
         if len(data_path) >= 2 and data_path[0:2] == "./":
             data_path = data_path[2:]
         if not data_path or data_path == ".":  # Relative to current package
-            return build_dir
+            return package
         elif data_path[0] == "/":  # Absolute path
             return data_path[1:]
         else:  # Relative to a sub-directory
-            tmp_short_path_dirname = build_dir
+            tmp_short_path_dirname = package
             if tmp_short_path_dirname:
                 return tmp_short_path_dirname + "/" + data_path
             return data_path

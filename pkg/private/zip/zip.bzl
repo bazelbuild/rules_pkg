@@ -13,7 +13,6 @@
 # limitations under the License.
 """Zip archive creation rule and associated logic."""
 
-load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
     "PackageVariablesInfo",
@@ -26,6 +25,7 @@ load(
 load(
     "//pkg/private:pkg_files.bzl",
     "add_label_list",
+    "create_mapping_context_from_ctx",
     "write_manifest",
 )
 
@@ -47,12 +47,18 @@ def _pkg_zip_impl(ctx):
         args.add("--stamp_from", ctx.version_file.path)
         inputs.append(ctx.version_file)
 
-    data_path = compute_data_path(ctx, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx, ".")
-
     content_map = {}  # content handled in the manifest
     file_deps = []  # list of Depsets needed by srcs
-    add_label_list(ctx, content_map, file_deps, srcs = ctx.attr.srcs)
+    mapping_context = create_mapping_context_from_ctx(
+        ctx,
+        content_map = content_map,
+        file_deps = file_deps,
+        label = ctx.label,
+        include_runfiles = ctx.attr.include_runfiles,
+        strip_prefix = ctx.attr.strip_prefix,
+        default_mode = ctx.attr.mode,
+    )
+    add_label_list(mapping_context, srcs = ctx.attr.srcs)
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     inputs.append(manifest_file)
@@ -102,6 +108,9 @@ The name may contain variables, same as [package_file_name](#package_file_name)"
             default = "/",
         ),
         "strip_prefix": attr.string(),
+        "include_runfiles": attr.bool(
+            doc = """See standard attributes.""",
+        ),
         "timestamp": attr.int(
             doc = """Time stamp to place on all files in the archive, expressed
 as seconds since the Unix Epoch, as per RFC 3339.  The default is January 01,
@@ -114,13 +123,13 @@ limited to a granularity of 2 seconds.""",
         ),
         "compression_level": attr.int(
             default = 6,
-            doc = "The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used"
+            doc = "The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used",
         ),
         "compression_type": attr.string(
             default = "deflated",
             doc = """The compression to use. Note that lzma and bzip2 might not be supported by all readers.
 The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED""",
-            values = ["deflated", "lzma", "bzip2", "stored"]
+            values = ["deflated", "lzma", "bzip2", "stored"],
         ),
 
         # Common attributes
@@ -141,14 +150,13 @@ The list of compressions is the same as Python's ZipFile: https://docs.python.or
 """,
             default = 0,
         ),
-
         "allow_duplicates_with_different_content": attr.bool(
-            default=True,
-            doc="""If true, will allow you to reference multiple pkg_* which conflict
+            default = True,
+            doc = """If true, will allow you to reference multiple pkg_* which conflict
 (writing different content or metadata to the same destination).
 Such behaviour is always incorrect, but we provide a flag to support it in case old
 builds were accidentally doing it. Never explicitly set this to true for new code.
-"""
+""",
         ),
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
