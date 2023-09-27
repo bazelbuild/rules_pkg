@@ -1,6 +1,11 @@
 {
     "homepage": "https://github.com/bazelbuild/rules_pkg",
-    "maintainers": [],
+    "maintainers": [
+	    {
+		    "email": "aiuto@goolge.com",
+		    "name": "Tony Aiuto",
+	    }
+    ],
     "repository": ["github:bazelbuild/rules_pkg"],
     "versions": [],
     "yanked_versions": {}
