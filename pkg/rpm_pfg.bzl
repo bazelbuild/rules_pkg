@@ -210,6 +210,81 @@ def _process_symlink(psi, origin_label, grouping_label, file_base, rpm_ctx):
         psi.attributes["mode"],
     ))
 
+def _process_dep(dep, rpm_ctx):
+    # NOTE: This does not detect cases where directories are not named
+    # consistently.  For example, all of these may collide in reality, but
+    # won't be detected by the below:
+    #
+    # 1) usr/lib/libfoo.a
+    # 2) /usr/lib/libfoo.a
+    # 3) %{_libdir}/libfoo.a
+    #
+    # The most important thing, regardless of how these checks below are
+    # done, is to be consistent with path naming conventions.
+    #
+    # There is also an unsolved question of determining how to handle
+    # subdirectories of "PackageFilesInfo" targets that are actually
+    # directories.
+
+    # dep is a Target
+    if PackageFilesInfo in dep:
+        _process_files(
+            dep[PackageFilesInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageDirsInfo in dep:
+        _process_dirs(
+            dep[PackageDirsInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageSymlinkInfo in dep:
+        _process_symlink(
+            dep[PackageSymlinkInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageFilegroupInfo in dep:
+        pfg_info = dep[PackageFilegroupInfo]
+        for entry, origin in pfg_info.pkg_files:
+            file_base = _make_filetags(entry.attributes)
+            _process_files(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+        for entry, origin in pfg_info.pkg_dirs:
+            file_base = _make_filetags(entry.attributes, "%dir")
+            _process_dirs(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+
+        for entry, origin in pfg_info.pkg_symlinks:
+            file_base = _make_filetags(entry.attributes)
+            _process_symlink(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+
 #### Rule implementation
 
 def _pkg_rpm_impl(ctx):
@@ -490,79 +565,7 @@ def _pkg_rpm_impl(ctx):
     # they aren't unnecessarily recreated.
 
     for dep in ctx.attr.srcs:
-        # NOTE: This does not detect cases where directories are not named
-        # consistently.  For example, all of these may collide in reality, but
-        # won't be detected by the below:
-        #
-        # 1) usr/lib/libfoo.a
-        # 2) /usr/lib/libfoo.a
-        # 3) %{_libdir}/libfoo.a
-        #
-        # The most important thing, regardless of how these checks below are
-        # done, is to be consistent with path naming conventions.
-        #
-        # There is also an unsolved question of determining how to handle
-        # subdirectories of "PackageFilesInfo" targets that are actually
-        # directories.
-
-        # dep is a Target
-        if PackageFilesInfo in dep:
-            _process_files(
-                dep[PackageFilesInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
-                rpm_ctx,
-            )
-
-        if PackageDirsInfo in dep:
-            _process_dirs(
-                dep[PackageDirsInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
-                rpm_ctx,
-            )
-
-        if PackageSymlinkInfo in dep:
-            _process_symlink(
-                dep[PackageSymlinkInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
-                rpm_ctx,
-            )
-
-        if PackageFilegroupInfo in dep:
-            pfg_info = dep[PackageFilegroupInfo]
-            for entry, origin in pfg_info.pkg_files:
-                file_base = _make_filetags(entry.attributes)
-                _process_files(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    rpm_ctx,
-                )
-            for entry, origin in pfg_info.pkg_dirs:
-                file_base = _make_filetags(entry.attributes, "%dir")
-                _process_dirs(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    rpm_ctx,
-                )
-
-            for entry, origin in pfg_info.pkg_symlinks:
-                file_base = _make_filetags(entry.attributes)
-                _process_symlink(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    rpm_ctx,
-                )
+        _process_dep(dep, rpm_ctx)
 
     #### Procedurally-generated scripts/lists (%install, %files)
 
