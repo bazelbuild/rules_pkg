@@ -151,20 +151,20 @@ def _make_absolute_if_not_already_or_is_macro(path):
 # TODO(nacl, #459): These are redundant with functions and structures in
 # pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
 # there, but as of writing, it's not quite ready.
-def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest, src in pfi.dest_src_map.items():
         metadata = _package_contents_metadata(origin_label, grouping_label)
-        if dest in dest_check_map:
-            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        if dest in rpm_ctx.dest_check_map:
+            _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
         else:
-            dest_check_map[dest] = metadata
+            rpm_ctx.dest_check_map[dest] = metadata
 
         abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
         if src.is_directory:
             # Set aside TreeArtifact information for external processing
             #
             # @unsorted-dict-items
-            packaged_directories.append({
+            rpm_ctx.packaged_directories.append({
                 "src": src,
                 "dest": abs_dest,
                 # This doesn't exactly make it extensible, but it saves
@@ -174,37 +174,37 @@ def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map,
             })
         else:
             # Files are well-known.  Take care of them right here.
-            rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-            install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
+            rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
+            rpm_ctx.install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
                 src.path,
                 abs_dest,
             ))
 
-def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
+def _process_dirs(pdi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest in pdi.dirs:
         metadata = _package_contents_metadata(origin_label, grouping_label)
-        if dest in dest_check_map:
-            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        if dest in rpm_ctx.dest_check_map:
+            _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
         else:
-            dest_check_map[dest] = metadata
+            rpm_ctx.dest_check_map[dest] = metadata
 
         abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
-        rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dirname))
+        rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dirname))
 
-        install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
+        rpm_ctx.install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
             abs_dirname,
         ))
 
-def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
+def _process_symlink(psi, origin_label, grouping_label, file_base, rpm_ctx):
     metadata = _package_contents_metadata(origin_label, grouping_label)
-    if psi.destination in dest_check_map:
-        _conflicting_contents_error(psi.destination, metadata, dest_check_map[psi.destination])
+    if psi.destination in rpm_ctx.dest_check_map:
+        _conflicting_contents_error(psi.destination, metadata, rpm_ctx.dest_check_map[psi.destination])
     else:
-        dest_check_map[psi.destination] = metadata
+        rpm_ctx.dest_check_map[psi.destination] = metadata
 
     abs_dest = _make_absolute_if_not_already_or_is_macro(psi.destination)
-    rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-    install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
+    rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
+    rpm_ctx.install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
         abs_dest,
         psi.target,
         psi.attributes["mode"],
@@ -459,24 +459,27 @@ def _pkg_rpm_impl(ctx):
 
     #### Consistency checking; input processing
 
-    # Ensure that no destinations collide.  RPMs that fail this check may be
-    # correct, but the output may also create hard-to-debug issues.  Better to
-    # err on the side of correctness here.
-    dest_check_map = {}
+    rpm_ctx = struct(
+        # Ensure that no destinations collide.  RPMs that fail this check may be
+        # correct, but the output may also create hard-to-debug issues.  Better
+        # to err on the side of correctness here.
+        dest_check_map = {},
 
-    # The contents of the "%install" scriptlet
-    install_script_pieces = []
+        # The contents of the "%install" scriptlet
+        install_script_pieces = [],
+
+        # The list of entries in the "%files" list
+        rpm_files_list = [],
+
+        # Directories (TreeArtifacts) are to be treated differently.
+        # Specifically, since Bazel does not know their contents at analysis
+        # time, processing them needs to be delegated to a helper script.  This
+        # is done via the _treeartifact_helper script used later on.
+        packaged_directories = [],
+    )
+
     if ctx.attr.debug:
-        install_script_pieces.append("set -x")
-
-    # The list of entries in the "%files" list
-    rpm_files_list = []
-
-    # Directories (TreeArtifacts) are to be treated differently.  Specifically,
-    # since Bazel does not know their contents at analysis time, processing them
-    # needs to be delegated to a helper script.  This is done via the
-    # _treeartifact_helper script used later on.
-    packaged_directories = []
+        rpm_ctx.install_script_pieces.append("set -x")
 
     # Iterate over all incoming data, checking for conflicts and creating
     # datasets as we go from the actual contents of the RPM.
@@ -485,6 +488,7 @@ def _pkg_rpm_impl(ctx):
     # produce an installation script that is longer than necessary.  A better
     # implementation would track directories that are created and ensure that
     # they aren't unnecessarily recreated.
+
     for dep in ctx.attr.srcs:
         # NOTE: This does not detect cases where directories are not named
         # consistently.  For example, all of these may collide in reality, but
@@ -508,10 +512,7 @@ def _pkg_rpm_impl(ctx):
                 dep.label,  # origin label
                 None,  # group label
                 _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
+                rpm_ctx,
             )
 
         if PackageDirsInfo in dep:
@@ -520,10 +521,7 @@ def _pkg_rpm_impl(ctx):
                 dep.label,  # origin label
                 None,  # group label
                 _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
+                rpm_ctx,
             )
 
         if PackageSymlinkInfo in dep:
@@ -532,10 +530,7 @@ def _pkg_rpm_impl(ctx):
                 dep.label,  # origin label
                 None,  # group label
                 _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
+                rpm_ctx,
             )
 
         if PackageFilegroupInfo in dep:
@@ -547,10 +542,7 @@ def _pkg_rpm_impl(ctx):
                     origin,
                     dep.label,
                     file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
+                    rpm_ctx,
                 )
             for entry, origin in pfg_info.pkg_dirs:
                 file_base = _make_filetags(entry.attributes, "%dir")
@@ -559,10 +551,7 @@ def _pkg_rpm_impl(ctx):
                     origin,
                     dep.label,
                     file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
+                    rpm_ctx,
                 )
 
             for entry, origin in pfg_info.pkg_symlinks:
@@ -572,10 +561,7 @@ def _pkg_rpm_impl(ctx):
                     origin,
                     dep.label,
                     file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
+                    rpm_ctx,
                 )
 
     #### Procedurally-generated scripts/lists (%install, %files)
@@ -585,7 +571,7 @@ def _pkg_rpm_impl(ctx):
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
     ctx.actions.write(
         install_script,
-        "\n".join(install_script_pieces),
+        "\n".join(rpm_ctx.install_script_pieces),
     )
 
     rpm_files_file = ctx.actions.declare_file(
@@ -593,14 +579,14 @@ def _pkg_rpm_impl(ctx):
     )
     ctx.actions.write(
         rpm_files_file,
-        "\n".join(rpm_files_list),
+        "\n".join(rpm_ctx.rpm_files_list),
     )
 
     # TreeArtifact processing work
-    if packaged_directories:
+    if rpm_ctx.packaged_directories:
         packaged_directories_file = ctx.actions.declare_file("{}.spec.packaged_directories.json".format(rpm_name))
 
-        packaged_directories_inputs = [d["src"] for d in packaged_directories]
+        packaged_directories_inputs = [d["src"] for d in rpm_ctx.packaged_directories]
 
         # This isn't the prettiest thing in the world, but it works.  Bazel
         # needs the "File" data to pass to the command, but "File"s cannot be
@@ -609,10 +595,10 @@ def _pkg_rpm_impl(ctx):
         # This data isn't used outside of this block, so it's probably fine.
         # Cleaner code would separate the JSONable values from the File type (in
         # a struct, probably).
-        for d in packaged_directories:
+        for d in rpm_ctx.packaged_directories:
             d["src"] = d["src"].path
 
-        ctx.actions.write(packaged_directories_file, json.encode(packaged_directories))
+        ctx.actions.write(packaged_directories_file, json.encode(rpm_ctx.packaged_directories))
 
         # Overwrite all following uses of the install script and files lists to
         # use the ones generated below.
