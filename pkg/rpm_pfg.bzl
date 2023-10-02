@@ -30,6 +30,7 @@ load(
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
+    "PackageSubRPMInfo",
     "PackageSymlinkInfo",
     "PackageVariablesInfo",
 )
@@ -285,6 +286,82 @@ def _process_dep(dep, rpm_ctx):
                 rpm_ctx,
             )
 
+def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx):
+    sub_rpm_ctx = struct(
+        dest_check_map = {},
+        install_script_pieces = [],
+        packaged_directories = [],
+        rpm_files_list = [],
+    )
+
+    rpm_lines = [
+        "%%package %s" % rpm_info.package_name,
+        "Summary: %s" % rpm_info.summary,
+    ]
+
+    if rpm_info.architecture:
+        rpm_lines += ["BuildArch: %s" % rpm_info.architecture]
+
+    if rpm_info.version:
+        rpm_lines += ["Version: %s" % rpm_info.version]
+
+    for r in rpm_info.requires:
+        rpm_lines += ["Requires: %s" % r]
+
+    for p in rpm_info.provides:
+        rpm_lines += ["Provides: %s" % p]
+
+    rpm_lines += [
+        "",
+        "%%description %s" % rpm_info.package_name,
+        rpm_info.description,
+    ]
+
+    if rpm_info.post_scriptlet:
+        rpm_lines += [
+            "",
+            "%%post %s" % rpm_info.package_name,
+        ]
+
+    if rpm_info.srcs:
+        rpm_lines += [
+            "",
+            "%%files %s" % rpm_info.package_name,
+        ]
+
+        for dep in rpm_info.srcs:
+            _process_dep(dep, sub_rpm_ctx)
+
+        rpm_lines += sub_rpm_ctx.rpm_files_list
+        rpm_lines += [""]
+
+    rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
+    rpm_ctx.packaged_directories.extend(sub_rpm_ctx.packaged_directories)
+
+    package_file_name = "%s-%s-%s-%s.%s.rpm" % (
+        rpm_name,
+        rpm_info.package_name,
+        rpm_info.version or ctx.attr.version,
+        ctx.attr.release,
+        rpm_info.architecture or ctx.attr.architecture,
+    )
+
+    default_file = ctx.actions.declare_file("{}-{}.rpm".format(rpm_name, rpm_info.package_name))
+
+    _, output_file, _ = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+        default_output_file = default_file,
+    )
+
+    rpm_ctx.output_rpm_files.append(output_file)
+    rpm_ctx.make_rpm_args.append("--subrpm_out_file=%s:%s" % (
+        rpm_info.package_name,
+        output_file.path,
+    ))
+
+    return rpm_lines
+
 #### Rule implementation
 
 def _pkg_rpm_impl(ctx):
@@ -318,7 +395,7 @@ def _pkg_rpm_impl(ctx):
     files = []
     tools = []
     name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
-    rpm_ctx.make_rpm_args.args = ["--name=" + name]
+    rpm_ctx.make_rpm_args.append("--name=" + name)
 
     if ctx.attr.debug:
         rpm_ctx.make_rpm_args.append("--debug")
@@ -548,7 +625,7 @@ def _pkg_rpm_impl(ctx):
     files.append(spec_file)
 
     # Add data files
-    files += ctx.files.srcs
+    files += ctx.files.srcs + ctx.files.subrpms
 
     _, output_file, _ = setup_output_files(
         ctx,
@@ -573,6 +650,28 @@ def _pkg_rpm_impl(ctx):
     for dep in ctx.attr.srcs:
         _process_dep(dep, rpm_ctx)
 
+    #### subrpms
+    subrpm_file = ctx.actions.declare_file(
+        "{}.spec.subrpms".format(rpm_name),
+    )
+    if ctx.attr.subrpms:
+        subrpm_lines = []
+
+        for s in ctx.attr.subrpms:
+            subrpm_lines += _process_subrpm(ctx, rpm_name, s[PackageSubRPMInfo], rpm_ctx)
+
+        ctx.actions.write(
+            output = subrpm_file,
+            content = "\n".join(subrpm_lines),
+        )
+    else:
+        ctx.actions.write(
+            output = subrpm_file,
+            content = "# no subrpms",
+        )
+
+    files.append(subrpm_file)
+    rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
     #### Procedurally-generated scripts/lists (%install, %files)
 
     # We need to write these out regardless of whether we are using
@@ -657,7 +756,7 @@ def _pkg_rpm_impl(ctx):
 
     rpm_ctx.make_rpm_args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
-    for f in ctx.files.srcs:
+    for f in ctx.files.srcs + ctx.files.subrpms:
         rpm_ctx.make_rpm_args.append(f.path)
 
     #### Call the generator script.
@@ -1041,6 +1140,12 @@ pkg_rpm = rule(
         "defines": attr.string_dict(
             doc = """Additional definitions to pass to rpmbuild""",
         ),
+        "subrpms": attr.label_list(
+            doc = """Sub RPMs to build with this RPM""",
+            providers = [
+                [PackageSubRPMInfo],
+            ],
+        ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
         ),
@@ -1061,4 +1166,74 @@ pkg_rpm = rule(
     executable = False,
     implementation = _pkg_rpm_impl,
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
+)
+
+def _pkg_sub_rpm_impl(ctx):
+    mapped_files_depsets = []
+
+    for s in ctx.attr.srcs:
+        if PackageFilegroupInfo in s:
+            mapped_files_depsets.append(s[DefaultInfo].files)
+
+        if PackageFilesInfo in s:
+            # dict.values() returns a list, not an iterator like in python3
+            mapped_files_depsets.append(s[DefaultInfo].files)
+
+    return [
+        PackageSubRPMInfo(
+            package_name = ctx.attr.package_name,
+            summary = ctx.attr.summary,
+            group = ctx.attr.group,
+            description = ctx.attr.description,
+            post_scriptlet = ctx.attr.post_scriptlet,
+            architecture = ctx.attr.architecture,
+            version = ctx.attr.version,
+            requires = ctx.attr.requires,
+            provides = ctx.attr.provides,
+            srcs = ctx.attr.srcs,
+        ),
+        DefaultInfo(
+            files = depset(transitive = mapped_files_depsets),
+        ),
+    ]
+
+pkg_sub_rpm = rule(
+    doc = """Sub-RPM rule.
+
+    This rule represents the definition of a sub-RPM in a specfile that can be
+    built as a whole unit.
+    """,
+    implementation = _pkg_sub_rpm_impl,
+    # @unsorted-dict-items
+    attrs = {
+        "package_name": attr.string(doc = "name of the subrpm"),
+        "summary": attr.string(doc = "Sub RPM `Summary` tag"),
+        "group": attr.string(
+            doc = """Optional; RPM "Group" tag.
+
+            NOTE: some distributions (as of writing, Fedora > 17 and CentOS/RHEL
+            > 5) have deprecated this tag.  Other distributions may require it,
+            but it is harmless in any case.
+
+            """,
+        ),
+        "description": attr.string(doc = "Multi-line description of this subrpm"),
+        "post_scriptlet": attr.string(doc = "RPM `%post` scriplet for this subrpm"),
+        "architecture": attr.string(doc = "Sub RPM architecture"),
+        "version": attr.string(doc = "RPM `Version` tag for this subrpm"),
+        "requires": attr.string_list(doc = "List of RPM capability expressions that this package requires"),
+        "provides": attr.string_list(doc = "List of RPM capability expressions that this package provides"),
+        "srcs": attr.label_list(
+            doc = "Mapping groups to include in this RPM",
+            mandatory = True,
+            providers = [
+                [PackageSubRPMInfo, DefaultInfo],
+                [PackageFilegroupInfo, DefaultInfo],
+                [PackageFilesInfo, DefaultInfo],
+                [PackageDirsInfo],
+                [PackageSymlinkInfo],
+            ],
+        ),
+    },
+    provides = [PackageSubRPMInfo],
 )
