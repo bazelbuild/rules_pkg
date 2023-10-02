@@ -45,7 +45,7 @@ spec_filetype = [".spec", ".spec.in", ".spec.tpl"]
 # TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
 _INSTALL_FILE_STANZA_FMT = """
 install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '{0}' '%{{buildroot}}/{1}'
+cp '%{{_topdir}}/BUILD/{0}' '%{{buildroot}}/{1}'
 """.strip()
 
 # TODO(nacl): __install
