@@ -87,6 +87,8 @@ organization will commit to maintaining that feature and responding to issues.
 
 -   We use Python 3. We are not trying to support Python 2 at all.
 -   Always import with a full path from the root of the source tree.
+-   Compatibility back to python 3.6 (for CentOS 7 and Ubuntu 18.04 LTS) is
+    required.
 
 ### Dependencies
 
@@ -96,3 +98,11 @@ organization will commit to maintaining that feature and responding to issues.
     distribution.
 -   Other new dependencies are strongly discouraged. The exception is that we
     may take dependencies on other modules maintained by the Bazel team.
+
+### Write for vendoring the source tree.
+
+We presume that some users will vendor this entire rule set into their source
+tree and want to test it from their WORKSPACE. Towards that end we try to
+minimize the places where we assume the path to any package is absolute
+from WORKSPACE. See tests/package_naming_aggregate_test.sh for an example
+of how we can write a sh_test that works after re-rooting the sources.

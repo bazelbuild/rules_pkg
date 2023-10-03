@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for creating Debian packages."""
 
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
@@ -107,6 +107,10 @@ def _pkg_deb_impl(ctx):
     else:
         fail("Neither description_file nor description attribute was specified")
 
+    if ctx.attr.changelog:
+        args += ["--changelog=@" + ctx.file.changelog.path]
+        files += [ctx.file.changelog]
+
     # Built using can also be specified by a file or inlined (but is not mandatory)
     if ctx.attr.built_using_file:
         if ctx.attr.built_using:
@@ -130,6 +134,8 @@ def _pkg_deb_impl(ctx):
         args += ["--section=" + ctx.attr.section]
     if ctx.attr.homepage:
         args += ["--homepage=" + ctx.attr.homepage]
+    if ctx.attr.license:
+        args += ["--license=" + ctx.attr.license]
 
     args += ["--distribution=" + ctx.attr.distribution]
     args += ["--urgency=" + ctx.attr.urgency]
@@ -166,16 +172,23 @@ def _pkg_deb_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 # A rule for creating a deb file, see README.md
 pkg_deb_impl = rule(
     implementation = _pkg_deb_impl,
+    doc = """
+    Create a Debian package.
+
+    This rule produces 2 artifacts: a .deb and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specificially depend on only the .deb or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the Debian package or a symlink to the actual package.
+    - `deb` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
+    """,
     attrs = {
         # @unsorted-dict-items
         "data": attr.label(
@@ -212,6 +225,11 @@ pkg_deb_impl = rule(
             doc = """config file used for debconf integration.
             See https://www.debian.org/doc/debian-policy/ch-binary.html#prompting-in-maintainer-scripts.""",
             allow_single_file = True,
+        ),
+        "changelog": attr.label(
+            doc = """The package changelog.
+            See https://www.debian.org/doc/debian-policy/ch-source.html#s-dpkgchangelog.""",
+            allow_single_file = True
         ),
         "description": attr.string(
             doc = """The package description. Must not be used with `description_file`.""",
@@ -284,6 +302,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.""",
         ),
         "homepage": attr.string(doc = """The homepage of the project."""),
+        "license": attr.string(doc = """The license of the project."""),
 
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
@@ -329,15 +348,15 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
 
         # Common attributes
         "out": attr.output(
-            doc = """See Common Attributes""",
+            doc = """See [Common Attributes](#out)""",
             mandatory = True
         ),
         "package_file_name": attr.string(
-            doc = """See Common Attributes.
+            doc = """See [Common Attributes](#package_file_name).
             Default: "{package}-{version}-{architecture}.deb""",
         ),
         "package_variables": attr.label(
-            doc = """See Common Attributes""",
+            doc = """See [Common Attributes](#package_variables)""",
             providers = [PackageVariablesInfo],
         ),
 
@@ -349,7 +368,6 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_deb(name, out = None, **kwargs):

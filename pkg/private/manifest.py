@@ -15,18 +15,53 @@
 """Common package builder manifest helpers
 """
 
-import collections
+import json
+
 
 # These must be kept in sync with the declarations in private/pkg_files.bzl
-ENTRY_IS_FILE = 0  # Entry is a file: take content from <src>
-ENTRY_IS_LINK = 1  # Entry is a symlink: dest -> <src>
-ENTRY_IS_DIR = 2  # Entry is an owned dir, possibly empty
-ENTRY_IS_TREE = 3  # Entry is a tree artifact: take tree from <src>
-ENTRY_IS_EMPTY_FILE = 4  # Entry is a an empty file
+ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
+ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
+ENTRY_IS_DIR = "dir"  # Entry is an empty dir
+ENTRY_IS_TREE = "tree" # Entry is a tree artifact: take tree from <src>
+ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
-ManifestEntry = collections.namedtuple("ManifestEntry",
-                                       ['entry_type', 'dest', 'src', 'mode', 'user', 'group'])
+class ManifestEntry(object):
+    """Structured wrapper around rules_pkg-produced manifest entries"""
+    type: str
+    dest: str
+    src: str
+    mode: str
+    user: str
+    group: str
+    uid: int
+    gid: int
+    origin: str = None
 
+    def __init__(self, type, dest, src, mode, user, group, uid = None, gid = None, origin = None):
+        self.type = type
+        self.dest = dest
+        self.src = src
+        self.mode = mode
+        self.user = user
+        self.group = group
+        self.uid = uid
+        self.gid = gid
+        self.origin = origin
+
+    def __repr__(self):
+        return "ManifestEntry<{}>".format(vars(self))
+
+def read_entries_from(fh):
+    """Return a list of ManifestEntry's from `fh`"""
+    # Subtle: decode the content with read() rather than in json.load() because
+    # the load in older python releases (< 3.7?) does not know how to decode.
+    raw_entries = json.loads(fh.read())
+    return [ManifestEntry(**entry) for entry in raw_entries]
+
+def read_entries_from_file(manifest_path):
+    """Return a list of ManifestEntry's from the manifest file at `path`"""
+    with open(manifest_path, 'r', encoding='utf-8') as fh:
+        return read_entries_from(fh)
 
 def entry_type_to_string(et):
     """Entry type stringifier"""

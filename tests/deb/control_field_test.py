@@ -52,23 +52,31 @@ class MakeControlFieldTest(unittest.TestCase):
     self.assertEqual(
         'Description: fizzbuzz\n',
         make_deb.MakeDebianControlField(
-            'Description', 'fizzbuzz', is_multiline=True))
+            'Description', 'fizzbuzz', multiline=make_deb.Multiline.YES))
     self.assertEqual(
         'Description: fizz\n buzz\n',
         make_deb.MakeDebianControlField(
-            'Description', 'fizz\n buzz\n', is_multiline=True))
+            'Description', 'fizz\n buzz\n', multiline=make_deb.Multiline.YES))
+    self.assertEqual(
+        'Description:\n fizz\n buzz\n',
+        make_deb.MakeDebianControlField(
+            'Description', ' fizz\n buzz\n', multiline=make_deb.Multiline.YES_ADD_NEWLINE))
 
   def test_multiline_add_required_space(self):
     self.assertEqual(
         'Description: fizz\n buzz\n',
         make_deb.MakeDebianControlField(
-            'Description', 'fizz\nbuzz', is_multiline=True))
+            'Description', 'fizz\nbuzz', multiline=make_deb.Multiline.YES))
+    self.assertEqual(
+        'Description:\n fizz\n buzz\n',
+        make_deb.MakeDebianControlField(
+            'Description', 'fizz\nbuzz\n', multiline=make_deb.Multiline.YES_ADD_NEWLINE))
 
   def test_multiline_add_trailing_newline(self):
     self.assertEqual(
         'Description: fizz\n buzz\n baz\n',
         make_deb.MakeDebianControlField(
-            'Description', 'fizz\n buzz\n baz', is_multiline=True))
+            'Description', 'fizz\n buzz\n baz', multiline=make_deb.Multiline.YES))
 
 
 if __name__ == '__main__':

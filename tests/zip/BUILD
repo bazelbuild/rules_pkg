@@ -200,10 +200,17 @@ filegroup(
     ],
 )
 
+pkg_mklink(
+    name = "mylink",
+    link_name = "mylink",
+    target = "dangling",
+)
+
 # All of these should produce the same zip file.
 [pkg_zip(
     name = "test_zip_package_dir" + str(idx),
     srcs = [
+        ":mylink",
         "//tests:testdata/hello.txt",
         "//tests:testdata/loremipsum.txt",
     ],
@@ -229,6 +236,37 @@ pkg_zip(
     package_variables = ":my_package_variables",
 )
 
+# Different compressions
+pkg_zip(
+    name = "test_zip_deflated_level_3",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    compression_type = "deflated",
+    compression_level = 3,
+)
+pkg_zip(
+    name = "test_zip_bzip2",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    compression_type = "bzip2",
+)
+pkg_zip(
+    name = "test_zip_lzma",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    compression_type = "lzma",
+)
+pkg_zip(
+    name = "test_zip_stored",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    compression_type = "stored",
+)
+
 py_test(
     name = "zip_test",
     srcs = [
@@ -246,11 +284,14 @@ py_test(
         ":test_zip_permissions.zip",
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",
+        ":test_zip_deflated_level_3",
+        ":test_zip_bzip2",
+        ":test_zip_lzma",
+        ":test_zip_stored",
     ],
     python_version = "PY3",
     deps = [
         ":zip_test_lib",
-        "@bazel_tools//tools/python/runfiles",
     ],
 )
 
@@ -270,6 +311,25 @@ py_test(
         ":test_zip_basic_timestamp_before_epoch.zip",
         ":test_zip_package_dir1.zip",
         ":test_zip_package_dir2.zip",
+    ],
+    python_version = "PY3",
+    deps = [
+        ":zip_test_lib",
+    ],
+)
+
+pkg_zip(
+    name = "unicode_names",
+    srcs = ["//tests:utf8_files"]
+)
+
+py_test(
+    name = "unicode_test",
+    srcs = [
+        "unicode_test.py",
+    ],
+    data = [
+        ":unicode_names",
     ],
     python_version = "PY3",
     deps = [

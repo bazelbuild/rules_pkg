@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules for manipulation of various packaging."""
+"""Zip archive creation rule and associated logic."""
 
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg:providers.bzl",
-    "PackageArtifactInfo",
     "PackageVariablesInfo",
 )
 load(
@@ -40,6 +39,8 @@ def _pkg_zip_impl(ctx):
     args.add("-d", substitute_package_variables(ctx, ctx.attr.package_dir))
     args.add("-t", ctx.attr.timestamp)
     args.add("-m", ctx.attr.mode)
+    args.add("-c", str(ctx.attr.compression_type))
+    args.add("-l", ctx.attr.compression_level)
     inputs = []
     if ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and
                                ctx.attr.private_stamp_detect):
@@ -52,7 +53,6 @@ def _pkg_zip_impl(ctx):
     content_map = {}  # content handled in the manifest
     file_deps = []  # list of Depsets needed by srcs
     add_label_list(ctx, content_map, file_deps, srcs = ctx.attr.srcs)
-    file_inputs = depset(transitive = file_deps)
 
     manifest_file = ctx.actions.declare_file(ctx.label.name + ".manifest")
     inputs.append(manifest_file)
@@ -61,9 +61,11 @@ def _pkg_zip_impl(ctx):
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
+    all_inputs = depset(direct = inputs, transitive = file_deps)
+
     ctx.actions.run(
         mnemonic = "PackageZip",
-        inputs = file_inputs.to_list() + inputs,
+        inputs = all_inputs,
         executable = ctx.executable._build_zip,
         arguments = [args],
         outputs = [output_file],
@@ -80,11 +82,6 @@ def _pkg_zip_impl(ctx):
             files = depset([output_file]),
             runfiles = ctx.runfiles(files = outputs),
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 pkg_zip_impl = rule(
@@ -100,7 +97,8 @@ pkg_zip_impl = rule(
             default = "0555",
         ),
         "package_dir": attr.string(
-            doc = """The prefix to add to all all paths in the archive.""",
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables, same as [package_file_name](#package_file_name)""",
             default = "/",
         ),
         "strip_prefix": attr.string(),
@@ -114,15 +112,25 @@ Jan 1, 1980 will be rounded up and the precision in the zip file is
 limited to a granularity of 2 seconds.""",
             default = 315532800,
         ),
+        "compression_level": attr.int(
+            default = 6,
+            doc = "The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used"
+        ),
+        "compression_type": attr.string(
+            default = "deflated",
+            doc = """The compression to use. Note that lzma and bzip2 might not be supported by all readers.
+The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED""",
+            values = ["deflated", "lzma", "bzip2", "stored"]
+        ),
 
         # Common attributes
         "out": attr.output(
             doc = """output file name. Default: name + ".zip".""",
             mandatory = True,
         ),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
         ),
         "stamp": attr.int(
@@ -134,6 +142,14 @@ limited to a granularity of 2 seconds.""",
             default = 0,
         ),
 
+        "allow_duplicates_with_different_content": attr.bool(
+            default=True,
+            doc="""If true, will allow you to reference multiple pkg_* which conflict
+(writing different content or metadata to the same destination).
+Such behaviour is always incorrect, but we provide a flag to support it in case old
+builds were accidentally doing it. Never explicitly set this to true for new code.
+"""
+        ),
         # Is --stamp set on the command line?
         # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
         "private_stamp_detect": attr.bool(default = False),
@@ -146,7 +162,6 @@ limited to a granularity of 2 seconds.""",
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_zip(name, out = None, **kwargs):

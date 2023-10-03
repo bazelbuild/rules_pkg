@@ -81,19 +81,41 @@ pkg_tar(
 )
 
 #
-# names_from_toolchains() extracts variables from the CC toolchain.
+# names_from_toolchains() extracts variables from the CC toolchain, like `compiler`.
 #
 names_from_toolchains(
     name = "toolchain_vars",
 )
 
 pkg_tar(
-    name = "example3",
+    name = "using_toolchain_elements",
     srcs = [
         ":BUILD",
     ],
-    package_file_name = "example3-{cc_cpu}-{compiler}-{compilation_mode}.tar",
+    package_file_name = "example-{cc_cpu}-{compiler}-{compilation_mode}.tar",
     package_variables = ":toolchain_vars",
+)
+
+#
+#  
+#
+pkg_tar(
+    name = "using_variable_from_ctx_var",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "using_variable_from_ctx_var-{TARGET_CPU}-{COMPILATION_MODE}.tar",
+)
+
+#
+#  We can also use the familiar $(var) syntax.
+#
+pkg_tar(
+    name = "using_make_variable_syntax",
+    srcs = [
+        ":BUILD",
+    ],
+    package_file_name = "using_make_variable_syntax-$(TARGET_CPU)-$(COMPILATION_MODE).tar",
 )
 
 #

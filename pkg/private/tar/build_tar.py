@@ -14,7 +14,6 @@
 """This tool build tar files from a list of inputs."""
 
 import argparse
-import json
 import os
 import tarfile
 import tempfile
@@ -28,7 +27,7 @@ from pkg.private.tar import tar_writer
 
 def normpath(path):
   """Normalize a path to the format we need it.
-  
+
   os.path.normpath changes / to \ on windows, but tarfile needs / style paths.
 
   Args:
@@ -176,9 +175,9 @@ class TarFile(object):
       names: (username, groupname) for the file to set ownership.  An empty
         file will be created as `destfile` in the layer.
     """
-    symlink = normpath(symlink)
+    dest = self.normalize_path(symlink)
     self.tarfile.add_file(
-        symlink,
+        dest,
         tarfile.SYMTYPE,
         link=destination,
         mode = mode,
@@ -233,6 +232,9 @@ class TarFile(object):
 
     # Again, we expect /-style paths.
     dest = normpath(dest)
+    # normpath may be ".", and dest paths should not start with "./"
+    dest = '' if dest == '.' else dest + '/'
+
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -247,21 +249,24 @@ class TarFile(object):
       dirs = sorted(dirs)
       rel_path_from_top = root[len(tree_top):].lstrip('/')
       if rel_path_from_top:
-        dest_dir = dest + '/' + rel_path_from_top + '/'
+        dest_dir = dest + rel_path_from_top + '/'
       else:
-        dest_dir = dest + '/'
+        dest_dir = dest
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
-        to_write[dest_dir + file] = root + '/' + file
+        content_path = os.path.abspath(os.path.join(root, file))
+        if os.name == "nt":
+          # "To specify an extended-length path, use the `\\?\` prefix. For
+          # example, `\\?\D:\very long path`."[1]
+          #
+          # [1]: https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+          to_write[dest_dir + file] = "\\\\?\\" + content_path
+        else:
+          to_write[dest_dir + file] = content_path
 
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
-      # If mode is unspecified, derive the mode from the file's mode.
-      if mode is None:
-        f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
-      else:
-        f_mode = mode
       if not content_path:
         # This is an intermediate directory. Bazel has no API to specify modes
         # for this, so the least surprising thing we can do is make it the
@@ -273,6 +278,11 @@ class TarFile(object):
             names=names,
             kind=tarfile.DIRTYPE)
       else:
+        # If mode is unspecified, derive the mode from the file's mode.
+        if mode is None:
+          f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+        else:
+          f_mode = mode
         self.tarfile.add_file(
             path,
             file_content=content_path,
@@ -282,10 +292,8 @@ class TarFile(object):
             uname=names[0],
             gname=names[1])
 
-  def add_manifest_entry(self, entry_list, file_attributes):
-    entry = manifest.ManifestEntry(*entry_list)
-
-    # Use the pkg_tar mode/owner remaping as a fallback
+  def add_manifest_entry(self, entry, file_attributes):
+    # Use the pkg_tar mode/owner remapping as a fallback
     non_abs_path = entry.dest.strip('/')
     if file_attributes:
       attrs = file_attributes(non_abs_path)
@@ -300,13 +308,18 @@ class TarFile(object):
       else:
         # Use group that legacy tar process would assign
         attrs['names'] = (entry.user, attrs.get('names')[1])
-    if entry.entry_type == manifest.ENTRY_IS_LINK:
+    if entry.uid is not None:
+      if entry.gid is not None:
+        attrs['ids'] = (entry.uid, entry.gid)
+      else:
+        attrs['ids'] = (entry.uid, entry.uid)
+    if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_DIR:
+    elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(entry.dest, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_TREE:
+    elif entry.type == manifest.ENTRY_IS_TREE:
       self.add_tree(entry.src, entry.dest, **attrs)
-    elif entry.entry_type == manifest.ENTRY_IS_EMPTY_FILE:
+    elif entry.type == manifest.ENTRY_IS_EMPTY_FILE:
       self.add_empty_file(entry.dest, **attrs)
     else:
       self.add_file(entry.src, entry.dest, **attrs)
@@ -408,7 +421,7 @@ def main():
 
   # Add objects to the tar file
   with TarFile(
-      options.output, 
+      options.output,
       directory = helpers.GetFlagValue(options.directory),
       compression = options.compression,
       compressor = options.compressor,
@@ -425,8 +438,8 @@ def main():
 
     if options.manifest:
       with open(options.manifest, 'r') as manifest_fp:
-        manifest = json.load(manifest_fp)
-        for entry in manifest:
+        manifest_entries = manifest.read_entries_from(manifest_fp)
+        for entry in manifest_entries:
           output.add_manifest_entry(entry, file_attributes)
 
     for tar in options.tar or []:

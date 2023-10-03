@@ -1,6 +1,7 @@
 [
-[0, "BUILD","tests/mappings/BUILD","",null,null],
-[2, "foodir",null,"711","foo","bar"],
-[0, "mappings_test.bzl","tests/mappings/mappings_test.bzl","0644",null,null],
-[3, "treeartifact","tests/mappings/treeartifact","0644",null,null]
+    {"type": "file", "dest": "BUILD", "src": "tests/mappings/BUILD", "mode": "", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests/mappings:BUILD"},
+    {"type": "dir", "dest": "foodir", "src": null, "mode": "711", "user": "foo", "group": "bar", "uid": null, "gid": null, "origin": "@//tests/mappings:dirs"},
+
+    {"type": "file", "dest": "mappings_test.bzl", "src": "tests/mappings/mappings_test.bzl", "mode": "0644", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests/mappings:files"},
+    {"type": "tree", "dest": "treeartifact", "src": "tests/mappings/treeartifact", "mode": "0644", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests/mappings:directory-with-contents"}
 ]

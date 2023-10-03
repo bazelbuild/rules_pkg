@@ -6,7 +6,7 @@ License: Apache License, v2.0
 
 # Do not try to use magic to determine file types
 %define __spec_install_post %{nil}
-# Do not die becuse we give it more input files than are in the files section
+# Do not die because we give it more input files than are in the files section
 %define _unpackaged_files_terminate_build 0
 
 %description

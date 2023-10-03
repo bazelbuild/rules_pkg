@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Rules to aid testing"""
 
 load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
+load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("@rules_python//python:defs.bzl", "py_binary")
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
@@ -24,9 +23,14 @@ def _directory_impl(ctx):
     args = ctx.actions.args()
     args.add(out_dir_file.path)
 
+    # This helper is horrible.  We should pass all the args in files.
     for fn in ctx.attr.filenames:
         args.add(fn)
         args.add(ctx.attr.contents)
+
+    for link, target in ctx.attr.links.items():
+        args.add(link)
+        args.add('@@' + target)
 
     ctx.actions.run(
         outputs = [out_dir_file],
@@ -48,6 +52,11 @@ creation capabilities are "unsound".
             doc = """Paths to create in the directory.
 
 Paths containing directories will also have the intermediate directories created too.""",
+        ),
+        "links": attr.string_dict(
+            doc = """Set of (virtual) links to create.
+
+The keys of links are paths to create.  The values are the target of the links.""",
         ),
         "contents": attr.string(),
         "outdir": attr.string(),
@@ -101,6 +110,37 @@ cc_binary in complexity, but does not depend on a large toolchain.""",
     },
 )
 
+def _link_tree_impl(ctx):
+    links = []
+    prefix = ctx.attr.package_dir or ""
+    if prefix and not prefix.endswith('/'):
+        prefix = prefix + "/"
+    for link, target in ctx.attr.links.items():
+        # DBG print('  %s -> %s ' % (link, target))
+        links.append(
+            (PackageSymlinkInfo(destination = prefix + link, target = target),
+             ctx.label))
+    return [PackageFilegroupInfo(pkg_symlinks = links)]
+
+link_tree = rule(
+    doc = """Helper rule to create a lot of fake symlinks.
+
+The inspiration is to create test data for the kinds of layouts needed by
+nodejs.  See. https://pnpm.io/symlinked-node-modules-structure
+    """,
+    implementation = _link_tree_impl,
+    attrs = {
+        "links": attr.string_dict(
+            doc = """Set of (virtual) links to create.
+
+The keys of links are paths to create.  The values are the target of the links.""",
+            mandatory = True,
+        ),
+        "package_dir": attr.string(doc = """Prefix to apply to all link paths."""),
+    },
+    provides = [PackageFilegroupInfo],
+)
+
 def _write_content_manifest_impl(ctx):
     content_map = {}  # content handled in the manifest
     file_deps = []  # inputs we depend on
@@ -129,15 +169,19 @@ This is intended only for testing the manifest creation features.""",
             """,
             default = True,
         ),
+        "include_runfiles": attr.bool(),
     },
 )
 
-def write_content_manifest(name, srcs):
+def write_content_manifest(name, srcs, **kwargs):
+    out = kwargs.pop("out", name + ".manifest")
+    use_short_path = kwargs.pop("use_short_path", True)
     _write_content_manifest(
         name = name,
         srcs = srcs,
-        use_short_path = True,
-        out = name + ".manifest",
+        out = out,
+        use_short_path = use_short_path,
+        **kwargs,
     )
 
 ############################################################

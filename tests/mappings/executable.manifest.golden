@@ -1,3 +1,7 @@
 [
-[0, "an_executable", "tests/an_executable", "0755", null, null]
+{"dest":"an_executable.runfiles/tests/BUILD","gid":null,"group":null,"mode":"","origin":"@//tests:an_executable","src":"tests/BUILD","type":"file","uid":null,"user":null},
+{"dest":"an_executable.runfiles/tests/an_executable","gid":null,"group":null,"mode":"0755","origin":"@//tests:an_executable","src":"tests/an_executable","type":"file","uid":null,"user":null},
+{"dest":"an_executable.runfiles/tests/testdata/hello.txt","gid":null,"group":null,"mode":"","origin":"@//tests:an_executable","src":"tests/testdata/hello.txt","type":"file","uid":null,"user":null},
+{"dest":"an_executable","gid":null,"group":null,"mode":"0755","origin":"@//tests:an_executable","src":"tests/an_executable","type":"file","uid":null,"user":null},
+{"dest":"mappings_test.bzl","gid":null,"group":null,"mode":"","origin":"@//tests/mappings:mappings_test.bzl","src":"tests/mappings/mappings_test.bzl","type":"file","uid":null,"user":null}
 ]

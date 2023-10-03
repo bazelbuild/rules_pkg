@@ -25,6 +25,7 @@ import typing
 
 ID_RE = re.compile(r'<a id="#(.*)">')
 WRAPS_RE = re.compile(r'@wraps\((.*)\)')
+SINCE_RE = re.compile(r'@since\(([^)]*)\)')
 CENTER_RE = re.compile(r'<p align="center">([^<]*)</p>')
 
 
@@ -41,6 +42,7 @@ def merge_file(file: str, out, wrapper_map:typing.Dict[str, str]) -> None:
     # If something wraps me, rewrite myself with the wrapper name.
     if this_pkg in wrapper_map:
       content = content.replace(this_pkg, wrapper_map[this_pkg])
+      del wrapper_map[this_pkg]
     merge_text(content, out)
 
 
@@ -52,6 +54,8 @@ def merge_text(text: str, out) -> None:
     out: an output file stream.
   """
   for line in text.split('\n'):
+    line = SINCE_RE.sub(r'<div class="since"><i>Since \1</i></div>', line)
+
     if line.startswith('| :'):
       line = fix_stardoc_table_align(line)
     # Compensate for https://github.com/bazelbuild/stardoc/issues/118.
@@ -73,6 +77,9 @@ def main(argv: typing.Sequence[str]) -> None:
   wrapper_map = {}
   for file in argv[1:]: 
     merge_file(file, sys.stdout, wrapper_map)
+  if wrapper_map:
+    print("We didn't use all the @wraps()", wrapper_map)
+    sys.exit(1)
 
 
 if __name__ == '__main__':

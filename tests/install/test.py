@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import itertools
-import json
 import os
 import unittest
 import stat
@@ -33,11 +32,11 @@ class PkgInstallTest(unittest.TestCase):
         manifest_file = cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer_install_script-install-manifest.json")
 
         with open(manifest_file, 'r') as fh:
-            manifest_data_raw = json.load(fh)
+            manifest_entries = manifest.read_entries_from(fh)
             cls.manifest_data = {}
-            for entry in manifest_data_raw:
-                entry_struct = manifest.ManifestEntry(*entry)
-                cls.manifest_data[entry_struct.dest] = entry_struct
+
+            for entry in manifest_entries:
+                cls.manifest_data[entry.dest] = entry
         cls.installdir = os.path.join(os.getenv("TEST_TMPDIR"), "installdir")
         env = {}
         env.update(cls.runfiles.EnvVars())
@@ -62,10 +61,10 @@ class PkgInstallTest(unittest.TestCase):
 
     def assertEntryTypeMatches(self, entry, actual_path):
         actual_entry_type = self.entity_type_at_path(actual_path)
-        self.assertEqual(actual_entry_type, entry.entry_type,
+        self.assertEqual(actual_entry_type, entry.type,
                         "Entity {} should be a {}, but was actually {}".format(
                             entry.dest,
-                            manifest.entry_type_to_string(entry.entry_type),
+                            manifest.entry_type_to_string(entry.type),
                             manifest.entry_type_to_string(actual_entry_type),
                         ))
 
@@ -94,7 +93,7 @@ class PkgInstallTest(unittest.TestCase):
         #
         # Owned directories are created explicitly with the pkg_mkdirs rule.
         for dest, data in self.manifest_data.items():
-            if data.entry_type == manifest.ENTRY_IS_DIR:
+            if data.type == manifest.ENTRY_IS_DIR:
                 owned_dirs.add(dest)
 
             # TODO(nacl): The initial stage of the accumulation returns an empty string,

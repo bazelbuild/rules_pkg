@@ -38,6 +38,7 @@ filegroup(
     srcs = glob([
         "*.bzl",
         "*.py",
+        "*.tpl",
     ]) + [
         "BUILD",
         "//pkg/legacy:standard_package",
@@ -102,3 +103,5 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
+
+exports_files(["verify_archive_test_main.py.tpl"])

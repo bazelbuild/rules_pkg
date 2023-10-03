@@ -47,7 +47,7 @@ def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
       name: rule name
       srcs: pkg_rpm_pfg `srcs` attribute
       spec_file: pkg_rpm_legacy `spec_file` attribute
-      **kwargs: arguments to eihter `pkg_rpm_pfg` or `pkg_rpm_legacy`,
+      **kwargs: arguments to either `pkg_rpm_pfg` or `pkg_rpm_legacy`,
                 depending on mode
 
     """

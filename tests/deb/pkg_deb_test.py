@@ -111,7 +111,7 @@ class PkgDebTest(unittest.TestCase):
           if k == 'data':
             value = f.extractfile(info).read()
           elif k == 'name':
-            # The test data uses / as path sep, but the tarbal is in OS native
+            # The test data uses / as path sep, but the tarball is in OS native
             # format. This aligns the tarball name back to what we expect.
             value = name_in_tar_file.replace(os.path.sep, '/')
           elif k == 'isdir':
@@ -152,19 +152,20 @@ class PkgDebTest(unittest.TestCase):
   def test_description(self):
     control = self.deb_file.get_deb_ctl_file('control')
     fields = [
-	'Package: fizzbuzz',
-	'Depends: dep1, dep2',
-	'Built-Using: some_test_data',
-	'Replaces: oldpkg',
-	'Breaks: oldbrokenpkg',
-	'Provides: hello',
+        'Package: fizzbuzz',
+        'Depends: dep1, dep2',
+        'Built-Using: some_test_data',
+        'Replaces: oldpkg',
+        'Breaks: oldbrokenpkg',
+        'Provides: hello',
+        'License: Apache-2.0',
     ]
     # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
     # pass on Windows Until we rewrite how description is passed
     if sys.platform != 'win32':
       fields.extend([
-	  'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more\n',
-	  'Maintainer: soméone@somewhere.com',
+          'Description: toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more\n',
+          'Maintainer: soméone@somewhere.com',
       ])
     for field in fields:
       if control.find(field) < 0:
@@ -247,6 +248,32 @@ class PkgDebTest(unittest.TestCase):
       self.assertTrue(
           content[d_start + len(d_expect)].isupper(),
           'Description has unexpected characters at end (%s)' % content)
+
+      self.maxDiff = None
+      expect = '''Format: 1\.8
+Date: Thu Jan  1 \d{2}:00:00 1970
+Source: fizzbuzz
+Binary: fizzbuzz
+Architecture: all
+Version: 4\.5\.6
+Distribution: trusty
+Urgency: low
+Maintainer: soméone@somewhere.com
+Changed-By: soméone@somewhere.com
+Description:
+ fizzbuzz - toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é
+Changes:
+ fizzbuzz \(4\.5\.6\) trusty; urgency=low
+ Changes are tracked in revision control\.
+Files:
+ [a-f0-9]{32} \d{4} contrib/devel optional fizzbuzz_4\.5\.6_all\.deb
+Checksums-Sha1:
+ [a-f0-9]{40} \d{4} fizzbuzz_4\.5\.6_all\.deb
+Checksums-Sha256:
+ [a-f0-9]{64} \d{4} fizzbuzz_4\.5\.6_all\.deb
+'''
+
+      self.assertRegex(content, expect)
 
 
 if __name__ == '__main__':

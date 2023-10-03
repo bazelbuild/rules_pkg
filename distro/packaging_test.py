@@ -15,6 +15,7 @@
 """Test that the rules_pkg distribution is usable."""
 
 import os
+import re
 import subprocess
 import unittest
 
@@ -33,6 +34,24 @@ class PackagingTest(unittest.TestCase):
     self.source_repo = 'rules_pkg'
     self.dest_repo = 'not_named_rules_pkg'
     self.version = release_version.RELEASE_VERSION
+
+  def testVersionsMatch(self):
+    """version.bzl must match MODULE.bazel"""
+    module_bazel_path = self.data_files.Rlocation(
+          'rules_pkg/MODULE.bazel')
+    with open(module_bazel_path, encoding="utf-8") as inp:
+      want = 'version = "%s"' % self.version
+      content = inp.read()
+      if _VERBOSE:
+        print('=== Expect', want)
+      module_block_re = re.compile
+      m = re.search(
+          r"""module\([^)]+\)""",
+          content,
+          flags=re.MULTILINE|re.DOTALL)
+      self.assertTrue(m)
+      got = m.group()
+      self.assertIn(want, got, 'Expected <%s>, got <%s>' % (want, got))
 
   def testBuild(self):
     # Set up a fresh Bazel workspace using the currently build repo.

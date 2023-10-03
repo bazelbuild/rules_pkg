@@ -78,6 +78,7 @@ pkg_deb(
     ],
     description = "toto ®, Й, ק ,م, ๗, あ, 叶, 葉, 말, ü and é\n more",
     distribution = "trusty",
+    license = "Apache-2.0",
     maintainer = "soméone@somewhere.com",
     package = "fizzbuzz",
     preinst = "deb_preinst",
@@ -124,4 +125,26 @@ py_test(
     deps = [
         "//pkg/private/deb:make_deb_lib",
     ],
+)
+
+# Test case for expanding $(var) constructions and for using ctx.var directly
+pkg_deb(
+    name = "deb_using_ctxvar",
+    config = "config",
+    data = ":tar_input",
+    description = "Compiled with $(COMPILATION_MODE)",
+    #distribution = "trusty",
+    maintainer = "soméone@somewhere.com",
+    package = "fizzbuzz",
+    version = "7",
+    # This does not make sense for architecture, but for testing, compilation
+    # mode is more stable than cpu.
+    architecture = "$(COMPILATION_MODE)",
+)
+
+package_naming_test(
+    name = "expand_from_ctx_var",
+    # Heads up. If the default compilation mode ever changes this will break.
+    expected_name = "fizzbuzz_7_fastbuild.deb",
+    target_under_test = ":deb_using_ctxvar",
 )

@@ -15,14 +15,19 @@
 """Tests for pkg_tar."""
 
 # buildifier: disable=bzl-visibility
-load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//pkg:mappings.bzl", "pkg_attributes")
+load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
+load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("//tests/util:defs.bzl", "directory", "fake_artifact")
+load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-package(default_applicable_licenses = ["//:license"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
 
 py_test(
     name = "tar_writer_test",
@@ -111,12 +116,19 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_mklink(
+    name = "mylink",
+    link_name = "mylink",
+    target = "dangling",
+)
+
 pkg_tar(
     name = "test_tar_package_dir",
     srcs = [
         ":etc/nsswitch.conf",
+        ":mylink",
     ],
-    package_dir = "/package",
+    package_dir = "/my/package",
 )
 
 pkg_tar(
@@ -155,7 +167,6 @@ pkg_tar(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "//pkg/private/tar:build_tar",
     deps = [
         ":test-tar-basic-%s" % ext,
         ":test_tar_naming",
@@ -256,6 +267,25 @@ pkg_tar(
     ],
 )
 
+verify_archive_test(
+    name = "repackaging_long_filename_test",
+    target = ":test-tar-repackaging-long-filename",
+    must_contain = [
+        "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    # there is really no need for these cases. I just want to use all the test capabilities.
+    must_not_contain = [
+        "i_am_not here",
+    ],
+    must_contain_regex = [
+        ".*can_i_repackage_a_file_with_a_long_name/$",
+    ],
+    must_not_contain_regex = [
+        "^five.is.right.out",
+    ],
+    max_size = 2,
+)
+
 pkg_tar(
     name = "test-tar-tree-artifact",
     srcs = [
@@ -315,7 +345,9 @@ py_test(
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
+        ":test-tar-long-filename",
         ":test-tar-mtime.tar",
+        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
@@ -323,11 +355,13 @@ py_test(
         ":test-tar-strip_prefix-substring.tar",
         ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
-        ":test-tar-long-filename",
-        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
+        ":test-pkg-tar-with-attributes",
+        ":test-pkg-tar-from-pkg-files-with-attributes",
+        ":test-tree-input-with-strip-prefix",
+        ":test-remap-paths-tree-artifact",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -368,6 +402,37 @@ pkg_tar(
     extension = ".tar.gz",
 )
 
+pkg_files(
+    name = "test-pkg-files-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    attributes = pkg_attributes(
+        gid = 1000,
+        group = "grp",
+        mode = "0440",
+        uid = 0,
+        user = "person",
+    ),
+    prefix = "/foo/bar",
+)
+
+pkg_tar(
+    name = "test-pkg-tar-from-pkg-files-with-attributes",
+    srcs = [
+        ":test-pkg-files-with-attributes",
+    ],
+)
+
+pkg_tar(
+    name = "test-pkg-tar-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    owner = "0.1000",
+    package_dir = "/foo/bar",
+)
+
 pkg_tar(
     name = "test-tar-compression-from-extension-tgz",
     srcs = [
@@ -396,5 +461,89 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
+    ],
+)
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+    },
+    package_dir = "node_modules",
+)
+
+directory(
+    name = "tree_artifact_with_links",
+    contents = "hello there",
+    filenames = [
+        "foo/hello.txt",
+        "foo/bar/baz",
+    ],
+    links = {
+        "foo/bar/hello": "../hello.txt",
+        "foo/bar/alt_baz": "baz",
+        "foo/alt_baz": "bar/baz",
+    },
+)
+
+# This target has symlinks 3 ways.
+# - mklinks rules.
+# - source files that are symlinks
+# - tree artifacts
+pkg_tar(
+    name = "relative_links_tar",
+    srcs = [
+        ":node_modules",
+        ":tree_artifact_with_links",
+        "//tests:file_and_link",
+    ],
+)
+
+pkg_tar(
+    name = "relative_links_re_tar",
+    deps = [
+        ":relative_links_tar",
+    ],
+)
+
+directory(
+    name = "generate_tree_with_prefix",
+    contents = "hello there",
+    filenames = [
+        "a/a",
+        "a/b",
+    ],
+    outdir = "tree_prefix_to_strip",
+)
+
+pkg_tar(
+    name = "test-tree-input-with-strip-prefix",
+    srcs = [
+        ":generate_tree_with_prefix",
+    ],
+    strip_prefix = "tree_prefix_to_strip",
+)
+
+
+directory(
+    name = "tree_artifact_to_rename",
+    contents = "hello there",
+    filenames = [
+        "a",
+        "rename_me/should_not_rename"
+    ],
+    outdir = "rename_me",
+)
+
+pkg_tar(
+    name = "test-remap-paths-tree-artifact",
+    remap_paths = {
+        "/rename_me": "a_new_name",
+    },
+    srcs = [
+        ":tree_artifact_to_rename",
     ],
 )

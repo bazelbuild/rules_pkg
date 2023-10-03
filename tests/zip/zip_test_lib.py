@@ -80,6 +80,8 @@ class ZipContentsTestBase(ZipTest):
         elif "isexe" in expected:
           got_mode = (info.external_attr >> 16) & UNIX_RX_BITS
           self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
+        elif "size" in expected:
+          self.assertEqual(info.compress_size, expected["size"])
 
         else:
           if "attr" in expected:
@@ -87,8 +89,9 @@ class ZipContentsTestBase(ZipTest):
             if "attr_mask" in expected:
               attr &= expected.get("attr_mask")
           else:
-            # I would argue this is a dumb choice, but it matchs the
+            # I would argue this is a dumb choice, but it matches the
             # legacy rule implementation.
             attr = 0o555
           self.assertEqual(oct((info.external_attr >> 16) & UNIX_RWX_BITS),
-                           oct(attr))
+                           oct(attr),
+                           msg = info.filename)

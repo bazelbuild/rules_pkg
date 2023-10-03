@@ -26,15 +26,21 @@ bazel_skylib_workspace()
 #
 # Include dependencies which are only needed for development here.
 
+# Used to test invoking rules with targets in an external repo.
+local_repository(
+    name = "mappings_test_external_repo",
+    path = "tests/mappings/external_repo",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "platforms",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.5/platforms-0.0.5.tar.gz",
-        "https://github.com/bazelbuild/platforms/releases/download/0.0.5/platforms-0.0.5.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.7/platforms-0.0.7.tar.gz",
     ],
-    sha256 = "379113459b0feaf6bfbb584a91874c065078aa673222846ac765f86661c27407",
+    sha256 = "3a561c99e7bdbe9173aa653fd579fe849f1d8d67395780ab4770b1f381431d51",
 )
 
 # Find rpmbuild if it exists.
@@ -65,14 +71,3 @@ http_archive(
 load("@bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
-
-# TODO(nacl): remove this when the "new" framework is ready.
-local_repository(
-    name = "experimental_test_external_repo",
-    path = "pkg/experimental/tests/external_repo",
-)
-
-local_repository(
-    name = "mappings_test_external_repo",
-    path = "tests/mappings/external_repo",
-)

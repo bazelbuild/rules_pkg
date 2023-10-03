@@ -52,7 +52,9 @@ class PkgTarTest(unittest.TestCase):
             )
         self.assertLess(i, len(content), error_msg)
         for k, v in content[i].items():
-          if k == 'data':
+          if k == 'halt':
+            return
+          elif k == 'data':
             value = f.extractfile(info).read()
           elif k == 'isdir':
             value = info.isdir()
@@ -111,7 +113,10 @@ class PkgTarTest(unittest.TestCase):
         {'name': 'external/bazel_tools/tools'},
         {'name': 'external/bazel_tools/tools/python'},
         {'name': 'external/bazel_tools/tools/python/runfiles'},
-        {'name': 'external/bazel_tools/tools/python/runfiles/runfiles.py'},
+        # This is brittle. In old bazel the next file would be
+        # external/bazel_tools/tools/python/runfiles/runfiles.py, but there
+        # is now _runfiles_constants.py, first. So this is too brittle.
+        {'halt': None},
     ]
     self.assertTarFileContent('test-tar-strip_prefix-dot.tar', content)
 
@@ -252,6 +257,40 @@ class PkgTarTest(unittest.TestCase):
       {'name': './loremipsum.txt'},
     ]
     self.assertTarFileContent('test_tar_leading_dotslash.tar', content)
+
+
+  def test_pkg_tar_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': '', 'gname': ''},
+    ]
+    self.assertTarFileContent('test-pkg-tar-with-attributes.tar', content)
+
+  def test_pkg_files_with_attributes(self):
+    content = [
+      {'name': 'foo','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+      {'name': 'foo/bar/loremipsum.txt','uid': 0, 'gid': 1000, 'uname': 'person', 'gname': 'grp'},
+    ]
+    self.assertTarFileContent('test-pkg-tar-from-pkg-files-with-attributes.tar', content)
+
+  def test_tar_with_tree_artifact_and_strip_prefix(self):
+    content = [
+      {'name': 'a', 'isdir': True},
+      {'name': 'a/a'},
+      {'name': 'a/b'},
+    ]
+    self.assertTarFileContent('test-tree-input-with-strip-prefix.tar', content)
+
+  def test_remap_paths_tree_artifact(self):
+    content = [
+      {'name': 'a_new_name', 'isdir': True},
+      {'name': 'a_new_name/a'},
+      {'name': 'a_new_name/rename_me', 'isdir': True},
+      {'name': 'a_new_name/rename_me/should_not_rename'},
+    ]
+    self.assertTarFileContent('test-remap-paths-tree-artifact.tar', content)
 
 
 if __name__ == '__main__':
