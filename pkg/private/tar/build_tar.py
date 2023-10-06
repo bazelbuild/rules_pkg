@@ -316,11 +316,11 @@ class TarFile(object):
     if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
     elif entry.type == manifest.ENTRY_IS_DIR:
-      self.add_empty_dir(entry.dest, **attrs)
+      self.add_empty_dir(self.normalize_path(entry.dest), **attrs)
     elif entry.type == manifest.ENTRY_IS_TREE:
       self.add_tree(entry.src, entry.dest, **attrs)
     elif entry.type == manifest.ENTRY_IS_EMPTY_FILE:
-      self.add_empty_file(entry.dest, **attrs)
+      self.add_empty_file(self.normalize_path(entry.dest), **attrs)
     else:
       self.add_file(entry.src, entry.dest, **attrs)
 
