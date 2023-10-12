@@ -14,7 +14,7 @@
 """Rules for making .tar files."""
 
 load("//pkg:path.bzl", "compute_data_path", "dest_path")
-load("//pkg:providers.bzl", "PackageArtifactInfo", "PackageVariablesInfo")
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
@@ -120,6 +120,7 @@ def _pkg_tar_impl(ctx):
     # Start with all the pkg_* inputs
     for src in ctx.attr.srcs:
         if not process_src(
+            ctx,
             content_map,
             file_deps,
             src = src,
@@ -127,6 +128,8 @@ def _pkg_tar_impl(ctx):
             default_mode = None,
             default_user = None,
             default_group = None,
+            default_uid = None,
+            default_gid = None,
         ):
             src_files = src[DefaultInfo].files.to_list()
             if ctx.attr.include_runfiles:
@@ -138,15 +141,21 @@ def _pkg_tar_impl(ctx):
             # Add in the files of srcs which are not pkg_* types
             for f in src_files:
                 d_path = dest_path(f, data_path, data_path_without_prefix)
+
+                # Note: This extra remap is the bottleneck preventing this
+                # large block from being a utility method as shown below.
+                # Should we disallow mixing pkg_files in srcs with remap?
+                # I am fine with that if it makes the code more readable.
+                dest = _remap(remap_paths, d_path)
                 if f.is_directory:
-                    add_tree_artifact(content_map, d_path, f, src.label)
+                    add_tree_artifact(content_map, dest, f, src.label)
                 else:
                     # Note: This extra remap is the bottleneck preventing this
                     # large block from being a utility method as shown below.
                     # Should we disallow mixing pkg_files in srcs with remap?
                     # I am fine with that if it makes the code more readable.
                     dest = _remap(remap_paths, d_path)
-                    add_single_file(content_map, dest, f, src.label)
+                    add_single_file(ctx, content_map, dest, f, src.label)
 
     # TODO(aiuto): I want the code to look like this, but we don't have lambdas.
     # transform_path = lambda f: _remap(
@@ -161,6 +170,7 @@ def _pkg_tar_impl(ctx):
             fail("Each input must describe exactly one file.", attr = "files")
         file_deps.append(depset([target_files[0]]))
         add_single_file(
+            ctx,
             content_map,
             f_dest_path,
             target_files[0],
@@ -180,13 +190,14 @@ def _pkg_tar_impl(ctx):
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
     for empty_file in ctx.attr.empty_files:
-        add_empty_file(content_map, empty_file, ctx.label)
+        add_empty_file(ctx, content_map, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(content_map, empty_dir, ctx.label)
     for f in ctx.files.deps:
         args.add("--tar", f.path)
     for link in ctx.attr.symlinks:
         add_symlink(
+            ctx,
             content_map,
             link,
             ctx.attr.symlinks[link],
@@ -212,7 +223,7 @@ def _pkg_tar_impl(ctx):
         progress_message = "Writing: %s" % output_file.path,
         inputs = inputs,
         tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
-        executable = ctx.executable.build_tar,
+        executable = ctx.executable._build_tar,
         arguments = [args],
         outputs = [output_file],
         env = {
@@ -235,20 +246,18 @@ def _pkg_tar_impl(ctx):
         OutputGroupInfo(
             manifest = [manifest_file], 
         ),
-        PackageArtifactInfo(
-            label = ctx.label.name,
-            file = output_file,
-            file_name = output_name,
-        ),
     ]
 
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
     attrs = {
-        "strip_prefix": attr.string(),
+        "strip_prefix": attr.string(
+            doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)"""
+        ),
         "package_dir": attr.string(
-            doc = """Prefix to be prepend to all paths written."""
+            doc = """Prefix to be prepend to all paths written.
+The name may contain variables, same as [package_file_name](#package_file_name)""",
         ),
         "package_dir_file": attr.label(allow_single_file = True),
         "deps": attr.label_list(allow_files = tar_filetype),
@@ -273,10 +282,18 @@ pkg_tar_impl = rule(
 
         # Common attributes
         "out": attr.output(mandatory = True),
-        "package_file_name": attr.string(doc = "See Common Attributes"),
+        "package_file_name": attr.string(doc = "See [Common Attributes](#package_file_name)"),
         "package_variables": attr.label(
-            doc = "See Common Attributes",
+            doc = "See [Common Attributes](#package_variables)",
             providers = [PackageVariablesInfo],
+        ),
+        "allow_duplicates_with_different_content": attr.bool(
+            default=True,
+            doc="""If true, will allow you to reference multiple pkg_* which conflict
+(writing different content or metadata to the same destination).
+Such behaviour is always incorrect, but we provide a flag to support it in case old
+builds were accidentally doing it. Never explicitly set this to true for new code.
+"""
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:
@@ -292,14 +309,13 @@ pkg_tar_impl = rule(
         "private_stamp_detect": attr.bool(default = False),
 
         # Implicit dependencies.
-        "build_tar": attr.label(
+        "_build_tar": attr.label(
             default = Label("//pkg/private/tar:build_tar"),
             cfg = "exec",
             executable = True,
             allow_files = True,
         ),
     },
-    provides = [PackageArtifactInfo],
 )
 
 def pkg_tar(name, **kwargs):

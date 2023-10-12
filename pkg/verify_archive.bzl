@@ -69,10 +69,10 @@ _gen_verify_archive_test_main = rule(
             doc = """List of regexes that must not be in the archive.""",
         ),
         "min_size": attr.int(
-            doc = """Miniumn number of entries in the archive."""
+            doc = """Minimum number of entries in the archive."""
         ),
         "max_size": attr.int(
-            doc = """Miniumn number of entries in the archive."""
+            doc = """Maximum number of entries in the archive."""
         ),
 
         # Implicit dependencies.
@@ -115,14 +115,8 @@ def verify_archive_test(name, target,
     )
     py_test(
         name = name,
-        # Hey reviewer!!! What if we just added the source to the test lib
-        # here, so we would not have to make the library for that public?
         srcs = [":" + test_src],
         main = test_src,
         data = [target],
         python_version = "PY3",
-        deps = [
-            "//pkg:verify_archive_test_lib",
-            "@bazel_tools//tools/python/runfiles",
-        ],
     )

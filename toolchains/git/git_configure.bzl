@@ -48,7 +48,7 @@ _find_system_git = repository_rule(
     local = True,
     attrs = {
         "workspace_file": attr.label(
-            doc = "Referece to calling repository WORKSPACE file.",
+            doc = "Reference to calling repository WORKSPACE file.",
             allow_single_file = True,
             mandatory = True,
         ),

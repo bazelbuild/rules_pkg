@@ -78,7 +78,7 @@ created file, we can do that with a filegroup that specifies the specific
 output group containing that file.
 
 In the example below, `:deb` is a rule producing an explicit .deb output
-and an implict .changes output. We refer to the .changes file using the
+and an implicit .changes output. We refer to the .changes file using the
 `filegroup` and specifying the desired output group name. Then, any rule
 can use this `filegroup` as an input.
 

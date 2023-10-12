@@ -15,7 +15,8 @@
 """Tests for pkg_tar."""
 
 # buildifier: disable=bzl-visibility
-load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
+load("//pkg:mappings.bzl", "pkg_attributes")
+load("//pkg:mappings.bzl", "pkg_files", "pkg_mkdirs", "pkg_mklink", "strip_prefix")
 load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
@@ -105,10 +106,18 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_mkdirs(
+    name = "mydir",
+    dirs = [
+        "mydir",
+    ],
+)
+
 pkg_tar(
     name = "test_tar_package_dir_substitution",
     srcs = [
         ":BUILD",
+        ":mydir",
     ],
     package_dir = "level1/{label}/level3",
     package_variables = ":my_package_variables",
@@ -123,8 +132,8 @@ pkg_mklink(
 pkg_tar(
     name = "test_tar_package_dir",
     srcs = [
-        ":mylink",
         ":etc/nsswitch.conf",
+        ":mylink",
     ],
     package_dir = "/my/package",
 )
@@ -165,7 +174,6 @@ pkg_tar(
 
 [pkg_tar(
     name = "test-tar-inclusion-%s" % ext,
-    build_tar = "//pkg/private/tar:build_tar",
     deps = [
         ":test-tar-basic-%s" % ext,
         ":test_tar_naming",
@@ -343,7 +351,9 @@ py_test(
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
+        ":test-tar-long-filename",
         ":test-tar-mtime.tar",
+        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
         ":test-tar-strip_prefix-etc.tar",
@@ -351,12 +361,13 @@ py_test(
         ":test-tar-strip_prefix-substring.tar",
         ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
-        ":test-tar-long-filename",
-        ":test-tar-repackaging-long-filename.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
+        ":test-pkg-tar-with-attributes",
+        ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-tree-input-with-strip-prefix",
+        ":test-remap-paths-tree-artifact",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -395,6 +406,37 @@ pkg_tar(
         "//tests:testdata/loremipsum.txt",
     ],
     extension = ".tar.gz",
+)
+
+pkg_files(
+    name = "test-pkg-files-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    attributes = pkg_attributes(
+        gid = 1000,
+        group = "grp",
+        mode = "0440",
+        uid = 0,
+        user = "person",
+    ),
+    prefix = "/foo/bar",
+)
+
+pkg_tar(
+    name = "test-pkg-tar-from-pkg-files-with-attributes",
+    srcs = [
+        ":test-pkg-files-with-attributes",
+    ],
+)
+
+pkg_tar(
+    name = "test-pkg-tar-with-attributes",
+    srcs = [
+        "//tests:testdata/loremipsum.txt",
+    ],
+    owner = "0.1000",
+    package_dir = "/foo/bar",
 )
 
 pkg_tar(
@@ -489,4 +531,25 @@ pkg_tar(
         ":generate_tree_with_prefix",
     ],
     strip_prefix = "tree_prefix_to_strip",
+)
+
+
+directory(
+    name = "tree_artifact_to_rename",
+    contents = "hello there",
+    filenames = [
+        "a",
+        "rename_me/should_not_rename"
+    ],
+    outdir = "rename_me",
+)
+
+pkg_tar(
+    name = "test-remap-paths-tree-artifact",
+    remap_paths = {
+        "/rename_me": "a_new_name",
+    },
+    srcs = [
+        ":tree_artifact_to_rename",
+    ],
 )

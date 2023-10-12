@@ -14,6 +14,7 @@
 """A simple cross-platform helper to create a debian package."""
 
 import argparse
+from enum import Enum
 import gzip
 import hashlib
 import io
@@ -29,6 +30,8 @@ else:
   OrderedDict = dict
 
 from pkg.private import helpers
+
+Multiline = Enum('Multiline', ['NO', 'YES', 'YES_ADD_NEWLINE'])
 
 # list of debian fields : (name, mandatory, is_multiline[, default])
 # see http://www.debian.org/doc/debian-policy/ch-controlfields.html
@@ -118,7 +121,7 @@ def AddArFileEntry(fileobj, filename,
     fileobj.write(b'\n')  # 2-byte alignment padding
 
 
-def MakeDebianControlField(name: str, value: str, is_multiline:bool=False) -> str:
+def MakeDebianControlField(name: str, value: str, multiline:Multiline=Multiline.NO) -> str:
   """Add a field to a debian control file.
 
   https://www.debian.org/doc/debian-policy/ch-controlfields.html#syntax-of-control-files
@@ -132,15 +135,20 @@ def MakeDebianControlField(name: str, value: str, is_multiline:bool=False) -> st
   if isinstance(value, list):
     value = u', '.join(value)
   value = value.rstrip()
-  if not is_multiline:
+  if multiline == Multiline.NO:
     value = value.strip()
     if '\n' in value:
       raise ValueError(
           '\\n is not allowed in simple control fields (%s)' % value)
 
   lines = value.split('\n')
-  result = name + ': ' +lines[0].strip() + '\n'
-  for line in lines[1:]:
+  i = 0
+  if multiline != Multiline.YES_ADD_NEWLINE:
+    result = name + ': ' + lines[i].strip() + '\n'
+    i = 1
+  else:
+    result = name + ':\n'
+  for line in lines[i:]:
     if not line.startswith(' '):
       result += ' '
     result += line
@@ -155,10 +163,10 @@ def CreateDebControl(extrafiles=None, **kwargs):
   for values in DEBIAN_FIELDS:
     fieldname = values[0]
     mandatory = values[1]
-    is_multiline = values[2]
+    multiline = Multiline.YES if values[2] else Multiline.NO
     key = fieldname[0].lower() + fieldname[1:].replace('-', '')
     if mandatory or (key in kwargs and kwargs[key]):
-      controlfile += MakeDebianControlField(fieldname, kwargs[key], is_multiline)
+      controlfile += MakeDebianControlField(fieldname, kwargs[key], multiline)
   # Create the control.tar file
   tar = io.BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
@@ -190,6 +198,7 @@ def CreateDeb(output,
               templates=None,
               triggers=None,
               conffiles=None,
+              changelog=None,
               **kwargs):
   """Create a full debian package."""
   extrafiles = OrderedDict()
@@ -209,6 +218,8 @@ def CreateDeb(output,
     extrafiles['triggers'] = (triggers, 0o644)
   if conffiles:
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
+  if changelog:
+    extrafiles['changelog'] = (changelog, 0o644)
   control = CreateDebControl(extrafiles=extrafiles, **kwargs)
 
   # Write the final AR archive (the deb package)
@@ -280,7 +291,7 @@ def CreateChanges(output,
 
   changesdata = u''.join([
       MakeDebianControlField('Format', '1.8'),
-      MakeDebianControlField('Date', time.ctime(timestamp)),
+      MakeDebianControlField('Date', time.asctime(time.gmtime(timestamp))),
       MakeDebianControlField('Source', package),
       MakeDebianControlField('Binary', package),
       MakeDebianControlField('Architecture', architecture),
@@ -290,21 +301,27 @@ def CreateChanges(output,
       MakeDebianControlField('Maintainer', maintainer),
       MakeDebianControlField('Changed-By', maintainer),
       # The description in the changes file is strange
-      'Description:\n %s - %s\n' % (package, description.split('\n')[0]),
+      MakeDebianControlField('Description', (
+          '%s - %s\n') % (
+              package, description.split('\n')[0]),
+          multiline=Multiline.YES_ADD_NEWLINE),
       MakeDebianControlField('Changes', (
-          '\n %s (%s) %s; urgency=%s'
+          '%s (%s) %s; urgency=%s'
           '\n Changes are tracked in revision control.') % (
               package, version, distribution, urgency),
-          is_multiline=True),
+          multiline=Multiline.YES_ADD_NEWLINE),
       MakeDebianControlField(
-          'Files', '\n ' + ' '.join(
-              [checksums['md5'], debsize, section, priority, deb_basename])),
+          'Files', ' '.join(
+              [checksums['md5'], debsize, section, priority, deb_basename]),
+              multiline=Multiline.YES_ADD_NEWLINE),
       MakeDebianControlField(
           'Checksums-Sha1',
-          '\n ' + ' '.join([checksums['sha1'], debsize, deb_basename])),
+          ' '.join([checksums['sha1'], debsize, deb_basename]),
+          multiline=Multiline.YES_ADD_NEWLINE),
       MakeDebianControlField(
           'Checksums-Sha256',
-          '\n ' + ' '.join([checksums['sha256'], debsize, deb_basename]))
+          ' '.join([checksums['sha256'], debsize, deb_basename]),
+          multiline=Multiline.YES_ADD_NEWLINE)
   ])
   with open(output, 'wb') as changes_fh:
     changes_fh.write(changesdata.encode('utf-8'))
@@ -353,6 +370,9 @@ def main():
   parser.add_argument(
       '--conffile', action='append',
       help='List of conffiles (prefix item with @ to provide a path)')
+  parser.add_argument(
+      '--changelog',
+      help='The changelog file (prefix item with @ to provide a path).')
   AddControlFlags(parser)
   options = parser.parse_args()
 
@@ -367,6 +387,7 @@ def main():
       templates=helpers.GetFlagValue(options.templates, False),
       triggers=helpers.GetFlagValue(options.triggers, False),
       conffiles=GetFlagValues(options.conffile),
+      changelog=helpers.GetFlagValue(options.changelog, False),
       package=options.package,
       version=helpers.GetFlagValue(options.version),
       description=helpers.GetFlagValue(options.description),

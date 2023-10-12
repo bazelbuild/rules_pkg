@@ -28,13 +28,18 @@ def _pkg_install_script_impl(ctx):
     files_to_run = []
     content_map = {}
     for src in ctx.attr.srcs:
-        process_src(content_map,
-                    files_to_run,
-                    src = src,
-                    origin = src.label,
-                    default_mode = "0644",
-                    default_user = None,
-                    default_group = None)
+        process_src(
+            ctx,
+            content_map,
+            files_to_run,
+            src = src,
+            origin = src.label,
+            default_mode = "0644",
+            default_user = None,
+            default_group = None,
+            default_uid = None,
+            default_gid = None,
+        )
 
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-install-manifest.json")
 
@@ -87,7 +92,7 @@ _pkg_install_script = rule(
     doc = """Create an executable package installation script.
 
     The outputs of this rule are a single python script intended to be used as
-    an input to a `py_binary` target.  All files necesary to run the script are
+    an input to a `py_binary` target.  All files necessary to run the script are
     included as runfiles.
     """,
     implementation = _pkg_install_script_impl,

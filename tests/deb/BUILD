@@ -136,7 +136,7 @@ pkg_deb(
     package = "fizzbuzz",
     version = "7",
     # This does not make sense for architecture, but for testing, compilation
-    # mode is more stable thatn cpu.
+    # mode is more stable than cpu.
     architecture = "$(COMPILATION_MODE)",
 )
 

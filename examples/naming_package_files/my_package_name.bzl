@@ -71,12 +71,12 @@ def _names_from_toolchains_impl(ctx):
     return PackageVariablesInfo(values = values)
 
 #
-# Extracting variables from the toolchain to use in the pacakge name.
+# Extracting variables from the toolchain to use in the package name.
 #
 names_from_toolchains = rule(
     implementation = _names_from_toolchains_impl,
     # Going forward, the preferred way to depend on a toolchain through the
-    # toolchains atttribute. The current C++ toolchains, however, are still not
+    # toolchains attribute. The current C++ toolchains, however, are still not
     # using toolchain resolution, so we have to depend on the toolchain
     # directly.
     # TODO(https://github.com/bazelbuild/bazel/issues/7260): Delete the
