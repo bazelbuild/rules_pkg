@@ -182,7 +182,7 @@ def _package_naming_test_impl(ctx):
     # Try to find the expected files in the DefaultInfo.
     out_file_found = False
     rpm_file_found = False
-    changes_file_found = False if changes_file else True
+    changes_file_found = False
     default_name_found = False
 
     for f in target_under_test[DefaultInfo].files.to_list():
@@ -195,17 +195,17 @@ def _package_naming_test_impl(ctx):
         if f.basename == ctx.attr.expected_name:
             default_name_found = True
 
-    asserts.false(
-        env,
-        out_file_found,
-        "out component of OutputGroupInfo '{}' is not in DefaultInfo".format(out_file),
-    )
     asserts.true(
         env,
         rpm_file_found,
         "rpm component of OutputGroupInfo '{}' is not in DefaultInfo".format(rpm_file),
     )
-    asserts.true(
+    asserts.false(
+        env,
+        out_file_found,
+        "out component of OutputGroupInfo '{}' is not in DefaultInfo".format(out_file),
+    )
+    asserts.false(
         env,
         changes_file_found,
         "changes component of OutputGroupInfo '{}' is not in DefaultInfo".format(changes_file),
