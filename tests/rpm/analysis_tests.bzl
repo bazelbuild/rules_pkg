@@ -182,8 +182,9 @@ def _package_naming_test_impl(ctx):
     # Try to find the expected files in the DefaultInfo.
     out_file_found = False
     rpm_file_found = False
-    changes_file_found = False if changes_file else True
+    changes_file_found = False
     default_name_found = False
+
     for f in target_under_test[DefaultInfo].files.to_list():
         if f == out_file:
             out_file_found = True
@@ -191,20 +192,20 @@ def _package_naming_test_impl(ctx):
             rpm_file_found = True
         if f == changes_file:
             changes_file_found = True
-        elif f.basename == ctx.attr.expected_default_name and not default_name_found:
+        if f.basename == ctx.attr.expected_name:
             default_name_found = True
 
-    asserts.true(
-        env,
-        out_file_found,
-        "out component of OutputGroupInfo '{}' is not in DefaultInfo".format(out_file),
-    )
     asserts.true(
         env,
         rpm_file_found,
         "rpm component of OutputGroupInfo '{}' is not in DefaultInfo".format(rpm_file),
     )
-    asserts.true(
+    asserts.false(
+        env,
+        out_file_found,
+        "out component of OutputGroupInfo '{}' is not in DefaultInfo".format(out_file),
+    )
+    asserts.false(
         env,
         changes_file_found,
         "changes component of OutputGroupInfo '{}' is not in DefaultInfo".format(changes_file),
@@ -212,7 +213,7 @@ def _package_naming_test_impl(ctx):
     asserts.true(
         env,
         default_name_found,
-        "Expected package file with default name '{}' is not in DefaultInfo".format(ctx.attr.expected_default_name),
+        "Expected package file with default name '{}' is not in DefaultInfo".format(ctx.attr.expected_name),
     )
 
     return analysistest.end(env)
@@ -221,7 +222,6 @@ package_naming_test = analysistest.make(
     _package_naming_test_impl,
     attrs = {
         "expected_name": attr.string(),
-        "expected_default_name": attr.string(),
     },
 )
 
@@ -262,7 +262,6 @@ def _test_naming(name):
         name = name + "_no_extra",
         target_under_test = ":" + name + "_no_extra_rpm",
         expected_name = name + "_no_extra_rpm-1.0-1.noarch.rpm",
-        expected_default_name = name + "_no_extra_rpm" + ".rpm",
     )
 
     ##################################################
@@ -286,7 +285,6 @@ def _test_naming(name):
         name = name + "_with_different_name",
         target_under_test = ":" + name + "_with_different_name_rpm",
         expected_name = name + "-foo-bar.rpm",
-        expected_default_name = name + "_with_different_name_rpm" + ".rpm",
     )
 
     ##################################################
