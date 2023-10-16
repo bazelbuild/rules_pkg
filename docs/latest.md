@@ -259,8 +259,8 @@ Rules for making .tar files.
 ## pkg_tar
 
 <pre>
-pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>,
-             <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>,
+pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>,
+             <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>,
              <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>,
              <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, <a href="#pkg_tar-stamp">stamp</a>, <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
 </pre>
@@ -273,31 +273,30 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-build_tar">build_tar
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_tar-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="pkg_tar-build_tar"></a>build_tar |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | //pkg/private/tar:build_tar |
-| <a id="pkg_tar-compressor"></a>compressor |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_tar-compressor_args"></a>compressor_args |  -   | String | optional | "" |
-| <a id="pkg_tar-deps"></a>deps |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| <a id="pkg_tar-compressor"></a>compressor |  External tool which can compress the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| <a id="pkg_tar-compressor_args"></a>compressor_args |  Arg list for <code>compressor</code>.   | String | optional | "" |
+| <a id="pkg_tar-deps"></a>deps |  tar files which will be unpacked and repacked into the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-empty_dirs"></a>empty_dirs |  -   | List of strings | optional | [] |
 | <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
 | <a id="pkg_tar-extension"></a>extension |  -   | String | optional | "tar" |
-| <a id="pkg_tar-files"></a>files |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
+| <a id="pkg_tar-files"></a>files |  Obsolete. Do not use.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
 | <a id="pkg_tar-include_runfiles"></a>include_runfiles |  -   | Boolean | optional | False |
 | <a id="pkg_tar-mode"></a>mode |  -   | String | optional | "0555" |
 | <a id="pkg_tar-modes"></a>modes |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-mtime"></a>mtime |  -   | Integer | optional | -1 |
 | <a id="pkg_tar-out"></a>out |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_tar-owner"></a>owner |  -   | String | optional | "0.0" |
+| <a id="pkg_tar-owner"></a>owner |  Default numeric owner.group to apply to files when not set via pkg_attribures.   | String | optional | "0.0" |
 | <a id="pkg_tar-ownername"></a>ownername |  -   | String | optional | "." |
 | <a id="pkg_tar-ownernames"></a>ownernames |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-owners"></a>owners |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar-package_dir"></a>package_dir |  Prefix to be prepend to all paths written. The name may contain variables, same as [package_file_name](#package_file_name)   | String | optional | "" |
+| <a id="pkg_tar-package_dir"></a>package_dir |  Prefix to be prepend to all paths written.<br><br>            This is applied as a final step, while writing to the archive.             Any other attributes (e.g. symlinks) which specify a path, must do so relative to package_dir.             The value may contain variables. See [package_file_name](#package_file_name) for examples.   | String | optional | "" |
 | <a id="pkg_tar-package_dir_file"></a>package_dir_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar-package_file_name"></a>package_file_name |  See [Common Attributes](#package_file_name)   | String | optional | "" |
 | <a id="pkg_tar-package_variables"></a>package_variables |  See [Common Attributes](#package_variables)   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar-portable_mtime"></a>portable_mtime |  -   | Boolean | optional | True |
 | <a id="pkg_tar-private_stamp_detect"></a>private_stamp_detect |  -   | Boolean | optional | False |
 | <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar-srcs"></a>srcs |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| <a id="pkg_tar-srcs"></a>srcs |  Inputs which will become part of the tar archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional | 0 |
 | <a id="pkg_tar-strip_prefix"></a>strip_prefix |  (note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)   | String | optional | "" |
 | <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
@@ -582,6 +581,9 @@ pkg_mklink(<a href="#pkg_mklink-name">name</a>, <a href="#pkg_mklink-link_name">
 </pre>
 
 Create a symlink.
+
+Wraps [pkg_mklink_impl](#pkg_mklink_impl)
+
 
 **PARAMETERS**
 

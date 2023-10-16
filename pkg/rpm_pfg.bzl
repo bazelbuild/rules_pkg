@@ -675,7 +675,7 @@ def _pkg_rpm_impl(ctx):
     return [
         OutputGroupInfo(**output_groups),
         DefaultInfo(
-            files = depset(outputs),
+            files = depset([output_file]),
         ),
     ]
 

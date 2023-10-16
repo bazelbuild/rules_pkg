@@ -65,6 +65,7 @@ py_library(
     srcs = [
         "build_info.py",
     ],
+    imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
@@ -78,6 +79,7 @@ py_library(
         "__init__.py",
         "archive.py",
     ],
+    imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
@@ -91,6 +93,7 @@ py_library(
         "__init__.py",
         "helpers.py",
     ],
+    imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
@@ -101,6 +104,7 @@ py_library(
 py_library(
     name = "manifest",
     srcs = ["manifest.py"],
+    imports = ["../.."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )

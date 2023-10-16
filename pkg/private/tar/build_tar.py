@@ -70,7 +70,14 @@ class TarFile(object):
     # No path should ever come in with slashs on either end, but protect
     # against that anyway.
     dest = dest.strip('/')
-    if self.directory:
+    # This prevents a potential problem for users with both a prefix_dir and
+    # symlinks that also repeat the prefix_dir. The old behavior was that we
+    # would get just the symlink path. Now we are prefixing with the prefix,
+    # so you get the file in the wrong place.
+    # We silently de-dup that. If people come up with a real use case for
+    # the /a/b/a/b/rest... output we can start an issue and come up with a
+    # solution at that time.
+    if self.directory and not dest.startswith(self.directory):
       dest = self.directory + dest
     return dest
 

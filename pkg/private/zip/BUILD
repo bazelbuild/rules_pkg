@@ -48,6 +48,7 @@ exports_files(
 py_binary(
     name = "build_zip",
     srcs = ["build_zip.py"],
+    imports = ["../../.."],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

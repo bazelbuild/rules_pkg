@@ -84,6 +84,7 @@ py_test(
         "packaging_test.py",
         ":release_version.py",
     ],
+    imports = [".."],
     data = [
         "testdata/BUILD.tpl",
         ":distro",

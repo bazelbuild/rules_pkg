@@ -28,7 +28,7 @@ py_test(
     name = "source_date_epoch_insource",
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":rpm_sde_insource_data"],
-    env = {"TEST_RPM": "rpm_sde_insource.rpm"},
+    env = {"TEST_RPM": "rpm_sde_insource-1.1.1-2222.noarch.rpm"},
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
@@ -94,7 +94,7 @@ py_test(
     name = "source_date_epoch_from_file",
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":rpm_sde_fromfile_data"],
-    env = {"TEST_RPM": "rpm_sde_fromfile.rpm"},
+    env = {"TEST_RPM": "rpm_sde_fromfile-1.1.1-2222.noarch.rpm"},
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)

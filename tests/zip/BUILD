@@ -29,6 +29,7 @@ py_library(
     srcs = [
         "zip_test_lib.py",
     ],
+    imports = ["../.."],
     srcs_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
