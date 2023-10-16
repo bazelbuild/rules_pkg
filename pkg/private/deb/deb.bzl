@@ -16,7 +16,7 @@
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files")
 
-_tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz"]
+_tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz", "tar.zst"]
 
 def _pkg_deb_impl(ctx):
     """The implementation for the pkg_deb rule."""

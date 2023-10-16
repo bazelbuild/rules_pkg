@@ -195,6 +195,7 @@ class PkgTarTest(unittest.TestCase):
         {'name': 'level1/some_value'},
         {'name': 'level1/some_value/level3'},
         {'name': 'level1/some_value/level3/BUILD'},
+        {'name': 'level1/some_value/level3/mydir'},
     ]
     self.assertTarFileContent('test_tar_package_dir_substitution.tar', content)
 

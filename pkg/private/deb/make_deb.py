@@ -237,7 +237,7 @@ def CreateDeb(output,
       ext = 'tar.bz2'
     else:
       ext = '.'.join(ext)
-      if ext not in ['tar.bz2', 'tar.gz', 'tar.xz', 'tar.lzma']:
+      if ext not in ['tar.bz2', 'tar.gz', 'tar.xz', 'tar.lzma', 'tar.zst']:
         ext = 'tar'
     data_size = os.stat(data).st_size
     with open(data, 'rb') as datafile:
