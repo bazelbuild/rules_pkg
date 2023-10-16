@@ -45,6 +45,7 @@ exports_files(
 py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
+    imports = ["../../.."],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
@@ -62,6 +63,7 @@ py_library(
     srcs = [
         "tar_writer.py",
     ],
+    imports = ["../../.."],
     srcs_version = "PY3",
     visibility = [
         "//tests:__subpackages__",

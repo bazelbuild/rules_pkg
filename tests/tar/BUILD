@@ -34,6 +34,7 @@ py_test(
     srcs = [
         "tar_writer_test.py",
     ],
+    imports = ["../.."],
     data = [
         ":compressor",
         ":test_tar_compression",
@@ -347,6 +348,7 @@ py_test(
     srcs = [
         "pkg_tar_test.py",
     ],
+    imports = ["../.."],
     data = [
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
