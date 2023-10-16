@@ -35,6 +35,7 @@ package(default_applicable_licenses = ["//:license"])
 py_library(
     name = "manifest_test_lib",
     srcs = ["manifest_test_lib.py"],
+    imports = ["../.."],
     srcs_version = "PY3",
     deps = [
         "@bazel_tools//tools/python/runfiles",
