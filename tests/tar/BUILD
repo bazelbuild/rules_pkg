@@ -277,21 +277,21 @@ pkg_tar(
 
 verify_archive_test(
     name = "repackaging_long_filename_test",
-    target = ":test-tar-repackaging-long-filename",
+    max_size = 2,
     must_contain = [
         "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
+    ],
+    must_contain_regex = [
+        ".*can_i_repackage_a_file_with_a_long_name/$",
     ],
     # there is really no need for these cases. I just want to use all the test capabilities.
     must_not_contain = [
         "i_am_not here",
     ],
-    must_contain_regex = [
-        ".*can_i_repackage_a_file_with_a_long_name/$",
-    ],
     must_not_contain_regex = [
         "^five.is.right.out",
     ],
-    max_size = 2,
+    target = ":test-tar-repackaging-long-filename",
 )
 
 pkg_tar(
@@ -350,6 +350,9 @@ py_test(
     ],
     imports = ["../.."],
     data = [
+        ":test-pkg-tar-from-pkg-files-with-attributes",
+        ":test-pkg-tar-with-attributes",
+        ":test-remap-paths-tree-artifact",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
@@ -361,15 +364,12 @@ py_test(
         ":test-tar-strip_prefix-etc.tar",
         ":test-tar-strip_prefix-none.tar",
         ":test-tar-strip_prefix-substring.tar",
-        ":test_tar_leading_dotslash",
-        ":test_tar_package_dir_substitution.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
         ":test-tar-with-runfiles",
-        ":test-pkg-tar-with-attributes",
-        ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-tree-input-with-strip-prefix",
-        ":test-remap-paths-tree-artifact",
+        ":test_tar_leading_dotslash",
+        ":test_tar_package_dir_substitution.tar",
         "//tests:testdata/tar_test.tar",
         "//tests:testdata/tar_test.tar.bz2",
         "//tests:testdata/tar_test.tar.gz",
@@ -472,51 +472,6 @@ py_test(
     ],
 )
 
-link_tree(
-    name = "node_modules",
-    links = {
-        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
-        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
-        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
-        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
-    },
-    package_dir = "node_modules",
-)
-
-directory(
-    name = "tree_artifact_with_links",
-    contents = "hello there",
-    filenames = [
-        "foo/hello.txt",
-        "foo/bar/baz",
-    ],
-    links = {
-        "foo/bar/hello": "../hello.txt",
-        "foo/bar/alt_baz": "baz",
-        "foo/alt_baz": "bar/baz",
-    },
-)
-
-# This target has symlinks 3 ways.
-# - mklinks rules.
-# - source files that are symlinks
-# - tree artifacts
-pkg_tar(
-    name = "relative_links_tar",
-    srcs = [
-        ":node_modules",
-        ":tree_artifact_with_links",
-        "//tests:file_and_link",
-    ],
-)
-
-pkg_tar(
-    name = "relative_links_re_tar",
-    deps = [
-        ":relative_links_tar",
-    ],
-)
-
 directory(
     name = "generate_tree_with_prefix",
     contents = "hello there",
@@ -535,23 +490,120 @@ pkg_tar(
     strip_prefix = "tree_prefix_to_strip",
 )
 
-
 directory(
     name = "tree_artifact_to_rename",
     contents = "hello there",
     filenames = [
         "a",
-        "rename_me/should_not_rename"
+        "rename_me/should_not_rename",
     ],
     outdir = "rename_me",
 )
 
 pkg_tar(
     name = "test-remap-paths-tree-artifact",
-    remap_paths = {
-        "/rename_me": "a_new_name",
-    },
     srcs = [
         ":tree_artifact_to_rename",
     ],
+    remap_paths = {
+        "/rename_me": "a_new_name",
+    },
+)
+
+#
+# Test with symlinks
+#
+
+link_tree(
+    name = "node_modules",
+    links = {
+        "foo": ".pnpm/foo@1.0.0/node_modules/foo",
+        ".pnpm/bar@1.0.0/node_modules/bar": "STORE/bar",
+        ".pnpm/foo@1.0.0/node_modules/foo": "STORE/foo",
+        ".pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+    },
+    package_dir = "node_modules",
+)
+
+directory(
+    name = "tree_artifact_with_links",
+    contents = "hello there",
+    filenames = [
+        "foo/hello.txt",
+        "foo/bar/baz",
+    ],
+    # TODO(https://github.com/bazelbuild/rules_pkg/issues/750)
+    #links = {
+    #    "foo/bar/hello": "../hello.txt",
+    #    "foo/bar/alt_baz": "baz",
+    #    "foo/alt_baz": "bar/baz",
+    #},
+)
+
+# This target has symlinks 3 ways.
+# - mklinks rules.
+# - source files that are symlinks
+# - tree artifacts
+pkg_tar(
+    name = "relative_links_tar",
+    srcs = [
+        ":node_modules",
+        ":tree_artifact_with_links",
+        "//tests:file_and_link",
+    ],
+    symlinks = {
+        "tree_artifact/toss_in_another": "/foo",
+    },
+)
+
+verify_archive_test(
+    name = "relative_links_test",
+    min_size = 10,
+    must_contain = [
+        "BUILD",
+        "outer_BUILD",
+        "node_modules/.pnpm/bar@1.0.0/node_modules/bar",
+    ],
+    tags = ["nowindows"],
+    target = ":relative_links_tar",
+    verify_links = {
+        "node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        "tree_artifact/toss_in_another": "/foo",
+    },
+)
+
+pkg_tar(
+    name = "relative_links_re_tar",
+    package_dir = "new/base",
+    symlinks = {
+        # We expect package_dir to apply to this
+        "tree_artifact/toss_in_another": "some_target",
+        # But we protect the user from duplicationg package_dir in their
+        # link. That was the old behavior of symlink.
+        "new/base/something/this": "that",
+    },
+    deps = [
+        ":relative_links_tar",
+    ],
+)
+
+verify_archive_test(
+    name = "relative_links_re_test",
+    min_size = 10,
+    must_contain = [
+        "new/base/BUILD",
+        "new/base/outer_BUILD",
+        "new/base/node_modules/.pnpm/bar@1.0.0/node_modules/bar",
+    ],
+    must_not_contain = [
+        "BUILD",
+        "new/base/new/base/something/this",
+    ],
+    tags = ["nowindows"],
+    target = ":relative_links_re_tar",
+    verify_links = {
+        "new/base/node_modules/.pnpm/foo@1.0.0/node_modules/bar": "../../bar@1.0.0/node_modules/bar",
+        "new/base/tree_artifact/toss_in_another": "some_target",
+        "new/base/something/this": "that",
+    },
 )
