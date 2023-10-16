@@ -16,7 +16,7 @@
 
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_attributes")
-load("//pkg:mappings.bzl", "pkg_files", "pkg_mklink", "strip_prefix")
+load("//pkg:mappings.bzl", "pkg_files", "pkg_mkdirs", "pkg_mklink", "strip_prefix")
 load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
@@ -106,10 +106,18 @@ pkg_tar(
     package_variables = ":my_package_variables",
 )
 
+pkg_mkdirs(
+    name = "mydir",
+    dirs = [
+        "mydir",
+    ],
+)
+
 pkg_tar(
     name = "test_tar_package_dir_substitution",
     srcs = [
         ":BUILD",
+        ":mydir",
     ],
     package_dir = "level1/{label}/level3",
     package_variables = ":my_package_variables",
