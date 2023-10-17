@@ -280,7 +280,7 @@ pkg_tar_impl = rule(
         "mtime": attr.int(default = _DEFAULT_MTIME),
         "portable_mtime": attr.bool(default = True),
         "owner": attr.string(
-            doc = """Default numeric owner.group to apply to files when not set via pkg_attribures.""",
+            doc = """Default numeric owner.group to apply to files when not set via pkg_attributes.""",
             default = "0.0",
         ),
         "ownername": attr.string(default = "."),
