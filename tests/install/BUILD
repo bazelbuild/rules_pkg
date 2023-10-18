@@ -23,6 +23,7 @@ py_test(
     name = "install_test",
     srcs = ["test.py"],
     args = ["-v"],
+    imports = ["../.."],
     data = [
         ":test_installer",
     ],

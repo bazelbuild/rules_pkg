@@ -96,6 +96,7 @@ py_test(
     srcs = [
         "pkg_deb_test.py",
     ],
+    imports = ["../.."],
     data = [
         # The target includes both the .deb and .changes files in DefaultInfo
         ":test_deb",
@@ -119,6 +120,7 @@ py_test(
     srcs = [
         "control_field_test.py",
     ],
+    imports = ["../.."],
     python_version = "PY3",
     deps = [
         "//pkg/private/deb:make_deb_lib",

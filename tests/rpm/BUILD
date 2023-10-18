@@ -151,7 +151,7 @@ pkg_rpm(
 
 # Just like the above one, except the compression is changed.
 pkg_rpm(
-    name = "test_rpm-bzip2",
+    name = "test_rpm_bzip2",
     srcs = [
         ":test_pfg",
     ],
@@ -305,7 +305,7 @@ sh_library(
     testonly = True,
     srcs = [
         ":test_rpm",
-        ":test_rpm-bzip2",
+        ":test_rpm_bzip2",
         ":test_rpm_direct",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
@@ -373,6 +373,7 @@ diff_test(
 py_library(
     name = "rpm_util",
     srcs = ["rpm_util.py"],
+    imports = ["../.."],
     visibility = [":__subpackages__"],
 )
 

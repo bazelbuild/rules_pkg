@@ -23,7 +23,6 @@ The execution time is O(# expected patterns * size of archive).
 
 load("@rules_python//python:defs.bzl", "py_test")
 
-
 def _gen_verify_archive_test_main_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._template,
@@ -38,6 +37,7 @@ def _gen_verify_archive_test_main_impl(ctx):
             "${MUST_NOT_CONTAIN_REGEX}": str(ctx.attr.must_not_contain_regex),
             "${MIN_SIZE}": str(ctx.attr.min_size),
             "${MAX_SIZE}": str(ctx.attr.max_size),
+            "${VERIFY_LINKS}": str(ctx.attr.verify_links),
         },
     )
     return [
@@ -55,7 +55,6 @@ _gen_verify_archive_test_main = rule(
             allow_single_file = True,
             mandatory = True,
         ),
-
         "must_contain": attr.string_list(
             doc = "List of paths which all must appear in the archive.",
         ),
@@ -69,10 +68,13 @@ _gen_verify_archive_test_main = rule(
             doc = """List of regexes that must not be in the archive.""",
         ),
         "min_size": attr.int(
-            doc = """Minimum number of entries in the archive."""
+            doc = """Minimum number of entries in the archive.""",
         ),
         "max_size": attr.int(
-            doc = """Maximum number of entries in the archive."""
+            doc = """Maximum number of entries in the archive.""",
+        ),
+        "verify_links": attr.string_dict(
+            doc = """Dict keyed by paths which must appear, and be symlinks to their values.""",
         ),
 
         # Implicit dependencies.
@@ -83,10 +85,17 @@ _gen_verify_archive_test_main = rule(
     },
 )
 
-def verify_archive_test(name, target,
-                        must_contain=None, must_contain_regex=None,
-                        must_not_contain=None, must_not_contain_regex=None,
-                        min_size=1, max_size=-1):
+def verify_archive_test(
+        name,
+        target,
+        must_contain = None,
+        must_contain_regex = None,
+        must_not_contain = None,
+        must_not_contain_regex = None,
+        min_size = 1,
+        max_size = -1,
+        tags = None,
+        verify_links = None):
     """Tests that an archive contains specific file patterns.
 
     This test is used to verify that an archive contains the expected content.
@@ -99,12 +108,14 @@ def verify_archive_test(name, target,
       must_not_contain_regex: A list of path regexes which must not appear in the archive.
       min_size: The minimum number of entries which must be in the archive.
       max_size: The maximum number of entries which must be in the archive.
+      tags: standard meaning
+      verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
     """
-    test_src = name + "__internal_main.py" 
+    test_src = name + "__internal_main.py"
     _gen_verify_archive_test_main(
         name = name + "_internal_main",
         target = target,
-        test_name = name.replace('-', '_') + "Test",
+        test_name = name.replace("-", "_") + "Test",
         out = test_src,
         must_contain = must_contain,
         must_contain_regex = must_contain_regex,
@@ -112,6 +123,8 @@ def verify_archive_test(name, target,
         must_not_contain_regex = must_not_contain_regex,
         min_size = min_size,
         max_size = max_size,
+        tags = tags,
+        verify_links = verify_links,
     )
     py_test(
         name = name,
