@@ -710,7 +710,7 @@ pkg_rpm = rule(
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
     This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
-    include both. If you need downstream rule to specificially depend on only the .rpm or
+    include both. If you need downstream rule to specifically depend on only the .rpm or
     .changes file then you can use `filegroup` to select distinct output groups.
 
     **OutputGroupInfo**

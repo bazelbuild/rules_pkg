@@ -18,6 +18,10 @@ All interfaces are subject to change at any time.
 
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
+package(
+    default_applicable_licenses = ["//:license"],
+)
+
 licenses(["notice"])
 
 filegroup(
