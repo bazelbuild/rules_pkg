@@ -18,7 +18,6 @@ load("//pkg/releasing:defs.bzl", "print_rel_notes")
 load("//pkg/releasing:git.bzl", "git_changelog")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 package(
     default_applicable_licenses = ["//:license"],
