@@ -91,9 +91,11 @@ tasks:
     <<: *rolling
   rolling_macos:
     name: rolling_macos
-    <<: *macos
     # It seems there is no rolling Bazel for macos.
     bazel: last_green
+    <<: *macos
+    test_targets:
+      - "-//distro:*"
   rolling_windows:
     name: rolling_windows
     <<: *windows
