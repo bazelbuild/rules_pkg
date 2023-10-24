@@ -91,9 +91,13 @@ tasks:
     <<: *rolling
   rolling_macos:
     name: rolling_macos
-    <<: *macos
     # It seems there is no rolling Bazel for macos.
+    platform: macos
     bazel: last_green
+    <<: *common
+    test_targets:
+      - "//tests/..."
+      - "-//tests/rpm/..."
   rolling_windows:
     name: rolling_windows
     <<: *windows
