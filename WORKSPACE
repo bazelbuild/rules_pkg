@@ -18,10 +18,6 @@ load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
