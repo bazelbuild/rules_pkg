@@ -18,6 +18,10 @@ load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
@@ -83,7 +87,3 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolch
 rules_cc_dependencies()
 
 rules_cc_toolchains()
-
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
