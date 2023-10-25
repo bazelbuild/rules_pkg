@@ -19,54 +19,11 @@ import unittest
 
 from bazel_tools.tools.python.runfiles import runfiles
 from pkg.private.tar import tar_writer
-from tests.tar import compressor
+from tests.tar import compressor, helper
 
 
 class TarFileWriterTest(unittest.TestCase):
   """Testing for TarFileWriter class."""
-
-  def assertTarFileContent(self, tar, content):
-    """Assert that tarfile contains exactly the entry described by `content`.
-
-    Args:
-        tar: the path to the TAR file to test.
-        content: an array describing the expected content of the TAR file.
-            Each entry in that list should be a dictionary where each field
-            is a field to test in the corresponding TarInfo. For
-            testing the presence of a file "x", then the entry could simply
-            be `{"name": "x"}`, the missing field will be ignored. To match
-            the content of a file entry, use the key "data".
-    """
-    got_names = []
-    with tarfile.open(tar, "r:*") as f:
-      for current in f:
-        got_names.append(getattr(current, "name"))
-
-    with tarfile.open(tar, "r:*") as f:
-      i = 0
-      for current in f:
-        error_msg = "Extraneous file at end of archive %s: %s" % (
-            tar,
-            current.name
-            )
-        self.assertLess(i, len(content), error_msg)
-        for k, v in content[i].items():
-          if k == "data":
-            value = f.extractfile(current).read()
-          elif k == "name" and os.name == "nt":
-            value = getattr(current, k).replace("\\", "/")
-          else:
-            value = getattr(current, k)
-          error_msg = " ".join([
-              "Value `%s` for key `%s` of file" % (value, k),
-              "%s in archive %s does" % (current.name, tar),
-              "not match expected value `%s`" % v
-              ])
-          error_msg += str(got_names)
-          self.assertEqual(value, v, error_msg)
-        i += 1
-      if i < len(content):
-        self.fail("Missing file %s in archive %s" % (content[i], tar))
 
   def setUp(self):
     super(TarFileWriterTest, self).setUp()
@@ -81,7 +38,7 @@ class TarFileWriterTest(unittest.TestCase):
   def testEmptyTarFile(self):
     with tar_writer.TarFileWriter(self.tempfile):
       pass
-    self.assertTarFileContent(self.tempfile, [])
+    helper.assertTarFileContent(self, self.tempfile, [])
 
   def assertSimpleFileContent(self, names):
     with tar_writer.TarFileWriter(self.tempfile) as f:
@@ -92,7 +49,7 @@ class TarFileWriterTest(unittest.TestCase):
                  "size": len(n.encode("utf-8")),
                  "data": n.encode("utf-8")}
                 for n in names])
-    self.assertTarFileContent(self.tempfile, content)
+    helper.assertTarFileContent(self, self.tempfile, content)
 
   def testAddFile(self):
     self.assertSimpleFileContent(["./a"])
@@ -118,7 +75,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "..e"},
         {"name": ".f"}
     ]
-    self.assertTarFileContent(self.tempfile, content)
+    helper.assertTarFileContent(self, self.tempfile, content)
 
   def testMergeTar(self):
     content = [
@@ -130,7 +87,7 @@ class TarFileWriterTest(unittest.TestCase):
         datafile = self.data_files.Rlocation(
             "rules_pkg/tests/testdata/tar_test.tar" + ext)
         f.add_tar(datafile, name_filter=lambda n: n != "./b")
-      self.assertTarFileContent(self.tempfile, content)
+      helper.assertTarFileContent(self, self.tempfile, content)
 
   def testMergeTarRelocated(self):
     content = [
@@ -142,7 +99,7 @@ class TarFileWriterTest(unittest.TestCase):
       datafile = self.data_files.Rlocation(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
-    self.assertTarFileContent(self.tempfile, content)
+    helper.assertTarFileContent(self, self.tempfile, content)
 
   def testDefaultMtimeNotProvided(self):
     with tar_writer.TarFileWriter(self.tempfile) as f:
@@ -182,7 +139,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "d", "mode": 0o755},
         {"name": "d/f"},
     ]
-    self.assertTarFileContent(self.tempfile, content)
+    helper.assertTarFileContent(self, self.tempfile, content)
 
   def testAddingDirectoriesForFileManually(self):
     with tar_writer.TarFileWriter(self.tempfile) as f:
@@ -208,7 +165,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "x/y", "mode": 0o755},
         {"name": "x/y/f"},
     ]
-    self.assertTarFileContent(self.tempfile, content)
+    helper.assertTarFileContent(self, self.tempfile, content)
 
   def testPackageDirAttribute(self):
     """Tests package_dir of pkg_tar."""
@@ -220,7 +177,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "my/package/mylink"},
         {"name": "my/package/nsswitch.conf"},
     ]
-    self.assertTarFileContent(package_dir, expected_content)
+    helper.assertTarFileContent(self, package_dir, expected_content)
 
   def testPackageDirFileAttribute(self):
     """Tests package_dir_file attributes of pkg_tar."""
@@ -230,7 +187,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "package"},
         {"name": "package/nsswitch.conf"},
     ]
-    self.assertTarFileContent(package_dir_file, expected_content)
+    helper.assertTarFileContent(self, package_dir_file, expected_content)
 
   def testCustomCompression(self):
     original = self.data_files.Rlocation(
@@ -245,8 +202,8 @@ class TarFileWriterTest(unittest.TestCase):
     expected_content = [
         {"name": "./" + x, "data": x.encode("utf-8")} for x in ["a", "b", "ab"]
     ]
-    self.assertTarFileContent(original, expected_content)
-    self.assertTarFileContent(self.tempfile, expected_content)
+    helper.assertTarFileContent(self, original, expected_content)
+    helper.assertTarFileContent(self, self.tempfile, expected_content)
 
 
 if __name__ == "__main__":
