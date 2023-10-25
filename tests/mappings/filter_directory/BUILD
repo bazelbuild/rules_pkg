@@ -227,7 +227,7 @@ directory(
 py_test(
     name = "negative_tests",
     srcs = ["test_filter_directory.py"],
-    imports = ["../../.."],
+    imports = ["../../..", "../../../.."],
     data = ["//pkg:filter_directory"],
     main = "test_filter_directory.py",
     deps = ["@rules_python//python/runfiles"],
