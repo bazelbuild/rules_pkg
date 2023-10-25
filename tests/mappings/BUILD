@@ -28,7 +28,7 @@ load(
     "strip_prefix",
 )
 load("//tests/util:defs.bzl", "directory", "link_tree", "write_content_manifest")
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_applicable_licenses = ["//:license"])
 
