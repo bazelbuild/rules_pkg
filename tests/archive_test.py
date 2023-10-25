@@ -15,7 +15,7 @@
 
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
+from rules_python.python.runfiles import runfiles
 from pkg.private import archive
 
 

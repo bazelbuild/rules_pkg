@@ -75,7 +75,7 @@ py_test(
     srcs = [
         "archive_test.py",
     ],
-    imports = [".."],
+    imports = ["..", "../.."],
     data = [
         "//tests:testdata/empty.ar",
         "//tests:testdata/a_ab.ar",
@@ -89,7 +89,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "//pkg/private:archive",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -208,7 +208,6 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        # "@bazel_tools//tools/python/runfiles",
         "@rules_python//python/runfiles",
     ],
 )
