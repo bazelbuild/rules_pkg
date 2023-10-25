@@ -208,7 +208,8 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        # "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 

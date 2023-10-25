@@ -19,7 +19,8 @@ import time
 import unittest
 import zipfile
 
-from bazel_tools.tools.python.runfiles import runfiles
+# from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 # keep in sync with archive.py
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
