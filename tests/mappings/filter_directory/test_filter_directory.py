@@ -24,7 +24,6 @@ import sys
 import tempfile
 import unittest
 
-# from rules_python.python.runfiles import runfiles
 from python.runfiles import runfiles
 
 # Get the filter_directory script into the import path.  There might be a

@@ -17,7 +17,8 @@
 import json
 import os
 import unittest
-from rules_python.python.runfiles import runfiles
+
+from python.runfiles import runfiles
 
 DIRECTORY_ROOT = "%DIRECTORY_ROOT%"
 # This is JSON, which shouldn't have any triple quotes in it.
