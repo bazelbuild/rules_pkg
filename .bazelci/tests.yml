@@ -91,6 +91,8 @@ tasks:
     <<: *rolling
   rolling_macos:
     name: rolling_macos
+    shell_commands:
+      - bazelisk clean --expunge
     # It seems there is no rolling Bazel for macos.
     platform: macos
     bazel: last_green
