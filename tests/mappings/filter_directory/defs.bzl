@@ -66,6 +66,7 @@ def inspect_directory_test(name, directory, expected_structure, **kwargs):
     py_test(
         name = name,
         srcs = [":" + script_name],
+        imports = ["../../../"],
         main = ":" + script_name + ".py",
         data = [name + "_dir_lib"],
         deps = ["@rules_python//python/runfiles"],
