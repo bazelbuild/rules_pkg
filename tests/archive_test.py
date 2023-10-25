@@ -15,7 +15,7 @@
 
 import unittest
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 from pkg.private import archive
 
 

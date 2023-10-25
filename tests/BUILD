@@ -75,7 +75,7 @@ py_test(
     srcs = [
         "archive_test.py",
     ],
-    imports = ["..", "../.."],
+    imports = [".."],
     data = [
         "//tests:testdata/empty.ar",
         "//tests:testdata/a_ab.ar",
