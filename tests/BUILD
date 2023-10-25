@@ -13,6 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_python//python:defs.bzl", "py_test")
 load(":my_package_name.bzl", "my_package_naming")
 load(":path_test.bzl", "path_tests")
