@@ -20,5 +20,5 @@ tasks:
     name: bzlmod
     platform: ubuntu1804
     build_flags:
-      - "--experimental_enable_bzlmod"
+      - "--enable_bzlmod"
     <<: *common

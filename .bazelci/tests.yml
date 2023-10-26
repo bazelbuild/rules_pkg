@@ -89,15 +89,18 @@ tasks:
     name: rolling_ubuntu
     <<: *ubuntu
     <<: *rolling
+  rolling_ubuntu_bzlmod:
+    name: rolling_ubuntu_bzlmod
+    build_flags:
+      - "--enable_bzlmod"
+    <<: *ubuntu
+    <<: *rolling
   rolling_macos:
     name: rolling_macos
     # It seems there is no rolling Bazel for macos.
-    platform: macos
     bazel: last_green
+    <<: *macos
     <<: *common
-    test_targets:
-      - "//tests/..."
-      - "-//tests/rpm/..."
   rolling_windows:
     name: rolling_windows
     <<: *windows
