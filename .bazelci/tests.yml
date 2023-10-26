@@ -91,6 +91,7 @@ tasks:
     <<: *rolling
   rolling_ubuntu_bzlmod:
     name: rolling_ubuntu_bzlmod
+    platform: ubuntu1804
     build_flags:
       - "--enable_bzlmod"
     <<: *common
