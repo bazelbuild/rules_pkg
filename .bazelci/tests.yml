@@ -98,7 +98,7 @@ tasks:
     <<: *rolling
     <<: *default_tests
   rolling_macos:
-    name: rolling_macos
+    name: rolling_macos_no_bzlmod
     # It seems there is no rolling Bazel for macos.
     bazel: last_green
     # bzlmod on macos seems to totally break python runfiles
