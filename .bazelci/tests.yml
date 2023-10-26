@@ -93,6 +93,8 @@ tasks:
     name: rolling_macos
     build_flags:
       - "--noenable_bzlmod"
+    test_flags:
+      - "--noenable_bzlmod"
     # It seems there is no rolling Bazel for macos.
     platform: macos
     bazel: last_green
