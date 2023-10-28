@@ -16,7 +16,7 @@
 import json
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 class ContentManifestTest(unittest.TestCase):
   """Test harness to see if we wrote the content manifest correctly."""

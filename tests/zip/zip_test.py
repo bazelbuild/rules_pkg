@@ -19,7 +19,7 @@ import sys
 import unittest
 import zipfile
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 from tests.zip import zip_test_lib
 
 HELLO_CRC = 2069210904

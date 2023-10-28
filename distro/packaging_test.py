@@ -19,7 +19,7 @@ import re
 import subprocess
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 from pkg.releasing import release_tools
 from distro import release_version
 
