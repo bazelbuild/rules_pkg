@@ -17,7 +17,7 @@ import os
 import tarfile
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 from pkg.private.tar import tar_writer
 from tests.tar import compressor
 

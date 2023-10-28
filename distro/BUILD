@@ -97,7 +97,7 @@ py_test(
     ],
     deps = [
         "//pkg/releasing:release_utils",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
