@@ -14,7 +14,7 @@
 
 import unittest
 
-import release_tools
+from pkg.releasing import release_tools
 
 
 class ReleaseToolsTest(unittest.TestCase):
