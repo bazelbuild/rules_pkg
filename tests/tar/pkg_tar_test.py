@@ -16,7 +16,7 @@
 import tarfile
 import unittest
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 from pkg.private.tar import tar_writer
 
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
@@ -109,12 +109,11 @@ class PkgTarTest(unittest.TestCase):
         {'name': 'etc'},
         {'name': 'etc/nsswitch.conf'},
         {'name': 'external'},
-        {'name': 'external/bazel_tools'},
-        {'name': 'external/bazel_tools/tools'},
-        {'name': 'external/bazel_tools/tools/python'},
-        {'name': 'external/bazel_tools/tools/python/runfiles'},
+        {'name': 'external/rules_python'},
+        {'name': 'external/rules_python/python'},
+        {'name': 'external/rules_python/python/runfiles'},
         # This is brittle. In old bazel the next file would be
-        # external/bazel_tools/tools/python/runfiles/runfiles.py, but there
+        # external/rules_python/python/runfiles/runfiles.py, but there
         # is now _runfiles_constants.py, first. So this is too brittle.
         {'halt': None},
     ]

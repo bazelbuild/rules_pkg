@@ -30,7 +30,7 @@ py_library(
     imports = ["../.."],
     srcs_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 

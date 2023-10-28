@@ -87,7 +87,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "//pkg/private:archive",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -206,7 +206,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 

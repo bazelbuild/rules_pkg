@@ -50,7 +50,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "//pkg/private/tar:tar_writer",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -208,7 +208,7 @@ pkg_tar(
     name = "test-tar-strip_prefix-dot",
     srcs = [
         ":etc/nsswitch.conf",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
     strip_prefix = ".",
 )
@@ -385,7 +385,7 @@ py_test(
     python_version = "PY3",
     deps = [
         "//pkg/private/tar:tar_writer",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -468,7 +468,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
