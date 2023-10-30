@@ -13,7 +13,9 @@
 # limitations under the License.
 """Repository rule to autoconfigure a toolchain using the system rpmbuild."""
 
-# NOTE:
+# NOTE: this must match the name used by register_toolchains in consuming
+# MODULE.bazel files.  It seems like we should have a better interface that
+# allows for this module name to be specified from a single point.
 NAME="rules_pkg_rpmbuild"
 
 def _write_build(rctx, path, version):
