@@ -98,8 +98,7 @@ tasks:
     <<: *rolling
     <<: *default_tests
   rolling_macos:
-    name: last_green_macos
-    # It seems there is no rolling Bazel for macos.
+    name: rolling_macos
     bazel: rolling
     <<: *macos
     <<: *common
