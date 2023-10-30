@@ -45,7 +45,7 @@ class ContentManifestTest(unittest.TestCase):
     for dest, what in expected_dict.items():
       got = got_dict.get(dest)
       if got:
-        # bazlmod mode changes root to @@//, but history says @//
+        # bzlmod mode changes root to @@//, but older version give @//
         origin = got.get('origin')
         if origin and origin.startswith('@@//'):
           got['origin'] = origin[1:]
