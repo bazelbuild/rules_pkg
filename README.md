@@ -42,12 +42,25 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 rules_pkg_dependencies()
 ```
 
+To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
+system installed `rpmbuild` with this stanza.
+```
+load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
+
+find_system_rpmbuild(
+    name = "rules_pkg_rpmbuild",
+    verbose = False,
+)
+```
+
 ## MODULE.bazel setup
 
 ```
 bazel_dep(name = "rules_pkg", version = "0.0.10")
-
-# To use the rpmbuild on your local host
+```
+To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
+system installed `rpmbuild` with this stanza.
+```
 find_rpm = use_extension("//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild_bzlmod")
 use_repo(find_rpm, "rules_pkg_rpmbuild")
 register_toolchains("@rules_pkg_rpmbuild//:all")
