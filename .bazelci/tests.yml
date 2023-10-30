@@ -100,7 +100,7 @@ tasks:
   rolling_macos:
     name: last_green_macos
     # It seems there is no rolling Bazel for macos.
-    bazel: last_green
+    bazel: rolling
     <<: *macos
     <<: *common
   rolling_windows:
