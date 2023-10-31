@@ -12,3 +12,9 @@ toolchain(
     toolchain = ":rpmbuild_auto",
     toolchain_type = "@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type",
 )
+
+toolchain(
+    name = "zzz_rpmbuild_missing_toolchain",  # keep name lexigraphically last
+    toolchain = "@rules_pkg//toolchains/rpm:no_rpmbuild",
+    toolchain_type = "@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type",
+)

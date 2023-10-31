@@ -20,7 +20,7 @@ import csv
 import io
 import os
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 from tests.rpm import rpm_util
 
 # This provides some tests for built RPMs, mostly by taking the built RPM and
