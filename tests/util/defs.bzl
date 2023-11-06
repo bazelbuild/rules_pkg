@@ -13,9 +13,9 @@
 # limitations under the License.
 """Rules to aid testing"""
 
-load("//pkg/private:pkg_files.bzl", "add_label_list", "write_manifest")
-load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("//pkg:providers.bzl", "PackageFilegroupInfo", "PackageSymlinkInfo")
+load("//pkg/private:pkg_files.bzl", "add_label_list", "create_mapping_context_from_ctx", "write_manifest")  # buildifier: disable=bzl-visibility
 
 def _directory_impl(ctx):
     out_dir_file = ctx.actions.declare_directory(ctx.attr.outdir or ctx.attr.name)
@@ -30,7 +30,7 @@ def _directory_impl(ctx):
 
     for link, target in ctx.attr.links.items():
         args.add(link)
-        args.add('@@' + target)
+        args.add("@@" + target)
 
     ctx.actions.run(
         outputs = [out_dir_file],
@@ -113,13 +113,16 @@ cc_binary in complexity, but does not depend on a large toolchain.""",
 def _link_tree_impl(ctx):
     links = []
     prefix = ctx.attr.package_dir or ""
-    if prefix and not prefix.endswith('/'):
+    if prefix and not prefix.endswith("/"):
         prefix = prefix + "/"
     for link, target in ctx.attr.links.items():
         # DBG print('  %s -> %s ' % (link, target))
         links.append(
-            (PackageSymlinkInfo(destination = prefix + link, target = target),
-             ctx.label))
+            (
+                PackageSymlinkInfo(destination = prefix + link, target = target),
+                ctx.label,
+            ),
+        )
     return [PackageFilegroupInfo(pkg_symlinks = links)]
 
 link_tree = rule(
@@ -142,10 +145,9 @@ The keys of links are paths to create.  The values are the target of the links."
 )
 
 def _write_content_manifest_impl(ctx):
-    content_map = {}  # content handled in the manifest
-    file_deps = []  # inputs we depend on
-    add_label_list(ctx, content_map, file_deps, ctx.attr.srcs)
-    write_manifest(ctx, ctx.outputs.out, content_map, use_short_path = ctx.attr.use_short_path)
+    mapping_context = create_mapping_context_from_ctx(ctx, ctx.label)
+    add_label_list(mapping_context, ctx.attr.srcs)
+    write_manifest(ctx, ctx.outputs.out, mapping_context.content_map, use_short_path = ctx.attr.use_short_path)
 
 _write_content_manifest = rule(
     doc = """Helper rule to write the content manifest for a pkg_*.
@@ -181,7 +183,7 @@ def write_content_manifest(name, srcs, **kwargs):
         srcs = srcs,
         out = out,
         use_short_path = use_short_path,
-        **kwargs,
+        **kwargs
     )
 
 ############################################################
