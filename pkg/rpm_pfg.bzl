@@ -321,6 +321,8 @@ def _pkg_rpm_impl(ctx):
         preamble_pieces.extend(["Provides: " + p for p in ctx.attr.provides])
     if ctx.attr.conflicts:
         preamble_pieces.extend(["Conflicts: " + c for c in ctx.attr.conflicts])
+    if ctx.attr.obsoletes:
+        preamble_pieces.extend(["Obsoletes: " + o for o in ctx.attr.obsoletes])
     if ctx.attr.requires:
         preamble_pieces.extend(["Requires: " + r for r in ctx.attr.requires])
     if ctx.attr.requires_contextual:
@@ -924,6 +926,14 @@ pkg_rpm = rule(
             See also: https://rpm.org/user_doc/dependencies.html
             """,
         ),
+        "obsoletes": attr.string_list(
+            doc = """List of rpm capability expressions that this package obsoletes.
+
+            Corresponds to the "Obsoletes" preamble tag.
+
+            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
+            """,
+	),
         "requires": attr.string_list(
             doc = """List of rpm capability expressions that this package requires.
 
