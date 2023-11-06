@@ -58,6 +58,7 @@ _find_system_git = repository_rule(
     },
 )
 
+# buildifier: disable=function-docstring-args
 def experimental_find_system_git(name, workspace_file = None, verbose = False):
     """Create a toolchain that lets you run git.
 

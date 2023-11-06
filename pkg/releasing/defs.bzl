@@ -1,5 +1,6 @@
 """Implementation for print_rel_notes."""
 
+# buildifier: disable=function-docstring
 def print_rel_notes(
         name,
         repo,
