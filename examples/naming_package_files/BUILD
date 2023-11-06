@@ -15,8 +15,10 @@
 
 load("@rules_pkg//pkg:deb.bzl", "pkg_deb")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load(":package_upload.bzl", "debian_upload")
 load(":my_package_name.bzl", "basic_naming", "name_part_from_command_line", "names_from_toolchains")
+load(":package_upload.bzl", "debian_upload")
+
+licenses(["notice"])
 
 config_setting(
     name = "special_build",
@@ -95,7 +97,7 @@ pkg_tar(
 )
 
 #
-#  
+#
 #
 pkg_tar(
     name = "using_variable_from_ctx_var",

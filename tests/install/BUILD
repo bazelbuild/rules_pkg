@@ -23,10 +23,10 @@ py_test(
     name = "install_test",
     srcs = ["test.py"],
     args = ["-v"],
-    imports = ["../.."],
     data = [
         ":test_installer",
     ],
+    imports = ["../.."],
     main = "test.py",
     tags = [
         # TODO(nacl): investigate this.  See also

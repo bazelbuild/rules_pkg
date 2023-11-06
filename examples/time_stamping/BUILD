@@ -15,6 +15,8 @@
 
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
+licenses(["notice"])
+
 pkg_tar(
     name = "never_stamped",
     srcs = [

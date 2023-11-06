@@ -15,12 +15,12 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_python//python:defs.bzl", "py_test")
-load(":my_package_name.bzl", "my_package_naming")
-load(":path_test.bzl", "path_tests")
 load("//pkg:deb.bzl", "pkg_deb")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "strip_prefix")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg:zip.bzl", "pkg_zip")
+load(":my_package_name.bzl", "my_package_naming")
+load(":path_test.bzl", "path_tests")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -73,16 +73,16 @@ py_test(
     srcs = [
         "archive_test.py",
     ],
-    imports = [".."],
     data = [
-        "//tests:testdata/empty.ar",
-        "//tests:testdata/a_ab.ar",
         "//tests:testdata/a.ar",
-        "//tests:testdata/a_b_ab.ar",
+        "//tests:testdata/a_ab.ar",
         "//tests:testdata/a_b.ar",
+        "//tests:testdata/a_b_ab.ar",
         "//tests:testdata/ab.ar",
         "//tests:testdata/b.ar",
+        "//tests:testdata/empty.ar",
     ],
+    imports = [".."],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [

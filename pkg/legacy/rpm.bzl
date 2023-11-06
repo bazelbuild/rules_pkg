@@ -36,10 +36,10 @@ def _pkg_rpm_impl(ctx):
     tools = []
     args = ["--name=" + ctx.label.name]
     if ctx.attr.debug:
-        args += ["--debug"]
+        args.append("--debug")
 
     if ctx.attr.rpmbuild_path:
-        args += ["--rpmbuild=" + ctx.attr.rpmbuild_path]
+        args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
 
         # buildifier: disable=print
         print("rpmbuild_path is deprecated. See the README for instructions on how" +
@@ -50,7 +50,7 @@ def _pkg_rpm_impl(ctx):
             fail("The rpmbuild_toolchain is not properly configured: " +
                  toolchain.name)
         if toolchain.path:
-            args += ["--rpmbuild=" + toolchain.path]
+            args.append("--rpmbuild=" + toolchain.path)
         else:
             executable_files = toolchain.label[DefaultInfo].files_to_run
             tools.append(executable_files)
@@ -60,31 +60,31 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.version_file:
         if ctx.attr.version:
             fail("Both version and version_file attributes were specified")
-        args += ["--version=@" + ctx.file.version_file.path]
-        files += [ctx.file.version_file]
+        args.append("--version=@" + ctx.file.version_file.path)
+        files.append(ctx.file.version_file)
     elif ctx.attr.version:
-        args += ["--version=" + ctx.attr.version]
+        args.append("--version=" + ctx.attr.version)
 
     # Release can be specified by a file or inlined.
     if ctx.attr.release_file:
         if ctx.attr.release:
             fail("Both release and release_file attributes were specified")
-        args += ["--release=@" + ctx.file.release_file.path]
-        files += [ctx.file.release_file]
+        args.append("--release=@" + ctx.file.release_file.path)
+        files.append(ctx.file.release_file)
     elif ctx.attr.release:
-        args += ["--release=" + ctx.attr.release]
+        args.append("--release=" + ctx.attr.release)
 
     # SOURCE_DATE_EPOCH can be specified by a file or inlined.
     if ctx.attr.source_date_epoch_file:
         if ctx.attr.source_date_epoch:
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
-        args += ["--source_date_epoch=@" + ctx.file.source_date_epoch_file.path]
-        files += [ctx.file.source_date_epoch_file]
+        args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
+        files.append(ctx.file.source_date_epoch_file)
     elif ctx.attr.source_date_epoch != None:
-        args += ["--source_date_epoch=" + str(ctx.attr.source_date_epoch)]
+        args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.architecture:
-        args += ["--arch=" + ctx.attr.architecture]
+        args.append("--arch=" + ctx.attr.architecture)
 
     if not ctx.attr.spec_file:
         fail("spec_file was not specified")
@@ -102,19 +102,19 @@ def _pkg_rpm_impl(ctx):
         output = spec_file,
         substitutions = substitutions,
     )
-    args += ["--spec_file=" + spec_file.path]
-    files += [spec_file]
+    args.append("--spec_file=" + spec_file.path)
+    files.append(spec_file)
 
-    args += ["--out_file=" + ctx.outputs.rpm.path]
+    args.append("--out_file=" + ctx.outputs.rpm.path)
 
     # Add data files.
     if ctx.file.changelog:
-        files += [ctx.file.changelog]
-        args += [ctx.file.changelog.path]
+        files.append(ctx.file.changelog)
+        args.append(ctx.file.changelog.path)
     files += ctx.files.data
 
     for f in ctx.files.data:
-        args += [f.path]
+        args.append(f.path)
 
     # Call the generator script.
     ctx.actions.run(
