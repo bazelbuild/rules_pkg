@@ -38,7 +38,6 @@ class ContentManifestTest(unittest.TestCase):
     with open(g_file, mode='rt', encoding='utf-8') as g_fp:
       got = json.loads(g_fp.read())
     got_dict = {x['dest']: x for x in got}
-    # self.assertEqual(expected_dict, got_dict)
 
     ok = True
     expected_dests = set(expected_dict.keys())
@@ -46,6 +45,10 @@ class ContentManifestTest(unittest.TestCase):
     for dest, what in expected_dict.items():
       got = got_dict.get(dest)
       if got:
+        # bzlmod mode changes root to @@//, but older version give @//
+        origin = got.get('origin')
+        if origin and origin.startswith('@@//'):
+          got['origin'] = origin[1:]
         self.assertDictEqual(what, got)
       else:
         print('Missing expected path "%s" in manifest' % dest)

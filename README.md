@@ -23,6 +23,49 @@ As of Bazel 4.x, Bazel uses this rule set for packaging its distribution. Bazel
 still contains a limited version of `pkg_tar` but its feature set is frozen.
 Any new capabilities will be added here.
 
+
+## WORKSPACE setup
+
+Sample, but see [releases](https://github.com/bazelbuild/rules_pkg/releases) for the current release.
+
+```
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "rules_pkg",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+    ],
+    sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
+)
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+```
+
+To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
+system installed `rpmbuild` with this stanza.
+```
+load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
+
+find_system_rpmbuild(
+    name = "rules_pkg_rpmbuild",
+    verbose = False,
+)
+```
+
+## MODULE.bazel setup
+
+```
+bazel_dep(name = "rules_pkg", version = "0.0.10")
+```
+To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
+system installed `rpmbuild` with this stanza.
+```
+find_rpm = use_extension("//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild_bzlmod")
+use_repo(find_rpm, "rules_pkg_rpmbuild")
+register_toolchains("@rules_pkg_rpmbuild//:all")
+```
+
 ### For developers
 
 *   [Contributor information](CONTRIBUTING.md) (including contributor license agreements)

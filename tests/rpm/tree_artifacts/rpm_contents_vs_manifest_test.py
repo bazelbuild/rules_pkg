@@ -19,7 +19,7 @@ import csv
 import io
 import os
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 from tests.rpm import rpm_util
 
 EXPECTED_RPM_MANIFEST_CSV = """
