@@ -13,22 +13,20 @@
 # limitations under the License.
 
 load(
-    ":mappings_test.bzl",
-    "manifest_golden_test",
-    "mappings_analysis_tests",
-    "mappings_unit_tests",
-)
-load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
-load(
     "//pkg:mappings.bzl",
     "pkg_attributes",
-    "pkg_filegroup",
     "pkg_files",
     "pkg_mkdirs",
     "strip_prefix",
 )
 load("//tests/util:defs.bzl", "directory", "link_tree", "write_content_manifest")
-load("@rules_python//python:defs.bzl", "py_test")
+load(":mappings_external_repo_test.bzl", "mappings_external_repo_analysis_tests")
+load(
+    ":mappings_test.bzl",
+    "manifest_golden_test",
+    "mappings_analysis_tests",
+    "mappings_unit_tests",
+)
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -137,11 +135,11 @@ write_content_manifest(
 )
 
 alias(
-   name = "executable_test_expected",
-   actual = select({
-      "@platforms//os:windows": "executable.manifest.windows.golden",
-      "//conditions:default": "executable.manifest.golden",
-   }),
+    name = "executable_test_expected",
+    actual = select({
+        "@platforms//os:windows": "executable.manifest.windows.golden",
+        "//conditions:default": "executable.manifest.golden",
+    }),
 )
 
 manifest_golden_test(

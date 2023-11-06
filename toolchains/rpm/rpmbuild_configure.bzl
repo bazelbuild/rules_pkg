@@ -16,7 +16,7 @@
 # NOTE: this must match the name used by register_toolchains in consuming
 # MODULE.bazel files.  It seems like we should have a better interface that
 # allows for this module name to be specified from a single point.
-NAME="rules_pkg_rpmbuild"
+NAME = "rules_pkg_rpmbuild"
 
 def _write_build(rctx, path, version):
     if not path:
@@ -38,7 +38,7 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
         if rpmbuild_path:
             print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
-          print("No system rpmbuild found.")  # buildifier: disable=print
+            print("No system rpmbuild found.")  # buildifier: disable=print
     version = "unknown"
     if rpmbuild_path:
         res = rctx.execute([rpmbuild_path, "--version"])
@@ -62,11 +62,11 @@ build_repo_for_rpmbuild_toolchain = repository_rule(
 )
 
 # For use from WORKSPACE
-def find_system_rpmbuild(name, verbose=False):
-    build_repo_for_rpmbuild_toolchain(name=name, verbose=verbose)
+def find_system_rpmbuild(name, verbose = False):
+    build_repo_for_rpmbuild_toolchain(name = name, verbose = verbose)
     native.register_toolchains("@%s//:all" % name)
 
 # For use from MODULE.bzl
 find_system_rpmbuild_bzlmod = module_extension(
-    implementation = lambda ctx: build_repo_for_rpmbuild_toolchain(name=NAME)
+    implementation = lambda ctx: build_repo_for_rpmbuild_toolchain(name = NAME),
 )

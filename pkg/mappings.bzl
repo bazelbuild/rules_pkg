@@ -27,8 +27,8 @@ Rules that actually make use of the outputs of the above rules are not specified
 here.
 """
 
-load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 
 # TODO(#333): strip_prefix module functions should produce unique outputs.  In
 # particular, this one and `_sp_from_pkg` can overlap.

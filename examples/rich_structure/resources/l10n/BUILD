@@ -14,7 +14,6 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
 load("//:foo_defs.bzl", "shared_object_path_selector")
 
 # There are localized message catalogs for all the components.

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_pkg//pkg/private:make_starlark_library.bzl", "starlark_library")
+
 # -*- coding: utf-8 -*-
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-load("@rules_pkg//pkg/private:make_starlark_library.bzl", "starlark_library")
 
 package(default_applicable_licenses = ["//:license"])
 

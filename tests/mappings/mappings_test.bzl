@@ -14,14 +14,9 @@
 
 """Tests for file mapping routines in pkg/mappings.bzl"""
 
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
-load(
-    "//pkg:providers.bzl",
-    "PackageDirsInfo",
-    "PackageFilegroupInfo",
-    "PackageFilesInfo",
-    "PackageSymlinkInfo",
-)
+load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
@@ -33,14 +28,19 @@ load(
     "strip_prefix",
 )
 load(
+    "//pkg:providers.bzl",
+    "PackageDirsInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageSymlinkInfo",
+)
+load(
     "//tests/util:defs.bzl",
     "directory",
     "fake_artifact",
     "generic_base_case_test",
     "generic_negative_test",
 )
-load("@bazel_skylib//lib:new_sets.bzl", "sets")
-load("@rules_python//python:defs.bzl", "py_test")
 
 ##########
 # Helpers

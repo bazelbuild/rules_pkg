@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_test")
 load("//:version.bzl", "version")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg/releasing:defs.bzl", "print_rel_notes")
 load("//pkg/releasing:git.bzl", "git_changelog")
-load("@rules_python//python:defs.bzl", "py_test")
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -83,12 +82,12 @@ py_test(
         "packaging_test.py",
         ":release_version.py",
     ],
-    imports = [".."],
     data = [
         "testdata/BUILD.tpl",
         ":distro",
         "//:standard_package",
     ],
+    imports = [".."],
     local = True,
     python_version = "PY3",
     tags = [
