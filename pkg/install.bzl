@@ -17,28 +17,20 @@ This module provides an interface (`pkg_install`) for creating a `bazel
 run`-able installation script.
 """
 
-load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
-load("//pkg/private:pkg_files.bzl", "process_src", "write_manifest")
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
+load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_src", "write_manifest")
 
 def _pkg_install_script_impl(ctx):
     script_file = ctx.actions.declare_file(ctx.attr.name + ".py")
 
     fragments = []
-    files_to_run = []
-    content_map = {}
+    mapping_context = create_mapping_context_from_ctx(ctx, label = ctx.label, default_mode = "0644")
     for src in ctx.attr.srcs:
         process_src(
-            ctx,
-            content_map,
-            files_to_run,
+            mapping_context,
             src = src,
             origin = src.label,
-            default_mode = "0644",
-            default_user = None,
-            default_group = None,
-            default_uid = None,
-            default_gid = None,
         )
 
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-install-manifest.json")
@@ -49,14 +41,14 @@ def _pkg_install_script_impl(ctx):
     # Note that these paths are different when used as tools run within a build.
     # See also
     # https://docs.bazel.build/versions/4.1.0/skylark/rules.html#tools-with-runfiles
-    write_manifest(ctx, manifest_file, content_map, use_short_path = True)
+    write_manifest(ctx, manifest_file, mapping_context.content_map, use_short_path = True)
 
     # Get the label of the actual py_binary used to run this script.
     #
     # This is super brittle, but I don't know how to otherwise get this
     # information without creating a circular dependency given the current state
     # of rules_python.
-    
+
     # The name of the binary is the name of this target, minus
     # "_install_script".
     label_str = str(ctx.label)[:-len("_install_script")]
@@ -77,7 +69,7 @@ def _pkg_install_script_impl(ctx):
 
     my_runfiles = ctx.runfiles(
         files = [manifest_file],
-        transitive_files = depset(transitive = files_to_run),
+        transitive_files = depset(transitive = mapping_context.file_deps),
     )
 
     return [
@@ -147,7 +139,7 @@ def pkg_install(name, srcs, **kwargs):
     ```
     bazel run -- //path/to:install --help
     ```
-    
+
     WARNING: While this rule does function when being run from within a bazel
     rule, such use is not recommended.  If you do, **always** use the
     `--destdir` argument to specify the desired location for the installation to

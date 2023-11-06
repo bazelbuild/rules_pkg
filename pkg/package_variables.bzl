@@ -16,6 +16,6 @@
 
 def add_ctx_variables(ctx, values):
     """Add selected variables from ctx."""
-    values['target_cpu'] = ctx.var.get("TARGET_CPU")
-    values['compilation_mode'] = ctx.var.get("COMPILATION_MODE")
+    values["target_cpu"] = ctx.var.get("TARGET_CPU")
+    values["compilation_mode"] = ctx.var.get("COMPILATION_MODE")
     return values

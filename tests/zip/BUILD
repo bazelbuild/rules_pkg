@@ -13,12 +13,12 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests:my_package_name.bzl", "my_package_naming")
-load("//tests/util:defs.bzl", "directory", "fake_artifact")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("//tests/util:defs.bzl", "directory")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -32,7 +32,7 @@ py_library(
     imports = ["../.."],
     srcs_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -242,9 +242,10 @@ pkg_zip(
     srcs = [
         "//tests:testdata/loremipsum.txt",
     ],
-    compression_type = "deflated",
     compression_level = 3,
+    compression_type = "deflated",
 )
+
 pkg_zip(
     name = "test_zip_bzip2",
     srcs = [
@@ -252,6 +253,7 @@ pkg_zip(
     ],
     compression_type = "bzip2",
 )
+
 pkg_zip(
     name = "test_zip_lzma",
     srcs = [
@@ -259,6 +261,7 @@ pkg_zip(
     ],
     compression_type = "lzma",
 )
+
 pkg_zip(
     name = "test_zip_stored",
     srcs = [
@@ -278,16 +281,16 @@ py_test(
         ":test-zip-strip_prefix-none.zip",
         ":test-zip-strip_prefix-zipcontent.zip",
         ":test_zip_basic.zip",
+        ":test_zip_bzip2",
+        ":test_zip_deflated_level_3",
         ":test_zip_empty.zip",
+        ":test_zip_lzma",
         ":test_zip_package_dir0.zip",
         ":test_zip_package_dir_substitution.zip",
         ":test_zip_permissions.zip",
+        ":test_zip_stored",
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",
-        ":test_zip_deflated_level_3",
-        ":test_zip_bzip2",
-        ":test_zip_lzma",
-        ":test_zip_stored",
     ],
     python_version = "PY3",
     deps = [
@@ -320,7 +323,7 @@ py_test(
 
 pkg_zip(
     name = "unicode_names",
-    srcs = ["//tests:utf8_files"]
+    srcs = ["//tests:utf8_files"],
 )
 
 py_test(

@@ -19,7 +19,7 @@ import io
 import os
 import unittest
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 from tests.rpm import rpm_util
 
 # Tue Mar 23 00:00:00 EDT 2021

@@ -13,9 +13,9 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-licenses(["notice"])
-
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+licenses(["notice"])
 
 pkg_tar(
     name = "never_stamped",

@@ -21,7 +21,6 @@ How to:
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
-load("@rules_python//python:defs.bzl", "py_library")
 load("//:version.bzl", "version")
 
 package(default_applicable_licenses = ["//:license"])
@@ -50,16 +49,16 @@ exports_files(
 # pairs of rule name and the source file to get it from
 # buildifier: leave-alone, do not sort
 ORDER = [
-    ("toc",            None),
-    ("common",         None),
-    ("pkg_deb",        "//pkg/private/deb:deb.bzl"),
-    ("pkg_deb_impl",   "//pkg/private/deb:deb.bzl"),
-    ("pkg_rpm",        "//pkg:rpm_pfg.bzl"),
-    ("pkg_tar",        "//pkg/private/tar:tar.bzl"),
-    ("pkg_tar_impl",   "//pkg/private/tar:tar.bzl"),
-    ("pkg_zip",        "//pkg/private/zip:zip.bzl"),
-    ("pkg_zip_impl",   "//pkg/private/zip:zip.bzl"),
-    ("mappings",       None),
+    ("toc", None),
+    ("common", None),
+    ("pkg_deb", "//pkg/private/deb:deb.bzl"),
+    ("pkg_deb_impl", "//pkg/private/deb:deb.bzl"),
+    ("pkg_rpm", "//pkg:rpm_pfg.bzl"),
+    ("pkg_tar", "//pkg/private/tar:tar.bzl"),
+    ("pkg_tar_impl", "//pkg/private/tar:tar.bzl"),
+    ("pkg_zip", "//pkg/private/zip:zip.bzl"),
+    ("pkg_zip_impl", "//pkg/private/zip:zip.bzl"),
+    ("mappings", None),
     ("legacy_pkg_rpm", None),
 ]
 

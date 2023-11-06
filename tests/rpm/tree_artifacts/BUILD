@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",
@@ -22,7 +23,6 @@ load(
 )
 load("//pkg:rpm.bzl", "pkg_rpm")
 load("//tests/util:defs.bzl", "directory")
-load("@rules_python//python:defs.bzl", "py_test")
 
 ############################################################################
 # Test handling of directory outputs
@@ -44,11 +44,11 @@ py_test(
     name = "layer_with_files",
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":layer_with_files_test_data"],
+    env = {"TEST_RPM": "test_dirs_rpm-1.1.1-2222.noarch.rpm"},
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],
-    env = {"TEST_RPM": "test_dirs_rpm-1.1.1-2222.noarch.rpm"},
     deps = [
         "//tests/rpm:rpm_util",
         "@rules_python//python/runfiles",
@@ -205,8 +205,8 @@ py_test(
     name = "treeartifact_ops",
     srcs = ["rpm_treeartifact_ops_test.py"],
     data = [":treeartifact_ops_rpm_test_data"],
-    main = "rpm_treeartifact_ops_test.py",
     env = {"TEST_RPM": "treeartifact_ops_rpm-1.1.1-2222.noarch.rpm"},
+    main = "rpm_treeartifact_ops_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
     ],

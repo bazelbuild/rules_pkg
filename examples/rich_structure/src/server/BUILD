@@ -15,7 +15,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//:foo_defs.bzl", "shared_object_path_selector")
 
 cc_library(
     name = "foolib",

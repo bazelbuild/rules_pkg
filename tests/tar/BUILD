@@ -14,15 +14,14 @@
 # -*- coding: utf-8 -*-
 """Tests for pkg_tar."""
 
+load("@rules_python//python:defs.bzl", "py_test")
+
 # buildifier: disable=bzl-visibility
-load("//pkg:mappings.bzl", "pkg_attributes")
-load("//pkg:mappings.bzl", "pkg_files", "pkg_mkdirs", "pkg_mklink", "strip_prefix")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
-load("@rules_python//python:defs.bzl", "py_test")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -34,7 +33,6 @@ py_test(
     srcs = [
         "tar_writer_test.py",
     ],
-    imports = ["../.."],
     data = [
         ":compressor",
         ":test_tar_compression",
@@ -46,11 +44,12 @@ py_test(
         "//tests:testdata/tar_test.tar.xz",
         "//tests:testdata/test_tar_package_dir_file.txt",
     ],
+    imports = ["../.."],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
         "//pkg/private/tar:tar_writer",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -208,7 +207,7 @@ pkg_tar(
     name = "test-tar-strip_prefix-dot",
     srcs = [
         ":etc/nsswitch.conf",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
     strip_prefix = ".",
 )
@@ -348,7 +347,6 @@ py_test(
     srcs = [
         "pkg_tar_test.py",
     ],
-    imports = ["../.."],
     data = [
         ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-pkg-tar-with-attributes",
@@ -382,10 +380,11 @@ py_test(
         ":test-tar-inclusion-%s" % compression
         for compression in SUPPORTED_TAR_COMPRESSIONS
     ],
+    imports = ["../.."],
     python_version = "PY3",
     deps = [
         "//pkg/private/tar:tar_writer",
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
@@ -468,7 +467,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 

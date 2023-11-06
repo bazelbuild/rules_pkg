@@ -22,6 +22,7 @@
 def format(target):
     provider_map = providers(target)
     output_group_info = provider_map["OutputGroupInfo"]
+
     # Look at the attributes of the provider. Visit the depsets.
     ret = []
     for attr in dir(output_group_info):

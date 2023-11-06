@@ -13,6 +13,11 @@
 # limitations under the License.
 """Repository rule to autoconfigure a toolchain using the system rpmbuild."""
 
+# NOTE: this must match the name used by register_toolchains in consuming
+# MODULE.bazel files.  It seems like we should have a better interface that
+# allows for this module name to be specified from a single point.
+NAME = "rules_pkg_rpmbuild"
+
 def _write_build(rctx, path, version):
     if not path:
         path = ""
@@ -27,13 +32,13 @@ def _write_build(rctx, path, version):
         executable = False,
     )
 
-def _find_system_rpmbuild_impl(rctx):
+def _build_repo_for_rpmbuild_toolchain_impl(rctx):
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
         if rpmbuild_path:
             print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
-          print("No system rpmbuild found.")  # buildifier: disable=print
+            print("No system rpmbuild found.")  # buildifier: disable=print
     version = "unknown"
     if rpmbuild_path:
         res = rctx.execute([rpmbuild_path, "--version"])
@@ -44,8 +49,8 @@ def _find_system_rpmbuild_impl(rctx):
                 version = parts[2]
     _write_build(rctx = rctx, path = rpmbuild_path, version = version)
 
-_find_system_rpmbuild = repository_rule(
-    implementation = _find_system_rpmbuild_impl,
+build_repo_for_rpmbuild_toolchain = repository_rule(
+    implementation = _build_repo_for_rpmbuild_toolchain_impl,
     doc = """Create a repository that defines an rpmbuild toolchain based on the system rpmbuild.""",
     local = True,
     environ = ["PATH"],
@@ -56,8 +61,12 @@ _find_system_rpmbuild = repository_rule(
     },
 )
 
-def find_system_rpmbuild(name, verbose=False):
-    _find_system_rpmbuild(name=name, verbose=verbose)
-    native.register_toolchains(
-        "@%s//:rpmbuild_auto_toolchain" % name,
-        "@rules_pkg//toolchains/rpm:rpmbuild_missing_toolchain")
+# For use from WORKSPACE
+def find_system_rpmbuild(name, verbose = False):
+    build_repo_for_rpmbuild_toolchain(name = name, verbose = verbose)
+    native.register_toolchains("@%s//:all" % name)
+
+# For use from MODULE.bzl
+find_system_rpmbuild_bzlmod = module_extension(
+    implementation = lambda ctx: build_repo_for_rpmbuild_toolchain(name = NAME),
+)

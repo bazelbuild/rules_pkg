@@ -1,5 +1,4 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
-load("git.bzl", "git_changelog")
 
 package(
     default_applicable_licenses = ["//:license"],
