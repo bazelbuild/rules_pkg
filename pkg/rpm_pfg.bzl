@@ -670,7 +670,7 @@ def _pkg_rpm_impl(ctx):
     output_groups = {
         "out": [default_file],
         "rpm": [output_file],
-        "changes": changes
+        "changes": changes,
     }
     return [
         OutputGroupInfo(**output_groups),

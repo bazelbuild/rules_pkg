@@ -83,7 +83,6 @@ _git_changelog = rule(
     toolchains = ["@rules_pkg//toolchains/git:git_toolchain_type"],
 )
 
-
 def git_changelog(name, **kwargs):
     _git_changelog(
         name = name,
@@ -93,5 +92,5 @@ def git_changelog(name, **kwargs):
             str(Label("//toolchains/git:have_git")): [],
             "//conditions:default": ["//:not_compatible"],
         }),
-        **kwargs,
+        **kwargs
     )

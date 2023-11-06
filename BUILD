@@ -22,7 +22,7 @@ package(
 license(
     name = "license",
     license_kinds = [
-        "@rules_license//licenses/spdx:Apache-2.0"
+        "@rules_license//licenses/spdx:Apache-2.0",
     ],
     license_text = "LICENSE",
 )

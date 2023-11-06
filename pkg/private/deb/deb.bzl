@@ -50,39 +50,39 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.architecture_file:
         if ctx.attr.architecture != "all":
             fail("Both architecture and architecture_file attributes were specified")
-        args += ["--architecture=@" + ctx.file.architecture_file.path]
-        files += [ctx.file.architecture_file]
+        args.append("--architecture=@" + ctx.file.architecture_file.path)
+        files.append(ctx.file.architecture_file)
     else:
-        args += ["--architecture=" + ctx.attr.architecture]
+        args.append("--architecture=" + ctx.attr.architecture)
 
     if ctx.attr.preinst:
-        args += ["--preinst=@" + ctx.file.preinst.path]
-        files += [ctx.file.preinst]
+        args.append("--preinst=@" + ctx.file.preinst.path)
+        files.append(ctx.file.preinst)
     if ctx.attr.postinst:
-        args += ["--postinst=@" + ctx.file.postinst.path]
-        files += [ctx.file.postinst]
+        args.append("--postinst=@" + ctx.file.postinst.path)
+        files.append(ctx.file.postinst)
     if ctx.attr.prerm:
-        args += ["--prerm=@" + ctx.file.prerm.path]
-        files += [ctx.file.prerm]
+        args.append("--prerm=@" + ctx.file.prerm.path)
+        files.append(ctx.file.prerm)
     if ctx.attr.postrm:
-        args += ["--postrm=@" + ctx.file.postrm.path]
-        files += [ctx.file.postrm]
+        args.append("--postrm=@" + ctx.file.postrm.path)
+        files.append(ctx.file.postrm)
     if ctx.attr.config:
-        args += ["--config=@" + ctx.file.config.path]
-        files += [ctx.file.config]
+        args.append("--config=@" + ctx.file.config.path)
+        files.append(ctx.file.config)
     if ctx.attr.templates:
-        args += ["--templates=@" + ctx.file.templates.path]
-        files += [ctx.file.templates]
+        args.append("--templates=@" + ctx.file.templates.path)
+        files.append(ctx.file.templates)
     if ctx.attr.triggers:
-        args += ["--triggers=@" + ctx.file.triggers.path]
-        files += [ctx.file.triggers]
+        args.append("--triggers=@" + ctx.file.triggers.path)
+        files.append(ctx.file.triggers)
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
         if ctx.attr.conffiles:
             fail("Both conffiles and conffiles_file attributes were specified")
-        args += ["--conffile=@" + ctx.file.conffiles_file.path]
-        files += [ctx.file.conffiles_file]
+        args.append("--conffile=@" + ctx.file.conffiles_file.path)
+        files.append(ctx.file.conffiles_file)
     elif ctx.attr.conffiles:
         args += ["--conffile=%s" % cf for cf in ctx.attr.conffiles]
 
@@ -90,55 +90,55 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.version_file:
         if ctx.attr.version:
             fail("Both version and version_file attributes were specified")
-        args += ["--version=@" + ctx.file.version_file.path]
-        files += [ctx.file.version_file]
+        args.append("--version=@" + ctx.file.version_file.path)
+        files.append(ctx.file.version_file)
     elif ctx.attr.version:
-        args += ["--version=" + ctx.attr.version]
+        args.append("--version=" + ctx.attr.version)
     else:
         fail("Neither version_file nor version attribute was specified")
 
     if ctx.attr.description_file:
         if ctx.attr.description:
             fail("Both description and description_file attributes were specified")
-        args += ["--description=@" + ctx.file.description_file.path]
-        files += [ctx.file.description_file]
+        args.append("--description=@" + ctx.file.description_file.path)
+        files.append(ctx.file.description_file)
     elif ctx.attr.description:
-        args += ["--description=" + ctx.attr.description]
+        args.append("--description=" + ctx.attr.description)
     else:
         fail("Neither description_file nor description attribute was specified")
 
     if ctx.attr.changelog:
-        args += ["--changelog=@" + ctx.file.changelog.path]
-        files += [ctx.file.changelog]
+        args.append("--changelog=@" + ctx.file.changelog.path)
+        files.append(ctx.file.changelog)
 
     # Built using can also be specified by a file or inlined (but is not mandatory)
     if ctx.attr.built_using_file:
         if ctx.attr.built_using:
             fail("Both build_using and built_using_file attributes were specified")
-        args += ["--built_using=@" + ctx.file.built_using_file.path]
-        files += [ctx.file.built_using_file]
+        args.append("--built_using=@" + ctx.file.built_using_file.path)
+        files.append(ctx.file.built_using_file)
     elif ctx.attr.built_using:
-        args += ["--built_using=" + ctx.attr.built_using]
+        args.append("--built_using=" + ctx.attr.built_using)
 
     if ctx.attr.depends_file:
         if ctx.attr.depends:
             fail("Both depends and depends_file attributes were specified")
-        args += ["--depends=@" + ctx.file.depends_file.path]
-        files += [ctx.file.depends_file]
+        args.append("--depends=@" + ctx.file.depends_file.path)
+        files.append(ctx.file.depends_file)
     elif ctx.attr.depends:
         args += ["--depends=" + d for d in ctx.attr.depends]
 
     if ctx.attr.priority:
-        args += ["--priority=" + ctx.attr.priority]
+        args.append("--priority=" + ctx.attr.priority)
     if ctx.attr.section:
-        args += ["--section=" + ctx.attr.section]
+        args.append("--section=" + ctx.attr.section)
     if ctx.attr.homepage:
-        args += ["--homepage=" + ctx.attr.homepage]
+        args.append("--homepage=" + ctx.attr.homepage)
     if ctx.attr.license:
-        args += ["--license=" + ctx.attr.license]
+        args.append("--license=" + ctx.attr.license)
 
-    args += ["--distribution=" + ctx.attr.distribution]
-    args += ["--urgency=" + ctx.attr.urgency]
+    args.append("--distribution=" + ctx.attr.distribution)
+    args.append("--urgency=" + ctx.attr.urgency)
     args += ["--suggests=" + d for d in ctx.attr.suggests]
     args += ["--enhances=" + d for d in ctx.attr.enhances]
     args += ["--conflicts=" + d for d in ctx.attr.conflicts]
@@ -229,14 +229,14 @@ pkg_deb_impl = rule(
         "changelog": attr.label(
             doc = """The package changelog.
             See https://www.debian.org/doc/debian-policy/ch-source.html#s-dpkgchangelog.""",
-            allow_single_file = True
+            allow_single_file = True,
         ),
         "description": attr.string(
             doc = """The package description. Must not be used with `description_file`.""",
         ),
         "description_file": attr.label(
             doc = """The package description. Must not be used with `description`.""",
-            allow_single_file = True
+            allow_single_file = True,
         ),
         "distribution": attr.string(
             doc = """"distribution: See http://www.debian.org/doc/debian-policy.""",
@@ -277,11 +277,11 @@ pkg_deb_impl = rule(
             allow_single_file = True,
         ),
         "built_using": attr.string(
-            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file)."""
+            doc = """The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
         ),
         "built_using_file": attr.label(
-            doc="""The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
-            allow_single_file = True
+            doc = """The tool that were used to build this package provided either inline (with built_using) or from a file (with built_using_file).""",
+            allow_single_file = True,
         ),
         "conffiles": attr.string_list(
             doc = """The list of conffiles or a file containing one conffile per line. Each item is an absolute path on the target system where the deb is installed.
@@ -303,7 +303,6 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         ),
         "homepage": attr.string(doc = """The homepage of the project."""),
         "license": attr.string(doc = """The license of the project."""),
-
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],
@@ -349,7 +348,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         # Common attributes
         "out": attr.output(
             doc = """See [Common Attributes](#out)""",
-            mandatory = True
+            mandatory = True,
         ),
         "package_file_name": attr.string(
             doc = """See [Common Attributes](#package_file_name).
@@ -373,7 +372,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
 def pkg_deb(name, out = None, **kwargs):
     """@wraps(pkg_deb_impl)."""
     if not out:
-      out = name + ".deb"
+        out = name + ".deb"
     pkg_deb_impl(
         name = name,
         out = out,

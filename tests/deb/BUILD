@@ -16,11 +16,11 @@
 # Tests for pkg_deb specific behavior
 
 load("@rules_python//python:defs.bzl", "py_test")
-load(":deb_tests.bzl", "package_naming_test")
-load("//pkg:mappings.bzl", "pkg_mklink")
 load("//pkg:deb.bzl", "pkg_deb")
+load("//pkg:mappings.bzl", "pkg_mklink")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
+load(":deb_tests.bzl", "package_naming_test")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -96,11 +96,11 @@ py_test(
     srcs = [
         "pkg_deb_test.py",
     ],
-    imports = ["../.."],
     data = [
         # The target includes both the .deb and .changes files in DefaultInfo
         ":test_deb",
     ],
+    imports = ["../.."],
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",
@@ -130,6 +130,9 @@ py_test(
 # Test case for expanding $(var) constructions and for using ctx.var directly
 pkg_deb(
     name = "deb_using_ctxvar",
+    # This does not make sense for architecture, but for testing, compilation
+    # mode is more stable than cpu.
+    architecture = "$(COMPILATION_MODE)",
     config = "config",
     data = ":tar_input",
     description = "Compiled with $(COMPILATION_MODE)",
@@ -137,9 +140,6 @@ pkg_deb(
     maintainer = "soméone@somewhere.com",
     package = "fizzbuzz",
     version = "7",
-    # This does not make sense for architecture, but for testing, compilation
-    # mode is more stable than cpu.
-    architecture = "$(COMPILATION_MODE)",
 )
 
 package_naming_test(
