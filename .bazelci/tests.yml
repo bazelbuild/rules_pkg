@@ -66,8 +66,8 @@ ubuntu1804: &ubuntu
     - "//distro:relnotes"
     - "//doc_build:*"
 
-centos7_java11_devtoolset10: &centos
-  platform: centos7
+centos7: &centos
+  platform: centos7_java11_devtoolset10
   <<: *common
   <<: *default_tests_with_rpm
 
