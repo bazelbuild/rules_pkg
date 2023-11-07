@@ -5,8 +5,6 @@ build_targets: &build_targets
 - '-@rules_pkg//pkg:make_rpm'
 
 platforms:
-  centos7:
-    build_targets: *build_targets
   debian10:
     build_targets: *build_targets
   macos:

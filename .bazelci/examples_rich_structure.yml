@@ -4,7 +4,7 @@ common: &common
   - "..."
 
 tasks:
-  centos7:
+  centos7_java11_devtoolset10:
     platform: centos7
     <<: *common
   ubuntu1804:
