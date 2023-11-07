@@ -82,5 +82,3 @@ http_archive(
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
 
 rules_cc_dependencies()
-
-rules_cc_toolchains()
