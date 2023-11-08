@@ -18,8 +18,6 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_applicable_licenses = ["//:license"])
 
-licenses(["notice"])
-
 exports_files(["defs.bzl"])
 
 py_binary(

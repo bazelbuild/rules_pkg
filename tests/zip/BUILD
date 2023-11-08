@@ -22,8 +22,6 @@ load("//tests/util:defs.bzl", "directory")
 
 package(default_applicable_licenses = ["//:license"])
 
-licenses(["notice"])
-
 py_library(
     name = "zip_test_lib",
     srcs = [
