@@ -14,7 +14,7 @@ local_repository(
 #    verbose = False,
 #)
 
- Needed for making our release notes
+# Needed for making our release notes
 load("//toolchains/git:git_configure.bzl", "experimental_find_system_git")
 
 experimental_find_system_git(
