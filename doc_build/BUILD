@@ -20,7 +20,7 @@ How to:
 """
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
 
 package(default_applicable_licenses = ["//:license"])
