@@ -2,15 +2,13 @@
 common: &common
   working_directory: ..
   build_targets:
-  - "distro:*"
+  - "distro:all"
 
 tasks:
   rolling_ubuntu:
     name: rolling_distro
     platform: ubuntu1804
     bazel: rolling
-    build_flags:
-    - "--noenable_bzlmod"
     <<: *common
   lts_ubuntu:
     name: lts_distro
