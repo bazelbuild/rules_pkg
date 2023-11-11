@@ -14,10 +14,10 @@ local_repository(
 #    verbose = False,
 #)
 
-# Needed for making our release notes
-#load("//toolchains/git:git_configure.bzl", "experimental_find_system_git")
-#
-#experimental_find_system_git(
-#    name = "rules_pkg_git",
-#    verbose = False,
-#)
+ Needed for making our release notes
+load("//toolchains/git:git_configure.bzl", "experimental_find_system_git")
+
+experimental_find_system_git(
+    name = "rules_pkg_git",
+    verbose = False,
+)
