@@ -67,7 +67,7 @@ ubuntu1804: &ubuntu
     - "//doc_build:*"
 
 centos7: &centos
-  platform: centos7
+  platform: centos7_java11_devtoolset10
   <<: *common
   <<: *default_tests_with_rpm
 
