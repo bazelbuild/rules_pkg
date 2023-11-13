@@ -1,5 +1,10 @@
 * @aiuto @alexeagle
 
+/.bazelci/	@meteorcloudy
+/.bcr/		@meteorcloudy
+/.github/	@meteorcloudy
+/.pre-commit-config.yaml	@meteorcloudy
+
 /deb_packages/  @aiuto
 /docs/		@aiuto @alexeagle @jylinv0 @gregestren
 /doc_build/	@aiuto @alexeagle @jylinv0
