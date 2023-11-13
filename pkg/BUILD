@@ -105,4 +105,11 @@ py_binary(
     visibility = ["//visibility:public"],
 )
 
+py_library(
+    name = "filter_directory_lib",
+    srcs = ["filter_directory.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+)
+
 exports_files(["verify_archive_test_main.py.tpl"])
