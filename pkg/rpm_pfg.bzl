@@ -180,7 +180,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map,
                 abs_dest,
             ))
 
-def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
     for dest in pdi.dirs:
         metadata = _package_contents_metadata(origin_label, grouping_label)
         if dest in dest_check_map:
@@ -195,7 +195,7 @@ def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, 
             abs_dirname,
         ))
 
-def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
     metadata = _package_contents_metadata(origin_label, grouping_label)
     if psi.destination in dest_check_map:
         _conflicting_contents_error(psi.destination, metadata, dest_check_map[psi.destination])
@@ -258,7 +258,7 @@ def _pkg_rpm_impl(ctx):
             ctx.attr.architecture,
         )
 
-    outputs, output_file, output_name = setup_output_files(
+    _, output_file, _ = setup_output_files(
         ctx,
         package_file_name = package_file_name,
         default_output_file = default_file,
