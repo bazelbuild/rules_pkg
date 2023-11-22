@@ -99,6 +99,17 @@ pkg_deb(<a href="#pkg_deb-name">name</a>, <a href="#pkg_deb-architecture">archit
 </pre>
 
 
+    Create a Debian package.
+
+    This rule produces 2 artifacts: a .deb and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specifically depend on only the .deb or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the Debian package or a symlink to the actual package.
+    - `deb` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
+    
 
 **ATTRIBUTES**
 
@@ -170,11 +181,12 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 
 <pre>
 pkg_rpm(<a href="#pkg_rpm-name">name</a>, <a href="#pkg_rpm-architecture">architecture</a>, <a href="#pkg_rpm-binary_payload_compression">binary_payload_compression</a>, <a href="#pkg_rpm-changelog">changelog</a>, <a href="#pkg_rpm-conflicts">conflicts</a>, <a href="#pkg_rpm-debug">debug</a>, <a href="#pkg_rpm-description">description</a>,
-        <a href="#pkg_rpm-description_file">description_file</a>, <a href="#pkg_rpm-group">group</a>, <a href="#pkg_rpm-license">license</a>, <a href="#pkg_rpm-package_file_name">package_file_name</a>, <a href="#pkg_rpm-package_name">package_name</a>, <a href="#pkg_rpm-package_variables">package_variables</a>,
-        <a href="#pkg_rpm-post_scriptlet">post_scriptlet</a>, <a href="#pkg_rpm-post_scriptlet_file">post_scriptlet_file</a>, <a href="#pkg_rpm-postun_scriptlet">postun_scriptlet</a>, <a href="#pkg_rpm-postun_scriptlet_file">postun_scriptlet_file</a>, <a href="#pkg_rpm-pre_scriptlet">pre_scriptlet</a>,
-        <a href="#pkg_rpm-pre_scriptlet_file">pre_scriptlet_file</a>, <a href="#pkg_rpm-preun_scriptlet">preun_scriptlet</a>, <a href="#pkg_rpm-preun_scriptlet_file">preun_scriptlet_file</a>, <a href="#pkg_rpm-provides">provides</a>, <a href="#pkg_rpm-release">release</a>, <a href="#pkg_rpm-release_file">release_file</a>,
-        <a href="#pkg_rpm-requires">requires</a>, <a href="#pkg_rpm-requires_contextual">requires_contextual</a>, <a href="#pkg_rpm-rpmbuild_path">rpmbuild_path</a>, <a href="#pkg_rpm-source_date_epoch">source_date_epoch</a>, <a href="#pkg_rpm-source_date_epoch_file">source_date_epoch_file</a>,
-        <a href="#pkg_rpm-spec_template">spec_template</a>, <a href="#pkg_rpm-srcs">srcs</a>, <a href="#pkg_rpm-summary">summary</a>, <a href="#pkg_rpm-url">url</a>, <a href="#pkg_rpm-version">version</a>, <a href="#pkg_rpm-version_file">version_file</a>)
+        <a href="#pkg_rpm-description_file">description_file</a>, <a href="#pkg_rpm-group">group</a>, <a href="#pkg_rpm-license">license</a>, <a href="#pkg_rpm-obsoletes">obsoletes</a>, <a href="#pkg_rpm-package_file_name">package_file_name</a>, <a href="#pkg_rpm-package_name">package_name</a>,
+        <a href="#pkg_rpm-package_variables">package_variables</a>, <a href="#pkg_rpm-post_scriptlet">post_scriptlet</a>, <a href="#pkg_rpm-post_scriptlet_file">post_scriptlet_file</a>, <a href="#pkg_rpm-postun_scriptlet">postun_scriptlet</a>,
+        <a href="#pkg_rpm-postun_scriptlet_file">postun_scriptlet_file</a>, <a href="#pkg_rpm-pre_scriptlet">pre_scriptlet</a>, <a href="#pkg_rpm-pre_scriptlet_file">pre_scriptlet_file</a>, <a href="#pkg_rpm-preun_scriptlet">preun_scriptlet</a>,
+        <a href="#pkg_rpm-preun_scriptlet_file">preun_scriptlet_file</a>, <a href="#pkg_rpm-provides">provides</a>, <a href="#pkg_rpm-release">release</a>, <a href="#pkg_rpm-release_file">release_file</a>, <a href="#pkg_rpm-requires">requires</a>, <a href="#pkg_rpm-requires_contextual">requires_contextual</a>,
+        <a href="#pkg_rpm-rpmbuild_path">rpmbuild_path</a>, <a href="#pkg_rpm-source_date_epoch">source_date_epoch</a>, <a href="#pkg_rpm-source_date_epoch_file">source_date_epoch_file</a>, <a href="#pkg_rpm-spec_template">spec_template</a>, <a href="#pkg_rpm-srcs">srcs</a>, <a href="#pkg_rpm-summary">summary</a>, <a href="#pkg_rpm-url">url</a>,
+        <a href="#pkg_rpm-version">version</a>, <a href="#pkg_rpm-version_file">version_file</a>)
 </pre>
 
 Creates an RPM format package via `pkg_filegroup` and friends.
@@ -205,6 +217,14 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
+    This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
+    include both. If you need downstream rule to specifically depend on only the .rpm or
+    .changes file then you can use `filegroup` to select distinct output groups.
+
+    **OutputGroupInfo**
+    - `out` the RPM or a symlink to the actual package.
+    - `rpm` the package with any precise file name created with `package_file_name`.
+    - `changes` the .changes file.
     
 
 **ATTRIBUTES**
@@ -216,12 +236,13 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 | <a id="pkg_rpm-architecture"></a>architecture |  Package architecture.<br><br>            This currently sets the <code>BuildArch</code> tag, which influences the output             architecture of the package.<br><br>            Typically, <code>BuildArch</code> only needs to be set when the package is             known to be cross-platform (e.g. written in an interpreted             language), or, less common, when it is known that the application is             only valid for specific architectures.<br><br>            When no attribute is provided, this will default to your host's             architecture.  This is usually what you want.   | String | optional | "" |
 | <a id="pkg_rpm-binary_payload_compression"></a>binary_payload_compression |  Compression mode used for this RPM<br><br>            Must be a form that <code>rpmbuild(8)</code> knows how to process, which will             depend on the version of <code>rpmbuild</code> in use.  The value corresponds             to the <code>%_binary_payload</code> macro and is set on the <code>rpmbuild(8)</code>             command line if provided.<br><br>            Some examples of valid values (which may not be supported on your             system) can be found [here](https://git.io/JU9Wg).  On CentOS             systems (also likely Red Hat and Fedora), you can find some             supported values by looking for <code>%_binary_payload</code> in             <code>/usr/lib/rpm/macros</code>.  Other systems have similar files and             configurations.<br><br>            If not provided, the compression mode will be computed by <code>rpmbuild</code>             itself.  Defaults may vary per distribution or build of <code>rpm</code>;             consult the relevant documentation for more details.<br><br>            WARNING: Bazel is currently not aware of action threading requirements             for non-test actions.  Using threaded compression may result in             overcommitting your system.   | String | optional | "" |
 | <a id="pkg_rpm-changelog"></a>changelog |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_rpm-conflicts"></a>conflicts |  List of capabilities that conflict with this package when it is installed.<br><br>            Corresponds to the "Conflicts" preamble tag.<br><br>            See also: https://rpm.org/user_doc/dependencies.html   | List of strings | optional | [] |
+| <a id="pkg_rpm-conflicts"></a>conflicts |  List of capabilities that conflict with this package when it is installed.<br><br>            Corresponds to the "Conflicts" preamble tag.<br><br>            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html   | List of strings | optional | [] |
 | <a id="pkg_rpm-debug"></a>debug |  Debug the RPM helper script and RPM generation   | Boolean | optional | False |
 | <a id="pkg_rpm-description"></a>description |  Multi-line description of this package, corresponds to RPM %description.<br><br>            Exactly one of <code>description</code> or <code>description_file</code> must be provided.   | String | optional | "" |
 | <a id="pkg_rpm-description_file"></a>description_file |  File containing a multi-line description of this package, corresponds to RPM             %description.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_rpm-group"></a>group |  Optional; RPM "Group" tag.<br><br>            NOTE: some distributions (as of writing, Fedora &gt; 17 and CentOS/RHEL             &gt; 5) have deprecated this tag.  Other distributions may require it,             but it is harmless in any case.   | String | optional | "" |
 | <a id="pkg_rpm-license"></a>license |  RPM "License" tag.<br><br>            The software license for the code distributed in this package.<br><br>            The underlying RPM builder requires you to put something here; if             your package is not going to be distributed, feel free to set this             to something like "Internal".   | String | required |  |
+| <a id="pkg_rpm-obsoletes"></a>obsoletes |  List of rpm capability expressions that this package obsoletes.<br><br>            Corresponds to the "Obsoletes" preamble tag.<br><br>            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html   | List of strings | optional | [] |
 | <a id="pkg_rpm-package_file_name"></a>package_file_name |  See 'Common Attributes' in the rules_pkg reference.<br><br>            If this is not provided, the package file given a NVRA-style             (name-version-release.arch) output, which is preferred by most RPM             repositories.   | String | optional | "" |
 | <a id="pkg_rpm-package_name"></a>package_name |  Optional; RPM name override.<br><br>            If not provided, the <code>name</code> attribute of this rule will be used             instead.<br><br>            This influences values like the spec file name.   | String | optional | "" |
 | <a id="pkg_rpm-package_variables"></a>package_variables |  See 'Common Attributes' in the rules_pkg reference   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -233,11 +254,11 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 | <a id="pkg_rpm-pre_scriptlet_file"></a>pre_scriptlet_file |  File containing the RPM <code>%pre</code> scriptlet   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_rpm-preun_scriptlet"></a>preun_scriptlet |  RPM <code>%preun</code> scriptlet.  Currently only allowed to be a shell script.<br><br>            <code>preun_scriptlet</code> and <code>preun_scriptlet_file</code> are mutually exclusive.   | String | optional | "" |
 | <a id="pkg_rpm-preun_scriptlet_file"></a>preun_scriptlet_file |  File containing the RPM <code>%preun</code> scriptlet   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_rpm-provides"></a>provides |  List of rpm capabilities that this package provides.<br><br>            Corresponds to the "Provides" preamble tag.<br><br>            See also: https://rpm.org/user_doc/dependencies.html   | List of strings | optional | [] |
+| <a id="pkg_rpm-provides"></a>provides |  List of rpm capabilities that this package provides.<br><br>            Corresponds to the "Provides" preamble tag.<br><br>            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html   | List of strings | optional | [] |
 | <a id="pkg_rpm-release"></a>release |  RPM "Release" tag<br><br>            Exactly one of <code>release</code> or <code>release_file</code> must be provided.   | String | optional | "" |
 | <a id="pkg_rpm-release_file"></a>release_file |  File containing RPM "Release" tag.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-| <a id="pkg_rpm-requires"></a>requires |  List of rpm capability expressions that this package requires.<br><br>            Corresponds to the "Requires" preamble tag.<br><br>            See also: https://rpm.org/user_doc/dependencies.html   | List of strings | optional | [] |
-| <a id="pkg_rpm-requires_contextual"></a>requires_contextual |  Contextualized requirement specifications<br><br>            This is a map of various properties (often scriptlet types) to             capability name specifications, e.g.:<br><br>            <pre><code>python             {"pre": ["GConf2"],"post": ["GConf2"], "postun": ["GConf2"]}             </code></pre><br><br>            Which causes the below to be added to the spec file's preamble:<br><br>            <pre><code>             Requires(pre): GConf2             Requires(post): GConf2             Requires(postun): GConf2             </code></pre><br><br>            This is most useful for ensuring that required tools exist when             scriptlets are run, although there may be other valid use cases.             Valid keys for this attribute may include, but are not limited to:<br><br>            - <code>pre</code>             - <code>post</code>             - <code>preun</code>             - <code>postun</code>             - <code>pretrans</code>             - <code>posttrans</code><br><br>            For capabilities that are always required by packages at runtime,             use the <code>requires</code> attribute instead.<br><br>            See also: https://rpm.org/user_doc/more_dependencies.html<br><br>            NOTE: <code>pkg_rpm</code> does not check if the keys of this dictionary are             acceptable to <code>rpm(8)</code>.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
+| <a id="pkg_rpm-requires"></a>requires |  List of rpm capability expressions that this package requires.<br><br>            Corresponds to the "Requires" preamble tag.<br><br>            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html   | List of strings | optional | [] |
+| <a id="pkg_rpm-requires_contextual"></a>requires_contextual |  Contextualized requirement specifications<br><br>            This is a map of various properties (often scriptlet types) to             capability name specifications, e.g.:<br><br>            <pre><code>python             {"pre": ["GConf2"],"post": ["GConf2"], "postun": ["GConf2"]}             </code></pre><br><br>            Which causes the below to be added to the spec file's preamble:<br><br>            <pre><code>             Requires(pre): GConf2             Requires(post): GConf2             Requires(postun): GConf2             </code></pre><br><br>            This is most useful for ensuring that required tools exist when             scriptlets are run, although there may be other valid use cases.             Valid keys for this attribute may include, but are not limited to:<br><br>            - <code>pre</code>             - <code>post</code>             - <code>preun</code>             - <code>postun</code>             - <code>pretrans</code>             - <code>posttrans</code><br><br>            For capabilities that are always required by packages at runtime,             use the <code>requires</code> attribute instead.<br><br>            See also: https://rpm-software-management.github.io/rpm/manual/more_dependencies.html<br><br>            NOTE: <code>pkg_rpm</code> does not check if the keys of this dictionary are             acceptable to <code>rpm(8)</code>.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
 | <a id="pkg_rpm-rpmbuild_path"></a>rpmbuild_path |  Path to a <code>rpmbuild</code> binary.  Deprecated in favor of the rpmbuild toolchain   | String | optional | "" |
 | <a id="pkg_rpm-source_date_epoch"></a>source_date_epoch |  Value to export as SOURCE_DATE_EPOCH to facilitate reproducible builds<br><br>            Implicitly sets the <code>%clamp_mtime_to_source_date_epoch</code> in the             subordinate call to <code>rpmbuild</code> to facilitate more consistent in-RPM             file timestamps.<br><br>            Negative values (like the default) disable this feature.   | Integer | optional | -1 |
 | <a id="pkg_rpm-source_date_epoch_file"></a>source_date_epoch_file |  File containing the SOURCE_DATE_EPOCH value.<br><br>            Implicitly sets the <code>%clamp_mtime_to_source_date_epoch</code> in the             subordinate call to <code>rpmbuild</code> to facilitate more consistent in-RPM             file timestamps.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
@@ -259,10 +280,11 @@ Rules for making .tar files.
 ## pkg_tar
 
 <pre>
-pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>,
-             <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>,
-             <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>,
-             <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, <a href="#pkg_tar-stamp">stamp</a>, <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
+pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-allow_duplicates_with_different_content">allow_duplicates_with_different_content</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>,
+             <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>,
+             <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>, <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>,
+             <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, <a href="#pkg_tar-stamp">stamp</a>,
+             <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
 </pre>
 
 
@@ -273,6 +295,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-compressor">compress
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_tar-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_tar-allow_duplicates_with_different_content"></a>allow_duplicates_with_different_content |  If true, will allow you to reference multiple pkg_* which conflict (writing different content or metadata to the same destination). Such behaviour is always incorrect, but we provide a flag to support it in case old builds were accidentally doing it. Never explicitly set this to true for new code.   | Boolean | optional | True |
 | <a id="pkg_tar-compressor"></a>compressor |  External tool which can compress the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar-compressor_args"></a>compressor_args |  Arg list for <code>compressor</code>.   | String | optional | "" |
 | <a id="pkg_tar-deps"></a>deps |  tar files which will be unpacked and repacked into the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
@@ -280,12 +303,12 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-compressor">compress
 | <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
 | <a id="pkg_tar-extension"></a>extension |  -   | String | optional | "tar" |
 | <a id="pkg_tar-files"></a>files |  Obsolete. Do not use.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
-| <a id="pkg_tar-include_runfiles"></a>include_runfiles |  -   | Boolean | optional | False |
+| <a id="pkg_tar-include_runfiles"></a>include_runfiles |  Include runfiles for executables. These appear as they would in bazel-bin.For example: 'path/to/myprog.runfiles/path/to/my_data.txt'.   | Boolean | optional | False |
 | <a id="pkg_tar-mode"></a>mode |  -   | String | optional | "0555" |
 | <a id="pkg_tar-modes"></a>modes |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-mtime"></a>mtime |  -   | Integer | optional | -1 |
 | <a id="pkg_tar-out"></a>out |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
-| <a id="pkg_tar-owner"></a>owner |  Default numeric owner.group to apply to files when not set via pkg_attribures.   | String | optional | "0.0" |
+| <a id="pkg_tar-owner"></a>owner |  Default numeric owner.group to apply to files when not set via pkg_attributes.   | String | optional | "0.0" |
 | <a id="pkg_tar-ownername"></a>ownername |  -   | String | optional | "." |
 | <a id="pkg_tar-ownernames"></a>ownernames |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
 | <a id="pkg_tar-owners"></a>owners |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
@@ -312,8 +335,9 @@ Zip archive creation rule and associated logic.
 ## pkg_zip
 
 <pre>
-pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-compression_level">compression_level</a>, <a href="#pkg_zip-compression_type">compression_type</a>, <a href="#pkg_zip-mode">mode</a>, <a href="#pkg_zip-out">out</a>, <a href="#pkg_zip-package_dir">package_dir</a>, <a href="#pkg_zip-package_file_name">package_file_name</a>,
-             <a href="#pkg_zip-package_variables">package_variables</a>, <a href="#pkg_zip-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_zip-srcs">srcs</a>, <a href="#pkg_zip-stamp">stamp</a>, <a href="#pkg_zip-strip_prefix">strip_prefix</a>, <a href="#pkg_zip-timestamp">timestamp</a>)
+pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-allow_duplicates_with_different_content">allow_duplicates_with_different_content</a>, <a href="#pkg_zip-compression_level">compression_level</a>, <a href="#pkg_zip-compression_type">compression_type</a>,
+             <a href="#pkg_zip-include_runfiles">include_runfiles</a>, <a href="#pkg_zip-mode">mode</a>, <a href="#pkg_zip-out">out</a>, <a href="#pkg_zip-package_dir">package_dir</a>, <a href="#pkg_zip-package_file_name">package_file_name</a>, <a href="#pkg_zip-package_variables">package_variables</a>,
+             <a href="#pkg_zip-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_zip-srcs">srcs</a>, <a href="#pkg_zip-stamp">stamp</a>, <a href="#pkg_zip-strip_prefix">strip_prefix</a>, <a href="#pkg_zip-timestamp">timestamp</a>)
 </pre>
 
 
@@ -324,8 +348,10 @@ pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-compression_level">c
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_zip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_zip-allow_duplicates_with_different_content"></a>allow_duplicates_with_different_content |  If true, will allow you to reference multiple pkg_* which conflict (writing different content or metadata to the same destination). Such behaviour is always incorrect, but we provide a flag to support it in case old builds were accidentally doing it. Never explicitly set this to true for new code.   | Boolean | optional | True |
 | <a id="pkg_zip-compression_level"></a>compression_level |  The compression level to use, 1 is the fastest, 9 gives the smallest results. 0 skips compression, depending on the method used   | Integer | optional | 6 |
 | <a id="pkg_zip-compression_type"></a>compression_type |  The compression to use. Note that lzma and bzip2 might not be supported by all readers. The list of compressions is the same as Python's ZipFile: https://docs.python.org/3/library/zipfile.html#zipfile.ZIP_STORED   | String | optional | "deflated" |
+| <a id="pkg_zip-include_runfiles"></a>include_runfiles |  See standard attributes.   | Boolean | optional | False |
 | <a id="pkg_zip-mode"></a>mode |  The default mode for all files in the archive.   | String | optional | "0555" |
 | <a id="pkg_zip-out"></a>out |  output file name. Default: name + ".zip".   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="pkg_zip-package_dir"></a>package_dir |  Prefix to be prepend to all paths written. The name may contain variables, same as [package_file_name](#package_file_name)   | String | optional | "/" |
