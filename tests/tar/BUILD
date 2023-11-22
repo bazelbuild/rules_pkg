@@ -342,11 +342,20 @@ verify_archive_test(
         "a_program",
         "a_program.runfiles/tests/tar/BUILD",
         "executable.sh",
-        "an_executable",
-        "an_executable.runfiles/tests/foo.cc",
-        "an_executable.runfiles/tests/an_executable",
-        "an_executable.runfiles/tests/testdata/hello.txt",
-    ],
+    ] + select({
+        "@platforms//os:windows": [
+            "an_executable.exe",
+            "an_executable.exe.runfiles/tests/foo.cc",
+            "an_executable.exe.runfiles/tests/an_executable",
+            "an_executable.exe.runfiles/tests/testdata/hello.txt",
+        ],
+        "//conditions:default": [
+            "an_executable",
+            "an_executable.runfiles/tests/foo.cc",
+            "an_executable.runfiles/tests/an_executable",
+            "an_executable.runfiles/tests/testdata/hello.txt",
+        ]
+    }),
 )
 
 pkg_tar(
