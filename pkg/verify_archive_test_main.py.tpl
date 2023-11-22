@@ -80,7 +80,7 @@ class VerifyArchiveTest(unittest.TestCase):
       if path in plain_patterns:
         plain_patterns.remove(path)
     if len(plain_patterns) > 0:
-      self.fail('These required paths were not found: %s' % ','.join(plain_patterns) + 'in %s' % str(self.paths))
+      self.fail('These required paths were not found: %s' % ','.join(plain_patterns) + ' in [%s]' % ','.join(self.paths))
 
   def check_must_not_contain(self, must_not_contain):
     plain_patterns = set(must_not_contain)
