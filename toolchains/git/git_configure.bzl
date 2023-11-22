@@ -58,6 +58,7 @@ _find_system_git = repository_rule(
     },
 )
 
+# buildifier: disable=function-docstring-args
 def experimental_find_system_git(name, workspace_file = None, verbose = False):
     """Create a toolchain that lets you run git.
 
@@ -76,3 +77,19 @@ def experimental_find_system_git(name, workspace_file = None, verbose = False):
         "@%s//:git_auto_toolchain" % name,
         "@rules_pkg//toolchains/git:git_missing_toolchain",
     )
+
+# buildifier: disable=function-docstring-args
+def experimental_find_system_git_bzlmod(name, workspace_file = None, verbose = False):
+    """Create a toolchain that lets you run git.
+
+    WARNING: This is experimental. The API and behavior are subject to change
+    at any time.
+
+    This presumes that your Bazel WORKSPACE file is located under your git
+    client. That is often true, but might not be in a multi-repo where you
+    might weave together a Bazel workspace from several git repos that are
+    all rooted under the WORKSPACE file.
+    """
+    if not workspace_file:
+        workspace_file = Label("//:MODULE.bazel")
+    _find_system_git(name = name, workspace_file = workspace_file, verbose = verbose)
