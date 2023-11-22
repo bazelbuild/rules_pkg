@@ -14,7 +14,7 @@
 # -*- coding: utf-8 -*-
 """Tests for pkg_tar."""
 
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
@@ -579,7 +579,7 @@ pkg_tar(
     symlinks = {
         # We expect package_dir to apply to this
         "tree_artifact/toss_in_another": "some_target",
-        # But we protect the user from duplicationg package_dir in their
+        # But we protect the user from duplicating package_dir in their
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },

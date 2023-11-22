@@ -1,7 +1,12 @@
 * @aiuto @alexeagle
 
+/.bazelci/	@meteorcloudy
+/.bcr/		@meteorcloudy
+/.github/	@meteorcloudy
+/.pre-commit-config.yaml	@meteorcloudy
+
 /deb_packages/  @aiuto
-/docs/		@aiuto @alexeagle @jylinv0 @gregestren
+/docs/		@aiuto @alexeagle @jylinv0
 /doc_build/	@aiuto @alexeagle @jylinv0
 
 /pkg/rpm/		@nacl
@@ -9,6 +14,6 @@
 /legacy/tests/rpm	@nacl
 /toolchains/rpm		@nacl
 
-/pkg/deb.bzl		@aiuto @dannysullivan @jylinv0
-/pkg/private/deb/	@aiuto @dannysullivan @jylinv0
-/pkg/tests/deb/		@aiuto @dannysullivan @jylinv0
+/pkg/deb.bzl		@aiuto @dannysullivan
+/pkg/private/deb/	@aiuto @dannysullivan
+/pkg/tests/deb/		@aiuto @dannysullivan

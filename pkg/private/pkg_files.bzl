@@ -228,7 +228,7 @@ def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
         link_to = pkg_symlink_info.target,
     )
 
-def _process_pkg_filegroup(mapping_context, pkg_filegroup_info, _):
+def _process_pkg_filegroup(mapping_context, pkg_filegroup_info):
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
         for d in pkg_filegroup_info.pkg_dirs:
             _process_pkg_dirs(mapping_context, d[0], d[1])
@@ -267,7 +267,6 @@ def process_src(mapping_context, src, origin):
         _process_pkg_filegroup(
             mapping_context,
             src[PackageFilegroupInfo],
-            origin,
         )
         found_info = True
     if PackageSymlinkInfo in src:

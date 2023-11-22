@@ -181,7 +181,7 @@ pkg_deb_impl = rule(
     Create a Debian package.
 
     This rule produces 2 artifacts: a .deb and a .changes file. The DefaultInfo will
-    include both. If you need downstream rule to specificially depend on only the .deb or
+    include both. If you need downstream rule to specifically depend on only the .deb or
     .changes file then you can use `filegroup` to select distinct output groups.
 
     **OutputGroupInfo**
