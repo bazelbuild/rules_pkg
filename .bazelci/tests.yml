@@ -61,10 +61,6 @@ ubuntu1804: &ubuntu
   platform: ubuntu1804
   <<: *common
   <<: *default_tests
-  build_targets:
-    - "//distro:distro"
-    - "//distro:relnotes"
-    - "//doc_build:*"
 
 centos7: &centos
   platform: centos7_java11_devtoolset10
@@ -94,6 +90,9 @@ tasks:
     platform: ubuntu1804
     build_flags:
       - "--enable_bzlmod"
+    build_targets:
+      - "//distro:distro"
+      - "//distro:relnotes"
     <<: *common
     <<: *rolling
     <<: *default_tests
@@ -118,6 +117,10 @@ tasks:
     name: lts_ubuntu
     <<: *ubuntu
     <<: *lts
+    build_targets:
+      - "//distro:distro"
+      - "//distro:relnotes"
+      - "//doc_build:*"
   lts_windows:
     name: lts_windows
     <<: *windows
