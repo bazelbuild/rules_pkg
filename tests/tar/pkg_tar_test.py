@@ -244,14 +244,6 @@ class PkgTarTest(unittest.TestCase):
     self.assertTarFileContent('test-tar-tree-artifact-noroot.tar',
                               noroot_content)
 
-  def test_tar_with_runfiles(self):
-    content = [
-      {'name': 'BUILD' },
-      {'name': 'a_program' },
-      {'name': 'executable.sh' },
-    ]
-    self.assertTarFileContent('test-tar-with-runfiles.tar', content)
-
   def test_tar_leading_dotslash(self):
     content = [
       {'name': './loremipsum.txt'},

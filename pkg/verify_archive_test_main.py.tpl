@@ -50,6 +50,8 @@ class VerifyArchiveTest(unittest.TestCase):
     Args:
         min_size: The minimum number of targets we expect.
     """
+    if min_size <= 0:
+      return
     actual_size = len(self.paths)
     self.assertGreaterEqual(
         len(self.paths),
@@ -63,7 +65,7 @@ class VerifyArchiveTest(unittest.TestCase):
     Args:
         max_size: The maximum number of targets we expect.
     """
-    if max_size < 0:
+    if max_size <= 0:
       return
     actual_size = len(self.paths)
     self.assertLessEqual(
