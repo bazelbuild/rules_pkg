@@ -18,8 +18,7 @@ package(
 
 filegroup(
     name = "standard_package",
-    srcs = glob([
-        "BUILD",
+    srcs = ["BUILD"] + glob([
         "*.bzl",
         "*.py",
     ]),

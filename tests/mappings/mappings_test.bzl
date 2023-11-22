@@ -883,6 +883,7 @@ def _strip_prefix_test_impl(ctx):
 
 strip_prefix_test = unittest.make(_strip_prefix_test_impl)
 
+# buildifier: disable=unnamed-macro
 def mappings_analysis_tests():
     """Declare mappings.bzl analysis tests"""
     _test_pkg_files_contents()
@@ -969,6 +970,7 @@ _gen_manifest_test_main = rule(
     },
 )
 
+# buildifier: disable=function-docstring-args
 def manifest_golden_test(name, target, expected):
     """Tests that a content manifest file matches a golden copy.
 
