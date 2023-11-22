@@ -346,7 +346,7 @@ verify_archive_test(
         "@platforms//os:windows": [
             "an_executable.exe",
             "an_executable.exe.runfiles/tests/foo.cc",
-            "an_executable.exe.runfiles/tests/an_executable",
+            "an_executable.exe.runfiles/tests/an_executable.exe",
             "an_executable.exe.runfiles/tests/testdata/hello.txt",
         ],
         "//conditions:default": [
