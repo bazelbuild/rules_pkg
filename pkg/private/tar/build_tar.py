@@ -218,7 +218,7 @@ class TarFile(object):
       self.add_tar(tmpfile[1])
       os.remove(tmpfile[1])
 
-  def add_tree(self, tree_top, destpath, mode=None, ids=None, names=None):
+  def add_tree(self, tree_top, destpath, file_attributes, mode=None, ids=None, names=None):
     """Add a tree artifact to the tar file.
 
     Args:
@@ -273,31 +273,48 @@ class TarFile(object):
           to_write[dest_dir + file] = content_path
 
     for path in sorted(to_write.keys()):
+      if file_attributes:
+          attrs = file_attributes(path, with_default_mode=False)
+          use_ids = attrs.get("ids")
+          use_names = attrs.get("names")
+          # in this case, use_mode will be None and mode (as passed into this
+          # function) will be the default_mode.
+          use_mode = attrs.get("mode")
+      else:
+          use_ids = ids
+          use_names = names
+          use_mode = mode
+
       content_path = to_write[path]
       if not content_path:
         # This is an intermediate directory. Bazel has no API to specify modes
         # for this, so the least surprising thing we can do is make it the
-        # canonical rwxr-xr-x
+        # canonical rwxr-xr-x unless we've gotten a custom override
+        if use_mode is None:
+            # No custom override, so fall back to the old behavior of 0o755
+            use_mode = 0o755
+
         self.add_empty_file(
             path,
-            mode=0o755,
-            ids=ids,
-            names=names,
+            mode=use_mode,
+            ids=use_ids,
+            names=use_names,
             kind=tarfile.DIRTYPE)
       else:
         # If mode is unspecified, derive the mode from the file's mode.
-        if mode is None:
-          f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
-        else:
-          f_mode = mode
+        if use_mode is None:
+            use_mode = mode
+        if use_mode is None:
+          use_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
+
         self.tarfile.add_file(
             path,
             file_content=content_path,
-            mode=f_mode,
-            uid=ids[0],
-            gid=ids[1],
-            uname=names[0],
-            gname=names[1])
+            mode=use_mode,
+            uid=use_ids[0],
+            gid=use_ids[1],
+            uname=use_names[0],
+            gname=use_names[1])
 
   def add_manifest_entry(self, entry, file_attributes):
     # Use the pkg_tar mode/owner remapping as a fallback
@@ -325,7 +342,7 @@ class TarFile(object):
     elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(self.normalize_path(entry.dest), **attrs)
     elif entry.type == manifest.ENTRY_IS_TREE:
-      self.add_tree(entry.src, entry.dest, **attrs)
+      self.add_tree(entry.src, entry.dest, file_attributes, **attrs)
     elif entry.type == manifest.ENTRY_IS_EMPTY_FILE:
       self.add_empty_file(self.normalize_path(entry.dest), **attrs)
     else:
@@ -434,11 +451,11 @@ def main():
       compressor = options.compressor,
       default_mtime=default_mtime) as output:
 
-    def file_attributes(filename):
+    def file_attributes(filename, with_default_mode=True):
       if filename.startswith('/'):
         filename = filename[1:]
       return {
-          'mode': mode_map.get(filename, default_mode),
+          'mode': mode_map.get(filename, default_mode if with_default_mode else None),
           'ids': ids_map.get(filename, default_ids),
           'names': names_map.get(filename, default_ownername),
       }
