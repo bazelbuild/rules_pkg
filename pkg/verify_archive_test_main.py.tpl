@@ -50,6 +50,8 @@ class VerifyArchiveTest(unittest.TestCase):
     Args:
         min_size: The minimum number of targets we expect.
     """
+    if min_size <= 0:
+      return
     actual_size = len(self.paths)
     self.assertGreaterEqual(
         len(self.paths),
@@ -63,7 +65,7 @@ class VerifyArchiveTest(unittest.TestCase):
     Args:
         max_size: The maximum number of targets we expect.
     """
-    if max_size < 0:
+    if max_size <= 0:
       return
     actual_size = len(self.paths)
     self.assertLessEqual(
@@ -78,7 +80,7 @@ class VerifyArchiveTest(unittest.TestCase):
       if path in plain_patterns:
         plain_patterns.remove(path)
     if len(plain_patterns) > 0:
-      self.fail('These required paths were not found: %s' % ','.join(plain_patterns))
+      self.fail('These required paths were not found: %s' % ','.join(plain_patterns) + ' in [%s]' % ','.join(self.paths))
 
   def check_must_not_contain(self, must_not_contain):
     plain_patterns = set(must_not_contain)

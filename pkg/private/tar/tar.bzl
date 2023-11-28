@@ -13,17 +13,15 @@
 # limitations under the License.
 """Rules for making .tar files."""
 
-load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
     "add_empty_file",
+    "add_label_list",
     "add_single_file",
     "add_symlink",
-    "add_tree_artifact",
     "create_mapping_context_from_ctx",
-    "process_src",
     "write_manifest",
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
@@ -58,15 +56,7 @@ def _pkg_tar_impl(ctx):
 
     # Files needed by rule implementation at runtime
     files = []
-
     outputs, output_file, _ = setup_output_files(ctx)
-
-    # Compute the relative path
-    data_path = compute_data_path(ctx.label, ctx.attr.strip_prefix)
-    data_path_without_prefix = compute_data_path(ctx.label, ".")
-
-    # Find a list of path remappings to apply.
-    remap_paths = ctx.attr.remap_paths
 
     # Start building the arguments.
     args = ctx.actions.args()
@@ -112,53 +102,36 @@ def _pkg_tar_impl(ctx):
         args.add("--mtime", "%d" % ctx.attr.mtime)
     if ctx.attr.portable_mtime:
         args.add("--mtime", "portable")
+    if ctx.attr.modes:
+        for key in ctx.attr.modes:
+            args.add("--modes", "%s=%s" % (_quote(key), ctx.attr.modes[key]))
+    if ctx.attr.owners:
+        for key in ctx.attr.owners:
+            args.add("--owners", "%s=%s" % (_quote(key), ctx.attr.owners[key]))
+    if ctx.attr.ownernames:
+        for key in ctx.attr.ownernames:
+            args.add(
+                "--owner_names",
+                "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
+            )
 
     # Now we begin processing the files.
+    path_mapper = None
+    if ctx.attr.remap_paths:
+        path_mapper = lambda path: _remap(ctx.attr.remap_paths, path)
+
     mapping_context = create_mapping_context_from_ctx(
         ctx,
         label = ctx.label,
-        include_runfiles = False,  # TODO(aiuto): ctx.attr.include_runfiles,
+        include_runfiles = ctx.attr.include_runfiles,
         strip_prefix = ctx.attr.strip_prefix,
-        default_mode = ctx.attr.mode,
+        # build_tar does the default modes. Consider moving attribute mapping
+        # into mapping_context.
+        default_mode = None,
+        path_mapper = path_mapper,
     )
 
-    # Start with all the pkg_* inputs
-    for src in ctx.attr.srcs:
-        if not process_src(
-            mapping_context,
-            src = src,
-            origin = src.label,
-        ):
-            src_files = src[DefaultInfo].files.to_list()
-            if ctx.attr.include_runfiles:
-                runfiles = src[DefaultInfo].default_runfiles
-                if runfiles:
-                    mapping_context.file_deps.append(runfiles.files)
-                    src_files.extend(runfiles.files.to_list())
-
-            # Add in the files of srcs which are not pkg_* types
-            for f in src_files:
-                d_path = dest_path(f, data_path, data_path_without_prefix)
-
-                # Note: This extra remap is the bottleneck preventing this
-                # large block from being a utility method as shown below.
-                # Should we disallow mixing pkg_files in srcs with remap?
-                # I am fine with that if it makes the code more readable.
-                dest = _remap(remap_paths, d_path)
-                if f.is_directory:
-                    add_tree_artifact(mapping_context.content_map, dest, f, src.label)
-                else:
-                    # Note: This extra remap is the bottleneck preventing this
-                    # large block from being a utility method as shown below.
-                    # Should we disallow mixing pkg_files in srcs with remap?
-                    # I am fine with that if it makes the code more readable.
-                    dest = _remap(remap_paths, d_path)
-                    add_single_file(mapping_context, dest, f, src.label)
-
-    # TODO(aiuto): I want the code to look like this, but we don't have lambdas.
-    # transform_path = lambda f: _remap(
-    #    remap_paths, dest_path(f, data_path, data_path_without_prefix))
-    # add_label_list(mapping_context, ctx.attr.srcs, transform_path)
+    add_label_list(mapping_context, srcs = ctx.attr.srcs)
 
     # The files attribute is a map of labels to destinations. We can add them
     # directly to the content map.
@@ -174,18 +147,6 @@ def _pkg_tar_impl(ctx):
             target.label,
         )
 
-    if ctx.attr.modes:
-        for key in ctx.attr.modes:
-            args.add("--modes", "%s=%s" % (_quote(key), ctx.attr.modes[key]))
-    if ctx.attr.owners:
-        for key in ctx.attr.owners:
-            args.add("--owners", "%s=%s" % (_quote(key), ctx.attr.owners[key]))
-    if ctx.attr.ownernames:
-        for key in ctx.attr.ownernames:
-            args.add(
-                "--owner_names",
-                "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
-            )
     for empty_file in ctx.attr.empty_files:
         add_empty_file(mapping_context, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
@@ -289,7 +250,10 @@ pkg_tar_impl = rule(
         "extension": attr.string(default = "tar"),
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),
-        "include_runfiles": attr.bool(),
+        "include_runfiles": attr.bool(
+            doc = ("""Include runfiles for executables. These appear as they would in bazel-bin."""
+                   + """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
+        ),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
         "compressor": attr.label(

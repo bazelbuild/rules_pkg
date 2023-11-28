@@ -116,7 +116,7 @@ cc_library(
 cc_binary(
     name = "an_executable",
     srcs = ["foo.cc"],
-    data = ["BUILD"],
+    data = ["foo.cc"],
     deps = [
         ":liba",
         ":libb",
