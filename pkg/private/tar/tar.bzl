@@ -186,6 +186,14 @@ def _pkg_tar_impl(ctx):
                 "--owner_names",
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
+    if ctx.attr.xattr:
+        for item in ctx.attr.xattr:
+            args.add("--xattr", item)
+    if ctx.attr.xattrs:
+        for file in ctx.attr.xattrs:
+            xattr = ctx.attr.xattrs[file]
+            for item in xattr:
+                args.add("--file_xattr", "%s=%s" % (_quote(file), item))
     for empty_file in ctx.attr.empty_files:
         add_empty_file(mapping_context, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
@@ -286,6 +294,8 @@ pkg_tar_impl = rule(
         "ownername": attr.string(default = "."),
         "owners": attr.string_dict(),
         "ownernames": attr.string_dict(),
+        "xattr": attr.string_list(),
+        "xattrs": attr.string_list_dict(),
         "extension": attr.string(default = "tar"),
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),

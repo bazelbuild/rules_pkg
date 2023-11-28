@@ -47,7 +47,8 @@ class TarFileWriter(object):
                compression='',
                compressor='',
                default_mtime=None,
-               preserve_tar_mtimes=True):
+               preserve_tar_mtimes=True,
+               use_xattr=False):
     """TarFileWriter wraps tarfile.open().
 
     Args:
@@ -60,6 +61,7 @@ class TarFileWriter(object):
       preserve_tar_mtimes: if true, keep file mtimes from input tar file.
     """
     self.preserve_mtime = preserve_tar_mtimes
+    self.use_xattr = use_xattr
     if default_mtime is None:
       self.default_mtime = 0
     elif default_mtime == 'portable':
@@ -98,7 +100,7 @@ class TarFileWriter(object):
     self.name = name
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
-                            format=tarfile.GNU_FORMAT) 
+                            format=tarfile.PAX_FORMAT if use_xattr else tarfile.GNU_FORMAT)
     self.members = set()
     self.directories = set()
     # Preseed the added directory list with things we should not add. If we
@@ -191,7 +193,8 @@ class TarFileWriter(object):
                uname='',
                gname='',
                mtime=None,
-               mode=None):
+               mode=None,
+               xattr=None):
     """Add a file to the current tar.
 
     Args:
@@ -234,6 +237,14 @@ class TarFileWriter(object):
       tarinfo.mode = mode
     if link:
       tarinfo.linkname = link
+    if xattr:
+      if not self.use_xattr:
+        raise self.Error('This tar file was created without `use_xattr` flag but try to create file with xattr: {}, {}'.
+                         format(name, xattr))
+      pax_headers = {}
+      for key in xattr:
+        pax_headers["SCHILY.xattr." + key] = xattr[key]
+      tarinfo.pax_headers = pax_headers
     if content:
       content_bytes = content.encode('utf-8')
       tarinfo.size = len(content_bytes)
