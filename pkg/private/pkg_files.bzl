@@ -75,6 +75,8 @@ _MappingContext = provider(
         "include_runfiles": "bool: include runfiles",
         "strip_prefix": "strip_prefix",
 
+        "path_mapper": "function to map destination paths",
+
         # Defaults
         "default_mode": "Default mode to apply to file without a mode setting",
         "default_user": "Default user name to apply to file without a user",
@@ -91,7 +93,9 @@ def create_mapping_context_from_ctx(
         allow_duplicates_with_different_content = None,
         strip_prefix = None,
         include_runfiles = None,
-        default_mode = None):
+        default_mode = None,
+        path_mapper = None
+    ):
     """Construct a MappingContext.
 
     Args: See the provider definition.
@@ -116,6 +120,7 @@ def create_mapping_context_from_ctx(
         strip_prefix = strip_prefix,
         include_runfiles = include_runfiles,
         default_mode = default_mode,
+        path_mapper = path_mapper or (lambda x: x),
         # TODO(aiuto): allow these to be passed in as needed. But, before doing
         # that, explore defauilt_uid/gid as 0 rather than None
         default_user = "",
@@ -340,7 +345,7 @@ def add_label_list(mapping_context, srcs):
 
     Args:
       mapping_context: (r/w) a MappingContext
-      srcs: List of source objects.
+      srcs: List of source objects
     """
 
     # Compute the relative path
@@ -390,12 +395,13 @@ def add_from_default_info(
     the_executable = get_my_executable(src)
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
-        d_path = dest_path(f, data_path, data_path_without_prefix)
+        d_path = mapping_context.path_mapper(
+            dest_path(f, data_path, data_path_without_prefix))
         if f.is_directory:
             add_tree_artifact(
                 mapping_context.content_map,
-                d_path,
-                f,
+                dest_path = d_path,
+                src = f,
                 origin = src.label,
                 mode = mapping_context.default_mode,
                 user = mapping_context.default_user,
@@ -415,7 +421,16 @@ def add_from_default_info(
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
         if runfiles:
-            base_path = d_path + ".runfiles"
+            mapping_context.file_deps.append(runfiles.files)
+
+            # Computing the runfiles root is subtle. It should be based off of
+            # the executable, but that is not always obvious. When in doubt,
+            # the first file of DefaultInfo.files should be the right target.
+            base_file = the_executable or all_files[0]
+            base_file_path = mapping_context.path_mapper(
+                dest_path(base_file, data_path, data_path_without_prefix))
+            base_path = base_file_path + ".runfiles"
+
             for rf in runfiles.files.to_list():
                 d_path = base_path + "/" + rf.short_path
                 fmode = "0755" if rf == the_executable else mapping_context.default_mode
