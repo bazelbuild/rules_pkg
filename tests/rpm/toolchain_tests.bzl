@@ -119,5 +119,6 @@ def _create_toolchain_creation_tests():
         expect_path = "/usr/bin/foo",
     )
 
+# buildifier: disable=unnamed-macro
 def create_toolchain_analysis_tests():
     _create_toolchain_creation_tests()

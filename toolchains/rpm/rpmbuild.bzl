@@ -70,5 +70,6 @@ is_rpmbuild_available = rule(
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
 )
 
+# buildifier: disable=unnamed-macro
 def rpmbuild_register_toolchains():
     native.register_toolchains("@rules_pkg//toolchains/rpm:rpmbuild_missing_toolchain")

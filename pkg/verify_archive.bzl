@@ -85,6 +85,7 @@ _gen_verify_archive_test_main = rule(
     },
 )
 
+# buildifier: disable=function-docstring-args
 def verify_archive_test(
         name,
         target,
