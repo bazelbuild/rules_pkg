@@ -268,10 +268,10 @@ class RpmBuilder(object):
     # Then prepare for textual substitution.  This is typically only the case for the
     # experimental `pkg_rpm`.
     tpl_replacements = {
-      'PRE_SCRIPTLET': "%pre\n" + self.pre_scriptlet,
-      'POST_SCRIPTLET': "%post\n" + self.post_scriptlet,
-      'PREUN_SCRIPTLET': "%preun\n" + self.preun_scriptlet,
-      'POSTUN_SCRIPTLET': "%postun\n" + self.postun_scriptlet,
+      'PRE_SCRIPTLET': ("%pre\n" + self.pre_scriptlet) if self.pre_scriptlet else "",
+      'POST_SCRIPTLET': ("%post\n" + self.post_scriptlet) if self.post_scriptlet else "",
+      'PREUN_SCRIPTLET': ("%preun\n" + self.preun_scriptlet) if self.preun_scriptlet else "",
+      'POSTUN_SCRIPTLET': ("%postun\n" + self.postun_scriptlet) if self.postun_scriptlet else "",
       'CHANGELOG': ""
     }
 
