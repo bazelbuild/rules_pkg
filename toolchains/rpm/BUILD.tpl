@@ -5,6 +5,7 @@ rpmbuild_toolchain(
     name = "rpmbuild_auto",
     path = "{RPMBUILD_PATH}",
     version = "{RPMBUILD_VERSION}",
+    debuginfo_type = "{RPMBUILD_DEBUGINFO_TYPE}",
 )
 
 toolchain(
