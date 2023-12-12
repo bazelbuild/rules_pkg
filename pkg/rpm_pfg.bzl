@@ -180,7 +180,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map,
                 abs_dest,
             ))
 
-def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
     for dest in pdi.dirs:
         metadata = _package_contents_metadata(origin_label, grouping_label)
         if dest in dest_check_map:
@@ -195,7 +195,7 @@ def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, 
             abs_dirname,
         ))
 
-def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
     metadata = _package_contents_metadata(origin_label, grouping_label)
     if psi.destination in dest_check_map:
         _conflicting_contents_error(psi.destination, metadata, dest_check_map[psi.destination])
@@ -258,7 +258,7 @@ def _pkg_rpm_impl(ctx):
             ctx.attr.architecture,
         )
 
-    outputs, output_file, output_name = setup_output_files(
+    _, output_file, _ = setup_output_files(
         ctx,
         package_file_name = package_file_name,
         default_output_file = default_file,
@@ -321,6 +321,8 @@ def _pkg_rpm_impl(ctx):
         preamble_pieces.extend(["Provides: " + p for p in ctx.attr.provides])
     if ctx.attr.conflicts:
         preamble_pieces.extend(["Conflicts: " + c for c in ctx.attr.conflicts])
+    if ctx.attr.obsoletes:
+        preamble_pieces.extend(["Obsoletes: " + o for o in ctx.attr.obsoletes])
     if ctx.attr.requires:
         preamble_pieces.extend(["Requires: " + r for r in ctx.attr.requires])
     if ctx.attr.requires_contextual:
@@ -710,7 +712,7 @@ pkg_rpm = rule(
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
     This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
-    include both. If you need downstream rule to specificially depend on only the .rpm or
+    include both. If you need downstream rule to specifically depend on only the .rpm or
     .changes file then you can use `filegroup` to select distinct output groups.
 
     **OutputGroupInfo**
@@ -913,7 +915,7 @@ pkg_rpm = rule(
 
             Corresponds to the "Conflicts" preamble tag.
 
-            See also: https://rpm.org/user_doc/dependencies.html
+            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
         ),
         "provides": attr.string_list(
@@ -921,15 +923,23 @@ pkg_rpm = rule(
 
             Corresponds to the "Provides" preamble tag.
 
-            See also: https://rpm.org/user_doc/dependencies.html
+            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
         ),
+        "obsoletes": attr.string_list(
+            doc = """List of rpm capability expressions that this package obsoletes.
+
+            Corresponds to the "Obsoletes" preamble tag.
+
+            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
+            """,
+	),
         "requires": attr.string_list(
             doc = """List of rpm capability expressions that this package requires.
 
             Corresponds to the "Requires" preamble tag.
 
-            See also: https://rpm.org/user_doc/dependencies.html
+            See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
         ),
         "requires_contextual": attr.string_list_dict(
@@ -964,7 +974,7 @@ pkg_rpm = rule(
             For capabilities that are always required by packages at runtime,
             use the `requires` attribute instead.
 
-            See also: https://rpm.org/user_doc/more_dependencies.html
+            See also: https://rpm-software-management.github.io/rpm/manual/more_dependencies.html
 
             NOTE: `pkg_rpm` does not check if the keys of this dictionary are
             acceptable to `rpm(8)`.

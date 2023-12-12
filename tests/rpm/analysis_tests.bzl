@@ -49,7 +49,7 @@ def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):
         **kwargs
     )
 
-def _declare_conflicts_test(name, srcs, **kwargs):
+def _declare_conflicts_test(name, srcs):
     rpm_name = name + "_rpm"
     _declare_pkg_rpm(
         name = rpm_name,
@@ -226,7 +226,7 @@ package_naming_test = analysistest.make(
 )
 
 # Dummy substitution set, used in below test cases
-def _dummy_pkg_variables_impl(ctx):
+def _dummy_pkg_variables_impl(_):
     return [
         PackageVariablesInfo(
             values = {
@@ -302,7 +302,7 @@ def _test_naming(name):
         ],
     )
 
-def analysis_tests(name, **kwargs):
+def analysis_tests(name):
     # Need to test:
     #
     # - Mutual exclusivity of certain options (low priority)

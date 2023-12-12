@@ -24,7 +24,6 @@ load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_
 def _pkg_install_script_impl(ctx):
     script_file = ctx.actions.declare_file(ctx.attr.name + ".py")
 
-    fragments = []
     mapping_context = create_mapping_context_from_ctx(ctx, label = ctx.label, default_mode = "0644")
     for src in ctx.attr.srcs:
         process_src(

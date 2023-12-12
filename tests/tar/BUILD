@@ -14,11 +14,13 @@
 # -*- coding: utf-8 -*-
 """Tests for pkg_tar."""
 
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:verify_archive.bzl", "verify_archive_test")
+
+# buildifier: disable=bzl-visibility
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
@@ -323,14 +325,39 @@ fake_artifact(
     name = "a_program",
     files = ["//tests:testdata/executable.sh"],
     runfiles = ["BUILD"],
+    executable = True,
 )
 
 pkg_tar(
     name = "test-tar-with-runfiles",
     srcs = [
         ":a_program",
+        "//tests:an_executable",
     ],
     include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "runfiles_test",
+    target = ":test-tar-with-runfiles",
+    must_contain = [
+        "a_program",
+        "a_program.runfiles/tests/tar/BUILD",
+        "executable.sh",
+    ] + select({
+        "@platforms//os:windows": [
+            "an_executable.exe",
+            "an_executable.exe.runfiles/tests/foo.cc",
+            "an_executable.exe.runfiles/tests/an_executable.exe",
+            "an_executable.exe.runfiles/tests/testdata/hello.txt",
+        ],
+        "//conditions:default": [
+            "an_executable",
+            "an_executable.runfiles/tests/foo.cc",
+            "an_executable.runfiles/tests/an_executable",
+            "an_executable.runfiles/tests/testdata/hello.txt",
+        ]
+    }),
 )
 
 pkg_tar(
@@ -364,7 +391,6 @@ py_test(
         ":test-tar-strip_prefix-substring.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
-        ":test-tar-with-runfiles",
         ":test-tree-input-with-strip-prefix",
         ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
@@ -577,7 +603,7 @@ pkg_tar(
     symlinks = {
         # We expect package_dir to apply to this
         "tree_artifact/toss_in_another": "some_target",
-        # But we protect the user from duplicationg package_dir in their
+        # But we protect the user from duplicating package_dir in their
         # link. That was the old behavior of symlink.
         "new/base/something/this": "that",
     },
