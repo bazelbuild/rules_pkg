@@ -357,6 +357,7 @@ class RpmBuilder(object):
     args += [
         '--define', '_topdir %s' % dirname,
         '--define', '_tmppath %s/TMP' % dirname,
+        '--define', '_builddir %s/BUILD' % dirname,
         '--bb',
         '--buildroot=%s' % buildroot,
     ]  # yapf: disable

@@ -325,14 +325,39 @@ fake_artifact(
     name = "a_program",
     files = ["//tests:testdata/executable.sh"],
     runfiles = ["BUILD"],
+    executable = True,
 )
 
 pkg_tar(
     name = "test-tar-with-runfiles",
     srcs = [
         ":a_program",
+        "//tests:an_executable",
     ],
     include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "runfiles_test",
+    target = ":test-tar-with-runfiles",
+    must_contain = [
+        "a_program",
+        "a_program.runfiles/tests/tar/BUILD",
+        "executable.sh",
+    ] + select({
+        "@platforms//os:windows": [
+            "an_executable.exe",
+            "an_executable.exe.runfiles/tests/foo.cc",
+            "an_executable.exe.runfiles/tests/an_executable.exe",
+            "an_executable.exe.runfiles/tests/testdata/hello.txt",
+        ],
+        "//conditions:default": [
+            "an_executable",
+            "an_executable.runfiles/tests/foo.cc",
+            "an_executable.runfiles/tests/an_executable",
+            "an_executable.runfiles/tests/testdata/hello.txt",
+        ]
+    }),
 )
 
 pkg_tar(
@@ -366,7 +391,6 @@ py_test(
         ":test-tar-strip_prefix-substring.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
-        ":test-tar-with-runfiles",
         ":test-tree-input-with-strip-prefix",
         ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
