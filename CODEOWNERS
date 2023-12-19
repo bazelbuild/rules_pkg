@@ -1,4 +1,4 @@
-* @aiuto @alexeagle
+* @aiuto @cgrindel
 
 /.bazelci/	@meteorcloudy
 /.bcr/		@meteorcloudy
@@ -6,8 +6,8 @@
 /.pre-commit-config.yaml	@meteorcloudy
 
 /deb_packages/  @aiuto
-/docs/		@aiuto @alexeagle @jylinv0
-/doc_build/	@aiuto @alexeagle @jylinv0
+/docs/		@aiuto @jylinv0
+/doc_build/	@aiuto @jylinv0
 
 /pkg/rpm/		@nacl
 /pkg/tests/rpm/		@nacl
