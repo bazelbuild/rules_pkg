@@ -684,8 +684,8 @@ def _pkg_rpm_impl(ctx):
     )
 
     changes = []
-    if ctx.attr.changelog:
-        changes = [ctx.attr.changelog]
+    if ctx.file.changelog:
+        changes = [ctx.file.changelog]
 
     output_groups = {
         "out": [default_file],
