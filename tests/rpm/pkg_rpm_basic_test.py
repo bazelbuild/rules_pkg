@@ -60,6 +60,8 @@ preuninstall scriptlet (using /bin/sh):
 echo preun
 postuninstall scriptlet (using /bin/sh):
 echo postun
+posttrans scriptlet (using /bin/sh):
+echo posttrans
 """
 
         output = subprocess.check_output(

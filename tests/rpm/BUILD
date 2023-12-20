@@ -140,6 +140,7 @@ pkg_rpm(
     postun_scriptlet = """echo postun""",
     pre_scriptlet = """echo pre""",
     preun_scriptlet = """echo preun""",
+    posttrans_scriptlet = """echo posttrans""",
     provides = ["test"],
     release = "2222",
     requires = ["test-lib > 1.0"],
@@ -164,6 +165,7 @@ pkg_rpm(
     postun_scriptlet = """echo postun""",
     pre_scriptlet = """echo pre""",
     preun_scriptlet = """echo preun""",
+    posttrans_scriptlet = """echo posttrans""",
     provides = ["test"],
     release = "2222",
     requires = ["test-lib > 1.0"],
@@ -191,6 +193,7 @@ pkg_rpm(
     postun_scriptlet = """echo postun""",
     pre_scriptlet = """echo pre""",
     preun_scriptlet = """echo preun""",
+    posttrans_scriptlet = """echo posttrans""",
     provides = ["test"],
     release = "2222",
     requires = ["test-lib > 1.0"],
@@ -285,6 +288,7 @@ genrule(
         # NOTE: excludes 'rpmlib' requires that may be version-dependent
         echo 'capability:sense'
         # Common, automatically generated
+        echo '/bin/sh:interp,posttrans'
         echo '/bin/sh:pre,interp'
         echo '/bin/sh:post,interp'
         echo '/bin/sh:preun,interp'
