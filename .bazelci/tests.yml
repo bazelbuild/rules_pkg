@@ -120,7 +120,7 @@ tasks:
     build_targets:
       - "//distro:distro"
       - "//distro:relnotes"
-      - "//doc_build:*"
+      # - "//doc_build:*"  Temporary disable
   lts_windows:
     name: lts_windows
     <<: *windows
