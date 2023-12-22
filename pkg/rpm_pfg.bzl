@@ -429,6 +429,18 @@ def _pkg_rpm_impl(ctx):
         ctx.actions.write(scriptlet_file, ctx.attr.postun_scriptlet)
         args.append("--postun_scriptlet=" + scriptlet_file.path)
 
+    if ctx.attr.posttrans_scriptlet_file:
+        if ctx.attr.posttrans_scriptlet:
+            fail("Both posttrans_scriptlet and posttrans_scriptlet_file attributes were specified")
+        posttrans_scriptlet_file = ctx.file.posttrans_scriptlet_file
+        files.append(posttrans_scriptlet_file)
+        args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
+    elif ctx.attr.posttrans_scriptlet:
+        scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".posttrans_scriptlet")
+        files.append(scriptlet_file)
+        ctx.actions.write(scriptlet_file, ctx.attr.posttrans_scriptlet)
+        args.append("--posttrans_scriptlet=" + scriptlet_file.path)
+
     #### Expand the spec file template; prepare data files
 
     spec_file = ctx.actions.declare_file("%s.spec" % rpm_name)
@@ -640,6 +652,12 @@ def _pkg_rpm_impl(ctx):
         additional_rpmbuild_args.extend([
             "--define",
             "_binary_payload {}".format(ctx.attr.binary_payload_compression),
+        ])
+
+    for key, value in ctx.attr.defines.items():
+        additional_rpmbuild_args.extend([
+            "--define",
+            "{} {}".format(key, value),
         ])
 
     args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
@@ -910,6 +928,16 @@ pkg_rpm = rule(
             doc = """File containing the RPM `%postun` scriptlet""",
             allow_single_file = True,
         ),
+        "posttrans_scriptlet": attr.string(
+            doc = """RPM `%posttrans` scriptlet.  Currently only allowed to be a shell script.
+
+            `posttrans_scriptlet` and `posttrans_scriptlet_file` are mutually exclusive.
+            """,
+        ),
+        "posttrans_scriptlet_file": attr.label(
+            doc = """File containing the RPM `%posttrans` scriptlet""",
+            allow_single_file = True,
+        ),
         "conflicts": attr.string_list(
             doc = """List of capabilities that conflict with this package when it is installed.
 
@@ -1014,6 +1042,9 @@ pkg_rpm = rule(
             for non-test actions.  Using threaded compression may result in
             overcommitting your system.
             """,
+        ),
+        "defines": attr.string_dict(
+            doc = """Additional definitions to pass to rpmbuild""",
         ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",

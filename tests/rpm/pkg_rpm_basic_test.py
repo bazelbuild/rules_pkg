@@ -48,6 +48,8 @@ class PkgRpmBasicTest(unittest.TestCase):
             "rules_pkg/tests/rpm/test_rpm_direct-1.1.1-2222.noarch.rpm")
         self.test_rpm_bzip2_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_bzip2-1.1.1-2222.noarch.rpm")
+        self.test_rpm_scriptlets_files_path = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_scriptlets_files-1.1.1-2222.noarch.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
@@ -60,12 +62,13 @@ preuninstall scriptlet (using /bin/sh):
 echo preun
 postuninstall scriptlet (using /bin/sh):
 echo postun
+posttrans scriptlet (using /bin/sh):
+echo posttrans
 """
 
-        output = subprocess.check_output(
-            ["rpm", "-qp", "--scripts", self.test_rpm_path])
-
-        self.assertEqual(output, expected)
+        for path in (self.test_rpm_path, self.test_rpm_scriptlets_files_path):
+            output = subprocess.check_output(["rpm", "-qp", "--scripts", path])
+            self.assertEqual(output, expected)
 
     def test_basic_headers(self):
         fields = {
