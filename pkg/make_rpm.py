@@ -231,6 +231,7 @@ class RpmBuilder(object):
                    post_scriptlet_path=None,
                    preun_scriptlet_path=None,
                    postun_scriptlet_path=None,
+                   posttrans_scriptlet_path=None,
                    changelog_file=None,
                    file_list_path=None):
     """Create the needed structure in the workdir."""
@@ -264,6 +265,8 @@ class RpmBuilder(object):
       SlurpFile(os.path.join(original_dir, preun_scriptlet_path)) if preun_scriptlet_path is not None else ''
     self.postun_scriptlet = \
       SlurpFile(os.path.join(original_dir, postun_scriptlet_path)) if postun_scriptlet_path is not None else ''
+    self.posttrans_scriptlet = \
+      SlurpFile(os.path.join(original_dir, posttrans_scriptlet_path)) if posttrans_scriptlet_path is not None else ''
 
     # Then prepare for textual substitution.  This is typically only the case for the
     # experimental `pkg_rpm`.
@@ -272,6 +275,7 @@ class RpmBuilder(object):
       'POST_SCRIPTLET': ("%post\n" + self.post_scriptlet) if self.post_scriptlet else "",
       'PREUN_SCRIPTLET': ("%preun\n" + self.preun_scriptlet) if self.preun_scriptlet else "",
       'POSTUN_SCRIPTLET': ("%postun\n" + self.postun_scriptlet) if self.postun_scriptlet else "",
+      'POSTTRANS_SCRIPTLET': ("%posttrans\n" + self.posttrans_scriptlet) if self.posttrans_scriptlet else "",
       'CHANGELOG': ""
     }
 
@@ -430,6 +434,7 @@ class RpmBuilder(object):
             post_scriptlet_path=None,
             preun_scriptlet_path=None,
             postun_scriptlet_path=None,
+            posttrans_scriptlet_path=None,
             file_list_path=None,
             changelog_file=None,
             rpmbuild_args=None):
@@ -452,6 +457,7 @@ class RpmBuilder(object):
                         post_scriptlet_path=post_scriptlet_path,
                         preun_scriptlet_path=preun_scriptlet_path,
                         postun_scriptlet_path=postun_scriptlet_path,
+                        posttrans_scriptlet_path=posttrans_scriptlet_path,
                         changelog_file=changelog_file)
       status = self.CallRpmBuild(dirname, rpmbuild_args or [])
       self.SaveResult(out_file)
@@ -501,6 +507,8 @@ def main(argv):
                       help='File containing the RPM %preun scriptlet, if to be substituted')
   parser.add_argument('--postun_scriptlet',
                       help='File containing the RPM %postun scriptlet, if to be substituted')
+  parser.add_argument('--posttrans_scriptlet',
+                      help='File containing the RPM %posttrans scriptlet, if to be substituted')
   parser.add_argument('--changelog',
                       help='File containing the RPM changelog text')
 
@@ -526,6 +534,7 @@ def main(argv):
                          post_scriptlet_path=options.post_scriptlet,
                          preun_scriptlet_path=options.preun_scriptlet,
                          postun_scriptlet_path=options.postun_scriptlet,
+                         posttrans_scriptlet_path=options.posttrans_scriptlet,
                          changelog_file=options.changelog,
                          rpmbuild_args=options.rpmbuild_args)
   except NoRpmbuildFoundError:
