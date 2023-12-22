@@ -642,6 +642,12 @@ def _pkg_rpm_impl(ctx):
             "_binary_payload {}".format(ctx.attr.binary_payload_compression),
         ])
 
+    for key, value in ctx.attr.defines.items():
+        additional_rpmbuild_args.extend([
+            "--define",
+            "{} {}".format(key, value),
+        ])
+
     args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
     for f in ctx.files.srcs:
@@ -1014,6 +1020,9 @@ pkg_rpm = rule(
             for non-test actions.  Using threaded compression may result in
             overcommitting your system.
             """,
+        ),
+        "defines": attr.string_dict(
+            doc = """Additional definitions to pass to rpmbuild""",
         ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
