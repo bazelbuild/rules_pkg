@@ -429,6 +429,18 @@ def _pkg_rpm_impl(ctx):
         ctx.actions.write(scriptlet_file, ctx.attr.postun_scriptlet)
         args.append("--postun_scriptlet=" + scriptlet_file.path)
 
+    if ctx.attr.posttrans_scriptlet_file:
+        if ctx.attr.posttrans_scriptlet:
+            fail("Both posttrans_scriptlet and posttrans_scriptlet_file attributes were specified")
+        posttrans_scriptlet_file = ctx.file.posttrans_scriptlet_file
+        files.append(posttrans_scriptlet_file)
+        args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
+    elif ctx.attr.posttrans_scriptlet:
+        scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".posttrans_scriptlet")
+        files.append(scriptlet_file)
+        ctx.actions.write(scriptlet_file, ctx.attr.posttrans_scriptlet)
+        args.append("--posttrans_scriptlet=" + scriptlet_file.path)
+
     #### Expand the spec file template; prepare data files
 
     spec_file = ctx.actions.declare_file("%s.spec" % rpm_name)
@@ -914,6 +926,16 @@ pkg_rpm = rule(
         ),
         "postun_scriptlet_file": attr.label(
             doc = """File containing the RPM `%postun` scriptlet""",
+            allow_single_file = True,
+        ),
+        "posttrans_scriptlet": attr.string(
+            doc = """RPM `%posttrans` scriptlet.  Currently only allowed to be a shell script.
+
+            `posttrans_scriptlet` and `posttrans_scriptlet_file` are mutually exclusive.
+            """,
+        ),
+        "posttrans_scriptlet_file": attr.label(
+            doc = """File containing the RPM `%posttrans` scriptlet""",
             allow_single_file = True,
         ),
         "conflicts": attr.string_list(
