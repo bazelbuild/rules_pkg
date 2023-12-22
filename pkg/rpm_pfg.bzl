@@ -675,8 +675,8 @@ def _pkg_rpm_impl(ctx):
         inputs = files,
         outputs = [output_file],
         env = {
-            "LANG": "en_US.UTF-8",
-            "LC_CTYPE": "UTF-8",
+            "LANG": ctx.configuration.default_shell_env.get("LANG", "en_US.UTF-8"),
+            "LC_CTYPE": ctx.configuration.default_shell_env.get("LC_CTYPE", "UTF-8"),
             "PYTHONIOENCODING": "UTF-8",
             "PYTHONUTF8": "1",
         },
