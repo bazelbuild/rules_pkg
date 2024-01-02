@@ -33,7 +33,7 @@ load(
     "PackageSymlinkInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files")
+load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 rpm_filetype = [".rpm"]
 
@@ -349,7 +349,7 @@ def _pkg_rpm_impl(ctx):
     )
     ctx.actions.write(
         output = preamble_file,
-        content = "\n".join(preamble_pieces),
+        content = substitute_package_variables(ctx, "\n".join(preamble_pieces)),
     )
     files.append(preamble_file)
     args.append("--preamble=" + preamble_file.path)
