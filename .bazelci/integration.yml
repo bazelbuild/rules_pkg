@@ -1,17 +1,17 @@
+# These test the packaging of the product itself.
+# They only have to run on linux  with a recent bazel
 
 common: &common
   working_directory: ..
   build_targets:
-  - "distro:all"
+  - "//doc_build:all"
+  - "//distro/..."
 
 tasks:
-  rolling_ubuntu:
+  integration:
     name: rolling_distro
     platform: ubuntu1804
     bazel: rolling
-    <<: *common
-  lts_ubuntu:
-    name: lts_distro
-    platform: ubuntu1804
-    bazel: latest
+    build_flags:
+    - "--noenable_bzlmod"
     <<: *common
