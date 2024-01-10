@@ -1,15 +1,23 @@
+# These tests check the run-time behavior under various combinations
+#
+# - Tests: behavior only. release tools are in the integration tests
+# - Platforms: ubuntu, centos, macos, windows
+# - bzlmod enabled or not
+# - bazel: LTS-1, LTS, rolling
+#
+#
+
 
 common: &common
   working_directory: ..
 
-#
-# Bazel releases
-#
-lts: &lts
-  bazel: latest
+bzlmod: &bzlmod
+  build_flags:
+    - "--enable_bzlmod"
 
-rolling: &rolling
-  bazel: rolling
+nobzlmod: &nobzlmod
+  build_flags:
+    - "--noenable_bzlmod"
 
 #
 # Groups of tests, by platform
@@ -18,7 +26,6 @@ rolling: &rolling
 # rpmbuild(8) is not available or installed on most platforms
 default_tests: &default_tests
   test_targets:
-    - "//distro/..."
     - "//pkg/..."
     - "//tests/..."
     - "//toolchains/..."
@@ -27,7 +34,6 @@ default_tests: &default_tests
 
 default_tests_with_rpm: &default_tests_with_rpm
   test_targets:
-    - "//distro/..."
     - "//pkg/..."
     - "//tests/..."
     - "//toolchains/..."
@@ -55,7 +61,7 @@ win_tests: &win_tests
     - "-//pkg/legacy/tests/rpm/..."
 
 #
-# Commmon features by platform
+# Commmon features and tests by platform
 # 
 ubuntu1804: &ubuntu
   platform: ubuntu1804
@@ -81,47 +87,73 @@ windows: &windows
 # Finally, the cross product of bazel releases X platforms
 #
 tasks:
-  rolling_ubuntu:
-    name: rolling_ubuntu
+  ub_head_bzlmod:
+    name: ub_head_bzlmod
+    bazel: rolling
     <<: *ubuntu
-    <<: *rolling
-  rolling_ubuntu_bzlmod:
-    name: rolling_ubuntu_bzlmod
-    platform: ubuntu1804
-    build_flags:
-      - "--enable_bzlmod"
-    build_targets:
-      - "//distro:distro"
-      - "//distro:relnotes"
-    <<: *common
-    <<: *rolling
-    <<: *default_tests
-  rolling_macos:
-    name: rolling_macos
+    <<: *bzlmod
+
+  ub_head_nobzlmod:
+    name: ub_head_nobzlmod
+    bazel: rolling
+    <<: *ubuntu
+    <<: *nobzlmod
+
+  ub_lts_bzlmod:
+    name: ub_lts_bzlmod
+    bazel: latest
+    <<: *ubuntu
+    <<: *bzlmod
+
+  ub_lts_nobzlmod:
+    name: ub_lts_nobzlmod
+    bazel: latest
+    <<: *ubuntu
+    <<: *nobzlmod
+
+  ub_lts1_nobzlmod:
+    name: ub_lts1_nobzlmod
+    bazel: latest-1
+    <<: *ubuntu
+    <<: *nobzlmod
+
+  cent_lts:
+    name: cent_lts
+    bazel: latest
+    <<: *centos
+
+  mac_head_bzlmod:
+    name: mac_head_bzlmod
     bazel: rolling
     <<: *macos
-    <<: *common
-  rolling_windows:
-    name: rolling_windows
-    <<: *windows
-    <<: *rolling
-  lts_centos:
-    name: lts_centos
-    <<: *centos
-    <<: *lts
-  lts_macos:
-    name: lts_macos
+    <<: *bzlmod
+
+  mac_lts_bzlmod:
+    name: mac_lts_bzlmod
+    bazel: latest
     <<: *macos
-    <<: *lts
-  lts_ubuntu:
-    name: lts_ubuntu
-    <<: *ubuntu
-    <<: *lts
-    build_targets:
-      - "//distro:distro"
-      - "//distro:relnotes"
-      # - "//doc_build:*"  Temporary disable
-  lts_windows:
-    name: lts_windows
+    <<: *bzlmod
+
+  mac_lts_nobzlmod:
+    name: mac_lts_nobzlmod
+    bazel: latest
+    <<: *macos
+    <<: *nobzlmod
+
+  win_head_bzlmod:
+    name: win_head_bzlmod
+    bazel: rolling
     <<: *windows
-    <<: *lts
+    <<: *bzlmod
+
+  win_lts_bzlmod:
+    name: win_lts_bzlmod
+    bazel: latest
+    <<: *windows
+    <<: *bzlmod
+
+  win_lts_nobzlmod:
+    name: win_lts_nobzlmod
+    bazel: latest
+    <<: *windows
+    <<: *nobzlmod
