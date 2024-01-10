@@ -169,7 +169,7 @@ class ZipWriter(object):
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = self.compression_type
       # Using utf-8 for the file names is for python <3.7 compatibility.
-      entry_info.external_attr |= UNIX_FILE_BIT << 16  #  DO WE NEED AN MSDOS_DIR_BIT?
+      entry_info.external_attr |= UNIX_FILE_BIT << 16
       with open(src.encode('utf-8'), 'rb') as src_content:
         self.writestr(entry_info, src_content.read(), compresslevel=self.compression_level)
     elif entry_type == manifest.ENTRY_IS_DIR:
