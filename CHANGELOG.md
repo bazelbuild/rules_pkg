@@ -1,3 +1,71 @@
+# Release 0.10.0
+
+**New Features**
+-   Allow $(var) substitution in filenames (#620)
+-   Rough prototype of @since processing. (#617)
+-   First cut at runfiles support in pkg_* rules (#605)
+-   Allow substitution of user-defined variables in RPM preamble (#787)
+-   Add %posttrans scriptlet to RPM package (#799)
+-   Allow additional RPM macro defines (#794)
+-   Bring tar runfiles up to feature parity with pkg_files.runfiles. (#754)
+-   Add support for `Obsoletes` tag in RPM definition (#778)
+-   pkg_deb: allow data.tar.zst (#761)
+-   Add support for failing on file conflicts. (#683)
+-   Make pkg_zip compression configurable (#737)
+-   Append changelog to RPM spec file (#726)
+-   Add basic include_runfiles to pkg_files. (#724)
+-   Add changelog attribute to pkg_deb (#725)
+-   Add support for setting uid/gid from pkg_attributes (#671)
+
+**Bug Fixes**
+-   Explicitly set the FILE bit in zip external attributes. (#802)
+-   Explicitly set `%{_builddir}` macro (#792)
+-   Only inject pre and post scriptlets when provided (#788)
+-   Don't load cc toolchain from rules_cc (#779)
+-   doc: Fixup external manual references (#777)
+-   Get bzlmod working in CI (#766)
+-   use runfiles from rules_python (#768)
+-   When pkg_tar.prefix_dir == base of symlink path, don't double-dip. (#749)
+-   add imports to fix bazel --noexperimental_python_import_all_repositories flag (#630)
+-   Align pkg_rpm returned files with other rules (#692)
+-   fix(pkg_tar): properly normalize paths for empty files (#760)
+-   Document that package_dir also uses package_variables (#747)
+-   Fix handling paths with whitepsaces (#733)
+-   Fix python 3.6, doesn't support compresslevel
+-   Use Gzip compress level 6 (#720)
+-   write debian Date field in UTC rather than local time (#712)
+-   [pkg_deb] Fix multiline fields in changes file (#691)
+
+**Breaking Changes
+-   Remove PackageArtifactsInfo. (#752)
+    
+Thanks to: Adam Azarchs, Alex Eagle, August Karlstedt, Austin Schuh, Adrian Vogelsgesang,
+flode, Florian Scheibner, Ignas Kaziukėnas, Jean-Hadrien Chabran, Matt,
+Mike Kelly, Paul Draper, Sam Schwebach, Tomasz Wojno, and Vertexwahn
+for contributions to this release.
+
+# Release 0.9.x
+
+**New Features**
+-   Add OutputGroupInfo for pkg_rpm rule (#684)
+-   Add verify_archive rule to do e2e tests on built archives. (#669)
+-   Expose tar manifest as an output (#643)
+-   Support license attribute in pkg_deb (#651)
+-   Add support for the txz extension in pkg_tar (#653) (#654)
+
+**Bug Fixes**
+-   pkg_tar should not prefix tree artifacts with ./ (#681)
+-   Fix a potential TypeException caused by None type (#668)
+-   pkg_zip: Some unicode file handling fixes and basic tests (#641)
+-   pkg_tar, pkg_zip: improve support for long paths on Windows (#672)
+-   Explicitly store implicit parent directories in zip files (#640)
+-   Remove unnecessary `to_list()` calls (#639)
+
+Thanks to: Clint Harrison Qingyu Sui, Fabian Meumertzheim, Ryan Beasley, Andrew Psaltis
+Alex Eagle, Nils Semmelrock, and Doug Rabson
+for contributions to this release.
+
+
 # Release 0.8.0
 
 **New Features**
