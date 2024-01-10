@@ -100,7 +100,7 @@ tasks:
     <<: *nobzlmod
 
   ub_lts_bzlmod:
-    name: ub_head_bzlmod
+    name: ub_lts_bzlmod
     bazel: latest
     <<: *ubuntu
     <<: *bzlmod
