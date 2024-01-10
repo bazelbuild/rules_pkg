@@ -26,9 +26,10 @@ from pkg.private import manifest
 ZIP_EPOCH = 315532800
 
 # Unix dir bit and Windows dir bit. Magic from zip spec
-UNIX_DIR_BIT = 0o40000
-MSDOS_DIR_BIT = 0x10
+UNIX_FILE_BIT =    0o100000
 UNIX_SYMLINK_BIT = 0o120000
+UNIX_DIR_BIT  =    0o040000
+MSDOS_DIR_BIT = 0x10
 
 def _create_argument_parser():
   """Creates the command line arg parser."""
@@ -168,6 +169,7 @@ class ZipWriter(object):
     if entry_type == manifest.ENTRY_IS_FILE:
       entry_info.compress_type = self.compression_type
       # Using utf-8 for the file names is for python <3.7 compatibility.
+      entry_info.external_attr |= UNIX_FILE_BIT << 16
       with open(src.encode('utf-8'), 'rb') as src_content:
         self.writestr(entry_info, src_content.read(), compresslevel=self.compression_level)
     elif entry_type == manifest.ENTRY_IS_DIR:
