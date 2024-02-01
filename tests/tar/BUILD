@@ -361,6 +361,84 @@ verify_archive_test(
 )
 
 pkg_tar(
+    name = "test-tar-remap-runfiles-base-path",
+    srcs = [
+        ":a_program",
+        "//tests:an_executable",
+    ],
+    include_runfiles = True,
+    remap_paths = {
+        "/a_program": "/new_name",
+        "/an_executable": "/other/different_name",
+    },
+)
+
+verify_archive_test(
+    name = "runfiles_remap_base_path_test",
+    must_contain = [
+        "new_name",
+        "new_name.runfiles/tests/tar/BUILD",
+        "executable.sh",
+    ] + select({
+        "@platforms//os:windows": [
+            "other/different_name.exe",
+            "other/different_name.exe.runfiles/tests/foo.cc",
+            "other/different_name.exe.runfiles/tests/an_executable.exe",
+            "other/different_name.exe.runfiles/tests/testdata/hello.txt",
+        ],
+        "//conditions:default": [
+            "other/different_name",
+            "other/different_name.runfiles/tests/foo.cc",
+            "other/different_name.runfiles/tests/an_executable",
+            "other/different_name.runfiles/tests/testdata/hello.txt",
+        ],
+    }),
+    target = ":test-tar-remap-runfiles-base-path",
+)
+
+pkg_tar(
+    name = "test-tar-remap-runfiles-full-paths",
+    srcs = [
+        ":a_program",
+        "//tests:an_executable",
+    ],
+    include_runfiles = True,
+    remap_paths = {
+        # rename the entire runfiles directory
+        "/a_program.runfiles/": "/a/program/runfiles/",
+        # rename a specific file
+        "/an_executable.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        "/an_executable.exe.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        # rename a specific subdirectory
+        "/an_executable.runfiles/tests/": "/mytests/",
+        "/an_executable.exe.runfiles/tests/": "/mytests/",
+    },
+)
+
+verify_archive_test(
+    name = "runfiles_remap_full_paths_test",
+    must_contain = [
+        "a_program",
+        "a/program/runfiles/tests/tar/BUILD",
+        "executable.sh",
+    ] + select({
+        "@platforms//os:windows": [
+            "an_executable.exe",
+            "mytests/foo.cc",
+            "mytests/an_executable.exe",
+            "myfiles/hello.txt",
+        ],
+        "//conditions:default": [
+            "an_executable",
+            "mytests/foo.cc",
+            "mytests/an_executable",
+            "myfiles/hello.txt",
+        ],
+    }),
+    target = ":test-tar-remap-runfiles-full-paths",
+)
+
+pkg_tar(
     name = "test_tar_leading_dotslash",
     srcs = [
         "//tests:loremipsum_txt",
