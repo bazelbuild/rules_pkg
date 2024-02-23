@@ -15,10 +15,10 @@ This is a package description.
 %build
 
 %install
-cp WORKSPACE BUILD readme.md test_rpm.spec %{buildroot}/
+cp WORKSPACE BUILD README.md test_rpm.spec %{buildroot}/
 
 %files
 /WORKSPACE
 /BUILD
-/readme.md
+/README.md
 /test_rpm.spec

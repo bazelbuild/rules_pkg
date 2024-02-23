@@ -20,7 +20,7 @@ pkg_rpm(
     data = [
         "BUILD",
         "WORKSPACE",
-        "readme.md",
+        "README.md",
         "test_rpm.spec",
     ],
     release = "0",
