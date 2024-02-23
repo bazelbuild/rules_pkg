@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "rules_pkg_example_prebuilt_rpmbuild")
+workspace(name = "rules_pkg_example_rpm_prebuilt_rpmbuild")
 
 local_repository(
     name = "rules_pkg",
-    path = "../..",
+    path = "../../..",
 )
 
 load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
