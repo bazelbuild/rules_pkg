@@ -290,15 +290,40 @@ def _process_dep(dep, rpm_ctx):
 def _pkg_rpm_impl(ctx):
     """Implements the pkg_rpm rule."""
 
+    rpm_ctx = struct(
+        # Ensure that no destinations collide.  RPMs that fail this check may be
+        # correct, but the output may also create hard-to-debug issues.  Better
+        # to err on the side of correctness here.
+        dest_check_map = {},
+
+        # The contents of the "%install" scriptlet
+        install_script_pieces = [],
+
+        # The list of entries in the "%files" list
+        rpm_files_list = [],
+
+        # Directories (TreeArtifacts) are to be treated differently.
+        # Specifically, since Bazel does not know their contents at analysis
+        # time, processing them needs to be delegated to a helper script.  This
+        # is done via the _treeartifact_helper script used later on.
+        packaged_directories = [],
+
+        # RPM files we expect to generate
+        output_rpm_files = [],
+
+        # Arguments that we pass to make_rpm.py
+        make_rpm_args = [],
+    )
+
     files = []
     tools = []
-    args = ["--name=" + ctx.label.name]
+    rpm_ctx.make_rpm_args.append("--name=" + ctx.label.name)
 
     if ctx.attr.debug:
-        args.append("--debug")
+        rpm_ctx.make_rpm_args.append("--debug")
 
     if ctx.attr.rpmbuild_path:
-        args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
+        rpm_ctx.make_rpm_args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
 
         # buildifier: disable=print
         print("rpmbuild_path is deprecated. See the README for instructions on how" +
@@ -309,11 +334,11 @@ def _pkg_rpm_impl(ctx):
             fail("The rpmbuild_toolchain is not properly configured: " +
                  toolchain.name)
         if toolchain.path:
-            args.append("--rpmbuild=" + toolchain.path)
+            rpm_ctx.make_rpm_args.append("--rpmbuild=" + toolchain.path)
         else:
             executable_files = toolchain.label[DefaultInfo].files_to_run
             tools.append(executable_files)
-            args.append("--rpmbuild=%s" % executable_files.executable.path)
+            rpm_ctx.make_rpm_args.append("--rpmbuild=%s" % executable_files.executable.path)
 
     #### Calculate output file name
     # rpm_name takes precedence over name if provided
@@ -344,7 +369,7 @@ def _pkg_rpm_impl(ctx):
             fail("Both version and version_file attributes were specified")
 
         preamble_pieces.append("Version: ${{VERSION_FROM_FILE}}")
-        args.append("--version=@" + ctx.file.version_file.path)
+        rpm_ctx.make_rpm_args.append("--version=@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
         preamble_pieces.append("Version: " + ctx.attr.version)
@@ -357,7 +382,7 @@ def _pkg_rpm_impl(ctx):
             fail("Both release and release_file attributes were specified")
 
         preamble_pieces.append("Release: ${{RELEASE_FROM_FILE}}")
-        args.append("--release=@" + ctx.file.release_file.path)
+        rpm_ctx.make_rpm_args.append("--release=@" + ctx.file.release_file.path)
         files.append(ctx.file.release_file)
     elif ctx.attr.release:
         preamble_pieces.append("Release: " + ctx.attr.release)
@@ -373,10 +398,10 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.source_date_epoch_file:
         if ctx.attr.source_date_epoch >= 0:
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
-        args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
+        rpm_ctx.make_rpm_args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
         files.append(ctx.file.source_date_epoch_file)
     elif ctx.attr.source_date_epoch >= 0:
-        args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
+        rpm_ctx.make_rpm_args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
@@ -421,7 +446,7 @@ def _pkg_rpm_impl(ctx):
         content = substitute_package_variables(ctx, "\n".join(preamble_pieces)),
     )
     files.append(preamble_file)
-    args.append("--preamble=" + preamble_file.path)
+    rpm_ctx.make_rpm_args.append("--preamble=" + preamble_file.path)
 
     #### %description
 
@@ -441,11 +466,11 @@ def _pkg_rpm_impl(ctx):
         fail("None of the description or description_file attributes were specified")
 
     files.append(description_file)
-    args.append("--description=" + description_file.path)
+    rpm_ctx.make_rpm_args.append("--description=" + description_file.path)
 
     if ctx.attr.changelog:
         files.append(ctx.file.changelog)
-        args.append("--changelog=" + ctx.file.changelog.path)
+        rpm_ctx.make_rpm_args.append("--changelog=" + ctx.file.changelog.path)
 
     #### Non-procedurally-generated scriptlets
 
@@ -455,60 +480,60 @@ def _pkg_rpm_impl(ctx):
             fail("Both pre_scriptlet and pre_scriptlet_file attributes were specified")
         pre_scriptlet_file = ctx.file.pre_scriptlet_file
         files.append(pre_scriptlet_file)
-        args.append("--pre_scriptlet=" + pre_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--pre_scriptlet=" + pre_scriptlet_file.path)
     elif ctx.attr.pre_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".pre_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.pre_scriptlet)
-        args.append("--pre_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--pre_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.post_scriptlet_file:
         if ctx.attr.post_scriptlet:
             fail("Both post_scriptlet and post_scriptlet_file attributes were specified")
         post_scriptlet_file = ctx.file.post_scriptlet_file
         files.append(post_scriptlet_file)
-        args.append("--post_scriptlet=" + post_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--post_scriptlet=" + post_scriptlet_file.path)
     elif ctx.attr.post_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".post_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.post_scriptlet)
-        args.append("--post_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--post_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.preun_scriptlet_file:
         if ctx.attr.preun_scriptlet:
             fail("Both preun_scriptlet and preun_scriptlet_file attributes were specified")
         preun_scriptlet_file = ctx.file.preun_scriptlet_file
         files.append(preun_scriptlet_file)
-        args.append("--preun_scriptlet=" + preun_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--preun_scriptlet=" + preun_scriptlet_file.path)
     elif ctx.attr.preun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".preun_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.preun_scriptlet)
-        args.append("--preun_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--preun_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.postun_scriptlet_file:
         if ctx.attr.postun_scriptlet:
             fail("Both postun_scriptlet and postun_scriptlet_file attributes were specified")
         postun_scriptlet_file = ctx.file.postun_scriptlet_file
         files.append(postun_scriptlet_file)
-        args.append("--postun_scriptlet=" + postun_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--postun_scriptlet=" + postun_scriptlet_file.path)
     elif ctx.attr.postun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".postun_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.postun_scriptlet)
-        args.append("--postun_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--postun_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.posttrans_scriptlet_file:
         if ctx.attr.posttrans_scriptlet:
             fail("Both posttrans_scriptlet and posttrans_scriptlet_file attributes were specified")
         posttrans_scriptlet_file = ctx.file.posttrans_scriptlet_file
         files.append(posttrans_scriptlet_file)
-        args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
     elif ctx.attr.posttrans_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".posttrans_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.posttrans_scriptlet)
-        args.append("--posttrans_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--posttrans_scriptlet=" + scriptlet_file.path)
 
     #### Expand the spec file template; prepare data files
 
@@ -518,35 +543,11 @@ def _pkg_rpm_impl(ctx):
         output = spec_file,
         substitutions = substitutions,
     )
-    args.append("--spec_file=" + spec_file.path)
+    rpm_ctx.make_rpm_args.append("--spec_file=" + spec_file.path)
     files.append(spec_file)
 
     # Add data files
     files += ctx.files.srcs
-
-    #### Consistency checking; input processing
-
-    rpm_ctx = struct(
-        # Ensure that no destinations collide.  RPMs that fail this check may be
-        # correct, but the output may also create hard-to-debug issues.  Better
-        # to err on the side of correctness here.
-        dest_check_map = {},
-
-        # The contents of the "%install" scriptlet
-        install_script_pieces = [],
-
-        # The list of entries in the "%files" list
-        rpm_files_list = [],
-
-        # Directories (TreeArtifacts) are to be treated differently.
-        # Specifically, since Bazel does not know their contents at analysis
-        # time, processing them needs to be delegated to a helper script.  This
-        # is done via the _treeartifact_helper script used later on.
-        packaged_directories = [],
-
-        # RPM files we expect to generate
-        output_rpm_files = [],
-    )
 
     _, output_file, _ = setup_output_files(
         ctx,
@@ -554,7 +555,7 @@ def _pkg_rpm_impl(ctx):
         default_output_file = default_file,
     )
 
-    args.append("--out_file=" + output_file.path)
+    rpm_ctx.make_rpm_args.append("--out_file=" + output_file.path)
     rpm_ctx.output_rpm_files.append(output_file)
 
     if ctx.attr.debug:
@@ -633,10 +634,10 @@ def _pkg_rpm_impl(ctx):
     # And then we're done.  Yay!
 
     files.append(install_script)
-    args.append("--install_script=" + install_script.path)
+    rpm_ctx.make_rpm_args.append("--install_script=" + install_script.path)
 
     files.append(rpm_files_file)
-    args.append("--file_list=" + rpm_files_file.path)
+    rpm_ctx.make_rpm_args.append("--file_list=" + rpm_files_file.path)
 
     #### Remaining setup
 
@@ -653,10 +654,10 @@ def _pkg_rpm_impl(ctx):
             "{} {}".format(key, value),
         ])
 
-    args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
+    rpm_ctx.make_rpm_args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
     for f in ctx.files.srcs:
-        args.append(f.path)
+        rpm_ctx.make_rpm_args.append(f.path)
 
     #### Call the generator script.
 
@@ -664,7 +665,7 @@ def _pkg_rpm_impl(ctx):
         mnemonic = "MakeRpm",
         executable = ctx.executable._make_rpm,
         use_default_shell_env = True,
-        arguments = args,
+        arguments = rpm_ctx.make_rpm_args,
         inputs = files,
         outputs = rpm_ctx.output_rpm_files,
         env = {
