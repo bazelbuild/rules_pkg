@@ -1055,7 +1055,7 @@ pkg_rpm = rule(
 
             See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
-	),
+        ),
         "requires": attr.string_list(
             doc = """List of rpm capability expressions that this package requires.
 
