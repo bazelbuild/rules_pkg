@@ -445,7 +445,7 @@ class RpmBuilder(object):
     else:
       print('No RPM file created.')
 
-  def Build(self, spec_file, out_file, subrpm_out_files,
+  def Build(self, spec_file, out_file, subrpm_out_files=None,
             preamble_file=None,
             description_file=None,
             install_script_file=None,
