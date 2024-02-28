@@ -333,12 +333,6 @@ def _pkg_rpm_impl(ctx):
             ctx.attr.architecture,
         )
 
-    _, output_file, _ = setup_output_files(
-        ctx,
-        package_file_name = package_file_name,
-        default_output_file = default_file,
-    )
-
     #### rpm spec "preamble"
     preamble_pieces = []
 
@@ -527,8 +521,6 @@ def _pkg_rpm_impl(ctx):
     args.append("--spec_file=" + spec_file.path)
     files.append(spec_file)
 
-    args.append("--out_file=" + output_file.path)
-
     # Add data files
     files += ctx.files.srcs
 
@@ -551,7 +543,19 @@ def _pkg_rpm_impl(ctx):
         # time, processing them needs to be delegated to a helper script.  This
         # is done via the _treeartifact_helper script used later on.
         packaged_directories = [],
+
+        # RPM files we expect to generate
+        output_rpm_files = [],
     )
+
+    _, output_file, _ = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+        default_output_file = default_file,
+    )
+
+    args.append("--out_file=" + output_file.path)
+    rpm_ctx.output_rpm_files.append(output_file)
 
     if ctx.attr.debug:
         rpm_ctx.install_script_pieces.append("set -x")
@@ -662,7 +666,7 @@ def _pkg_rpm_impl(ctx):
         use_default_shell_env = True,
         arguments = args,
         inputs = files,
-        outputs = [output_file],
+        outputs = rpm_ctx.output_rpm_files,
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -678,13 +682,13 @@ def _pkg_rpm_impl(ctx):
 
     output_groups = {
         "out": [default_file],
-        "rpm": [output_file],
+        "rpm": rpm_ctx.output_rpm_files,
         "changes": changes,
     }
     return [
         OutputGroupInfo(**output_groups),
         DefaultInfo(
-            files = depset([output_file]),
+            files = depset(rpm_ctx.output_rpm_files),
         ),
     ]
 
