@@ -317,7 +317,8 @@ def _pkg_rpm_impl(ctx):
 
     files = []
     tools = []
-    rpm_ctx.make_rpm_args.append("--name=" + ctx.label.name)
+    name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
+    rpm_ctx.make_rpm_args.args = ["--name=" + name]
 
     if ctx.attr.debug:
         rpm_ctx.make_rpm_args.append("--debug")
