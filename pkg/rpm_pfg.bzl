@@ -1141,7 +1141,13 @@ pkg_rpm = rule(
             doc = """Additional definitions to pass to rpmbuild""",
         ),
         "subrpms": attr.label_list(
-            doc = """Sub RPMs to build with this RPM""",
+            doc = """Sub RPMs to build with this RPM
+
+	    A list of `pkg_sub_rpm` instances that can be used to create sub RPMs as part of the
+	    overall package build.
+
+            NOTE: use of `subrpms` is incompatible with the legacy `spec_file` mode
+	    """,
             providers = [
                 [PackageSubRPMInfo],
             ],
