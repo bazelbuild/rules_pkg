@@ -1198,10 +1198,11 @@ def _pkg_sub_rpm_impl(ctx):
     ]
 
 pkg_sub_rpm = rule(
-    doc = """Sub-RPM rule.
+    doc = """Define a sub RPM to be built as part of a parent RPM
 
-    This rule represents the definition of a sub-RPM in a specfile that can be
-    built as a whole unit.
+    This rule uses the outputs of the rules in `mappings.bzl` to define an sub
+    RPM that will be built as part of a larger RPM defined by a `pkg_rpm` instance.
+
     """,
     implementation = _pkg_sub_rpm_impl,
     # @unsorted-dict-items
