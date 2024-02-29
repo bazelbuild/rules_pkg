@@ -18,7 +18,6 @@ package(default_applicable_licenses = ["//:license"])
 
 exports_files(
     glob([
-        "*.bzl",
         "*.tpl",
     ]),
     visibility = ["//visibility:public"],
@@ -27,7 +26,6 @@ exports_files(
 filegroup(
     name = "standard_package",
     srcs = glob([
-        "*.bzl",
         "*.py",
         "*.tpl",
     ]) + [
