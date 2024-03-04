@@ -1,4 +1,4 @@
-# Copyright 2019 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The version of rules_pkg."""
 
-version = "0.10.1"
+workspace(name = "rules_pkg_example_rpm_system_rpmbuild")
+
+local_repository(
+    name = "rules_pkg",
+    path = "../../..",
+)
+
+load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
+
+load(
+    "@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl",
+    "find_system_rpmbuild",
+)
+
+find_system_rpmbuild(name="my_rpmbuild")

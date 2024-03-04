@@ -427,12 +427,11 @@ def add_from_default_info(
             # the executable, but that is not always obvious. When in doubt,
             # the first file of DefaultInfo.files should be the right target.
             base_file = the_executable or all_files[0]
-            base_file_path = mapping_context.path_mapper(
-                dest_path(base_file, data_path, data_path_without_prefix))
+            base_file_path = dest_path(base_file, data_path, data_path_without_prefix)
             base_path = base_file_path + ".runfiles"
 
             for rf in runfiles.files.to_list():
-                d_path = base_path + "/" + rf.short_path
+                d_path = mapping_context.path_mapper(base_path + "/" + rf.short_path)
                 fmode = "0755" if rf == the_executable else mapping_context.default_mode
                 _check_dest(mapping_context.content_map, d_path, rf, src.label, mapping_context.allow_duplicates_with_different_content)
                 mapping_context.content_map[d_path] = _DestFile(

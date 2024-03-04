@@ -149,6 +149,25 @@ _POSTTRANS_SCRIPTLET = "echo posttrans"
 ]
 
 ############################################################################
+# versionfile for testing
+############################################################################
+
+_VERSION = "1.1.1"
+_RELEASE = "2222"
+
+genrule(
+    name = "version_file",
+    outs = ["version"],
+    cmd = "echo '{}' > $@".format(_VERSION),
+)
+
+genrule(
+    name = "release_file",
+    outs = ["release"],
+    cmd = "echo '{}' > $@".format(_RELEASE),
+)
+
+############################################################################
 # Test RPMs
 ############################################################################
 
@@ -167,12 +186,12 @@ pkg_rpm(
     preun_scriptlet = _PREUN_SCRIPTLET,
     posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
-    release = "2222",
+    release = _RELEASE,
     requires = ["test-lib > 1.0"],
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
-    version = "1.1.1",
+    version = _VERSION,
 )
 
 # Just like the above one, except the compression is changed.
@@ -192,12 +211,12 @@ pkg_rpm(
     preun_scriptlet = _PREUN_SCRIPTLET,
     posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
-    release = "2222",
+    release = _RELEASE,
     requires = ["test-lib > 1.0"],
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
-    version = "1.1.1",
+    version = _VERSION,
 )
 
 # Like the first one, except `srcs` is now passed in without using a
@@ -220,12 +239,12 @@ pkg_rpm(
     preun_scriptlet = _PREUN_SCRIPTLET,
     posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
-    release = "2222",
+    release = _RELEASE,
     requires = ["test-lib > 1.0"],
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
-    version = "1.1.1",
+    version = _VERSION,
 )
 
 # Like the first one, except we use files for scriptlets
@@ -249,7 +268,31 @@ pkg_rpm(
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
-    version = "1.1.1",
+    version = _VERSION,
+)
+
+# Like the first one, except we use release and version files
+pkg_rpm(
+    name = "test_rpm_release_version_files",
+    srcs = [
+        ":test_pfg",
+    ],
+    architecture = "noarch",
+    conflicts = ["not-a-test"],
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    post_scriptlet_file = ":post",
+    postun_scriptlet_file = ":postun",
+    pre_scriptlet_file = ":pre",
+    preun_scriptlet_file = ":preun",
+    posttrans_scriptlet_file = ":posttrans",
+    provides = ["test"],
+    release_file = ":release_file",
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
+    spec_template = "template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version_file = ":version_file",
 )
 
 ############################################################################
@@ -363,6 +406,7 @@ sh_library(
         ":test_rpm_manifest",
         ":test_rpm_metadata",
         ":test_rpm_scriptlets_files",
+        ":test_rpm_release_version_files",
     ],
 )
 

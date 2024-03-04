@@ -11,18 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# -*- coding: utf-8 -*-
 
-workspace(name = "rules_pkg_example_prebuilt_rpmbuild")
+load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
 
-local_repository(
-    name = "rules_pkg",
-    path = "../..",
+pkg_rpm(
+    name = "test-rpm",
+    data = [
+        "BUILD",
+        "MODULE.bazel",
+        "README.md",
+        "test_rpm.spec",
+    ],
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )
 
-load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
-
-rules_pkg_dependencies()
-
-load("//local:rpmbuild.bzl", "register_my_rpmbuild_toolchain")
-
-register_my_rpmbuild_toolchain()
+# If you have rpmbuild, you probably have rpm2cpio too.
+# Feature idea: Add rpm2cpio and cpio to the rpmbuild toolchain
+genrule(
+    name = "inspect_content",
+    srcs = [":test-rpm"],
+    outs = ["content.txt"],
+    cmd = "rpm2cpio $(locations :test-rpm) | cpio -ivt >$@",
+)

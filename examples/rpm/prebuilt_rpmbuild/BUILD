@@ -11,33 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# -*- coding: utf-8 -*-
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
 
-package(default_applicable_licenses = ["//:license"])
-
-exports_files(
-    glob([
-        "*.tpl",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "standard_package",
-    srcs = glob([
-        "*.py",
-        "*.tpl",
-    ]) + [
+pkg_rpm(
+    name = "test-rpm",
+    data = [
         "BUILD",
+        "WORKSPACE",
+        "README.md",
+        "test_rpm.spec",
     ],
-    visibility = ["//pkg:__pkg__"],
+    release = "0",
+    spec_file = "test_rpm.spec",
+    version = "1",
 )
 
-# Helper script used to augment the %install scriptlet and %files list with
-# those found in TreeArtifacts (directory outputs) See also #292.
-py_binary(
-    name = "augment_rpm_files_install",
-    srcs = ["augment_rpm_files_install.py"],
-    visibility = ["//visibility:public"],
+# If you have rpmbuild, you probably have rpm2cpio too.
+# Feature idea: Add rpm2cpio and cpio to the rpmbuild toolchain
+genrule(
+    name = "inspect_content",
+    srcs = [":test-rpm"],
+    outs = ["content.txt"],
+    cmd = "rpm2cpio $(locations :test-rpm) | cpio -ivt >$@",
 )

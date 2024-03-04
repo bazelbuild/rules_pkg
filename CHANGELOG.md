@@ -1,3 +1,16 @@
+# Release 0.10.1
+
+This is a bug fix release.
+
+**Bug Fixes**
+    * Temporarily restore //mappings.bzl and //pkg.bzl  (#817)
+    * Fix RPM package release and version files expansion (#816)
+    * Apply tar remap_paths to runfiles full paths (#812)
+    * Use raw string for docstring that contains a backslash (for Python 3.12) (#815)
+
+Thanks to: Alex Bozhenko, Chuck Grindel, Diego Ortin, and Tomasz Wojno
+
+
 # Release 0.10.0
 
 **New Features**

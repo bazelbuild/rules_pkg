@@ -1,4 +1,4 @@
-# Copyright 2020 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,35 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
+
+pkg_files(
+    name = "rpm_files",
+    srcs = [
+        "BUILD",
+        "MODULE.bazel",
+        "README.md",
+    ],
+)
 
 pkg_rpm(
     name = "test-rpm",
-    data = [
-        "BUILD",
-        "WORKSPACE",
-        "readme.md",
-        "test_rpm.spec",
+    srcs = [
+        ":rpm_files",
     ],
     release = "0",
-    spec_file = "test_rpm.spec",
     version = "1",
+    summary = "rules_pkg example RPM",
+    description = "This is a package description.",
+    license = "Apache License, v2.0",
+    architecture = "x86_64",
+    requires = [
+        "somerpm",
+    ],
+    provides = [
+        "somefile",
+    ],
 )
 
 # If you have rpmbuild, you probably have rpm2cpio too.
