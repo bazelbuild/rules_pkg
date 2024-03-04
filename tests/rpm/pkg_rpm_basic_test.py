@@ -50,6 +50,8 @@ class PkgRpmBasicTest(unittest.TestCase):
             "rules_pkg/tests/rpm/test_rpm_bzip2-1.1.1-2222.noarch.rpm")
         self.test_rpm_scriptlets_files_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_scriptlets_files-1.1.1-2222.noarch.rpm")
+        self.test_rpm_release_version_files = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_release_version_files--.noarch.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
@@ -71,23 +73,27 @@ echo posttrans
             self.assertEqual(output, expected)
 
     def test_basic_headers(self):
-        fields = {
-            "NAME": b"test_rpm",
+        common_fields = {
             "VERSION": b"1.1.1",
             "RELEASE": b"2222",
             "ARCH": b"noarch",
             "GROUP": b"Unspecified",
             "SUMMARY": b"pkg_rpm test rpm summary",
         }
-        for fieldname, expected in fields.items():
-            output = subprocess.check_output([
-                "rpm", "-qp", "--queryformat", "%{" + fieldname + "}",
-                self.test_rpm_path
-            ])
+        for rpm, fields in [
+            (self.test_rpm_path, {"NAME": b"test_rpm"}),
+            (self.test_rpm_release_version_files, {"NAME": b"test_rpm_release_version_files"}),
+        ]:
+            fields.update(common_fields)
+            for fieldname, expected in fields.items():
+                output = subprocess.check_output([
+                    "rpm", "-qp", "--queryformat", "%{" + fieldname + "}",
+                    rpm,
+                ])
 
-            self.assertEqual(
-                output, expected,
-                "RPM Tag {} does not match expected value".format(fieldname))
+                self.assertEqual(
+                    output, expected,
+                    "RPM Tag {} does not match expected value".format(fieldname))
 
     def test_contents(self):
         manifest_file = self.runfiles.Rlocation(

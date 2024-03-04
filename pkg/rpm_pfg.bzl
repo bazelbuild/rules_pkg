@@ -274,7 +274,7 @@ def _pkg_rpm_impl(ctx):
         if ctx.attr.version:
             fail("Both version and version_file attributes were specified")
 
-        preamble_pieces.append("Version: ${VERSION_FROM_FILE}")
+        preamble_pieces.append("Version: ${{VERSION_FROM_FILE}}")
         args.append("--version=@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
@@ -287,7 +287,7 @@ def _pkg_rpm_impl(ctx):
         if ctx.attr.release:
             fail("Both release and release_file attributes were specified")
 
-        preamble_pieces.append("Release: ${RELEASE_FROM_FILE}")
+        preamble_pieces.append("Release: ${{RELEASE_FROM_FILE}}")
         args.append("--release=@" + ctx.file.release_file.path)
         files.append(ctx.file.release_file)
     elif ctx.attr.release:
@@ -684,8 +684,8 @@ def _pkg_rpm_impl(ctx):
     )
 
     changes = []
-    if ctx.attr.changelog:
-        changes = [ctx.attr.changelog]
+    if ctx.file.changelog:
+        changes = [ctx.file.changelog]
 
     output_groups = {
         "out": [default_file],

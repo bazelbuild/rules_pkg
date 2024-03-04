@@ -26,7 +26,7 @@ from pkg.private.tar import tar_writer
 
 
 def normpath(path):
-  """Normalize a path to the format we need it.
+  r"""Normalize a path to the format we need it.
 
   os.path.normpath changes / to \ on windows, but tarfile needs / style paths.
 
