@@ -66,6 +66,7 @@ def pkg_rpm(name, srcs = None, spec_file = None, subrpms = None, **kwargs):
         pkg_rpm_pfg(
             name = name,
             srcs = srcs,
+	    subrpms = subrpms,
             **kwargs
         )
     elif spec_file:
