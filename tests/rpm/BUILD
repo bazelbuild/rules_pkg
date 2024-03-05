@@ -24,7 +24,7 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
 )
-load("//pkg:rpm.bzl", "pkg_rpm")
+load("//pkg:rpm.bzl", "pkg_rpm", "pkg_sub_rpm")
 load("analysis_tests.bzl", "analysis_tests")
 load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 
@@ -462,6 +462,81 @@ diff_test(
     name = "test_rpm_dirs_contents_golden_test",
     file1 = ":test_rpm_dirs_contents",
     file2 = "test_rpm_dirs_contents.txt.golden",
+)
+
+############################################################################
+# pkg_sub_rpm tests
+############################################################################
+genrule(
+    name = "test_sub_rpm_file_input",
+    outs = ["test_sub_rpm_file_input.txt"],
+    cmd = """
+    echo "test subrpm data" > $@
+    """,
+)
+
+pkg_files(
+    name = "test_sub_rpm_files",
+    srcs = [":test_sub_rpm_file_input"],
+)
+
+pkg_sub_rpm(
+    name = "sub_rpm",
+    package_name = "test_sub_rpm",
+    description = "Test subrpm description",
+    summary = "Test subrpm",
+    srcs = [
+        ":test_sub_rpm_files",
+    ],
+)
+
+genrule(
+    name = "test_sub_rpm_main_file_input",
+    outs = ["test_sub_rpm_main_file_input.txt"],
+    cmd = """
+   echo "test main rpm data" > $@
+   """,
+)
+
+pkg_files(
+    name = "test_sub_rpm_main_files",
+    srcs = [":test_sub_rpm_main_file_input"],
+)
+
+pkg_rpm(
+    name = "test_sub_rpm_main",
+    description = "This is a package description.",
+    summary = "rules_pkg example RPM",
+    architecture = "noarch",
+    version = "1",
+    license = "Apache License, v2.0",
+    release = "0",
+    srcs = [
+        ":test_sub_rpm_main_files",
+    ],
+    subrpms = [
+        ":sub_rpm",
+    ],
+)
+
+genrule(
+    name = "test_sub_rpm_contents",
+    srcs = [":test_sub_rpm_main"],
+    outs = [":test_sub_rpm_contents.txt"],
+    cmd = """
+    # pkg_rpm emits two outputs
+    RPMS=($(SRCS))
+    echo "===== main RPM ===== " > $@
+    rpm -qi --list $${RPMS[0]} >> $@
+    echo "===== sub RPM ====== " >> $@
+    rpm -qi --list $${RPMS[1]} >> $@
+    """,
+)
+
+diff_test(
+    name = "test_golden_sub_rpm_contents",
+    file1 = ":test_sub_rpm_contents",
+    file2 = "test_sub_rpm_contents.txt.golden",
 )
 
 ############################################################################

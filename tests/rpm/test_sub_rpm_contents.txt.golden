@@ -1,0 +1,34 @@
+===== main RPM ===== 
+Name        : test_sub_rpm_main
+Version     : 1
+Release     : 0
+Architecture: noarch
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 19
+License     : Apache License, v2.0
+Signature   : (none)
+Source RPM  : test_sub_rpm_main-1-0.src.rpm
+Build Date  : Tue Mar  5 23:42:58 2024
+Build Host  : 37b6e02e97b1
+Summary     : rules_pkg example RPM
+Description :
+This is a package description.
+/test_sub_rpm_main_file_input.txt
+===== sub RPM ====== 
+Name        : test_sub_rpm_main-test_sub_rpm
+Version     : 1
+Release     : 0
+Architecture: noarch
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 17
+License     : Apache License, v2.0
+Signature   : (none)
+Source RPM  : test_sub_rpm_main-1-0.src.rpm
+Build Date  : Tue Mar  5 23:42:58 2024
+Build Host  : 37b6e02e97b1
+Summary     : Test subrpm
+Description :
+Test subrpm description
+/test_sub_rpm_file_input.txt
