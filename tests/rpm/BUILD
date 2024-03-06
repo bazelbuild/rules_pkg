@@ -527,9 +527,11 @@ genrule(
     # pkg_rpm emits two outputs
     RPMS=($(SRCS))
     echo "===== main RPM =====" > $@
-    rpm -qi --list $${RPMS[0]} | grep -v 'Build Date' | grep -v 'Build Host' >> $@
+    rpm -qpi --list $${RPMS[0]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     echo "===== sub RPM ======" >> $@
-    rpm -qi --list $${RPMS[1]} | grep -v 'Build Date' | grep -v 'Build Host' >> $@
+    rpm -qpi --list $${RPMS[1]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations'>> $@
     """,
 )
 
