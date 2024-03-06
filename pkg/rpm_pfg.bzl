@@ -30,7 +30,6 @@ load(
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
-    "PackageSubRPMInfo",
     "PackageSymlinkInfo",
     "PackageVariablesInfo",
 )
@@ -39,6 +38,22 @@ load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variabl
 rpm_filetype = [".rpm"]
 
 spec_filetype = [".spec", ".spec.in", ".spec.tpl"]
+
+PackageSubRPMInfo = provider(
+    doc = """Provider representing a sub-RPM that can be built as part of a larger RPM""",
+    fields = {
+        "package_name": "name of the subpackage",
+        "summary": "RPM subpackage `Summary` tag",
+        "group": "RPM subpackage `Group` tag",
+        "description": "Multi-line description of this subpackage",
+        "post_scriptlet": "RPM `$post` scriplet for this subpackage",
+        "architecture": "Subpackage architecture",
+        "version": "RPM `Version` tag for this subpackage",
+        "requires": "List of RPM capability expressions that this package requires",
+        "provides": "List of RPM capability expressions that this package provides",
+        "srcs": "Mapping groups to include in this RPM",
+    },
+)
 
 # TODO(nacl): __install, __cp
 # {0} is the source, {1} is the dest
