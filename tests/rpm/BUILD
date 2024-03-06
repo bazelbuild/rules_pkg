@@ -494,8 +494,8 @@ genrule(
     name = "test_sub_rpm_main_file_input",
     outs = ["test_sub_rpm_main_file_input.txt"],
     cmd = """
-   echo "test main rpm data" > $@
-   """,
+    echo "test main rpm data" > $@
+    """,
 )
 
 pkg_files(
@@ -526,10 +526,10 @@ genrule(
     cmd = """
     # pkg_rpm emits two outputs
     RPMS=($(SRCS))
-    echo "===== main RPM ===== " > $@
-    rpm -qi --list $${RPMS[0]} >> $@
-    echo "===== sub RPM ====== " >> $@
-    rpm -qi --list $${RPMS[1]} >> $@
+    echo "===== main RPM =====" > $@
+    rpm -qi --list $${RPMS[0]} | grep -v 'Build Date' | grep -v 'Build Host' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qi --list $${RPMS[1]} | grep -v 'Build Date' | grep -v 'Build Host' >> $@
     """,
 )
 
