@@ -75,7 +75,7 @@ class MakeRpmTest(unittest.TestCase):
     """
 
     result = make_rpm.FindOutputFile(log)
-    self.assertEqual('/path/to/file/here.rpm', result)
+    self.assertEqual(['/path/to/file/here.rpm'], result)
 
   def testFindOutputFile_missing(self):
     log = """

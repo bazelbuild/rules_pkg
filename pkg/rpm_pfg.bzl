@@ -39,6 +39,22 @@ rpm_filetype = [".rpm"]
 
 spec_filetype = [".spec", ".spec.in", ".spec.tpl"]
 
+PackageSubRPMInfo = provider(
+    doc = """Provider representing a sub-RPM that can be built as part of a larger RPM""",
+    fields = {
+        "package_name": "name of the subpackage",
+        "summary": "RPM subpackage `Summary` tag",
+        "group": "RPM subpackage `Group` tag",
+        "description": "Multi-line description of this subpackage",
+        "post_scriptlet": "RPM `$post` scriplet for this subpackage",
+        "architecture": "Subpackage architecture",
+        "version": "RPM `Version` tag for this subpackage",
+        "requires": "List of RPM capability expressions that this package requires",
+        "provides": "List of RPM capability expressions that this package provides",
+        "srcs": "Mapping groups to include in this RPM",
+    },
+)
+
 # TODO(nacl): __install, __cp
 # {0} is the source, {1} is the dest
 #
@@ -151,20 +167,20 @@ def _make_absolute_if_not_already_or_is_macro(path):
 # TODO(nacl, #459): These are redundant with functions and structures in
 # pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
 # there, but as of writing, it's not quite ready.
-def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map, packaged_directories, rpm_files_list, install_script_pieces):
+def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest, src in pfi.dest_src_map.items():
         metadata = _package_contents_metadata(origin_label, grouping_label)
-        if dest in dest_check_map:
-            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        if dest in rpm_ctx.dest_check_map:
+            _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
         else:
-            dest_check_map[dest] = metadata
+            rpm_ctx.dest_check_map[dest] = metadata
 
         abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
         if src.is_directory:
             # Set aside TreeArtifact information for external processing
             #
             # @unsorted-dict-items
-            packaged_directories.append({
+            rpm_ctx.packaged_directories.append({
                 "src": src,
                 "dest": abs_dest,
                 # This doesn't exactly make it extensible, but it saves
@@ -174,56 +190,233 @@ def _process_files(pfi, origin_label, grouping_label, file_base, dest_check_map,
             })
         else:
             # Files are well-known.  Take care of them right here.
-            rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-            install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
+            rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
+            rpm_ctx.install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
                 src.path,
                 abs_dest,
             ))
 
-def _process_dirs(pdi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
+def _process_dirs(pdi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest in pdi.dirs:
         metadata = _package_contents_metadata(origin_label, grouping_label)
-        if dest in dest_check_map:
-            _conflicting_contents_error(dest, metadata, dest_check_map[dest])
+        if dest in rpm_ctx.dest_check_map:
+            _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
         else:
-            dest_check_map[dest] = metadata
+            rpm_ctx.dest_check_map[dest] = metadata
 
         abs_dirname = _make_absolute_if_not_already_or_is_macro(dest)
-        rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dirname))
+        rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dirname))
 
-        install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
+        rpm_ctx.install_script_pieces.append(_INSTALL_DIR_STANZA_FMT.format(
             abs_dirname,
         ))
 
-def _process_symlink(psi, origin_label, grouping_label, file_base, dest_check_map, _, rpm_files_list, install_script_pieces):
+def _process_symlink(psi, origin_label, grouping_label, file_base, rpm_ctx):
     metadata = _package_contents_metadata(origin_label, grouping_label)
-    if psi.destination in dest_check_map:
-        _conflicting_contents_error(psi.destination, metadata, dest_check_map[psi.destination])
+    if psi.destination in rpm_ctx.dest_check_map:
+        _conflicting_contents_error(psi.destination, metadata, rpm_ctx.dest_check_map[psi.destination])
     else:
-        dest_check_map[psi.destination] = metadata
+        rpm_ctx.dest_check_map[psi.destination] = metadata
 
     abs_dest = _make_absolute_if_not_already_or_is_macro(psi.destination)
-    rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-    install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
+    rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
+    rpm_ctx.install_script_pieces.append(_INSTALL_SYMLINK_STANZA_FMT.format(
         abs_dest,
         psi.target,
         psi.attributes["mode"],
     ))
+
+def _process_dep(dep, rpm_ctx):
+    # NOTE: This does not detect cases where directories are not named
+    # consistently.  For example, all of these may collide in reality, but
+    # won't be detected by the below:
+    #
+    # 1) usr/lib/libfoo.a
+    # 2) /usr/lib/libfoo.a
+    # 3) %{_libdir}/libfoo.a
+    #
+    # The most important thing, regardless of how these checks below are
+    # done, is to be consistent with path naming conventions.
+    #
+    # There is also an unsolved question of determining how to handle
+    # subdirectories of "PackageFilesInfo" targets that are actually
+    # directories.
+
+    # dep is a Target
+    if PackageFilesInfo in dep:
+        _process_files(
+            dep[PackageFilesInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageDirsInfo in dep:
+        _process_dirs(
+            dep[PackageDirsInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageSymlinkInfo in dep:
+        _process_symlink(
+            dep[PackageSymlinkInfo],
+            dep.label,  # origin label
+            None,  # group label
+            _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
+            rpm_ctx,
+        )
+
+    if PackageFilegroupInfo in dep:
+        pfg_info = dep[PackageFilegroupInfo]
+        for entry, origin in pfg_info.pkg_files:
+            file_base = _make_filetags(entry.attributes)
+            _process_files(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+        for entry, origin in pfg_info.pkg_dirs:
+            file_base = _make_filetags(entry.attributes, "%dir")
+            _process_dirs(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+
+        for entry, origin in pfg_info.pkg_symlinks:
+            file_base = _make_filetags(entry.attributes)
+            _process_symlink(
+                entry,
+                origin,
+                dep.label,
+                file_base,
+                rpm_ctx,
+            )
+
+def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx):
+    sub_rpm_ctx = struct(
+        dest_check_map = {},
+        install_script_pieces = [],
+        packaged_directories = [],
+        rpm_files_list = [],
+    )
+
+    rpm_lines = [
+        "%%package %s" % rpm_info.package_name,
+        "Summary: %s" % rpm_info.summary,
+    ]
+
+    if rpm_info.architecture:
+        rpm_lines += ["BuildArch: %s" % rpm_info.architecture]
+
+    if rpm_info.version:
+        rpm_lines += ["Version: %s" % rpm_info.version]
+
+    for r in rpm_info.requires:
+        rpm_lines += ["Requires: %s" % r]
+
+    for p in rpm_info.provides:
+        rpm_lines += ["Provides: %s" % p]
+
+    rpm_lines += [
+        "",
+        "%%description %s" % rpm_info.package_name,
+        rpm_info.description,
+    ]
+
+    if rpm_info.post_scriptlet:
+        rpm_lines += [
+            "",
+            "%%post %s" % rpm_info.package_name,
+        ]
+
+    if rpm_info.srcs:
+        rpm_lines += [
+            "",
+            "%%files %s" % rpm_info.package_name,
+        ]
+
+        for dep in rpm_info.srcs:
+            _process_dep(dep, sub_rpm_ctx)
+
+        rpm_lines += sub_rpm_ctx.rpm_files_list
+        rpm_lines += [""]
+
+    rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
+    rpm_ctx.packaged_directories.extend(sub_rpm_ctx.packaged_directories)
+
+    package_file_name = "%s-%s-%s-%s.%s.rpm" % (
+        rpm_name,
+        rpm_info.package_name,
+        rpm_info.version or ctx.attr.version,
+        ctx.attr.release,
+        rpm_info.architecture or ctx.attr.architecture,
+    )
+
+    default_file = ctx.actions.declare_file("{}-{}.rpm".format(rpm_name, rpm_info.package_name))
+
+    _, output_file, _ = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+        default_output_file = default_file,
+    )
+
+    rpm_ctx.output_rpm_files.append(output_file)
+    rpm_ctx.make_rpm_args.append("--subrpm_out_file=%s:%s" % (
+        rpm_info.package_name,
+        output_file.path,
+    ))
+
+    return rpm_lines
 
 #### Rule implementation
 
 def _pkg_rpm_impl(ctx):
     """Implements the pkg_rpm rule."""
 
+    rpm_ctx = struct(
+        # Ensure that no destinations collide.  RPMs that fail this check may be
+        # correct, but the output may also create hard-to-debug issues.  Better
+        # to err on the side of correctness here.
+        dest_check_map = {},
+
+        # The contents of the "%install" scriptlet
+        install_script_pieces = [],
+
+        # The list of entries in the "%files" list
+        rpm_files_list = [],
+
+        # Directories (TreeArtifacts) are to be treated differently.
+        # Specifically, since Bazel does not know their contents at analysis
+        # time, processing them needs to be delegated to a helper script.  This
+        # is done via the _treeartifact_helper script used later on.
+        packaged_directories = [],
+
+        # RPM files we expect to generate
+        output_rpm_files = [],
+
+        # Arguments that we pass to make_rpm.py
+        make_rpm_args = [],
+    )
+
     files = []
     tools = []
-    args = ["--name=" + ctx.label.name]
+    name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
+    rpm_ctx.make_rpm_args.append("--name=" + name)
 
     if ctx.attr.debug:
-        args.append("--debug")
+        rpm_ctx.make_rpm_args.append("--debug")
 
     if ctx.attr.rpmbuild_path:
-        args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
+        rpm_ctx.make_rpm_args.append("--rpmbuild=" + ctx.attr.rpmbuild_path)
 
         # buildifier: disable=print
         print("rpmbuild_path is deprecated. See the README for instructions on how" +
@@ -234,11 +427,11 @@ def _pkg_rpm_impl(ctx):
             fail("The rpmbuild_toolchain is not properly configured: " +
                  toolchain.name)
         if toolchain.path:
-            args.append("--rpmbuild=" + toolchain.path)
+            rpm_ctx.make_rpm_args.append("--rpmbuild=" + toolchain.path)
         else:
             executable_files = toolchain.label[DefaultInfo].files_to_run
             tools.append(executable_files)
-            args.append("--rpmbuild=%s" % executable_files.executable.path)
+            rpm_ctx.make_rpm_args.append("--rpmbuild=%s" % executable_files.executable.path)
 
     #### Calculate output file name
     # rpm_name takes precedence over name if provided
@@ -258,12 +451,6 @@ def _pkg_rpm_impl(ctx):
             ctx.attr.architecture,
         )
 
-    _, output_file, _ = setup_output_files(
-        ctx,
-        package_file_name = package_file_name,
-        default_output_file = default_file,
-    )
-
     #### rpm spec "preamble"
     preamble_pieces = []
 
@@ -275,7 +462,7 @@ def _pkg_rpm_impl(ctx):
             fail("Both version and version_file attributes were specified")
 
         preamble_pieces.append("Version: ${{VERSION_FROM_FILE}}")
-        args.append("--version=@" + ctx.file.version_file.path)
+        rpm_ctx.make_rpm_args.append("--version=@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
         preamble_pieces.append("Version: " + ctx.attr.version)
@@ -288,7 +475,7 @@ def _pkg_rpm_impl(ctx):
             fail("Both release and release_file attributes were specified")
 
         preamble_pieces.append("Release: ${{RELEASE_FROM_FILE}}")
-        args.append("--release=@" + ctx.file.release_file.path)
+        rpm_ctx.make_rpm_args.append("--release=@" + ctx.file.release_file.path)
         files.append(ctx.file.release_file)
     elif ctx.attr.release:
         preamble_pieces.append("Release: " + ctx.attr.release)
@@ -304,10 +491,10 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.source_date_epoch_file:
         if ctx.attr.source_date_epoch >= 0:
             fail("Both source_date_epoch and source_date_epoch_file attributes were specified")
-        args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
+        rpm_ctx.make_rpm_args.append("--source_date_epoch=@" + ctx.file.source_date_epoch_file.path)
         files.append(ctx.file.source_date_epoch_file)
     elif ctx.attr.source_date_epoch >= 0:
-        args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
+        rpm_ctx.make_rpm_args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
@@ -352,7 +539,7 @@ def _pkg_rpm_impl(ctx):
         content = substitute_package_variables(ctx, "\n".join(preamble_pieces)),
     )
     files.append(preamble_file)
-    args.append("--preamble=" + preamble_file.path)
+    rpm_ctx.make_rpm_args.append("--preamble=" + preamble_file.path)
 
     #### %description
 
@@ -372,11 +559,11 @@ def _pkg_rpm_impl(ctx):
         fail("None of the description or description_file attributes were specified")
 
     files.append(description_file)
-    args.append("--description=" + description_file.path)
+    rpm_ctx.make_rpm_args.append("--description=" + description_file.path)
 
     if ctx.attr.changelog:
         files.append(ctx.file.changelog)
-        args.append("--changelog=" + ctx.file.changelog.path)
+        rpm_ctx.make_rpm_args.append("--changelog=" + ctx.file.changelog.path)
 
     #### Non-procedurally-generated scriptlets
 
@@ -386,60 +573,60 @@ def _pkg_rpm_impl(ctx):
             fail("Both pre_scriptlet and pre_scriptlet_file attributes were specified")
         pre_scriptlet_file = ctx.file.pre_scriptlet_file
         files.append(pre_scriptlet_file)
-        args.append("--pre_scriptlet=" + pre_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--pre_scriptlet=" + pre_scriptlet_file.path)
     elif ctx.attr.pre_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".pre_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.pre_scriptlet)
-        args.append("--pre_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--pre_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.post_scriptlet_file:
         if ctx.attr.post_scriptlet:
             fail("Both post_scriptlet and post_scriptlet_file attributes were specified")
         post_scriptlet_file = ctx.file.post_scriptlet_file
         files.append(post_scriptlet_file)
-        args.append("--post_scriptlet=" + post_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--post_scriptlet=" + post_scriptlet_file.path)
     elif ctx.attr.post_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".post_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.post_scriptlet)
-        args.append("--post_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--post_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.preun_scriptlet_file:
         if ctx.attr.preun_scriptlet:
             fail("Both preun_scriptlet and preun_scriptlet_file attributes were specified")
         preun_scriptlet_file = ctx.file.preun_scriptlet_file
         files.append(preun_scriptlet_file)
-        args.append("--preun_scriptlet=" + preun_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--preun_scriptlet=" + preun_scriptlet_file.path)
     elif ctx.attr.preun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".preun_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.preun_scriptlet)
-        args.append("--preun_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--preun_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.postun_scriptlet_file:
         if ctx.attr.postun_scriptlet:
             fail("Both postun_scriptlet and postun_scriptlet_file attributes were specified")
         postun_scriptlet_file = ctx.file.postun_scriptlet_file
         files.append(postun_scriptlet_file)
-        args.append("--postun_scriptlet=" + postun_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--postun_scriptlet=" + postun_scriptlet_file.path)
     elif ctx.attr.postun_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".postun_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.postun_scriptlet)
-        args.append("--postun_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--postun_scriptlet=" + scriptlet_file.path)
 
     if ctx.attr.posttrans_scriptlet_file:
         if ctx.attr.posttrans_scriptlet:
             fail("Both posttrans_scriptlet and posttrans_scriptlet_file attributes were specified")
         posttrans_scriptlet_file = ctx.file.posttrans_scriptlet_file
         files.append(posttrans_scriptlet_file)
-        args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--posttrans_scriptlet=" + posttrans_scriptlet_file.path)
     elif ctx.attr.posttrans_scriptlet:
         scriptlet_file = ctx.actions.declare_file(ctx.label.name + ".posttrans_scriptlet")
         files.append(scriptlet_file)
         ctx.actions.write(scriptlet_file, ctx.attr.posttrans_scriptlet)
-        args.append("--posttrans_scriptlet=" + scriptlet_file.path)
+        rpm_ctx.make_rpm_args.append("--posttrans_scriptlet=" + scriptlet_file.path)
 
     #### Expand the spec file template; prepare data files
 
@@ -449,34 +636,23 @@ def _pkg_rpm_impl(ctx):
         output = spec_file,
         substitutions = substitutions,
     )
-    args.append("--spec_file=" + spec_file.path)
+    rpm_ctx.make_rpm_args.append("--spec_file=" + spec_file.path)
     files.append(spec_file)
 
-    args.append("--out_file=" + output_file.path)
-
     # Add data files
-    files += ctx.files.srcs
+    files += ctx.files.srcs + ctx.files.subrpms
 
-    #### Consistency checking; input processing
+    _, output_file, _ = setup_output_files(
+        ctx,
+        package_file_name = package_file_name,
+        default_output_file = default_file,
+    )
 
-    # Ensure that no destinations collide.  RPMs that fail this check may be
-    # correct, but the output may also create hard-to-debug issues.  Better to
-    # err on the side of correctness here.
-    dest_check_map = {}
+    rpm_ctx.make_rpm_args.append("--out_file=" + output_file.path)
+    rpm_ctx.output_rpm_files.append(output_file)
 
-    # The contents of the "%install" scriptlet
-    install_script_pieces = []
     if ctx.attr.debug:
-        install_script_pieces.append("set -x")
-
-    # The list of entries in the "%files" list
-    rpm_files_list = []
-
-    # Directories (TreeArtifacts) are to be treated differently.  Specifically,
-    # since Bazel does not know their contents at analysis time, processing them
-    # needs to be delegated to a helper script.  This is done via the
-    # _treeartifact_helper script used later on.
-    packaged_directories = []
+        rpm_ctx.install_script_pieces.append("set -x")
 
     # Iterate over all incoming data, checking for conflicts and creating
     # datasets as we go from the actual contents of the RPM.
@@ -485,99 +661,32 @@ def _pkg_rpm_impl(ctx):
     # produce an installation script that is longer than necessary.  A better
     # implementation would track directories that are created and ensure that
     # they aren't unnecessarily recreated.
+
     for dep in ctx.attr.srcs:
-        # NOTE: This does not detect cases where directories are not named
-        # consistently.  For example, all of these may collide in reality, but
-        # won't be detected by the below:
-        #
-        # 1) usr/lib/libfoo.a
-        # 2) /usr/lib/libfoo.a
-        # 3) %{_libdir}/libfoo.a
-        #
-        # The most important thing, regardless of how these checks below are
-        # done, is to be consistent with path naming conventions.
-        #
-        # There is also an unsolved question of determining how to handle
-        # subdirectories of "PackageFilesInfo" targets that are actually
-        # directories.
+        _process_dep(dep, rpm_ctx)
 
-        # dep is a Target
-        if PackageFilesInfo in dep:
-            _process_files(
-                dep[PackageFilesInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
-            )
+    #### subrpms
+    subrpm_file = ctx.actions.declare_file(
+        "{}.spec.subrpms".format(rpm_name),
+    )
+    if ctx.attr.subrpms:
+        subrpm_lines = []
 
-        if PackageDirsInfo in dep:
-            _process_dirs(
-                dep[PackageDirsInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageDirsInfo].attributes, "%dir"),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
-            )
+        for s in ctx.attr.subrpms:
+            subrpm_lines += _process_subrpm(ctx, rpm_name, s[PackageSubRPMInfo], rpm_ctx)
 
-        if PackageSymlinkInfo in dep:
-            _process_symlink(
-                dep[PackageSymlinkInfo],
-                dep.label,  # origin label
-                None,  # group label
-                _make_filetags(dep[PackageSymlinkInfo].attributes),  # file_base
-                dest_check_map,
-                packaged_directories,
-                rpm_files_list,
-                install_script_pieces,
-            )
+        ctx.actions.write(
+            output = subrpm_file,
+            content = "\n".join(subrpm_lines),
+        )
+    else:
+        ctx.actions.write(
+            output = subrpm_file,
+            content = "# no subrpms",
+        )
 
-        if PackageFilegroupInfo in dep:
-            pfg_info = dep[PackageFilegroupInfo]
-            for entry, origin in pfg_info.pkg_files:
-                file_base = _make_filetags(entry.attributes)
-                _process_files(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
-                )
-            for entry, origin in pfg_info.pkg_dirs:
-                file_base = _make_filetags(entry.attributes, "%dir")
-                _process_dirs(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
-                )
-
-            for entry, origin in pfg_info.pkg_symlinks:
-                file_base = _make_filetags(entry.attributes)
-                _process_symlink(
-                    entry,
-                    origin,
-                    dep.label,
-                    file_base,
-                    dest_check_map,
-                    packaged_directories,
-                    rpm_files_list,
-                    install_script_pieces,
-                )
-
+    files.append(subrpm_file)
+    rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
     #### Procedurally-generated scripts/lists (%install, %files)
 
     # We need to write these out regardless of whether we are using
@@ -585,7 +694,7 @@ def _pkg_rpm_impl(ctx):
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
     ctx.actions.write(
         install_script,
-        "\n".join(install_script_pieces),
+        "\n".join(rpm_ctx.install_script_pieces),
     )
 
     rpm_files_file = ctx.actions.declare_file(
@@ -593,14 +702,14 @@ def _pkg_rpm_impl(ctx):
     )
     ctx.actions.write(
         rpm_files_file,
-        "\n".join(rpm_files_list),
+        "\n".join(rpm_ctx.rpm_files_list),
     )
 
     # TreeArtifact processing work
-    if packaged_directories:
+    if rpm_ctx.packaged_directories:
         packaged_directories_file = ctx.actions.declare_file("{}.spec.packaged_directories.json".format(rpm_name))
 
-        packaged_directories_inputs = [d["src"] for d in packaged_directories]
+        packaged_directories_inputs = [d["src"] for d in rpm_ctx.packaged_directories]
 
         # This isn't the prettiest thing in the world, but it works.  Bazel
         # needs the "File" data to pass to the command, but "File"s cannot be
@@ -609,10 +718,10 @@ def _pkg_rpm_impl(ctx):
         # This data isn't used outside of this block, so it's probably fine.
         # Cleaner code would separate the JSONable values from the File type (in
         # a struct, probably).
-        for d in packaged_directories:
+        for d in rpm_ctx.packaged_directories:
             d["src"] = d["src"].path
 
-        ctx.actions.write(packaged_directories_file, json.encode(packaged_directories))
+        ctx.actions.write(packaged_directories_file, json.encode(rpm_ctx.packaged_directories))
 
         # Overwrite all following uses of the install script and files lists to
         # use the ones generated below.
@@ -640,10 +749,10 @@ def _pkg_rpm_impl(ctx):
     # And then we're done.  Yay!
 
     files.append(install_script)
-    args.append("--install_script=" + install_script.path)
+    rpm_ctx.make_rpm_args.append("--install_script=" + install_script.path)
 
     files.append(rpm_files_file)
-    args.append("--file_list=" + rpm_files_file.path)
+    rpm_ctx.make_rpm_args.append("--file_list=" + rpm_files_file.path)
 
     #### Remaining setup
 
@@ -660,10 +769,10 @@ def _pkg_rpm_impl(ctx):
             "{} {}".format(key, value),
         ])
 
-    args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
+    rpm_ctx.make_rpm_args.extend(["--rpmbuild_arg=" + a for a in additional_rpmbuild_args])
 
-    for f in ctx.files.srcs:
-        args.append(f.path)
+    for f in ctx.files.srcs + ctx.files.subrpms:
+        rpm_ctx.make_rpm_args.append(f.path)
 
     #### Call the generator script.
 
@@ -671,9 +780,9 @@ def _pkg_rpm_impl(ctx):
         mnemonic = "MakeRpm",
         executable = ctx.executable._make_rpm,
         use_default_shell_env = True,
-        arguments = args,
+        arguments = rpm_ctx.make_rpm_args,
         inputs = files,
-        outputs = [output_file],
+        outputs = rpm_ctx.output_rpm_files,
         env = {
             "LANG": "en_US.UTF-8",
             "LC_CTYPE": "UTF-8",
@@ -689,13 +798,13 @@ def _pkg_rpm_impl(ctx):
 
     output_groups = {
         "out": [default_file],
-        "rpm": [output_file],
+        "rpm": rpm_ctx.output_rpm_files,
         "changes": changes,
     }
     return [
         OutputGroupInfo(**output_groups),
         DefaultInfo(
-            files = depset([output_file]),
+            files = depset(rpm_ctx.output_rpm_files),
         ),
     ]
 
@@ -961,7 +1070,7 @@ pkg_rpm = rule(
 
             See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
-	),
+        ),
         "requires": attr.string_list(
             doc = """List of rpm capability expressions that this package requires.
 
@@ -1046,6 +1155,18 @@ pkg_rpm = rule(
         "defines": attr.string_dict(
             doc = """Additional definitions to pass to rpmbuild""",
         ),
+        "subrpms": attr.label_list(
+            doc = """Sub RPMs to build with this RPM
+
+	    A list of `pkg_sub_rpm` instances that can be used to create sub RPMs as part of the
+	    overall package build.
+
+            NOTE: use of `subrpms` is incompatible with the legacy `spec_file` mode
+	    """,
+            providers = [
+                [PackageSubRPMInfo],
+            ],
+        ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
         ),
@@ -1066,4 +1187,75 @@ pkg_rpm = rule(
     executable = False,
     implementation = _pkg_rpm_impl,
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
+)
+
+def _pkg_sub_rpm_impl(ctx):
+    mapped_files_depsets = []
+
+    for s in ctx.attr.srcs:
+        if PackageFilegroupInfo in s:
+            mapped_files_depsets.append(s[DefaultInfo].files)
+
+        if PackageFilesInfo in s:
+            # dict.values() returns a list, not an iterator like in python3
+            mapped_files_depsets.append(s[DefaultInfo].files)
+
+    return [
+        PackageSubRPMInfo(
+            package_name = ctx.attr.package_name,
+            summary = ctx.attr.summary,
+            group = ctx.attr.group,
+            description = ctx.attr.description,
+            post_scriptlet = ctx.attr.post_scriptlet,
+            architecture = ctx.attr.architecture,
+            version = ctx.attr.version,
+            requires = ctx.attr.requires,
+            provides = ctx.attr.provides,
+            srcs = ctx.attr.srcs,
+        ),
+        DefaultInfo(
+            files = depset(transitive = mapped_files_depsets),
+        ),
+    ]
+
+pkg_sub_rpm = rule(
+    doc = """Define a sub RPM to be built as part of a parent RPM
+
+    This rule uses the outputs of the rules in `mappings.bzl` to define an sub
+    RPM that will be built as part of a larger RPM defined by a `pkg_rpm` instance.
+
+    """,
+    implementation = _pkg_sub_rpm_impl,
+    # @unsorted-dict-items
+    attrs = {
+        "package_name": attr.string(doc = "name of the subrpm"),
+        "summary": attr.string(doc = "Sub RPM `Summary` tag"),
+        "group": attr.string(
+            doc = """Optional; RPM "Group" tag.
+
+            NOTE: some distributions (as of writing, Fedora > 17 and CentOS/RHEL
+            > 5) have deprecated this tag.  Other distributions may require it,
+            but it is harmless in any case.
+
+            """,
+        ),
+        "description": attr.string(doc = "Multi-line description of this subrpm"),
+        "post_scriptlet": attr.string(doc = "RPM `%post` scriplet for this subrpm"),
+        "architecture": attr.string(doc = "Sub RPM architecture"),
+        "version": attr.string(doc = "RPM `Version` tag for this subrpm"),
+        "requires": attr.string_list(doc = "List of RPM capability expressions that this package requires"),
+        "provides": attr.string_list(doc = "List of RPM capability expressions that this package provides"),
+        "srcs": attr.label_list(
+            doc = "Mapping groups to include in this RPM",
+            mandatory = True,
+            providers = [
+                [PackageSubRPMInfo, DefaultInfo],
+                [PackageFilegroupInfo, DefaultInfo],
+                [PackageFilesInfo, DefaultInfo],
+                [PackageDirsInfo],
+                [PackageSymlinkInfo],
+            ],
+        ),
+    },
+    provides = [PackageSubRPMInfo],
 )
