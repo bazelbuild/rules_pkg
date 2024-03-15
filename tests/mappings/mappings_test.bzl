@@ -970,7 +970,6 @@ _gen_manifest_test_main = rule(
     },
 )
 
-# buildifier: disable=function-docstring-args
 def manifest_golden_test(name, target, expected):
     """Tests that a content manifest file matches a golden copy.
 
@@ -978,6 +977,7 @@ def manifest_golden_test(name, target, expected):
     expected content.
 
     Args:
+      name: name
       target: A target which produces a content manifest with the name
           <target> + ".manifest"
       expected: label of a file containing the expected content.
