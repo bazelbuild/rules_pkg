@@ -138,7 +138,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "foo/a", "data": b"a"},
         {"name": "foo/ab", "data": b"ab"},
         ]
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True) as f:
       datafile = self.data_files.Rlocation(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
@@ -176,7 +176,7 @@ class TarFileWriterTest(unittest.TestCase):
         self.assertEqual(output_file.mtime, 0)
 
   def testAddingDirectoriesForFile(self):
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True) as f:
       f.add_file("d/f")
     content = [
         {"name": "d", "mode": 0o755},
@@ -185,7 +185,7 @@ class TarFileWriterTest(unittest.TestCase):
     self.assertTarFileContent(self.tempfile, content)
 
   def testAddingDirectoriesForFileManually(self):
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True) as f:
       f.add_file("d", tarfile.DIRTYPE)
       f.add_file("d/f")
 
@@ -207,6 +207,19 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "x", "mode": 0o755},
         {"name": "x/y", "mode": 0o755},
         {"name": "x/y/f"},
+    ]
+    self.assertTarFileContent(self.tempfile, content)
+
+  def testAddingOnlySpecifiedFiles(self):
+    with tar_writer.TarFileWriter(self.tempfile) as f:
+      f.add_file("a", tarfile.DIRTYPE)
+      f.add_file("a/b", tarfile.DIRTYPE)
+      f.add_file("a/b/", tarfile.DIRTYPE)
+      f.add_file("a/b/c/f")
+    content = [
+        {"name": "a", "mode": 0o755},
+        {"name": "a/b", "mode": 0o755},
+        {"name": "a/b/c/f"},
     ]
     self.assertTarFileContent(self.tempfile, content)
 

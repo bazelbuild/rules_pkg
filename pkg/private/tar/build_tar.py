@@ -42,7 +42,7 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, default_mtime):
+  def __init__(self, output, directory, compression, compressor, create_parents, default_mtime):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -50,12 +50,14 @@ class TarFile(object):
     self.compression = compression
     self.compressor = compressor
     self.default_mtime = default_mtime
+    self.create_parents = create_parents
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
         self.output,
         self.compression,
         self.compressor,
+        self.create_parents,
         default_mtime=self.default_mtime)
     return self
 
@@ -383,6 +385,10 @@ def main():
            'path/to/file=root.root.')
   parser.add_argument('--stamp_from', default='',
                       help='File to find BUILD_STAMP in')
+  parser.add_argument('--create_parents',
+                      action='store_true',
+                      help='Automatically creates parent directories implied by a'
+                           ' prefix if they do not exist')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -432,7 +438,8 @@ def main():
       directory = helpers.GetFlagValue(options.directory),
       compression = options.compression,
       compressor = options.compressor,
-      default_mtime=default_mtime) as output:
+      default_mtime=default_mtime,
+      create_parents=options.create_parents) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
