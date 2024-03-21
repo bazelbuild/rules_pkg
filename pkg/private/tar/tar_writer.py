@@ -46,6 +46,7 @@ class TarFileWriter(object):
                name,
                compression='',
                compressor='',
+               create_parents=False,
                default_mtime=None,
                preserve_tar_mtimes=True):
     """TarFileWriter wraps tarfile.open().
@@ -106,6 +107,7 @@ class TarFileWriter(object):
     # we can adjust that here based on the setting of root_dirctory.
     self.directories.add('/')
     self.directories.add('./')
+    self.create_parents = create_parents
 
   def __enter__(self):
     return self
@@ -219,7 +221,8 @@ class TarFileWriter(object):
       mtime = self.default_mtime
 
     # Make directories up the file
-    self.add_parents(name, mtime=mtime, mode=0o755, uid=uid, gid=gid, uname=uname, gname=gname)
+    if self.create_parents:
+      self.add_parents(name, mtime=mtime, mode=0o755, uid=uid, gid=gid, uname=uname, gname=gname)
 
     tarinfo = tarfile.TarInfo(name)
     tarinfo.mtime = mtime
@@ -291,14 +294,15 @@ class TarFileWriter(object):
         if prefix:
           in_name = os.path.normpath(prefix + in_name).replace(os.path.sep, '/')
         tarinfo.name = in_name
-        self.add_parents(
-            path=tarinfo.name,
-            mtime=tarinfo.mtime,
-            mode=0o755,
-            uid=tarinfo.uid,
-            gid=tarinfo.gid,
-            uname=tarinfo.uname,
-            gname=tarinfo.gname)
+        if self.create_parents:
+          self.add_parents(
+              path=tarinfo.name,
+              mtime=tarinfo.mtime,
+              mode=0o755,
+              uid=tarinfo.uid,
+              gid=tarinfo.gid,
+              uname=tarinfo.uname,
+              gname=tarinfo.gname)
 
         if prefix is not None:
           # Relocate internal hardlinks as well to avoid breaking them.

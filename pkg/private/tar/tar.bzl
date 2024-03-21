@@ -173,6 +173,9 @@ def _pkg_tar_impl(ctx):
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = False)
 
+    if ctx.attr.create_parents:
+        args.add("--create_parents")
+
     inputs = depset(
         direct = ctx.files.deps + files,
         transitive = mapping_context.file_deps,
@@ -264,6 +267,7 @@ pkg_tar_impl = rule(
         "compressor_args": attr.string(
             doc = """Arg list for `compressor`.""",
         ),
+        "create_parents": attr.bool(default = True),
 
         # Common attributes
         "out": attr.output(mandatory = True),
