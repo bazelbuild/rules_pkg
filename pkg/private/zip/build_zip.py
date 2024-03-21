@@ -74,7 +74,7 @@ def _combine_paths(left, right):
 
 
 def parse_date(ts):
-  ts = datetime.datetime.utcfromtimestamp(ts)
+  ts = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
   return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
 
 
