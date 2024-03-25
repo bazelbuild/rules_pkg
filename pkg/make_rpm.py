@@ -259,17 +259,17 @@ class RpmBuilder(object):
 
     # Slurp in the scriptlets...
     self.pre_scriptlet = \
-      SlurpFile(os.path.join(original_dir, pre_scriptlet_path)) if pre_scriptlet_path is not None else ''
+      SlurpFile(os.path.join(original_dir, pre_scriptlet_path)) if pre_scriptlet_path else ''
     self.post_scriptlet = \
-      SlurpFile(os.path.join(original_dir, post_scriptlet_path)) if post_scriptlet_path is not None else ''
+      SlurpFile(os.path.join(original_dir, post_scriptlet_path)) if post_scriptlet_path else ''
     self.preun_scriptlet = \
-      SlurpFile(os.path.join(original_dir, preun_scriptlet_path)) if preun_scriptlet_path is not None else ''
+      SlurpFile(os.path.join(original_dir, preun_scriptlet_path)) if preun_scriptlet_path else ''
     self.postun_scriptlet = \
-      SlurpFile(os.path.join(original_dir, postun_scriptlet_path)) if postun_scriptlet_path is not None else ''
+      SlurpFile(os.path.join(original_dir, postun_scriptlet_path)) if postun_scriptlet_path else ''
     self.posttrans_scriptlet = \
-      SlurpFile(os.path.join(original_dir, posttrans_scriptlet_path)) if posttrans_scriptlet_path is not None else ''
+      SlurpFile(os.path.join(original_dir, posttrans_scriptlet_path)) if posttrans_scriptlet_path else ''
     self.subrpms = \
-      SlurpFile(os.path.join(original_dir, subrpms_file)) if subrpms_file is not None else ''
+      SlurpFile(os.path.join(original_dir, subrpms_file)) if subrpms_file else ''
 
     # Then prepare for textual substitution.  This is typically only the case for the
     # experimental `pkg_rpm`.
@@ -279,7 +279,7 @@ class RpmBuilder(object):
       'PREUN_SCRIPTLET': ("%preun\n" + self.preun_scriptlet) if self.preun_scriptlet else "",
       'POSTUN_SCRIPTLET': ("%postun\n" + self.postun_scriptlet) if self.postun_scriptlet else "",
       'POSTTRANS_SCRIPTLET': ("%posttrans\n" + self.posttrans_scriptlet) if self.posttrans_scriptlet else "",
-      'SUBRPMS' : (self.subrpms if self.subrpms else ""),
+      'SUBRPMS' : self.subrpms,
       'CHANGELOG': ""
     }
 
@@ -362,11 +362,13 @@ class RpmBuilder(object):
       args.append('-vv')
 
     # Common options
+    # NOTE: There may be a need to add '--define', 'buildsubdir .' for some
+    # rpmbuild versions. But that breaks other rpmbuild versions, so before
+    # adding it back in, add extensive tests.
     args += [
         '--define', '_topdir %s' % dirname,
         '--define', '_tmppath %s/TMP' % dirname,
         '--define', '_builddir %s/BUILD' % dirname,
-        '--define', 'buildsubdir .',
         '--bb',
         '--buildroot=%s' % buildroot,
     ]  # yapf: disable
@@ -467,7 +469,7 @@ class RpmBuilder(object):
     spec_file = os.path.join(original_dir, spec_file)
     out_file = os.path.join(original_dir, out_file)
 
-    if subrpm_out_files is not None:
+    if subrpm_out_files:
       subrpm_out_files = (s.split(':') for s in subrpm_out_files)
       subrpm_out_files = [
          (s[0], os.path.join(original_dir, s[1])) for s in subrpm_out_files]
