@@ -666,27 +666,21 @@ def _pkg_rpm_impl(ctx):
         _process_dep(dep, rpm_ctx)
 
     #### subrpms
-    subrpm_file = ctx.actions.declare_file(
-        "{}.spec.subrpms".format(rpm_name),
-    )
     if ctx.attr.subrpms:
         subrpm_lines = []
-
         for s in ctx.attr.subrpms:
-            subrpm_lines += _process_subrpm(ctx, rpm_name, s[PackageSubRPMInfo], rpm_ctx)
+            subrpm_lines.extend(_process_subrpm(ctx, rpm_name, s[PackageSubRPMInfo], rpm_ctx))
 
+        subrpm_file = ctx.actions.declare_file(
+            "{}.spec.subrpms".format(rpm_name),
+        )
         ctx.actions.write(
             output = subrpm_file,
             content = "\n".join(subrpm_lines),
         )
-    else:
-        ctx.actions.write(
-            output = subrpm_file,
-            content = "# no subrpms",
-        )
+        files.append(subrpm_file)
+        rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
 
-    files.append(subrpm_file)
-    rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
     #### Procedurally-generated scripts/lists (%install, %files)
 
     # We need to write these out regardless of whether we are using
