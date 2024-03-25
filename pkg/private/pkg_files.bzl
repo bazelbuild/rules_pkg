@@ -436,7 +436,7 @@ def add_from_default_info(
                 _check_dest(mapping_context.content_map, d_path, rf, src.label, mapping_context.allow_duplicates_with_different_content)
                 mapping_context.content_map[d_path] = _DestFile(
                     src = rf,
-                    entry_type = ENTRY_IS_FILE,
+                    entry_type = ENTRY_IS_TREE if rf.is_directory else ENTRY_IS_FILE,
                     origin = src.label,
                     mode = fmode,
                     user = mapping_context.default_user,
