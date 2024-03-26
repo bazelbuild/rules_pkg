@@ -172,6 +172,7 @@ class RpmBuilder(object):
 
   SOURCE_DIR = 'SOURCES'
   BUILD_DIR = 'BUILD'
+  BUILD_SUBDIR = 'BUILD_SUB'
   BUILDROOT_DIR = 'BUILDROOT'
   TEMP_DIR = 'TMP'
   RPMS_DIR = 'RPMS'
@@ -345,7 +346,7 @@ class RpmBuilder(object):
       shutil.copy(os.path.join(original_dir, file_list_path), RpmBuilder.BUILD_DIR)
       self.file_list_path = os.path.join(RpmBuilder.BUILD_DIR, os.path.basename(file_list_path))
 
-  def CallRpmBuild(self, dirname, rpmbuild_args):
+  def CallRpmBuild(self, dirname, rpmbuild_args, debuginfo_type):
     """Call rpmbuild with the correct arguments."""
 
     buildroot = os.path.join(dirname, RpmBuilder.BUILDROOT_DIR)
@@ -361,16 +362,31 @@ class RpmBuilder(object):
     if self.debug:
       args.append('-vv')
 
+    if debuginfo_type == "fedora40":
+      os.makedirs(f'{dirname}/{RpmBuilder.BUILD_DIR}/{RpmBuilder.BUILD_SUBDIR}')
+
     # Common options
     # NOTE: There may be a need to add '--define', 'buildsubdir .' for some
     # rpmbuild versions. But that breaks other rpmbuild versions, so before
     # adding it back in, add extensive tests.
     args += [
-        '--define', '_topdir %s' % dirname,
-        '--define', '_tmppath %s/TMP' % dirname,
-        '--define', '_builddir %s/BUILD' % dirname,
-        '--bb',
-        '--buildroot=%s' % buildroot,
+      '--define', '_topdir %s' % dirname,
+      '--define', '_tmppath %s/TMP' % dirname,
+      '--define', '_builddir %s/BUILD' % dirname,
+    ]
+
+    if debuginfo_type in ["fedora40", "centos7"]:
+      args += ['--undefine', '_debugsource_packages']
+
+    if debuginfo_type == "centos7":
+      args += ['--define', 'buildsubdir .']
+
+    if debuginfo_type == "fedora40":
+      args += ['--define', f'buildsubdir {RpmBuilder.BUILD_SUBDIR}']
+
+    args += [
+      '--bb',
+      '--buildroot=%s' % buildroot,
     ]  # yapf: disable
 
     # Macro-based RPM parameter substitution, if necessary inputs provided.
@@ -382,7 +398,11 @@ class RpmBuilder(object):
       args += ['--define', 'build_rpm_install %s' % self.install_script_file]
     if self.file_list_path:
       # %files -f is taken relative to the package root
-      args += ['--define', 'build_rpm_files %s' % os.path.basename(self.file_list_path)]
+      base_path = os.path.basename(self.file_list_path)
+      if debuginfo_type == "fedora40":
+        base_path = os.path.join("..", base_path)
+
+      args += ['--define', 'build_rpm_files %s' % base_path]
 
     args.extend(rpmbuild_args)
 
@@ -459,7 +479,8 @@ class RpmBuilder(object):
             posttrans_scriptlet_path=None,
             file_list_path=None,
             changelog_file=None,
-            rpmbuild_args=None):
+            rpmbuild_args=None,
+            debuginfo_type=None):
     """Build the RPM described by the spec_file, with other metadata in keyword arguments"""
 
     if self.debug:
@@ -490,7 +511,7 @@ class RpmBuilder(object):
                         postun_scriptlet_path=postun_scriptlet_path,
                         posttrans_scriptlet_path=posttrans_scriptlet_path,
                         changelog_file=changelog_file)
-      status = self.CallRpmBuild(dirname, rpmbuild_args or [])
+      status = self.CallRpmBuild(dirname, rpmbuild_args or [], debuginfo_type)
       self.SaveResult(out_file, subrpm_out_files)
 
     return status
@@ -550,6 +571,8 @@ def main(argv):
 
   parser.add_argument('--rpmbuild_arg', dest='rpmbuild_args', action='append',
                       help='Any additional arguments to pass to rpmbuild')
+  parser.add_argument('--debuginfo_type', dest='debuginfo_type', default='none',
+                      help='debuginfo type to use (centos7, fedora40, or none)')
   parser.add_argument('files', nargs='*')
 
   options = parser.parse_args(argv or ())
@@ -574,7 +597,8 @@ def main(argv):
                          postun_scriptlet_path=options.postun_scriptlet,
                          posttrans_scriptlet_path=options.posttrans_scriptlet,
                          changelog_file=options.changelog,
-                         rpmbuild_args=options.rpmbuild_args)
+                         rpmbuild_args=options.rpmbuild_args,
+                         debuginfo_type=options.debuginfo_type)
   except NoRpmbuildFoundError:
     print('ERROR: rpmbuild is required but is not present in PATH')
     return 1

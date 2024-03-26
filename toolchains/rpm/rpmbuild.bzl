@@ -21,6 +21,7 @@ RpmbuildInfo = provider(
         "label": "The path to a target I will build",
         "path": "The path to a pre-built rpmbuild",
         "version": "The version string of rpmbuild",
+        "debuginfo_type": "The variant of the underlying debuginfo config",
     },
 )
 
@@ -35,6 +36,7 @@ def _rpmbuild_toolchain_impl(ctx):
             label = ctx.attr.label,
             path = ctx.attr.path,
             version = ctx.attr.version,
+            debuginfo_type = ctx.attr.debuginfo_type,
         ),
     )
     return [toolchain_info]
@@ -53,6 +55,14 @@ rpmbuild_toolchain = rule(
         ),
         "version": attr.string(
             doc = "The version string of the rpmbuild executable. This should be manually set.",
+        ),
+        "debuginfo_type": attr.string(
+            doc = """
+            The underlying debuginfo configuration for the system rpmbuild.
+
+            One of centos7, fedora40, or none
+            """,
+            default = "none",
         ),
     },
 )
