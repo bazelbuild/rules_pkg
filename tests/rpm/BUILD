@@ -531,7 +531,7 @@ genrule(
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     echo "===== sub RPM ======" >> $@
     rpm -qpi --list $${RPMS[1]} | \
-        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations'>> $@
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     """,
 )
 
@@ -539,6 +539,59 @@ diff_test(
     name = "test_golden_sub_rpm_contents",
     file1 = ":test_sub_rpm_contents",
     file2 = "test_sub_rpm_contents.txt.golden",
+)
+
+############################################################################
+# debuginfo tests
+############################################################################
+cc_binary(
+    name = "test_debuginfo",
+    copts = ["-g"],
+    srcs = [
+        "test.c",
+    ],
+)
+
+pkg_files(
+    name = "test_debuginfo_rpm_files",
+    srcs = [
+        ":test_debuginfo",
+    ],
+)
+
+pkg_rpm(
+    name = "test_debuginfo_rpm",
+        srcs = [
+        ":test_debuginfo_rpm_files",
+    ],
+    release = "0",
+    version = "1",
+    license = "Some license",
+    summary = "Summary",
+    description = "Description",
+    debuginfo = True,
+)
+
+genrule(
+    name = "test_debuginfo_rpm_contents",
+    srcs = [":test_debuginfo_rpm"],
+    outs = [":test_debuginfo_rpm_contents.txt"],
+    cmd = """
+    # pkg_rpm emits two outputs
+    RPMS=($(SRCS))
+    echo "===== main RPM =====" > $@
+    rpm -qpi --list $${RPMS[0]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v '.build-id' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qpi --list $${RPMS[1]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v '.build-id' >> $@
+    """,
+)
+
+diff_test(
+    name = "test_golden_debuginfo_rpm_contents",
+    file1 = ":test_debuginfo_rpm_contents",
+    file2 = "test_debuginfo_rpm_contents.txt.golden",
 )
 
 ############################################################################
