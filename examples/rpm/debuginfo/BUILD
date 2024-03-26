@@ -42,6 +42,7 @@ pkg_rpm(
     license = "Some license",
     summary = "Summary",
     description = "Description",
+    debuginfo = True,
 )
 
 # If you have rpmbuild, you probably have rpm2cpio too.

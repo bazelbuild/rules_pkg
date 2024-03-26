@@ -448,8 +448,9 @@ def _pkg_rpm_impl(ctx):
             tools.append(executable_files)
             rpm_ctx.make_rpm_args.append("--rpmbuild=%s" % executable_files.executable.path)
 
-        debuginfo_type = toolchain.debuginfo_type
-        rpm_ctx.make_rpm_args.append("--debuginfo_type=%s" % debuginfo_type)
+        if ctx.attr.debuginfo:
+            debuginfo_type = toolchain.debuginfo_type
+            rpm_ctx.make_rpm_args.append("--debuginfo_type=%s" % debuginfo_type)
 
     #### Calculate output file name
     # rpm_name takes precedence over name if provided
@@ -1200,6 +1201,14 @@ pkg_rpm = rule(
             providers = [
                 [PackageSubRPMInfo],
             ],
+        ),
+        "debuginfo": attr.bool(
+            doc = """Enable generation of debuginfo RPMs
+
+            For supported platforms this will enable the generation of debuginfo RPMs adjacent
+            to the regular RPMs.  Currently this is supported by Fedora 40 and CentOS7
+            """,
+            default = False,
         ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
