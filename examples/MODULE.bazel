@@ -1,0 +1,22 @@
+module(
+    name = "rules_pkg_examples",
+    version = "0.0.0",  # never ships
+    compatibility_level = 1,
+)
+
+local_path_override(
+    module_name = "rules_pkg",
+    path = "..",
+)
+
+bazel_dep(name = "rules_python", version = "0.24.0")
+bazel_dep(name = "rules_cc", version = "0.0.2")
+
+# Find the system rpmbuild if one is available.
+find_rpm = use_extension(
+    "//toolchains/rpm:rpmbuild_configure.bzl",
+    "find_system_rpmbuild_bzlmod",
+    dev_dependency = True
+)
+use_repo(find_rpm, "rules_pkg_rpmbuild")
+register_toolchains("@rules_pkg_rpmbuild//:all", dev_dependency = True)
