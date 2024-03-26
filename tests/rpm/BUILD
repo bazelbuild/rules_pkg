@@ -581,10 +581,10 @@ genrule(
     RPMS=($(SRCS))
     echo "===== main RPM =====" > $@
     rpm -qpi --list $${RPMS[0]} | \
-        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v '.build-id' >> $@
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v 'Architecture' | grep -v 'Size' | grep -v '.build-id' >> $@
     echo "===== sub RPM ======" >> $@
     rpm -qpi --list $${RPMS[1]} | \
-        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v '.build-id' >> $@
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v 'Architecture' | grep -v 'Size' | grep -v '.build-id' >> $@
     """,
 )
 

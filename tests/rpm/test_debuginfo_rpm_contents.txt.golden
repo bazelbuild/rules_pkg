@@ -2,10 +2,8 @@
 Name        : test_debuginfo_rpm
 Version     : 1
 Release     : 0
-Architecture: aarch64
 Install Date: (not installed)
 Group       : Unspecified
-Size        : 68808
 License     : Some license
 Signature   : (none)
 Source RPM  : test_debuginfo_rpm-1-0.src.rpm
@@ -17,10 +15,8 @@ Description
 Name        : test_debuginfo_rpm-debuginfo
 Version     : 1
 Release     : 0
-Architecture: aarch64
 Install Date: (not installed)
 Group       : Development/Debug
-Size        : 5160
 License     : Some license
 Signature   : (none)
 Source RPM  : test_debuginfo_rpm-1-0.src.rpm
