@@ -31,7 +31,7 @@ _ZIP_EPOCH_DT = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.
 _ZIP_EPOCH_S = int(_ZIP_EPOCH_DT.timestamp())
 
 def seconds_to_ziptime(s):
-  dt = datetime.datetime.utcfromtimestamp(s)
+  dt = datetime.datetime.fromtimestamp(s, tz=datetime.timezone.utc)
   return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 
