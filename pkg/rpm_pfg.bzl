@@ -51,6 +51,8 @@ PackageSubRPMInfo = provider(
         "version": "RPM `Version` tag for this subpackage",
         "requires": "List of RPM capability expressions that this package requires",
         "provides": "List of RPM capability expressions that this package provides",
+        "conflicts": "List of RPM capability expressions that conflict with this package",
+        "obsoletes": "List of RPM capability expressions that this package obsoletes",
         "srcs": "Mapping groups to include in this RPM",
     },
 )
@@ -325,6 +327,12 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx):
 
     for p in rpm_info.provides:
         rpm_lines += ["Provides: %s" % p]
+
+    for c in rpm_info.conflicts:
+        rpm_lines += ["Conflicts: %s" % c]
+
+    for o in rpm_info.obsoletes:
+        rpm_lines += ["Obsoletes: %s" % o]
 
     rpm_lines += [
         "",
@@ -1205,6 +1213,8 @@ def _pkg_sub_rpm_impl(ctx):
             version = ctx.attr.version,
             requires = ctx.attr.requires,
             provides = ctx.attr.provides,
+            conflicts = ctx.attr.conflicts,
+            obsoletes = ctx.attr.obsoletes,
             srcs = ctx.attr.srcs,
         ),
         DefaultInfo(
@@ -1239,6 +1249,8 @@ pkg_sub_rpm = rule(
         "version": attr.string(doc = "RPM `Version` tag for this subrpm"),
         "requires": attr.string_list(doc = "List of RPM capability expressions that this package requires"),
         "provides": attr.string_list(doc = "List of RPM capability expressions that this package provides"),
+        "conflicts": attr.string_list(doc = "List of RPM capability expressions that conflict with this package"),
+        "obsoletes": attr.string_list(doc = "List of RPM capability expressions that this package obsoletes"),
         "srcs": attr.label_list(
             doc = "Mapping groups to include in this RPM",
             mandatory = True,
