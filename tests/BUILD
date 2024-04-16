@@ -27,8 +27,6 @@ package(
     default_visibility = ["//tests:__subpackages__"],
 )
 
-licenses(["notice"])
-
 exports_files(glob(["testdata/**"]))
 
 filegroup(
