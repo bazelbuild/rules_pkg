@@ -352,10 +352,14 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx):
             "%%files %s" % rpm_info.package_name,
         ]
 
-        for dep in rpm_info.srcs:
-            _process_dep(dep, sub_rpm_ctx)
+        if rpm_info.srcs:
+            for dep in rpm_info.srcs:
+                _process_dep(dep, sub_rpm_ctx)
 
-        rpm_lines += sub_rpm_ctx.rpm_files_list
+            rpm_lines += sub_rpm_ctx.rpm_files_list
+        else:
+            rpm_lines += "%defattr(-,root,root)"
+
         rpm_lines += [""]
 
     rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
@@ -702,10 +706,13 @@ def _pkg_rpm_impl(ctx):
     rpm_files_file = ctx.actions.declare_file(
         "{}.spec.files".format(rpm_name),
     )
-    ctx.actions.write(
-        rpm_files_file,
-        "\n".join(rpm_ctx.rpm_files_list),
-    )
+    if rpm_ctx.rpm_files_list:
+        ctx.actions.write(
+            rpm_files_file,
+            "\n".join(rpm_ctx.rpm_files_list),
+        )
+    else:
+        ctx.actions.write(rpm_files_file, "%defattr(-,root,root)")
 
     # TreeArtifact processing work
     if rpm_ctx.packaged_directories:
