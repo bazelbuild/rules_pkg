@@ -342,20 +342,20 @@ verify_archive_test(
     target = ":test-tar-with-runfiles",
     must_contain = [
         "a_program",
-        "a_program.runfiles/tests/tar/BUILD",
+        "a_program.runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
             "an_executable.exe",
-            "an_executable.exe.runfiles/tests/foo.cc",
-            "an_executable.exe.runfiles/tests/an_executable.exe",
-            "an_executable.exe.runfiles/tests/testdata/hello.txt",
+            "an_executable.exe.runfiles/_main/tests/foo.cc",
+            "an_executable.exe.runfiles/_main/tests/an_executable.exe",
+            "an_executable.exe.runfiles/_main/tests/testdata/hello.txt",
         ],
         "//conditions:default": [
             "an_executable",
-            "an_executable.runfiles/tests/foo.cc",
-            "an_executable.runfiles/tests/an_executable",
-            "an_executable.runfiles/tests/testdata/hello.txt",
+            "an_executable.runfiles/_main/tests/foo.cc",
+            "an_executable.runfiles/_main/tests/an_executable",
+            "an_executable.runfiles/_main/tests/testdata/hello.txt",
         ]
     }),
 )
@@ -377,20 +377,20 @@ verify_archive_test(
     name = "runfiles_remap_base_path_test",
     must_contain = [
         "new_name",
-        "new_name.runfiles/tests/tar/BUILD",
+        "new_name.runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
             "other/different_name.exe",
-            "other/different_name.exe.runfiles/tests/foo.cc",
-            "other/different_name.exe.runfiles/tests/an_executable.exe",
-            "other/different_name.exe.runfiles/tests/testdata/hello.txt",
+            "other/different_name.exe.runfiles/_main/tests/foo.cc",
+            "other/different_name.exe.runfiles/_main/tests/an_executable.exe",
+            "other/different_name.exe.runfiles/_main/tests/testdata/hello.txt",
         ],
         "//conditions:default": [
             "other/different_name",
-            "other/different_name.runfiles/tests/foo.cc",
-            "other/different_name.runfiles/tests/an_executable",
-            "other/different_name.runfiles/tests/testdata/hello.txt",
+            "other/different_name.runfiles/_main/tests/foo.cc",
+            "other/different_name.runfiles/_main/tests/an_executable",
+            "other/different_name.runfiles/_main/tests/testdata/hello.txt",
         ],
     }),
     target = ":test-tar-remap-runfiles-base-path",
@@ -407,11 +407,11 @@ pkg_tar(
         # rename the entire runfiles directory
         "/a_program.runfiles/": "/a/program/runfiles/",
         # rename a specific file
-        "/an_executable.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
-        "/an_executable.exe.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        "/an_executable.runfiles/_main/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        "/an_executable.exe.runfiles/_main/tests/testdata/hello.txt": "/myfiles/hello.txt",
         # rename a specific subdirectory
-        "/an_executable.runfiles/tests/": "/mytests/",
-        "/an_executable.exe.runfiles/tests/": "/mytests/",
+        "/an_executable.runfiles/_main/tests/": "/mytests/",
+        "/an_executable.exe.runfiles/_main/tests/": "/mytests/",
     },
 )
 
@@ -419,7 +419,7 @@ verify_archive_test(
     name = "runfiles_remap_full_paths_test",
     must_contain = [
         "a_program",
-        "a/program/runfiles/tests/tar/BUILD",
+        "a/program/runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
