@@ -52,6 +52,8 @@ class PkgRpmBasicTest(unittest.TestCase):
             "rules_pkg/tests/rpm/test_rpm_scriptlets_files-1.1.1-2222.noarch.rpm")
         self.test_rpm_release_version_files = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_release_version_files--.noarch.rpm")
+        self.test_rpm_epoch = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_epoch-1.1.1-2222.noarch.rpm")
         self.maxDiff = None
 
     def test_scriptlet_content(self):
@@ -83,6 +85,7 @@ echo posttrans
         for rpm, fields in [
             (self.test_rpm_path, {"NAME": b"test_rpm"}),
             (self.test_rpm_release_version_files, {"NAME": b"test_rpm_release_version_files"}),
+            (self.test_rpm_epoch, {"NAME": b"test_rpm_epoch", "EPOCH": b"1"}),
         ]:
             fields.update(common_fields)
             for fieldname, expected in fields.items():
@@ -176,7 +179,7 @@ echo posttrans
                 # - "interp" for scriptlet interpreter dependencies
                 # - "postun" for dependencies of the "postun" scriptlet
                 # - "manual" for values that are explicitly specified
-                ":%{{{tag}FLAGS:deptype}}"
+                ":%{{{tag}FLAGS!deptype}}"
                 "\n]"
             ).format(tag = tag)
 
@@ -190,7 +193,7 @@ echo posttrans
 
             sio = io.StringIO(rpm_output.decode('utf-8'))
             rpm_output_reader = csv.DictReader(
-                sio, delimiter=':', fieldnames=rpm_queryformat_fieldnames)
+                sio, delimiter='!', fieldnames=rpm_queryformat_fieldnames)
 
             # Get everything in the same order as the read-in metadata file
             rpm_outputs_filtered_unsorted = [line for line in rpm_output_reader

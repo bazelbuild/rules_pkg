@@ -280,6 +280,7 @@ pkg_rpm(
     architecture = "noarch",
     conflicts = ["not-a-test"],
     description = """pkg_rpm test rpm description""",
+    epoch = "1",
     license = "Apache 2.0",
     post_scriptlet_file = ":post",
     postun_scriptlet_file = ":postun",
@@ -293,6 +294,31 @@ pkg_rpm(
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version_file = ":version_file",
+)
+
+# Like the first one, except we set an epoch
+pkg_rpm(
+    name = "test_rpm_epoch",
+    srcs = [
+        ":test_pfg",
+    ],
+    architecture = "noarch",
+    conflicts = ["not-a-test"],
+    description = """pkg_rpm test rpm description""",
+    epoch = "1",
+    license = "Apache 2.0",
+    post_scriptlet = _POST_SCRIPTLET,
+    postun_scriptlet = _POSTUN_SCRIPTLET,
+    pre_scriptlet = _PRE_SCRIPTLET,
+    preun_scriptlet = _PREUN_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
+    provides = ["test"],
+    release = _RELEASE,
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
+    spec_template = "template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version = _VERSION,
 )
 
 ############################################################################
@@ -407,6 +433,7 @@ sh_library(
         ":test_rpm_metadata",
         ":test_rpm_scriptlets_files",
         ":test_rpm_release_version_files",
+        ":test_rpm_epoch",
     ],
 )
 
