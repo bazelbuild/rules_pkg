@@ -11,5 +11,4 @@ tasks:
   integration:
     name: rolling_distro
     platform: ubuntu1804
-    build_flags:
     <<: *common
