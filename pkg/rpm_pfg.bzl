@@ -1214,7 +1214,8 @@ pkg_rpm = rule(
             doc = """Enable generation of debuginfo RPMs
 
             For supported platforms this will enable the generation of debuginfo RPMs adjacent
-            to the regular RPMs.  Currently this is supported by Fedora 40 and CentOS7.
+            to the regular RPMs.  Currently this is supported by Fedora 40, CentOS7 and
+            CentOS Stream 9.
             """,
             default = False,
         ),

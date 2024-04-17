@@ -62,8 +62,11 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
     if rctx.path(RELEASE_PATH).exists:
         os_name, os_version = _parse_release_info(rctx.read(RELEASE_PATH))
 
-        if os_name == "centos" and os_version == "7":
-            debuginfo_type = "centos7"
+        if os_name == "centos":
+            if os_version == "7":
+                debuginfo_type = "centos7"
+            elif os_version == "9":
+                debuginfo_type = "centos9"
 
         if os_name == "fedora" and os_version == "40":
             debuginfo_type = "fedora40"
