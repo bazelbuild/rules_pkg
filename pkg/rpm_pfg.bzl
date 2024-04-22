@@ -360,7 +360,7 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx):
 
         # rpmbuild will be unhappy if we have no files so we stick
         # default file mode in for that scenario
-        rpm_lines += DEFAULT_FILE_MODE
+        rpm_lines += [DEFAULT_FILE_MODE]
         rpm_lines += sub_rpm_ctx.rpm_files_list
 
         rpm_lines += [""]
