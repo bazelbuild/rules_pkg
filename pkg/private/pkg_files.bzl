@@ -69,12 +69,12 @@ _MappingContext = provider(
         "content_map": "in/out The content_map we are building up",
         "file_deps": "in/out list of file Depsets represented in the map",
         "label": "ctx.label",
+        "workspace_name": "ctx.workspace_name",
 
         # Behaviors
         "allow_duplicates_with_different_content": "bool: don't fail when you double mapped files",
         "include_runfiles": "bool: include runfiles",
         "strip_prefix": "strip_prefix",
-
         "path_mapper": "function to map destination paths",
 
         # Defaults
@@ -94,8 +94,7 @@ def create_mapping_context_from_ctx(
         strip_prefix = None,
         include_runfiles = None,
         default_mode = None,
-        path_mapper = None
-    ):
+        path_mapper = None):
     """Construct a MappingContext.
 
     Args: See the provider definition.
@@ -116,6 +115,7 @@ def create_mapping_context_from_ctx(
         content_map = dict(),
         file_deps = list(),
         label = label,
+        workspace_name = ctx.workspace_name,
         allow_duplicates_with_different_content = allow_duplicates_with_different_content,
         strip_prefix = strip_prefix,
         include_runfiles = include_runfiles,
@@ -396,7 +396,8 @@ def add_from_default_info(
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
         d_path = mapping_context.path_mapper(
-            dest_path(f, data_path, data_path_without_prefix))
+            dest_path(f, data_path, data_path_without_prefix),
+        )
         if f.is_directory:
             add_tree_artifact(
                 mapping_context.content_map,
@@ -428,7 +429,7 @@ def add_from_default_info(
             # the first file of DefaultInfo.files should be the right target.
             base_file = the_executable or all_files[0]
             base_file_path = dest_path(base_file, data_path, data_path_without_prefix)
-            base_path = base_file_path + ".runfiles"
+            base_path = base_file_path + ".runfiles/" + mapping_context.workspace_name
 
             for rf in runfiles.files.to_list():
                 d_path = mapping_context.path_mapper(base_path + "/" + rf.short_path)
@@ -436,7 +437,7 @@ def add_from_default_info(
                 _check_dest(mapping_context.content_map, d_path, rf, src.label, mapping_context.allow_duplicates_with_different_content)
                 mapping_context.content_map[d_path] = _DestFile(
                     src = rf,
-                    entry_type = ENTRY_IS_FILE,
+                    entry_type = ENTRY_IS_DIR if rf.is_directory else ENTRY_IS_FILE,
                     origin = src.label,
                     mode = fmode,
                     user = mapping_context.default_user,
