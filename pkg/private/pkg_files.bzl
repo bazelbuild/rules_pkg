@@ -73,6 +73,7 @@ _MappingContext = provider(
         # Behaviors
         "allow_duplicates_with_different_content": "bool: don't fail when you double mapped files",
         "include_runfiles": "bool: include runfiles",
+        "workspace_name": "string: name of the main workspace",
         "strip_prefix": "strip_prefix",
 
         "path_mapper": "function to map destination paths",
@@ -119,6 +120,7 @@ def create_mapping_context_from_ctx(
         allow_duplicates_with_different_content = allow_duplicates_with_different_content,
         strip_prefix = strip_prefix,
         include_runfiles = include_runfiles,
+        workspace_name = ctx.workspace_name,
         default_mode = default_mode,
         path_mapper = path_mapper or (lambda x: x),
         # TODO(aiuto): allow these to be passed in as needed. But, before doing
@@ -370,7 +372,8 @@ def add_label_list(mapping_context, srcs):
                 src,
                 data_path,
                 data_path_without_prefix,
-                include_runfiles = mapping_context.include_runfiles,
+                mapping_context.include_runfiles,
+                mapping_context.workspace_name,
             )
 
 def add_from_default_info(
@@ -378,7 +381,8 @@ def add_from_default_info(
         src,
         data_path,
         data_path_without_prefix,
-        include_runfiles = False):
+        include_runfiles,
+        workspace_name):
     """Helper method to add the DefaultInfo of a target to a content_map.
 
     Args:
@@ -428,7 +432,7 @@ def add_from_default_info(
             # the first file of DefaultInfo.files should be the right target.
             base_file = the_executable or all_files[0]
             base_file_path = dest_path(base_file, data_path, data_path_without_prefix)
-            base_path = base_file_path + ".runfiles"
+            base_path = base_file_path + ".runfiles/" + workspace_name
 
             for rf in runfiles.files.to_list():
                 d_path = mapping_context.path_mapper(base_path + "/" + rf.short_path)
