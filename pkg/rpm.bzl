@@ -53,16 +53,16 @@ def pkg_rpm(name, srcs = None, spec_file = None, subrpms = None, **kwargs):
                 depending on mode
 
     """
-    if srcs and spec_file:
+    if srcs != None and spec_file:
         fail("Cannot determine which pkg_rpm rule to use.  `srcs` and `spec_file` are mutually exclusive")
 
     if subrpms and spec_file:
         fail("Cannot build sub RPMs with a specfile.  `subrpms` and `spec_file` are mutually exclusive")
 
-    if not srcs and not spec_file:
+    if srcs == None and not spec_file:
         fail("Either `srcs` or `spec_file` must be provided.")
 
-    if srcs:
+    if srcs != None:
         pkg_rpm_pfg(
             name = name,
             srcs = srcs,
