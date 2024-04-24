@@ -17,8 +17,9 @@
 # MODULE.bazel files.  It seems like we should have a better interface that
 # allows for this module name to be specified from a single point.
 NAME = "rules_pkg_rpmbuild"
+RELEASE_PATH = "/etc/os-release"
 
-def _write_build(rctx, path, version):
+def _write_build(rctx, path, version, debuginfo_type):
     if not path:
         path = ""
     rctx.template(
@@ -28,17 +29,58 @@ def _write_build(rctx, path, version):
             "{GENERATOR}": "@rules_pkg//toolchains/rpm/rpmbuild_configure.bzl%find_system_rpmbuild",
             "{RPMBUILD_PATH}": str(path),
             "{RPMBUILD_VERSION}": version,
+            "{RPMBUILD_DEBUGINFO_TYPE}": debuginfo_type,
         },
         executable = False,
     )
 
+def _strip_quote(s):
+    if s.startswith("\"") and s.endswith("\"") and len(s) > 1:
+        return s[1:-1]
+
+    return s
+
+def _parse_release_info(release_info):
+    os_name = "unknown"
+    os_version = "unknown"
+
+    for line in release_info.splitlines():
+        if "=" not in line:
+            continue
+
+        key, value = line.split("=")
+        if key == "ID":
+            os_name = _strip_quote(value)
+
+        if key == "VERSION_ID":
+            os_version = _strip_quote(value)
+
+    return os_name, os_version
+
 def _build_repo_for_rpmbuild_toolchain_impl(rctx):
+    debuginfo_type = "none"
+    if rctx.path(RELEASE_PATH).exists:
+        os_name, os_version = _parse_release_info(rctx.read(RELEASE_PATH))
+
+        if os_name == "centos":
+            if os_version == "7":
+                debuginfo_type = "centos7"
+            elif os_version == "9":
+                debuginfo_type = "centos9"
+
+        if os_name == "fedora" and os_version == "40":
+            debuginfo_type = "fedora40"
+
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
         if rpmbuild_path:
             print("Found rpmbuild at '%s'" % rpmbuild_path)  # buildifier: disable=print
         else:
             print("No system rpmbuild found.")  # buildifier: disable=print
+
+    if rctx.attr.debuginfo_type not in ["centos7", "fedora40", "none"]:
+        fail("debuginfo_type must be one of centos7, fedora40, or none")
+
     version = "unknown"
     if rpmbuild_path:
         res = rctx.execute([rpmbuild_path, "--version"])
@@ -47,7 +89,13 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
             parts = res.stdout.strip().split(" ")
             if parts[0] == "RPM" and parts[1] == "version":
                 version = parts[2]
-    _write_build(rctx = rctx, path = rpmbuild_path, version = version)
+
+    _write_build(
+        rctx = rctx,
+        path = rpmbuild_path,
+        version = version,
+        debuginfo_type = debuginfo_type,
+    )
 
 build_repo_for_rpmbuild_toolchain = repository_rule(
     implementation = _build_repo_for_rpmbuild_toolchain_impl,
@@ -57,6 +105,14 @@ build_repo_for_rpmbuild_toolchain = repository_rule(
     attrs = {
         "verbose": attr.bool(
             doc = "If true, print status messages.",
+        ),
+        "debuginfo_type": attr.string(
+            doc = """
+            The underlying debuginfo configuration for the system rpmbuild.
+
+            One of centos7, fedora40, or none
+            """,
+            default = "none",
         ),
     },
 )
