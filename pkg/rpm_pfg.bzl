@@ -48,6 +48,7 @@ PackageSubRPMInfo = provider(
         "description": "Multi-line description of this subpackage",
         "post_scriptlet": "RPM `$post` scriplet for this subpackage",
         "architecture": "Subpackage architecture",
+        "epoch": "RPM `Epoch` tag for this subpackage",
         "version": "RPM `Version` tag for this subpackage",
         "requires": "List of RPM capability expressions that this package requires",
         "provides": "List of RPM capability expressions that this package provides",
@@ -336,6 +337,9 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
     if rpm_info.architecture:
         rpm_lines += ["BuildArch: %s" % rpm_info.architecture]
 
+    if rpm_info.epoch:
+        rpm_lines += ["Epoch: %s" % rpm_info.epoch]
+
     if rpm_info.version:
         rpm_lines += ["Version: %s" % rpm_info.version]
 
@@ -530,6 +534,8 @@ def _pkg_rpm_impl(ctx):
     elif ctx.attr.source_date_epoch >= 0:
         rpm_ctx.make_rpm_args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
+    if ctx.attr.epoch:
+        preamble_pieces.append("Epoch: " + ctx.attr.epoch)
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
     if ctx.attr.url:
@@ -921,6 +927,9 @@ pkg_rpm = rule(
             doc = "See 'Common Attributes' in the rules_pkg reference",
             providers = [PackageVariablesInfo],
         ),
+        "epoch": attr.string(
+            doc = """Optional; RPM "Epoch" tag.""",
+        ),
         "version": attr.string(
             doc = """RPM "Version" tag.
 
@@ -1268,6 +1277,7 @@ def _pkg_sub_rpm_impl(ctx):
             description = ctx.attr.description,
             post_scriptlet = ctx.attr.post_scriptlet,
             architecture = ctx.attr.architecture,
+            epoch = ctx.attr.epoch,
             version = ctx.attr.version,
             requires = ctx.attr.requires,
             provides = ctx.attr.provides,
@@ -1304,6 +1314,7 @@ pkg_sub_rpm = rule(
         "description": attr.string(doc = "Multi-line description of this subrpm"),
         "post_scriptlet": attr.string(doc = "RPM `%post` scriplet for this subrpm"),
         "architecture": attr.string(doc = "Sub RPM architecture"),
+        "epoch": attr.string(doc = "RPM `Epoch` tag for this subrpm"),
         "version": attr.string(doc = "RPM `Version` tag for this subrpm"),
         "requires": attr.string_list(doc = "List of RPM capability expressions that this package requires"),
         "provides": attr.string_list(doc = "List of RPM capability expressions that this package provides"),
