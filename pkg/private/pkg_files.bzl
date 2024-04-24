@@ -75,6 +75,7 @@ _MappingContext = provider(
         "include_runfiles": "bool: include runfiles",
         "workspace_name": "string: name of the main workspace",
         "strip_prefix": "strip_prefix",
+
         "path_mapper": "function to map destination paths",
 
         # Defaults
@@ -94,7 +95,8 @@ def create_mapping_context_from_ctx(
         strip_prefix = None,
         include_runfiles = None,
         default_mode = None,
-        path_mapper = None):
+        path_mapper = None
+    ):
     """Construct a MappingContext.
 
     Args: See the provider definition.
@@ -398,8 +400,7 @@ def add_from_default_info(
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
         d_path = mapping_context.path_mapper(
-            dest_path(f, data_path, data_path_without_prefix),
-        )
+            dest_path(f, data_path, data_path_without_prefix))
         if f.is_directory:
             add_tree_artifact(
                 mapping_context.content_map,
@@ -439,7 +440,7 @@ def add_from_default_info(
                 _check_dest(mapping_context.content_map, d_path, rf, src.label, mapping_context.allow_duplicates_with_different_content)
                 mapping_context.content_map[d_path] = _DestFile(
                     src = rf,
-                    entry_type = ENTRY_IS_DIR if rf.is_directory else ENTRY_IS_FILE,
+                    entry_type = ENTRY_IS_TREE if rf.is_directory else ENTRY_IS_FILE,
                     origin = src.label,
                     mode = fmode,
                     user = mapping_context.default_user,
