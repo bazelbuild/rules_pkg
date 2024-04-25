@@ -59,14 +59,21 @@ def _pkg_files_contents_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     expected_dests = {e: None for e in ctx.attr.expected_dests}
+    actual_dests = target_under_test[PackageFilesInfo].dest_src_map.keys()
     n_found = 0
-    for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
+
+    for actual in actual_dests:
         asserts.true(
-            got in expected_dests,
-            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests),
+            env,
+            actual in expected_dests,
+            "actual dest <%s> not in expected expected set: %s" % (actual, ctx.attr.expected_dests),
         )
-        n_found += 1
-    asserts.equals(env, len(expected_dests), n_found)
+    for expected in expected_dests:
+        asserts.true(
+            env,
+            expected in actual_dests,
+            "expected dest <%s> missing from actual set: %s" % (expected, actual_dests),
+        )
 
     # Simple equality checks for the others, if specified
     if ctx.attr.expected_attributes:
