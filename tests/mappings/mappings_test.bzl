@@ -257,6 +257,33 @@ def _test_pkg_files_contents():
         target_under_test = ":pf_strip_prefix_from_root_invalid_g",
     )
 
+    # Test include_runfiles.
+    pkg_files(
+        name = "pf_include_runfiles_g",
+        include_runfiles = True,
+        srcs = ["//tests:an_executable"],
+        tags = ["manual"],
+    )
+
+    pkg_files_contents_test(
+        name = "pf_include_runfiles",
+        target_under_test = ":pf_include_runfiles_g",
+        expected_dests = select(
+            {
+                "@bazel_tools//src/conditions:windows": [
+                    "an_executable.exe",
+                    "an_executable.exe.runfiles/_main/tests/foo.cc",
+                    "an_executable.exe.runfiles/_main/tests/testdata/hello.txt",
+                ],
+                "//conditions:default": [
+                    "an_executable",
+                    "an_executable.runfiles/_main/tests/foo.cc",
+                    "an_executable.runfiles/_main/tests/testdata/hello.txt",
+                ],
+            },
+        ),
+    )
+
 def _test_pkg_files_exclusions():
     # Normal filegroup, used in all of the below tests
     #
