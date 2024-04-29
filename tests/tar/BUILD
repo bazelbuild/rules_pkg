@@ -710,3 +710,41 @@ verify_archive_test(
         "new/base/something/this": "that",
     },
 )
+fake_artifact(
+    name = "program_with_dir_runfiles",
+    files = ["//tests:testdata/executable.sh"],
+    runfiles = [
+        ":generate_tree",
+    ],
+)
+
+pkg_tar(
+    name = "program_with_dir_runfiles_tar",
+    srcs = [
+        ":program_with_dir_runfiles",
+    ],
+    include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "program_with_dir_runfiles_test",
+    must_contain = [
+        "program_with_dir_runfiles.runfiles",
+        "program_with_dir_runfiles.runfiles/_main",
+        "program_with_dir_runfiles.runfiles/_main/tests",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/a",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/b",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/b/c",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/c",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/c/d",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/d",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/e",
+        "executable.sh",
+        "program_with_dir_runfiles",
+    ],
+    target = ":program_with_dir_runfiles_tar",
+)
