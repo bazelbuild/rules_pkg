@@ -51,7 +51,7 @@ class PkgRpmBasicTest(unittest.TestCase):
         self.test_rpm_scriptlets_files_path = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_scriptlets_files-1.1.1-2222.noarch.rpm")
         self.test_rpm_release_version_files = self.runfiles.Rlocation(
-            "rules_pkg/tests/rpm/test_rpm_release_version_files--.noarch.rpm")
+            "rules_pkg/tests/rpm/test_rpm_release_version_files-.noarch.rpm")
         self.test_rpm_epoch = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_epoch-1.1.1-2222.noarch.rpm")
         self.maxDiff = None

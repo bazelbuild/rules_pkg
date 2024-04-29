@@ -175,6 +175,22 @@ def _make_absolute_if_not_already_or_is_macro(path):
     # this can be inlined easily.
     return path if path.startswith(("/", "%")) else "/" + path
 
+def _make_rpm_filename(rpm_name, version, architecture, package_name=None, release=None):
+    prefix = "%s-%s"
+    items = [rpm_name, version]
+
+    if package_name:
+        prefix += "-%s"
+        items = [rpm_name, package_name, version]
+
+    if release:
+        prefix += "-%s"
+        items += [release]
+
+    fmt = prefix + ".%s.rpm"
+
+    return fmt % tuple(items + [architecture])
+
 #### Input processing helper functions.
 
 # TODO(nacl, #459): These are redundant with functions and structures in
@@ -386,12 +402,12 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
     rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
     rpm_ctx.packaged_directories.extend(sub_rpm_ctx.packaged_directories)
 
-    package_file_name = "%s-%s-%s-%s.%s.rpm" % (
-        rpm_name,
-        rpm_info.package_name,
-        rpm_info.version or ctx.attr.version,
-        ctx.attr.release,
-        rpm_info.architecture or ctx.attr.architecture,
+    package_file_name = _make_rpm_filename(
+        rpm_name = rpm_name,
+        version = rpm_info.version or ctx.attr.version,
+        architecture = rpm_info.architecture or ctx.attr.architecture,
+        package_name = rpm_info.package_name,
+        release = ctx.attr.release,
     )
 
     default_file = ctx.actions.declare_file("{}-{}.rpm".format(rpm_name, rpm_info.package_name))
@@ -482,11 +498,11 @@ def _pkg_rpm_impl(ctx):
 
     package_file_name = ctx.attr.package_file_name
     if not package_file_name:
-        package_file_name = "%s-%s-%s.%s.rpm" % (
+        package_file_name = _make_rpm_filename(
             rpm_name,
             ctx.attr.version,
-            ctx.attr.release,
             ctx.attr.architecture,
+            release = ctx.attr.release,
         )
 
     #### rpm spec "preamble"
@@ -725,12 +741,12 @@ def _pkg_rpm_impl(ctx):
     if debuginfo_type != "none":
         debuginfo_default_file = ctx.actions.declare_file(
             "{}-debuginfo.rpm".format(rpm_name))
-        debuginfo_package_file_name = "%s-%s-%s-%s.%s.rpm" % (
+        debuginfo_package_file_name = _make_rpm_filename(
             rpm_name,
-            "debuginfo",
             ctx.attr.version,
-            ctx.attr.release,
             ctx.attr.architecture,
+            package_name = "debuginfo",
+            release = ctx.attr.release,
         )
 
         _, debuginfo_output_file, _ = setup_output_files(
