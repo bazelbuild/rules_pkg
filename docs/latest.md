@@ -283,11 +283,11 @@ Rules for making .tar files.
 ## pkg_tar
 
 <pre>
-pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-allow_duplicates_with_different_content">allow_duplicates_with_different_content</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>, <a href="#pkg_tar-deps">deps</a>,
-             <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>,
-             <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>, <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>,
-             <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, <a href="#pkg_tar-stamp">stamp</a>,
-             <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>, <a href="#pkg_tar-create_parents">symlinks</a>)
+pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-allow_duplicates_with_different_content">allow_duplicates_with_different_content</a>, <a href="#pkg_tar-allow_duplicates_from_deps">allow_duplicates_from_deps</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>,
+             <a href="#pkg_tar-create_parents">create_parents</a>, <a href="#pkg_tar-deps">deps</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>,  
+             <a href="#pkg_tar-modes">modes</a>, <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-out">out</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>, <a href="#pkg_tar-package_dir">package_dir</a>,
+             <a href="#pkg_tar-package_dir_file">package_dir_file</a>, <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-srcs">srcs</a>, 
+             <a href="#pkg_tar-stamp">stamp</a>, <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
 </pre>
 
 
@@ -298,9 +298,11 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-allow_duplicates_wit
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pkg_tar-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| <a id="pkg_tar-allow_duplicates_from_deps"></a>allow_duplicates_from_deps |  Supports existence of duplicate paths for archives in deps, and addition of duplicates file paths as archives (deps) or files (srcs).  | Boolean | optional | False |
 | <a id="pkg_tar-allow_duplicates_with_different_content"></a>allow_duplicates_with_different_content |  If true, will allow you to reference multiple pkg_* which conflict (writing different content or metadata to the same destination). Such behaviour is always incorrect, but we provide a flag to support it in case old builds were accidentally doing it. Never explicitly set this to true for new code.   | Boolean | optional | True |
 | <a id="pkg_tar-compressor"></a>compressor |  External tool which can compress the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | <a id="pkg_tar-compressor_args"></a>compressor_args |  Arg list for <code>compressor</code>.   | String | optional | "" |
+| <a id="pkg_tar-create_parents"></a>create_parents |  Implicitly create parent directories with default permissions for file paths where parent directories are not specified. | Boolean | optional | True |
 | <a id="pkg_tar-deps"></a>deps |  tar files which will be unpacked and repacked into the archive.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
 | <a id="pkg_tar-empty_dirs"></a>empty_dirs |  -   | List of strings | optional | [] |
 | <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional | [] |
@@ -326,7 +328,6 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-allow_duplicates_wit
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional | 0 |
 | <a id="pkg_tar-strip_prefix"></a>strip_prefix |  (note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)   | String | optional | "" |
 | <a id="pkg_tar-symlinks"></a>symlinks |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
-| <a id="pkg_tar-create_parents"></a>create_parents |  Implicitly create parent directories with default permissions for file paths where parent directories are not specified. | Boolean | optional | True |
 
 
 

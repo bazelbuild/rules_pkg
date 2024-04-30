@@ -42,7 +42,7 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, create_parents, default_mtime):
+  def __init__(self, output, directory, compression, compressor, create_parents, allow_dups_from_deps, default_mtime):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -51,6 +51,7 @@ class TarFile(object):
     self.compressor = compressor
     self.default_mtime = default_mtime
     self.create_parents = create_parents
+    self.allow_dups_from_deps = allow_dups_from_deps
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -58,6 +59,7 @@ class TarFile(object):
         self.compression,
         self.compressor,
         self.create_parents,
+        self.allow_dups_from_deps,
         default_mtime=self.default_mtime)
     return self
 
@@ -392,6 +394,9 @@ def main():
                       action='store_true',
                       help='Automatically creates parent directories implied by a'
                            ' prefix if they do not exist')
+  parser.add_argument('--allow_dups_from_deps',
+                      action='store_true',
+                      help='')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -442,7 +447,8 @@ def main():
       compression = options.compression,
       compressor = options.compressor,
       default_mtime=default_mtime,
-      create_parents=options.create_parents) as output:
+      create_parents=options.create_parents,
+      allow_dups_from_deps=options.allow_dups_from_deps) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
