@@ -91,6 +91,13 @@ pkg_tar(
     deps = ["//tests:testdata/tar_test.tar"],
 )
 
+pkg_tar(
+    name = "test-respect-externally-defined-duplicates",
+    deps = ["//tests:testdata/duplicate_entries.tar"],
+    create_parents = False,
+    allow_duplicates_from_deps = True,
+)
+
 #
 # Tests for package_file_name
 #
@@ -456,6 +463,7 @@ py_test(
         ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-pkg-tar-with-attributes",
         ":test-remap-paths-tree-artifact",
+        ":test-respect-externally-defined-duplicates.tar",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
