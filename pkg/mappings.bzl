@@ -298,7 +298,7 @@ def _pkg_files_impl(ctx):
             target = file_to_target[src]
             runfiles = target[DefaultInfo].default_runfiles
             if runfiles:
-                base_path = src_dest_paths_map[src] + ".runfiles"
+                base_path = src_dest_paths_map[src] + ".runfiles/" + ctx.workspace_name
                 for rf in runfiles.files.to_list():
                     dest_path = paths.join(base_path, rf.short_path)
 
