@@ -284,6 +284,15 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-remap-paths-tree-artifact.tar', content)
 
+  def test_externally_defined_duplicate_structure(self):
+    content = [
+      {'name': './a'},
+      {'name': './b'},
+      {'name': './ab'},
+      {'name': './ab'},
+    ]
+    self.assertTarFileContent('test-respect-externally-defined-duplicates.tar', content)
+
 
 if __name__ == '__main__':
   unittest.main()
