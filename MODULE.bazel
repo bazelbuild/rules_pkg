@@ -1,14 +1,14 @@
 module(
     name = "rules_pkg",
-    version = "0.10.1",  # Must sync with version.bzl.
-    compatibility_level = 1,
+    version = "1.0.0",  # Must sync with version.bzl.
+    compatibility_level = 2,
     repo_name = "rules_pkg",
 )
 
 # Do not update to newer versions until you need a specific new feature.
-bazel_dep(name = "rules_license", version = "0.0.4")
+bazel_dep(name = "rules_license", version = "0.0.7")
 bazel_dep(name = "rules_python", version = "0.31.0")
-bazel_dep(name = "bazel_skylib", version = "1.2.0")
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
 
 # Only for development
 bazel_dep(name = "platforms", version = "0.0.9", dev_dependency = True)
