@@ -375,10 +375,10 @@ class RpmBuilder(object):
       '--define', '_builddir %s/BUILD' % dirname,
     ]
 
-    if debuginfo_type in ["fedora40", "centos7", "centos9"]:
+    if debuginfo_type in ["fedora40", "centos7", "centos9", "almalinux9.3"]:
       args += ['--undefine', '_debugsource_packages']
 
-    if debuginfo_type in ["centos7", "centos9"]:
+    if debuginfo_type in ["centos7", "centos9", "almalinux9.3"]:
       args += ['--define', 'buildsubdir .']
 
     if debuginfo_type == "fedora40":

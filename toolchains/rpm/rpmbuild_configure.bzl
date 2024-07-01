@@ -57,19 +57,19 @@ def _parse_release_info(release_info):
 
     return os_name, os_version
 
+KNOWN_DEBUGINFO_VERSIONS = {
+    "almalinux": ["9.3"],
+    "centos": ["7", "9"],
+    "fedora": ["40"],
+}
+
 def _build_repo_for_rpmbuild_toolchain_impl(rctx):
     debuginfo_type = "none"
     if rctx.path(RELEASE_PATH).exists:
         os_name, os_version = _parse_release_info(rctx.read(RELEASE_PATH))
-
-        if os_name == "centos":
-            if os_version == "7":
-                debuginfo_type = "centos7"
-            elif os_version == "9":
-                debuginfo_type = "centos9"
-
-        if os_name == "fedora" and os_version == "40":
-            debuginfo_type = "fedora40"
+        if (os_name in KNOWN_DEBUGINFO_VERSIONS and
+            os_version in KNOWN_DEBUGINFO_VERSIONS[os_name]):
+            debuginfo_type = os_name + os_version
 
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
