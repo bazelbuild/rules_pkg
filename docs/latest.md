@@ -1,4 +1,4 @@
-# rules_pkg - 1.0.0
+# rules_pkg - 1.0.1
 
 <div class="toc">
   <h2>Common Attributes</h2>
