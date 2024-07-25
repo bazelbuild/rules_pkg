@@ -311,6 +311,15 @@ def _pkg_files_impl(ctx):
                     else:
                         src_dest_paths_map[rf] = dest_path
 
+                if (
+                    getattr(target[DefaultInfo], "files_to_run") and
+                    hasattr(target[DefaultInfo].files_to_run, "repo_mapping_manifest") and
+                    target[DefaultInfo].files_to_run.repo_mapping_manifest != None
+                ):
+                    repo_mapping_manifest = target[DefaultInfo].files_to_run.repo_mapping_manifest
+                    dest_path = paths.join(src_dest_paths_map[src] + ".runfiles", "_repo_mapping")
+                    src_dest_paths_map[repo_mapping_manifest] = dest_path
+
     # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
     # Construct the inverse of this mapping to pass to the output providers, and
