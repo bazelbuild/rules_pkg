@@ -272,11 +272,13 @@ def _test_pkg_files_contents():
             {
                 "@bazel_tools//src/conditions:windows": [
                     "an_executable.exe",
+                    "an_executable.exe.runfiles/_repo_mapping",
                     "an_executable.exe.runfiles/_main/tests/foo.cc",
                     "an_executable.exe.runfiles/_main/tests/testdata/hello.txt",
                 ],
                 "//conditions:default": [
                     "an_executable",
+                    "an_executable.runfiles/_repo_mapping",
                     "an_executable.runfiles/_main/tests/foo.cc",
                     "an_executable.runfiles/_main/tests/testdata/hello.txt",
                 ],

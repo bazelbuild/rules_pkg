@@ -75,7 +75,6 @@ _MappingContext = provider(
         "include_runfiles": "bool: include runfiles",
         "workspace_name": "string: name of the main workspace",
         "strip_prefix": "strip_prefix",
-
         "path_mapper": "function to map destination paths",
 
         # Defaults
@@ -95,8 +94,7 @@ def create_mapping_context_from_ctx(
         strip_prefix = None,
         include_runfiles = None,
         default_mode = None,
-        path_mapper = None
-    ):
+        path_mapper = None):
     """Construct a MappingContext.
 
     Args: See the provider definition.
@@ -400,7 +398,8 @@ def add_from_default_info(
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
         d_path = mapping_context.path_mapper(
-            dest_path(f, data_path, data_path_without_prefix))
+            dest_path(f, data_path, data_path_without_prefix),
+        )
         if f.is_directory:
             add_tree_artifact(
                 mapping_context.content_map,
@@ -422,6 +421,7 @@ def add_from_default_info(
                 user = mapping_context.default_user,
                 group = mapping_context.default_group,
             )
+
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
         if runfiles:
@@ -447,6 +447,41 @@ def add_from_default_info(
                     group = mapping_context.default_group,
                     uid = mapping_context.default_uid,
                     gid = mapping_context.default_gid,
+                )
+
+            # if bzlmod is enabled, create _repo_mapping under runfiles directory
+            if (
+                getattr(src[DefaultInfo], "files_to_run") and
+                hasattr(src[DefaultInfo].files_to_run, "repo_mapping_manifest") and
+                src[DefaultInfo].files_to_run.repo_mapping_manifest != None
+            ):
+                repo_mapping_manifest = src[DefaultInfo].files_to_run.repo_mapping_manifest
+                mapping_context.file_deps.append(depset([repo_mapping_manifest]))
+
+                d_path = mapping_context.path_mapper(dest_path(
+                    repo_mapping_manifest,
+                    data_path,
+                    data_path_without_prefix,
+                ))
+                add_single_file(
+                    mapping_context,
+                    dest_path = d_path,
+                    src = repo_mapping_manifest,
+                    origin = src.label,
+                    mode = mapping_context.default_mode,
+                    user = mapping_context.default_user,
+                    group = mapping_context.default_group,
+                )
+
+                runfiles_repo_mapping_path = mapping_context.path_mapper(base_file_path + ".runfiles/_repo_mapping")
+                add_single_file(
+                    mapping_context,
+                    dest_path = runfiles_repo_mapping_path,
+                    src = repo_mapping_manifest,
+                    origin = src.label,
+                    mode = mapping_context.default_mode,
+                    user = mapping_context.default_user,
+                    group = mapping_context.default_group,
                 )
 
 def get_my_executable(src):
