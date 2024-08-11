@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# vi: ft=python
 
 # Copyright 2021 The Bazel Authors. All rights reserved.
 #
@@ -82,8 +83,9 @@ class NativeInstaller(object):
         logging.info("MKDIR %s %s", mode, dirname)
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
-    def _do_symlink(self, target, link_name, mode, user, group):
-        raise NotImplementedError("symlinking not yet supported")
+    def _do_symlink(self, src, dest, mode, user, group):
+        logging.info("SYMLINK %s <- %s", dest, src)
+        os.symlink(src, dest)
 
     def _maybe_make_unowned_dir(self, path):
         logging.info("MKDIR (unowned) %s", path)
@@ -103,21 +105,19 @@ class NativeInstaller(object):
 
     def _install_treeartifact(self, entry):
         logging.info("COPYTREE %s <- %s/**", entry.dest, entry.src)
-        raise NotImplementedError("treeartifact installation not yet supported")
-        for root, dirs, files in os.walk(entry.src):
-            relative_installdir = os.path.join(entry.dest, root)
-            for d in dirs:
-                self._maybe_make_unowned_dir(os.path.join(relative_installdir, d))
-
-            logging.info("COPY_FROM_TREE %s <- %s", entry.dest, entry.src)
-            logging.info("CHMOD %s %s", entry.mode, entry.dest)
-            logging.info("CHOWN %s:%s %s", entry.user, entry.group, entry.dest)
+        shutil.copytree(entry.src, entry.dest)
+        self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
+        for root, dirs, files in os.walk(entry.dest):
+            for dir in dirs:
+                self._chown_chmod(os.path.join(root, dir), entry.mode, entry.user, entry.group)
+            for file in files:
+                self._chown_chmod(os.path.join(root, file), entry.mode, entry.user, entry.group)
 
     def _install_symlink(self, entry):
-        raise NotImplementedError("symlinking not yet supported")
-        logging.info("SYMLINK %s <- %s", entry.dest, entry.link_to)
+        self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
+        self._do_symlink(entry.src, entry.dest, entry.mode, entry.user, entry.group)
+        logging.info("SYMLINK %s <- %s", entry.dest, entry.src)
         logging.info("CHMOD %s %s", entry.dest, entry.mode)
-        logging.info("CHOWN %s.%s %s", entry.dest, entry.user, entry.group)
 
     def include_manifest_path(self, path):
         with open(path, 'r') as fh:
