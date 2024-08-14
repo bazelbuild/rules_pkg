@@ -93,3 +93,34 @@ def substitute_package_variables(ctx, attribute_value):
         attribute_value = attribute_value.replace(")", "}", 1)
 
     return attribute_value.format(**vars)
+
+def get_files_to_run_provider(src):
+    """Safely retrieve FilesToRunProvider from a target.
+
+    Args:
+        src: target to get FilesToRunProvider from
+
+    Returns:
+        FilesToRunProvider or None: FilesToRunProvider if found in target
+            provider, otherwise None
+    """
+    if not DefaultInfo in src:
+        return None
+    di = src[DefaultInfo]
+    if not hasattr(di, "files_to_run"):
+        return None
+    return di.files_to_run
+
+def get_repo_mapping_manifest(src):
+    """Safely retrieve repo_mapping_manifest from a target if it exists.
+
+    Args:
+        src: target to get repo_mapping_manifest from
+
+    Returns:
+        File or None: repo_mapping_manifest
+    """
+    files_to_run_provider = get_files_to_run_provider(src)
+    if files_to_run_provider:
+        return getattr(files_to_run_provider, "repo_mapping_manifest")
+    return None
