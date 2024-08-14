@@ -39,6 +39,11 @@ load(
     "PackageFilesInfo",
     "PackageSymlinkInfo",
 )
+load(
+    "//pkg/private:util.bzl",
+    "get_files_to_run_provider",
+    "get_repo_mapping_manifest",
+)
 
 ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
@@ -75,7 +80,6 @@ _MappingContext = provider(
         "include_runfiles": "bool: include runfiles",
         "workspace_name": "string: name of the main workspace",
         "strip_prefix": "strip_prefix",
-
         "path_mapper": "function to map destination paths",
 
         # Defaults
@@ -95,8 +99,7 @@ def create_mapping_context_from_ctx(
         strip_prefix = None,
         include_runfiles = None,
         default_mode = None,
-        path_mapper = None
-    ):
+        path_mapper = None):
     """Construct a MappingContext.
 
     Args: See the provider definition.
@@ -400,7 +403,8 @@ def add_from_default_info(
     all_files = src[DefaultInfo].files.to_list()
     for f in all_files:
         d_path = mapping_context.path_mapper(
-            dest_path(f, data_path, data_path_without_prefix))
+            dest_path(f, data_path, data_path_without_prefix),
+        )
         if f.is_directory:
             add_tree_artifact(
                 mapping_context.content_map,
@@ -422,6 +426,7 @@ def add_from_default_info(
                 user = mapping_context.default_user,
                 group = mapping_context.default_group,
             )
+
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
         if runfiles:
@@ -449,6 +454,43 @@ def add_from_default_info(
                     gid = mapping_context.default_gid,
                 )
 
+            # if repo_mapping manifest exists (for e.g. with --enable_bzlmod),
+            # create _repo_mapping under runfiles directory
+            repo_mapping_manifest = get_repo_mapping_manifest(src)
+            if repo_mapping_manifest:
+                mapping_context.file_deps.append(depset([repo_mapping_manifest]))
+
+                # TODO: This should really be a symlink into .runfiles/_repo_mapping
+                # that also respects remap_paths. For now this is duplicated with the
+                # repo_mapping file within the runfiles directory
+                d_path = mapping_context.path_mapper(dest_path(
+                    repo_mapping_manifest,
+                    data_path,
+                    data_path_without_prefix,
+                ))
+                add_single_file(
+                    mapping_context,
+                    dest_path = d_path,
+                    src = repo_mapping_manifest,
+                    origin = src.label,
+                    mode = mapping_context.default_mode,
+                    user = mapping_context.default_user,
+                    group = mapping_context.default_group,
+                )
+
+                runfiles_repo_mapping_path = mapping_context.path_mapper(
+                    base_file_path + ".runfiles/_repo_mapping",
+                )
+                add_single_file(
+                    mapping_context,
+                    dest_path = runfiles_repo_mapping_path,
+                    src = repo_mapping_manifest,
+                    origin = src.label,
+                    mode = mapping_context.default_mode,
+                    user = mapping_context.default_user,
+                    group = mapping_context.default_group,
+                )
+
 def get_my_executable(src):
     """If a target represents an executable, return its file handle.
 
@@ -461,21 +503,15 @@ def get_my_executable(src):
     Returns:
       File or None.
     """
-    if not DefaultInfo in src:
-        return None
-    di = src[DefaultInfo]
-    if not hasattr(di, "files_to_run"):
-        return None
-    ftr = di.files_to_run
+
+    files_to_run_provider = get_files_to_run_provider(src)
 
     # The docs lead you to believe that you could look at
     # files_to_run.executable, but that is filled out even for source
     # files.
-    if not hasattr(ftr, "runfiles_manifest"):
-        return None
-    if ftr.runfiles_manifest:
-        # DEBUG print("Got an manifest executable", ftr.executable)
-        return ftr.executable
+    if getattr(files_to_run_provider, "runfiles_manifest"):
+        # DEBUG print("Got an manifest executable", files_to_run_provider.executable)
+        return files_to_run_provider.executable
     return None
 
 def add_single_file(mapping_context, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
