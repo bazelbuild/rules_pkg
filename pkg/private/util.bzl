@@ -122,5 +122,7 @@ def get_repo_mapping_manifest(src):
     """
     files_to_run_provider = get_files_to_run_provider(src)
     if files_to_run_provider:
+        # repo_mapping_manifest may not exist in older Bazel versions (<7.0.0)
+        # https://github.com/bazelbuild/bazel/issues/19937
         return getattr(files_to_run_provider, "repo_mapping_manifest")
     return None
