@@ -15,7 +15,7 @@
 load("@rules_python//python:defs.bzl", "py_test")
 load("//pkg:install.bzl", "pkg_install")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
-load("//tests/util:defs.bzl", "fake_artifact")
+load("//tests/util:defs.bzl", "directory", "fake_artifact")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -47,6 +47,7 @@ pkg_install(
         ":artifact-in-owned-dir",
         ":artifact-in-unowned-dir",
         ":dirs",
+        ":generate_tree_pkg_files",
     ],
 )
 
@@ -74,4 +75,22 @@ pkg_mkdirs(
         "empty-owned-dir",
         "owned-dir",
     ],
+)
+
+directory(
+    name = "generate_tree",
+    contents = "hello there",
+    filenames = [
+        # buildifier: don't sort
+        "b/e",
+        "a/a",
+        "b/c/d",
+        "b/d",
+        "a/b/c",
+    ],
+)
+
+pkg_files(
+    name = "generate_tree_pkg_files",
+    srcs = [":generate_tree"],
 )
