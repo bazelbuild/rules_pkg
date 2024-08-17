@@ -72,7 +72,8 @@ class PackagingTest(unittest.TestCase):
             'file://%s' % local_path, self.source_repo, sha256,
             rename_repo=self.dest_repo,
             deps_method='rules_pkg_dependencies'
-        )
+        ),
+        release_tools.rules_python_internal_content()
       ))
       workspace.write(workspace_content)
       if _VERBOSE:
@@ -90,7 +91,6 @@ class PackagingTest(unittest.TestCase):
           out.write(content)
 
     CopyTestFile('BUILD.tpl', 'BUILD')
-
     os.chdir(tempdir)
     build_result = subprocess.check_output(['bazel', 'build', ':dummy_tar'])
     if _VERBOSE:

@@ -101,3 +101,10 @@ def workspace_content(
     ret += '%s()\n' % m
 
   return ret
+
+def rules_python_internal_content():
+  ret = 'load("@rules_python//:internal_deps.bzl", "rules_python_internal_deps")'
+  ret += '\n\nrules_python_internal_deps()\n'
+  ret += 'load("@rules_python//:internal_setup.bzl", "rules_python_internal_setup")'
+  ret += '\n\nrules_python_internal_setup()\n'
+  return ret
