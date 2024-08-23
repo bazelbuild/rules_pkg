@@ -93,4 +93,7 @@ directory(
 pkg_files(
     name = "generate_tree_pkg_files",
     srcs = [":generate_tree"],
+    attributes = pkg_attributes(
+        mode = "640",
+    ),
 )
