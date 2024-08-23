@@ -74,11 +74,11 @@ class NativeInstaller(object):
                 logging.info("CHOWN %s:%s %s", user, group, dest)
                 shutil.chown(dest, user, group)
 
-    def _do_file_copy(self, src, dest, mode, user, group):
+    def _do_file_copy(self, src, dest):
         logging.info("COPY %s <- %s", dest, src)
         shutil.copyfile(src, dest)
 
-    def _do_mkdir(self, dirname, mode, user, group):
+    def _do_mkdir(self, dirname, mode):
         logging.info("MKDIR %s %s", mode, dirname)
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
@@ -93,12 +93,12 @@ class NativeInstaller(object):
 
     def _install_file(self, entry):
         self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
-        self._do_file_copy(entry.src, entry.dest, entry.mode, entry.user, entry.group)
+        self._do_file_copy(entry.src, entry.dest)
         self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
 
     def _install_directory(self, entry):
         self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
-        self._do_mkdir(entry.dest, entry.mode, entry.user, entry.group)
+        self._do_mkdir(entry.dest, entry.mode)
         self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
 
     def _install_treeartifact(self, entry):
