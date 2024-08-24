@@ -20,6 +20,7 @@
 import argparse
 import logging
 import os
+import pathlib
 import shutil
 import sys
 
@@ -151,6 +152,36 @@ class NativeInstaller(object):
                 raise ValueError("Unrecognized entry type '{}'".format(entry.type))
 
 
+def _default_destdir():
+    # If --destdir is not specified, use these values, in this order
+    # Use env var if specified and non-empty
+    env = os.getenv("DESTDIR")
+    if env:
+        return env
+
+    # Checks if DEFAULT_DESTDIR is an empty string
+    target_attr = "{DEFAULT_DESTDIR}"
+    if target_attr:
+        return target_attr
+
+    return None
+
+
+def _resolve_destdir(path_s):
+    if not path_s:
+        raise argparse.ArgumentTypeError("destdir is not set!")
+    path = pathlib.Path(path_s)
+    if path.is_absolute():
+        return path_s
+    build_workspace_directory = os.getenv("BUILD_WORKSPACE_DIRECTORY")
+    if not build_workspace_directory:
+        raise argparse.ArgumentTypeError(f"BUILD_WORKSPACE_DIRECTORY is not set"
+                                         f" and destdir {path} is relative. "
+                                         f"Unable to infer an absolute path.")
+    ret = str(pathlib.Path(build_workspace_directory) / path)
+    return ret
+
+
 def main(args):
     parser = argparse.ArgumentParser(
         prog="bazel run -- {TARGET_LABEL}",
@@ -163,12 +194,16 @@ def main(args):
                         help="Be silent, except for errors")
     # TODO(nacl): consider supporting DESTDIR=/whatever syntax, like "make
     # install".
-    #
-    # TODO(nacl): consider removing absolute path restriction, perhaps using
-    # BUILD_WORKING_DIRECTORY.
-    parser.add_argument('--destdir', action='store', default=os.getenv("DESTDIR"),
-                        help="Installation root directory (defaults to DESTDIR "
-                             "environment variable).  Must be an absolute path.")
+    default_destdir = _default_destdir()
+    default_destdir_text = f" or {default_destdir}" if default_destdir else ""
+    parser.add_argument('--destdir', action='store', default=default_destdir,
+                        required=default_destdir is None,
+                        type=_resolve_destdir,
+                        help=f"Installation root directory (defaults to DESTDIR"
+                             f" environment variable{default_destdir_text}). "
+                             f"Relative paths are interpreted against "
+                             f"BUILD_WORKSPACE_DIRECTORY "
+                             f"({os.getenv('BUILD_WORKSPACE_DIRECTORY')})")
 
     args = parser.parse_args()
 
