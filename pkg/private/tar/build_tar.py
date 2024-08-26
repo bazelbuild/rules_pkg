@@ -42,7 +42,8 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, create_parents, allow_dups_from_deps, default_mtime):
+  def __init__(self, output, directory, compression, compressor, create_parents,
+               allow_dups_from_deps, auto_deduplicate, default_mtime, compresslevel=None):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -52,6 +53,8 @@ class TarFile(object):
     self.default_mtime = default_mtime
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
+    self.compresslevel = compresslevel
+    self.src_to_first_dest_map = {} if auto_deduplicate else None
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -60,7 +63,8 @@ class TarFile(object):
         self.compressor,
         self.create_parents,
         self.allow_dups_from_deps,
-        default_mtime=self.default_mtime)
+        default_mtime=self.default_mtime,
+        compresslevel=self.compresslevel)
     return self
 
   def __exit__(self, t, v, traceback):
@@ -98,6 +102,12 @@ class TarFile(object):
          copied to `self.directory/destfile` in the layer.
     """
     dest = self.normalize_path(destfile)
+    if self.src_to_first_dest_map is not None:
+        normalized_src = normpath(f)
+        relative_path_to_link_to = self.auto_deduplicate(normalized_src, dest)
+        if relative_path_to_link_to:
+          self.add_link(dest, relative_path_to_link_to, mode=mode, ids=ids, names=names)
+          return
     # If mode is unspecified, derive the mode from the file's mode.
     if mode is None:
       mode = 0o755 if os.access(f, os.X_OK) else 0o644
@@ -113,6 +123,23 @@ class TarFile(object):
         gid=ids[1],
         uname=names[0],
         gname=names[1])
+
+  def auto_deduplicate(self, src_file, dest_file):
+      """Detect whether to de-duplicate the destination file
+
+      Returns:
+        The relative path to create a symlink to or None
+      """
+      if self.src_to_first_dest_map is not None:
+        first_dest = self.src_to_first_dest_map.get(src_file)
+        if first_dest is None:
+          real_src_file = os.path.realpath(src_file)
+          first_dest = self.src_to_first_dest_map.setdefault(real_src_file, dest_file)
+          self.src_to_first_dest_map[src_file] = first_dest
+        if first_dest != dest_file:
+          return os.path.relpath(first_dest, os.path.dirname(dest_file))
+      return None
+
 
   def add_empty_file(self,
                      destfile,
@@ -269,13 +296,13 @@ class TarFile(object):
       for dir in dirs:
         to_write[dest_dir + dir] = None
       for file in sorted(files):
-        content_path = os.path.abspath(os.path.join(root, file))
+        content_path = os.path.join(root, file)
         if os.name == "nt":
           # "To specify an extended-length path, use the `\\?\` prefix. For
           # example, `\\?\D:\very long path`."[1]
           #
           # [1]: https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
-          to_write[dest_dir + file] = "\\\\?\\" + content_path
+          to_write[dest_dir + file] = "\\\\?\\" + os.path.abspath(content_path)
         else:
           to_write[dest_dir + file] = content_path
 
@@ -297,6 +324,10 @@ class TarFile(object):
           f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644
         else:
           f_mode = mode
+        relative_path_to_link_to = self.auto_deduplicate(content_path, dest)
+        if relative_path_to_link_to:
+          self.add_link(dest, relative_path_to_link_to, mode=f_mode, ids=ids, names=names)
+          continue
         self.tarfile.add_file(
             path,
             file_content=content_path,
@@ -345,7 +376,7 @@ def main():
       fromfile_prefix_chars='@')
   parser.add_argument('--output', required=True,
                       help='The output file, mandatory.')
-  parser.add_argument('--manifest',
+  parser.add_argument('--manifest', action='append',
                       help='manifest of contents to add to the layer.')
   parser.add_argument('--mode',
                       help='Force the mode on the added files (in octal).')
@@ -359,7 +390,7 @@ def main():
   parser.add_argument('--deb', action='append',
                       help='A debian package to add to the layer')
   parser.add_argument(
-      '--directory',
+      '--directory', action='append',
       help='Directory in which to store the file inside the layer')
 
   compression = parser.add_mutually_exclusive_group()
@@ -397,6 +428,12 @@ def main():
   parser.add_argument('--allow_dups_from_deps',
                       action='store_true',
                       help='')
+  parser.add_argument('--auto_deduplicate',
+                      action='store_true',
+                      help='Auto create symlinks for files mapped from a same source in manifests.')
+  parser.add_argument(
+      '--compresslevel', default='',
+      help='Specify the numeric compress level in gzip mode; may be 0-9 or empty(6).')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -443,12 +480,14 @@ def main():
   # Add objects to the tar file
   with TarFile(
       options.output,
-      directory = helpers.GetFlagValue(options.directory),
+      directory = helpers.GetFlagValue(options.directory[0]),
       compression = options.compression,
       compressor = options.compressor,
       default_mtime=default_mtime,
       create_parents=options.create_parents,
-      allow_dups_from_deps=options.allow_dups_from_deps) as output:
+      allow_dups_from_deps=options.allow_dups_from_deps,
+      auto_deduplicate=options.auto_deduplicate,
+      compresslevel = options.compresslevel) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
@@ -459,12 +498,19 @@ def main():
           'names': names_map.get(filename, default_ownername),
       }
 
-    if options.manifest:
-      with open(options.manifest, 'r') as manifest_fp:
+    normalized_first_directory = output.directory
+    manifest_list = zip(options.directory, options.manifest)
+    if options.auto_deduplicate:
+      manifest_list = list(manifest_list)[::-1]
+    for directory, manifest_path in manifest_list:
+      directory = helpers.GetFlagValue(directory)
+      output.directory = (directory.strip('/') + '/') if directory.strip('/') else None
+      with open(manifest_path, 'r') as manifest_fp:
         manifest_entries = manifest.read_entries_from(manifest_fp)
         for entry in manifest_entries:
           output.add_manifest_entry(entry, file_attributes)
 
+    output.directory = normalized_first_directory
     for tar in options.tar or []:
       output.add_tar(tar)
     for deb in options.deb or []:
