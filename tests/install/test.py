@@ -61,6 +61,12 @@ class PkgInstallTest(unittest.TestCase):
 
     def assertEntryTypeMatches(self, entry, actual_path):
         actual_entry_type = self.entity_type_at_path(actual_path)
+
+        # TreeArtifacts looks like directories.
+        if (entry.type == manifest.ENTRY_IS_TREE and
+                actual_entry_type == manifest.ENTRY_IS_DIR):
+            return
+
         self.assertEqual(actual_entry_type, entry.type,
                         "Entity {} should be a {}, but was actually {}".format(
                             entry.dest,
@@ -68,7 +74,8 @@ class PkgInstallTest(unittest.TestCase):
                             manifest.entry_type_to_string(actual_entry_type),
                         ))
 
-    def assertEntryModeMatches(self, entry, actual_path):
+    def assertEntryModeMatches(self, entry, actual_path,
+                               is_tree_artifact_content=False):
         # TODO: permissions in windows are... tricky.  Don't bother
         # testing for them if we're in it for the time being
         if os.name == 'nt':
@@ -76,14 +83,28 @@ class PkgInstallTest(unittest.TestCase):
 
         actual_mode = stat.S_IMODE(os.stat(actual_path).st_mode)
         expected_mode = int(entry.mode, 8)
+
+        if (not is_tree_artifact_content and
+                entry.type == manifest.ENTRY_IS_TREE):
+            expected_mode |= 0o555
+
         self.assertEqual(actual_mode, expected_mode,
-                         "Entry {} has mode {:04o}, expected {:04o}".format(
-                            entry.dest, actual_mode, expected_mode,
-                        ))
+            "Entry {}{} has mode {:04o}, expected {:04o}".format(
+            entry.dest,
+            f" ({actual_path})" if is_tree_artifact_content else "",
+            actual_mode, expected_mode,
+        ))
+
+    def _find_tree_entry(self, path, owned_trees):
+        for tree_root in owned_trees:
+            if path == tree_root or path.startswith(tree_root + "/"):
+                return tree_root
+        return None
 
     def test_manifest_matches(self):
         unowned_dirs = set()
         owned_dirs = set()
+        owned_trees = dict()
 
         # Figure out what directories we are supposed to own, and which ones we
         # aren't.
@@ -95,6 +116,8 @@ class PkgInstallTest(unittest.TestCase):
         for dest, data in self.manifest_data.items():
             if data.type == manifest.ENTRY_IS_DIR:
                 owned_dirs.add(dest)
+            elif data.type == manifest.ENTRY_IS_TREE:
+                owned_trees[dest] = data
 
             # TODO(nacl): The initial stage of the accumulation returns an empty string,
             # which end up in the set representing the root of the manifest.
@@ -119,9 +142,6 @@ class PkgInstallTest(unittest.TestCase):
             if rel_root_path == '.':
                 rel_root_path = ''
 
-            # TODO(nacl): check for treeartifacts here.  If so, prune `dirs`,
-            # and set the rest aside for future processing.
-
             # Directory ownership tests
             if len(files) == 0 and len(dirs) == 0:
                 # Empty directories must be explicitly requested by something
@@ -145,7 +165,10 @@ class PkgInstallTest(unittest.TestCase):
                 else:
                     # If any unowned directories are here, they must be the
                     # prefix of some entity in the manifest.
-                    self.assertIn(rel_root_path, unowned_dirs)
+                    is_unowned = rel_root_path in unowned_dirs
+                    is_tree_intermediate_dir = bool(
+                        self._find_tree_entry(rel_root_path, owned_trees))
+                    self.assertTrue(is_unowned or is_tree_intermediate_dir)
 
             for f in files:
                 # The path on the filesystem in which the file actually exists.
@@ -163,16 +186,22 @@ class PkgInstallTest(unittest.TestCase):
                 # The path inside the manifest (relative to the install
                 # destdir).
                 rel_fpath = os.path.normpath("/".join([rel_root_path, f]))
-                if rel_fpath not in self.manifest_data:
+                entity_in_manifest = rel_fpath in self.manifest_data
+                entity_tree_root = self._find_tree_entry(rel_fpath, owned_trees)
+                if not entity_in_manifest and not entity_tree_root:
                     self.fail("Entity {} not in manifest".format(rel_fpath))
 
-                entry = self.manifest_data[rel_fpath]
-                self.assertEntryTypeMatches(entry, fpath)
-                self.assertEntryModeMatches(entry, fpath)
+                if entity_in_manifest:
+                    entry = self.manifest_data[rel_fpath]
+                    self.assertEntryTypeMatches(entry, fpath)
+                    self.assertEntryModeMatches(entry, fpath)
+
+                if entity_tree_root:
+                    entry = owned_trees[entity_tree_root]
+                    self.assertEntryModeMatches(entry, fpath,
+                                                is_tree_artifact_content=True)
 
                 found_entries[rel_fpath] = True
-
-        # TODO(nacl): check for TreeArtifacts
 
         num_missing = 0
         for dest, present in found_entries.items():
