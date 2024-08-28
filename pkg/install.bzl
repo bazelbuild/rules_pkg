@@ -62,6 +62,7 @@ def _pkg_install_script_impl(ctx):
             "{WORKSPACE_NAME}": ctx.workspace_name,
             # Used to annotate --help with "bazel run //path/to/your:installer"
             "{TARGET_LABEL}": label_str,
+            "{DEFAULT_DESTDIR}": ctx.attr.destdir,
         },
         is_executable = True,
     )
@@ -98,6 +99,7 @@ _pkg_install_script = rule(
             ],
             doc = "Source mapping/grouping targets",
         ),
+        "destdir": attr.string(),
         # This is private for now -- one could perhaps imagine making this
         # public, but that would require more documentation of the underlying
         # scripts and expected interfaces.
@@ -109,7 +111,7 @@ _pkg_install_script = rule(
     executable = True,
 )
 
-def pkg_install(name, srcs, **kwargs):
+def pkg_install(name, srcs, destdir = None, **kwargs):
     """Create an installer script from pkg_filegroups and friends.
 
     This macro allows users to create `bazel run`nable installation scripts
@@ -123,6 +125,7 @@ def pkg_install(name, srcs, **kwargs):
         srcs = [
             # mapping/grouping targets here
         ],
+        destdir = "out/install",
     )
     ```
 
@@ -153,15 +156,28 @@ def pkg_install(name, srcs, **kwargs):
     https://github.com/bazelbuild/rules_pkg/issues/388.
 
     Args:
-      name: rule name
-      srcs: pkg_filegroup framework mapping or grouping targets
-      **kwargs: common rule attributes
+        name: rule name
+        srcs: pkg_filegroup framework mapping or grouping targets
+        destdir: The default destination directory.
+
+            If it is specified, this is the default destination to install
+            the files. It is overridable by explicitly specifying `--destdir`
+            in the command line or specifying the `DESTDIR` environment
+            variable.
+
+            If it is not specified, `--destdir` must be set on the command line,
+            or the `DESTDIR` environment variable must be set.
+
+            If this is an absolute path, it is used as-is. If this is a relative
+            path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.
+        **kwargs: common rule attributes
 
     """
 
     _pkg_install_script(
         name = name + "_install_script",
         srcs = srcs,
+        destdir = destdir,
         **kwargs
     )
 
