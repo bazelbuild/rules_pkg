@@ -114,6 +114,8 @@ def _pkg_tar_impl(ctx):
                 "--owner_names",
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
+    if ctx.attr.compression_level:
+        args.add("--compression_level", ctx.attr.compression_level)
 
     # Now we begin processing the files.
     path_mapper = None
@@ -272,6 +274,10 @@ pkg_tar_impl = rule(
         ),
         "create_parents": attr.bool(default = True),
         "allow_duplicates_from_deps": attr.bool(default = False),
+        "compression_level": attr.int(
+            doc = """Specify the numeric compression level in gzip mode; may be 0-9 or -1 (default to 6).""",
+            default = -1,
+        ),
 
         # Common attributes
         "out": attr.output(mandatory = True),

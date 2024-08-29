@@ -49,7 +49,8 @@ class TarFileWriter(object):
                create_parents=False,
                allow_dups_from_deps=True,
                default_mtime=None,
-               preserve_tar_mtimes=True):
+               preserve_tar_mtimes=True,
+               compression_level=-1):
     """TarFileWriter wraps tarfile.open().
 
     Args:
@@ -86,10 +87,11 @@ class TarFileWriter(object):
     else:
       mode = 'w:'
       if compression in ['tgz', 'gz']:
+        compression_level = min(compression_level, 9) if compression_level >= 0 else 6
         # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
         # Instead, we manually reimplement gzopen from tarfile.py and set mtime.
         self.fileobj = gzip.GzipFile(
-            filename=name, mode='w', compresslevel=6, mtime=self.default_mtime)
+            filename=name, mode='w', compresslevel=compression_level, mtime=self.default_mtime)
     self.compressor_proc = None
     if self.compressor_cmd:
       mode = 'w|'
