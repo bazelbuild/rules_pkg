@@ -20,6 +20,7 @@
 import argparse
 import logging
 import os
+import pathlib
 import shutil
 import sys
 
@@ -74,11 +75,11 @@ class NativeInstaller(object):
                 logging.info("CHOWN %s:%s %s", user, group, dest)
                 shutil.chown(dest, user, group)
 
-    def _do_file_copy(self, src, dest, mode, user, group):
+    def _do_file_copy(self, src, dest):
         logging.info("COPY %s <- %s", dest, src)
         shutil.copyfile(src, dest)
 
-    def _do_mkdir(self, dirname, mode, user, group):
+    def _do_mkdir(self, dirname, mode):
         logging.info("MKDIR %s %s", mode, dirname)
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
@@ -93,25 +94,56 @@ class NativeInstaller(object):
 
     def _install_file(self, entry):
         self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
-        self._do_file_copy(entry.src, entry.dest, entry.mode, entry.user, entry.group)
+        self._do_file_copy(entry.src, entry.dest)
         self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
 
     def _install_directory(self, entry):
         self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
-        self._do_mkdir(entry.dest, entry.mode, entry.user, entry.group)
+        self._do_mkdir(entry.dest, entry.mode)
         self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
+
+    def _install_treeartifact_file(self, entry, src, dst):
+        self._do_file_copy(src, dst)
+        self._chown_chmod(dst, entry.mode, entry.user, entry.group)
 
     def _install_treeartifact(self, entry):
         logging.info("COPYTREE %s <- %s/**", entry.dest, entry.src)
-        raise NotImplementedError("treeartifact installation not yet supported")
-        for root, dirs, files in os.walk(entry.src):
-            relative_installdir = os.path.join(entry.dest, root)
-            for d in dirs:
-                self._maybe_make_unowned_dir(os.path.join(relative_installdir, d))
+        shutil.copytree(
+            src=entry.src,
+            dst=entry.dest,
+            copy_function=lambda s, d:
+                self._install_treeartifact_file(entry, s, d),
+            dirs_exist_ok=True,
+            # Bazel gives us a directory of symlinks, so we dereference it.
+            # TODO: Handle symlinks within the TreeArtifact. This is not yet
+            # tested for other rules (e.g.
+            # https://github.com/bazelbuild/rules_pkg/issues/750)
+            symlinks=False,
+            ignore_dangling_symlinks=True,
+        )
 
-            logging.info("COPY_FROM_TREE %s <- %s", entry.dest, entry.src)
-            logging.info("CHMOD %s %s", entry.mode, entry.dest)
-            logging.info("CHOWN %s:%s %s", entry.user, entry.group, entry.dest)
+        # Set mode/user/group for intermediate directories.
+        # Bazel has no API to specify modes for this, so the least surprising
+        # thing we can do is make it the canonical rwxr-xr-x
+        intermediate_dir_mode = "755"
+        for root, dirs, _ in os.walk(entry.src, topdown=False):
+            relative_installdir = os.path.join(entry.dest,
+                                               os.path.relpath(root, entry.src))
+            for d in dirs:
+                self._chown_chmod(os.path.join(relative_installdir, d),
+                                  intermediate_dir_mode,
+                                  entry.user, entry.group)
+
+        # For top-level directory, use entry.mode +r +x if specified, otherwise
+        # use least-surprising canonical rwxr-xr-x
+        top_dir_mode = entry.mode
+        if top_dir_mode:
+            top_dir_mode = int(top_dir_mode, 8)
+            top_dir_mode |= 0o555
+            top_dir_mode = oct(top_dir_mode).removeprefix("0o")
+        else:
+            top_dir_mode = "755"
+        self._chown_chmod(entry.dest, top_dir_mode, entry.user, entry.group)
 
     def _install_symlink(self, entry):
         raise NotImplementedError("symlinking not yet supported")
@@ -151,6 +183,36 @@ class NativeInstaller(object):
                 raise ValueError("Unrecognized entry type '{}'".format(entry.type))
 
 
+def _default_destdir():
+    # If --destdir is not specified, use these values, in this order
+    # Use env var if specified and non-empty
+    env = os.getenv("DESTDIR")
+    if env:
+        return env
+
+    # Checks if DEFAULT_DESTDIR is an empty string
+    target_attr = "{DEFAULT_DESTDIR}"
+    if target_attr:
+        return target_attr
+
+    return None
+
+
+def _resolve_destdir(path_s):
+    if not path_s:
+        raise argparse.ArgumentTypeError("destdir is not set!")
+    path = pathlib.Path(path_s)
+    if path.is_absolute():
+        return path_s
+    build_workspace_directory = os.getenv("BUILD_WORKSPACE_DIRECTORY")
+    if not build_workspace_directory:
+        raise argparse.ArgumentTypeError(f"BUILD_WORKSPACE_DIRECTORY is not set"
+                                         f" and destdir {path} is relative. "
+                                         f"Unable to infer an absolute path.")
+    ret = str(pathlib.Path(build_workspace_directory) / path)
+    return ret
+
+
 def main(args):
     parser = argparse.ArgumentParser(
         prog="bazel run -- {TARGET_LABEL}",
@@ -163,12 +225,16 @@ def main(args):
                         help="Be silent, except for errors")
     # TODO(nacl): consider supporting DESTDIR=/whatever syntax, like "make
     # install".
-    #
-    # TODO(nacl): consider removing absolute path restriction, perhaps using
-    # BUILD_WORKING_DIRECTORY.
-    parser.add_argument('--destdir', action='store', default=os.getenv("DESTDIR"),
-                        help="Installation root directory (defaults to DESTDIR "
-                             "environment variable).  Must be an absolute path.")
+    default_destdir = _default_destdir()
+    default_destdir_text = f" or {default_destdir}" if default_destdir else ""
+    parser.add_argument('--destdir', action='store', default=default_destdir,
+                        required=default_destdir is None,
+                        type=_resolve_destdir,
+                        help=f"Installation root directory (defaults to DESTDIR"
+                             f" environment variable{default_destdir_text}). "
+                             f"Relative paths are interpreted against "
+                             f"BUILD_WORKSPACE_DIRECTORY "
+                             f"({os.getenv('BUILD_WORKSPACE_DIRECTORY')})")
 
     args = parser.parse_args()
 

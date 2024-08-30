@@ -29,6 +29,7 @@ here.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
+load("//pkg/private:util.bzl", "get_repo_mapping_manifest")
 
 # TODO(#333): strip_prefix module functions should produce unique outputs.  In
 # particular, this one and `_sp_from_pkg` can overlap.
@@ -310,6 +311,13 @@ def _pkg_files_impl(ctx):
                             print("same source mapped to different locations", rf, have_it, dest_path)
                     else:
                         src_dest_paths_map[rf] = dest_path
+
+                # if repo_mapping manifest exists (for e.g. with --enable_bzlmod),
+                # create _repo_mapping under runfiles directory
+                repo_mapping_manifest = get_repo_mapping_manifest(target)
+                if repo_mapping_manifest:
+                    dest_path = paths.join(src_dest_paths_map[src] + ".runfiles", "_repo_mapping")
+                    src_dest_paths_map[repo_mapping_manifest] = dest_path
 
     # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
