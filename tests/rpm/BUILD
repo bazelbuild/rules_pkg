@@ -517,6 +517,16 @@ pkg_sub_rpm(
     ],
 )
 
+pkg_sub_rpm(
+    name = "sub_rpm2",
+    package_name = "test_sub_rpm2",
+    description = "Test subrpm2 description",
+    summary = "Test subrpm2",
+    srcs = [
+        ":test_sub_rpm_files",
+    ],
+)
+
 genrule(
     name = "test_sub_rpm_main_file_input",
     outs = ["test_sub_rpm_main_file_input.txt"],
@@ -543,6 +553,7 @@ pkg_rpm(
     ],
     subrpms = [
         ":sub_rpm",
+        ":sub_rpm2",
     ],
 )
 
@@ -558,6 +569,9 @@ genrule(
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     echo "===== sub RPM ======" >> $@
     rpm -qpi --list $${RPMS[1]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qpi --list $${RPMS[2]} | \
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     """,
 )
