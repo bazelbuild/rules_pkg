@@ -429,7 +429,7 @@ def add_from_default_info(
 
     if include_runfiles:
         runfiles = src[DefaultInfo].default_runfiles
-        if runfiles:
+        if runfiles and runfiles.files:
             mapping_context.file_deps.append(runfiles.files)
 
             # Computing the runfiles root is subtle. It should be based off of
