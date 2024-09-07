@@ -40,6 +40,13 @@ SUPPORTED_TAR_COMPRESSIONS = (
 _DEFAULT_MTIME = -1
 _stamp_condition = Label("//pkg/private:private_stamp_detect")
 
+MappingManifestInfo = provider(
+    "Path mapping to pack files",
+    fields = {
+        "manifest": "a list of (expanded package_dir, manfiest files, deps).",
+    },
+)
+
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
     for prefix, replacement in remap_paths.items():
@@ -69,8 +76,11 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.package_dir_file:
         if ctx.attr.package_dir:
             fail("Both package_dir and package_dir_file attributes were specified")
+        if ctx.attr.merge_mappings:
+            fail("Can not merge tarball mappings when package_dir_file is specified")
         args.add("--directory", "@" + ctx.file.package_dir_file.path)
         files.append(ctx.file.package_dir_file)
+        package_dir_expanded = None
     else:
         package_dir_expanded = substitute_package_variables(ctx, ctx.attr.package_dir)
         args.add("--directory", package_dir_expanded or "/")
@@ -114,6 +124,10 @@ def _pkg_tar_impl(ctx):
                 "--owner_names",
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
+    if ctx.attr.compresslevel:
+        args.add("--compresslevel", ctx.attr.compresslevel)
+    if ctx.attr.auto_deduplicate:
+        args.add("--auto_deduplicate")
 
     # Now we begin processing the files.
     path_mapper = None
@@ -151,8 +165,6 @@ def _pkg_tar_impl(ctx):
         add_empty_file(mapping_context, empty_file, ctx.label)
     for empty_dir in ctx.attr.empty_dirs or []:
         add_directory(mapping_context, empty_dir, ctx.label)
-    for f in ctx.files.deps:
-        args.add("--tar", f.path)
     for link in ctx.attr.symlinks:
         add_symlink(
             mapping_context,
@@ -170,6 +182,29 @@ def _pkg_tar_impl(ctx):
     write_manifest(ctx, manifest_file, mapping_context.content_map)
     args.add("--manifest", manifest_file.path)
 
+    does_merge_mappings = ctx.attr.merge_mappings
+    new_dir_prefix = package_dir_expanded + "/" if package_dir_expanded else ""
+    manifest_list = [(package_dir_expanded, manifest_file, mapping_context.file_deps)]
+    file_dep_set = {}
+    for dep_i in ctx.attr.deps:
+        if does_merge_mappings and (MappingManifestInfo in dep_i):
+            for i_dir, i_manifest, i_file_deps in dep_i[MappingManifestInfo].manifest:
+                i_dir = new_dir_prefix + (i_dir or "")
+                args.add("--directory", i_dir)
+                args.add("--manifest", i_manifest.path)
+                files.append(i_manifest)
+                for i in i_file_deps:
+                    file_dep_set[i] = 1
+                manifest_list.append((i_dir, i_manifest, i_file_deps))
+        else:
+            for dep_file in dep_i.files.to_list():
+                if does_merge_mappings and dep_file.path.startswith("bazel-out/"):
+                    fail("Please avoid depending on generated .tar directly: " + dep_file.path)
+                args.add("--tar", dep_file.path)
+            files += dep_i.files.to_list()
+    for i in mapping_context.file_deps:
+        file_dep_set[i] = 1
+
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = False)
 
@@ -180,8 +215,8 @@ def _pkg_tar_impl(ctx):
         args.add("--allow_dups_from_deps")
 
     inputs = depset(
-        direct = ctx.files.deps + files,
-        transitive = mapping_context.file_deps,
+        direct = files,
+        transitive = list(file_dep_set.keys()),
     )
 
     ctx.actions.run(
@@ -212,7 +247,11 @@ def _pkg_tar_impl(ctx):
         OutputGroupInfo(
             manifest = [manifest_file],
         ),
-    ]
+    ] + ([
+        MappingManifestInfo(
+            manifest = manifest_list,
+        ),
+    ] if does_merge_mappings else [])
 
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
@@ -256,6 +295,14 @@ pkg_tar_impl = rule(
         "extension": attr.string(default = "tar"),
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),
+        "merge_mappings": attr.bool(
+            doc = """Repack tar files in `deps` by re-applying their manifest files.""",
+            default = False,
+        ),
+        "auto_deduplicate": attr.bool(
+            doc = """Auto create symlinks for files mapped from a same source in manifests.""",
+            default = False,
+        ),
         "include_runfiles": attr.bool(
             doc = ("""Include runfiles for executables. These appear as they would in bazel-bin."""
                    + """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
@@ -272,6 +319,10 @@ pkg_tar_impl = rule(
         ),
         "create_parents": attr.bool(default = True),
         "allow_duplicates_from_deps": attr.bool(default = False),
+        "compresslevel": attr.string(
+            doc = """Specify the numeric compress level in gzip mode; may be 0-9 or empty (6).""",
+            default = "",
+        ),
 
         # Common attributes
         "out": attr.output(mandatory = True),
@@ -342,3 +393,34 @@ def pkg_tar(name, **kwargs):
         }),
         **kwargs
     )
+
+def _pkg_tar_group_impl(ctx):
+    manifest_list = []
+    output_files = []
+    for i in ctx.attr.srcs:
+        if MappingManifestInfo in i:
+            manifest_list += i[MappingManifestInfo].manifest
+        output_files += i.files.to_list()
+    if manifest_list and len(manifest_list) < len(output_files):
+        fail("Can not merge generated tar files and source ones; please split into different groups.")
+    return [
+        DefaultInfo(
+            files = depset(output_files),
+        ),
+        MappingManifestInfo(
+            manifest = manifest_list,
+        ),
+    ]
+
+pkg_tar_group = rule(
+    doc = """Expose a group of source tar files.""",
+    implementation = _pkg_tar_group_impl,
+    attrs = {
+        "srcs": attr.label_list(
+            doc = """Tar files generated by pkg_tar().""",
+            mandatory = True,
+            allow_files = tar_filetype,
+        ),
+    },
+    provides = [MappingManifestInfo],
+)
