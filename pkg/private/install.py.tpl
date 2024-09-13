@@ -65,29 +65,29 @@ class NativeInstaller(object):
 
     def _chown_chmod(self, dest, mode, user, group):
         if mode:
-            logging.info("CHMOD %s %s", mode, dest)
+            logging.debug("CHMOD %s %s", mode, dest)
             os.chmod(dest, int(mode, 8))
         if user or group:
             # Ownership can only be changed by sufficiently
             # privileged users.
             # TODO(nacl): This does not support windows
             if hasattr(os, "getuid") and os.getuid() == 0:
-                logging.info("CHOWN %s:%s %s", user, group, dest)
+                logging.debug("CHOWN %s:%s %s", user, group, dest)
                 shutil.chown(dest, user, group)
 
     def _do_file_copy(self, src, dest):
-        logging.info("COPY %s <- %s", dest, src)
+        logging.debug("COPY %s <- %s", dest, src)
         shutil.copyfile(src, dest)
 
     def _do_mkdir(self, dirname, mode):
-        logging.info("MKDIR %s %s", mode, dirname)
+        logging.debug("MKDIR %s %s", mode, dirname)
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
     def _do_symlink(self, target, link_name, mode, user, group):
         raise NotImplementedError("symlinking not yet supported")
 
     def _maybe_make_unowned_dir(self, path):
-        logging.info("MKDIR (unowned) %s", path)
+        logging.debug("MKDIR (unowned) %s", path)
         # TODO(nacl): consider default permissions here
         # TODO(nacl): consider default ownership here
         os.makedirs(path, 0o755, exist_ok=True)
@@ -107,7 +107,7 @@ class NativeInstaller(object):
         self._chown_chmod(dst, entry.mode, entry.user, entry.group)
 
     def _install_treeartifact(self, entry):
-        logging.info("COPYTREE %s <- %s/**", entry.dest, entry.src)
+        logging.debug("COPYTREE %s <- %s/**", entry.dest, entry.src)
         shutil.copytree(
             src=entry.src,
             dst=entry.dest,
@@ -147,9 +147,9 @@ class NativeInstaller(object):
 
     def _install_symlink(self, entry):
         raise NotImplementedError("symlinking not yet supported")
-        logging.info("SYMLINK %s <- %s", entry.dest, entry.link_to)
-        logging.info("CHMOD %s %s", entry.dest, entry.mode)
-        logging.info("CHOWN %s.%s %s", entry.dest, entry.user, entry.group)
+        logging.debug("SYMLINK %s <- %s", entry.dest, entry.link_to)
+        logging.debug("CHMOD %s %s", entry.dest, entry.mode)
+        logging.debug("CHOWN %s.%s %s", entry.dest, entry.user, entry.group)
 
     def include_manifest_path(self, path):
         with open(path, 'r') as fh:
@@ -170,6 +170,7 @@ class NativeInstaller(object):
             self.entries.append(entry)
 
     def do_the_thing(self):
+        logging.info("Installing to %s", self.destdir)
         for entry in self.entries:
             if entry.type == manifest.ENTRY_IS_FILE:
                 self._install_file(entry)
@@ -241,13 +242,14 @@ def main(args):
     loudness = args.verbose - args.quiet
 
     if args.quiet:
-        logging.getLogger().setLevel(logging.ERROR)
+        level = logging.ERROR
     elif loudness == 0:
-        logging.getLogger().setLevel(logging.WARNING)
-    elif loudness == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:  # loudness >= 2:
-        logging.getLogger().setLevel(logging.DEBUG)
+        level = logging.INFO
+    else:  # loudness >= 1
+        level = logging.DEBUG
+    logging.basicConfig(
+        level=level, format="%(levelname)s: %(message)s"
+    )
 
     installer = NativeInstaller(destdir=args.destdir)
 
