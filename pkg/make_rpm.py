@@ -455,14 +455,14 @@ class RpmBuilder(object):
             if os.path.basename(p).startswith(subrpm_prefix):
                shutil.copy(p, subrpm_out_file)
                is_subrpm = True
-               if self.debug or True:
+               if self.debug:
                   print('Saved %s sub RPM file to %s' % (
                      subrpm_name, subrpm_out_file))
                break
 
          if not is_subrpm:
             shutil.copy(p, out_file)
-            if self.debug or True:
+            if self.debug:
                print('Saved RPM file to %s' % out_file)
     else:
       print('No RPM file created.')
