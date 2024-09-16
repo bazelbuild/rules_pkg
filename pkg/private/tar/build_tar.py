@@ -42,7 +42,8 @@ class TarFile(object):
   class DebError(Exception):
     pass
 
-  def __init__(self, output, directory, compression, compressor, create_parents, allow_dups_from_deps, default_mtime):
+  def __init__(self, output, directory, compression, compressor, create_parents,
+               allow_dups_from_deps, default_mtime, compression_level):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -52,6 +53,7 @@ class TarFile(object):
     self.default_mtime = default_mtime
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
+    self.compression_level = compression_level
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -60,7 +62,8 @@ class TarFile(object):
         self.compressor,
         self.create_parents,
         self.allow_dups_from_deps,
-        default_mtime=self.default_mtime)
+        default_mtime=self.default_mtime,
+        compression_level=self.compression_level)
     return self
 
   def __exit__(self, t, v, traceback):
@@ -397,6 +400,9 @@ def main():
   parser.add_argument('--allow_dups_from_deps',
                       action='store_true',
                       help='')
+  parser.add_argument(
+      '--compression_level', default=-1,
+      help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -440,6 +446,10 @@ def main():
   if options.stamp_from:
     default_mtime = build_info.get_timestamp(options.stamp_from)
 
+  compression_level = -1
+  if options.compression_level:
+    compression_level = int(options.compression_level)
+
   # Add objects to the tar file
   with TarFile(
       options.output,
@@ -448,7 +458,8 @@ def main():
       compressor = options.compressor,
       default_mtime=default_mtime,
       create_parents=options.create_parents,
-      allow_dups_from_deps=options.allow_dups_from_deps) as output:
+      allow_dups_from_deps=options.allow_dups_from_deps,
+      compression_level = compression_level) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

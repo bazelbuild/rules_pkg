@@ -13,6 +13,7 @@
 # limitations under the License.
 """Testing for pkg_tar."""
 
+import os
 import tarfile
 import unittest
 
@@ -293,6 +294,17 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-respect-externally-defined-duplicates.tar', content)
 
+  def test_compression_level(self):
+    sizes = [
+      ('test-tar-compression_level--1.tgz', 179),
+      ('test-tar-compression_level-3.tgz', 230),
+      ('test-tar-compression_level-6.tgz', 178),
+      ('test-tar-compression_level-9.tgz', 167),
+    ]
+    for file_name, expected_size in sizes:
+      file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+      file_size = os.stat(file_path).st_size
+      self.assertEqual(file_size, expected_size, 'size error for ' + file_name)
 
 if __name__ == '__main__':
   unittest.main()
