@@ -53,10 +53,12 @@ RUNFILE_PREFIX = os.path.join(os.getenv("RUNFILES_DIR"), WORKSPACE_NAME) if os.g
 #
 # See also https://bugs.python.org/issue37157.
 class NativeInstaller(object):
-    def __init__(self, default_user=None, default_group=None, destdir=None):
+    def __init__(self, default_user=None, default_group=None, destdir=None,
+                 wipe_destdir=False):
         self.default_user = default_user
         self.default_group = default_group
         self.destdir = destdir
+        self.wipe_destdir = wipe_destdir
         self.entries = []
 
     # Logger helper method, may not be necessary or desired
@@ -171,6 +173,9 @@ class NativeInstaller(object):
 
     def do_the_thing(self):
         logging.info("Installing to %s", self.destdir)
+        if self.wipe_destdir:
+            logging.debug("RM %s", self.destdir)
+            shutil.rmtree(self.destdir, ignore_errors=True)
         for entry in self.entries:
             if entry.type == manifest.ENTRY_IS_FILE:
                 self._install_file(entry)
@@ -236,6 +241,8 @@ def main(args):
                              f"Relative paths are interpreted against "
                              f"BUILD_WORKSPACE_DIRECTORY "
                              f"({os.getenv('BUILD_WORKSPACE_DIRECTORY')})")
+    parser.add_argument("--wipe_destdir", action="store_true", default=False,
+                        help="Wipe destdir before installing.")
 
     args = parser.parse_args()
 
@@ -251,7 +258,10 @@ def main(args):
         level=level, format="%(levelname)s: %(message)s"
     )
 
-    installer = NativeInstaller(destdir=args.destdir)
+    installer = NativeInstaller(
+        destdir=args.destdir,
+        wipe_destdir=args.wipe_destdir,
+    )
 
     if not CALLED_FROM_BAZEL_RUN and RUNFILE_PREFIX is None:
         logging.critical("RUNFILES_DIR must be set in your environment when this is run as a bazel build tool.")

@@ -24,7 +24,7 @@ from python.runfiles import runfiles
 from pkg.private import manifest
 
 
-class PkgInstallTest(unittest.TestCase):
+class PkgInstallTestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runfiles = runfiles.Create()
@@ -38,6 +38,12 @@ class PkgInstallTest(unittest.TestCase):
             for entry in manifest_entries:
                 cls.manifest_data[pathlib.Path(entry.dest)] = entry
         cls.installdir = pathlib.Path(os.getenv("TEST_TMPDIR")) / "installdir"
+
+
+class PkgInstallTest(PkgInstallTestBase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
         env = {}
         env.update(cls.runfiles.EnvVars())
         subprocess.check_call([
@@ -201,6 +207,20 @@ class PkgInstallTest(unittest.TestCase):
                 print("Entity {} is missing from the tree".format(dest))
                 num_missing += 1
         self.assertEqual(num_missing, 0)
+
+
+class WipeTest(PkgInstallTestBase):
+    def test_wipe(self):
+        self.installdir.mkdir(exist_ok=True)
+        (self.installdir / "should_be_deleted.txt").touch()
+
+        subprocess.check_call([
+            self.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+            "--destdir", self.installdir,
+            "--wipe_destdir",
+        ],
+                              env=self.runfiles.EnvVars())
+        self.assertFalse((self.installdir / "should_be_deleted.txt").exists())
 
 
 if __name__ == "__main__":
