@@ -20,6 +20,7 @@ How to:
 """
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
 
