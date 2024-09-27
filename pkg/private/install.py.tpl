@@ -242,7 +242,8 @@ def main(args):
                              f"BUILD_WORKSPACE_DIRECTORY "
                              f"({os.getenv('BUILD_WORKSPACE_DIRECTORY')})")
     parser.add_argument("--wipe_destdir", action="store_true", default=False,
-                        help="Wipe destdir before installing.")
+                        help="Delete destdir tree (including destdir itself) "
+                             "before installing")
 
     args = parser.parse_args()
 
