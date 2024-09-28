@@ -6,3 +6,11 @@ local_repository(
 load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
+
+load("@rules_python//:internal_deps.bzl", "rules_python_internal_deps")
+
+rules_python_internal_deps()
+
+load("@rules_python//:internal_setup.bzl", "rules_python_internal_setup")
+
+rules_python_internal_setup()

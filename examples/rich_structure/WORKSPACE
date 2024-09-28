@@ -25,6 +25,11 @@ load("@rules_pkg//pkg:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
+load("@rules_python//:internal_deps.bzl", "rules_python_internal_deps")
+rules_python_internal_deps()
+load("@rules_python//:internal_setup.bzl", "rules_python_internal_setup")
+rules_python_internal_setup()
+
 http_archive(
     name = "rules_cc",
     sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
