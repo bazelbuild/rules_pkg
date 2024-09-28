@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
 import os
+import pathlib
 import unittest
 import stat
 import subprocess
@@ -24,7 +24,7 @@ from python.runfiles import runfiles
 from pkg.private import manifest
 
 
-class PkgInstallTest(unittest.TestCase):
+class PkgInstallTestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runfiles = runfiles.Create()
@@ -36,8 +36,14 @@ class PkgInstallTest(unittest.TestCase):
             cls.manifest_data = {}
 
             for entry in manifest_entries:
-                cls.manifest_data[entry.dest] = entry
-        cls.installdir = os.path.join(os.getenv("TEST_TMPDIR"), "installdir")
+                cls.manifest_data[pathlib.Path(entry.dest)] = entry
+        cls.installdir = pathlib.Path(os.getenv("TEST_TMPDIR")) / "installdir"
+
+
+class PkgInstallTest(PkgInstallTestBase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
         env = {}
         env.update(cls.runfiles.EnvVars())
         subprocess.check_call([
@@ -48,11 +54,11 @@ class PkgInstallTest(unittest.TestCase):
                               env=env)
 
     def entity_type_at_path(self, path):
-        if os.path.islink(path):
+        if path.is_symlink():
             return manifest.ENTRY_IS_LINK
-        elif os.path.isfile(path):
+        elif path.is_file():
             return manifest.ENTRY_IS_FILE
-        elif os.path.isdir(path):
+        elif path.is_dir():
             return manifest.ENTRY_IS_DIR
         else:
             # We can't infer what TreeArtifacts are by looking at them -- the
@@ -97,9 +103,12 @@ class PkgInstallTest(unittest.TestCase):
 
     def _find_tree_entry(self, path, owned_trees):
         for tree_root in owned_trees:
-            if path == tree_root or path.startswith(tree_root + "/"):
+            if self._path_starts_with(path, tree_root):
                 return tree_root
         return None
+
+    def _path_starts_with(self, path, other):
+        return path.parts[:len(other.parts)] == other.parts
 
     def test_manifest_matches(self):
         unowned_dirs = set()
@@ -119,28 +128,17 @@ class PkgInstallTest(unittest.TestCase):
             elif data.type == manifest.ENTRY_IS_TREE:
                 owned_trees[dest] = data
 
-            # TODO(nacl): The initial stage of the accumulation returns an empty string,
-            # which end up in the set representing the root of the manifest.
-            # This may not be the best thing.
-            unowned_dirs.update([p for p in itertools.accumulate(os.path.dirname(dest).split('/'),
-                                             func=lambda accum, new: accum + '/' + new)])
+            unowned_dirs.update(dest.parents)
 
         # In the above loop, unowned_dirs contains all possible directories that
         # are in the manifest.  Prune them here.
         unowned_dirs -= owned_dirs
 
         # TODO: check for ownership (user, group)
-        found_entries = {dest: False for dest in self.manifest_data.keys()}
+        found_entries = {dest: False for dest in self.manifest_data}
         for root, dirs, files in os.walk(self.installdir):
-            rel_root_path = os.path.relpath(root, self.installdir)
-
-            # The rest of this uses string comparison.  To reduce potential
-            # confusion, ensure that the "." doesn't show up elsewhere.
-            #
-            # TODO(nacl) consider using pathlib here, which will reduce the
-            # need for path cleverness.
-            if rel_root_path == '.':
-                rel_root_path = ''
+            root = pathlib.Path(root)
+            rel_root_path = root.relative_to(self.installdir)
 
             # Directory ownership tests
             if len(files) == 0 and len(dirs) == 0:
@@ -182,10 +180,10 @@ class PkgInstallTest(unittest.TestCase):
                 # needed.  It maybe worth setting the keys in the manifest_data
                 # dictionary to pathlib.Path or otherwise converting them to
                 # native paths.
-                fpath = os.path.normpath("/".join([root, f]))
+                fpath = root / f
                 # The path inside the manifest (relative to the install
                 # destdir).
-                rel_fpath = os.path.normpath("/".join([rel_root_path, f]))
+                rel_fpath = rel_root_path / f
                 entity_in_manifest = rel_fpath in self.manifest_data
                 entity_tree_root = self._find_tree_entry(rel_fpath, owned_trees)
                 if not entity_in_manifest and not entity_tree_root:
@@ -209,6 +207,20 @@ class PkgInstallTest(unittest.TestCase):
                 print("Entity {} is missing from the tree".format(dest))
                 num_missing += 1
         self.assertEqual(num_missing, 0)
+
+
+class WipeTest(PkgInstallTestBase):
+    def test_wipe(self):
+        self.installdir.mkdir(exist_ok=True)
+        (self.installdir / "should_be_deleted.txt").touch()
+
+        subprocess.check_call([
+            self.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+            "--destdir", self.installdir,
+            "--wipe_destdir",
+        ],
+                              env=self.runfiles.EnvVars())
+        self.assertFalse((self.installdir / "should_be_deleted.txt").exists())
 
 
 if __name__ == "__main__":
