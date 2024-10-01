@@ -9,13 +9,10 @@ def _make_starlark_library(ctx):
     direct = []
     transitive = []
     for src in ctx.attr.srcs:
-        if StarlarkLibraryInfo in src:
-            transitive.append(src[StarlarkLibraryInfo])
-        else:
-            for file in src[DefaultInfo].files.to_list():
-                if file.path.endswith(".bzl"):
-                    # print(file.path)
-                    direct.append(file)
+        for file in src[DefaultInfo].files.to_list():
+            if file.path.endswith(".bzl"):
+                # print(file.path)
+                direct.append(file)
     all_files = depset(direct, transitive = transitive)
     return [
         DefaultInfo(files = all_files, runfiles = ctx.runfiles(transitive_files = all_files)),

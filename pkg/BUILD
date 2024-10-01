@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_pkg//pkg/private:make_starlark_library.bzl", "starlark_library")
 
 # -*- coding: utf-8 -*-
@@ -61,6 +62,18 @@ starlark_library(
         "//pkg/private/tar:standard_package",
         "//pkg/private/zip:standard_package",
         "//pkg/releasing:standard_package",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# gather all rules that should be documented
+bzl_library(
+    name = "rules_pkg_lib",
+    srcs = [
+        "//:version.bzl",
+        "//pkg:bzl_srcs",
+        "@bazel_skylib//lib:paths",
+        "@rules_python//python:defs_bzl",
     ],
     visibility = ["//visibility:public"],
 )

@@ -19,7 +19,6 @@ How to:
    git commit -m 'update docs' docs/latest.md
 """
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
@@ -111,14 +110,9 @@ stardoc(
     ],
 )
 
-# gather all rules that should be documented
-bzl_library(
+alias(
     name = "rules_pkg_lib",
-    srcs = [
-        "//:version.bzl",
-        "//pkg:bzl_srcs",
-        "@bazel_skylib//lib:paths",
-    ],
+    actual = "//pkg:rules_pkg_lib",
     visibility = ["//visibility:public"],
 )
 
