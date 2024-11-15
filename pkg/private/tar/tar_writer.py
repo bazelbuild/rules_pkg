@@ -129,7 +129,7 @@ class TarFileWriter(object):
       # Enforce the ending / for directories so we correctly deduplicate.
       if not info.name.endswith('/'):
         info.name += '/'
-    if not self.allow_dups_from_deps and self._have_added(info.name):
+    elif not self.allow_dups_from_deps and self._have_added(info.name):
         print('Duplicate file in archive: %s, '
               'picking first occurrence' % info.name)
         return
