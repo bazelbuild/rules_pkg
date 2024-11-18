@@ -129,11 +129,12 @@ class TarFileWriter(object):
       # Enforce the ending / for directories so we correctly deduplicate.
       if not info.name.endswith('/'):
         info.name += '/'
-    # Directories with different contents should get merged
-    # without warnings, warn about duplicate *files* only
-    elif not self.allow_dups_from_deps and self._have_added(info.name):
-      print('Duplicate file in archive: %s, '
-            'picking first occurrence' % info.name)
+    if not self.allow_dups_from_deps and self._have_added(info.name):
+      # Directories with different contents should get merged without warnings.
+      # If they have overlapping content, the warning will be on their duplicate *files* instead
+      if info.type != tarfile.DIRTYPE:
+        print('Duplicate file in archive: %s, '
+              'picking first occurrence' % info.name)
       return
 
     self.tar.addfile(info, fileobj)
