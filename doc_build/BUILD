@@ -116,8 +116,9 @@ bzl_library(
     name = "rules_pkg_lib",
     srcs = [
         "//:version.bzl",
+    ],
+    deps = [
         "//pkg:bzl_srcs",
-        "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:public"],
 )
