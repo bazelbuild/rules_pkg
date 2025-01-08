@@ -133,10 +133,10 @@ class ${TEST_NAME}(VerifyArchiveTest):
   def test_must_not_contain(self):
     self.check_must_not_contain(${MUST_NOT_CONTAIN})
 
-  def test_must_not_contain(self):
+  def test_must_contain_regex(self):
     self.check_must_contain_regex(${MUST_CONTAIN_REGEX})
 
-  def test_must_not_contain(self):
+  def test_must_not_contain_regex(self):
     self.check_must_not_contain_regex(${MUST_NOT_CONTAIN_REGEX})
 
   def test_verify_links(self):
