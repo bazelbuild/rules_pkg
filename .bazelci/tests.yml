@@ -62,9 +62,9 @@ win_tests: &win_tests
 
 #
 # Commmon features and tests by platform
-# 
-ubuntu1804: &ubuntu
-  platform: ubuntu1804
+#
+ubuntu2204: &ubuntu
+  platform: ubuntu2204
   <<: *common
   <<: *default_tests
 
