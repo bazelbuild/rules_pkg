@@ -31,20 +31,9 @@ filegroup(
     srcs = [
         "BUILD",
     ] + glob([
-        "*.bzl",
         "*.py",
     ]),
     visibility = ["//distro:__pkg__"],
-)
-
-exports_files(
-    glob([
-        "*.bzl",
-    ]),
-    visibility = [
-        "//distro:__pkg__",
-        "//doc_build:__pkg__",
-    ],
 )
 
 # pairs of rule name and the source file to get it from
