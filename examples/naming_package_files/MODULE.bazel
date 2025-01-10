@@ -3,9 +3,11 @@ module(
     version = "0.0.1",
 )
 
+bazel_dep(name = "rules_pkg")
 local_path_override(
     module_name = "rules_pkg",
     path = "../..",
 )
 
+bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_cc", version = "0.0.17")
