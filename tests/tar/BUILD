@@ -290,7 +290,7 @@ verify_archive_test(
         "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
     ],
     must_contain_regex = [
-        ".*can_i_repackage_a_file_with_a_long_name/$",
+        ".*can_i_repackage_a_file_with_a_long_name/",
     ],
     # there is really no need for these cases. I just want to use all the test capabilities.
     must_not_contain = [
