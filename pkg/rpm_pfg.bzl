@@ -175,7 +175,7 @@ def _make_absolute_if_not_already_or_is_macro(path):
     # this can be inlined easily.
     return path if path.startswith(("/", "%")) else "/" + path
 
-def _make_rpm_filename(rpm_name, version, architecture, package_name=None, release=None):
+def _make_rpm_filename(rpm_name, version, architecture, package_name = None, release = None):
     prefix = "%s-%s"
     items = [rpm_name, version]
 
@@ -185,7 +185,7 @@ def _make_rpm_filename(rpm_name, version, architecture, package_name=None, relea
 
     if release:
         prefix += "-%s"
-        items += [release]
+        items.append(release)
 
     fmt = prefix + ".%s.rpm"
 
@@ -315,7 +315,7 @@ def _process_dep(dep, rpm_ctx, debuginfo_type):
                 dep.label,
                 file_base,
                 rpm_ctx,
-                debuginfo_type
+                debuginfo_type,
             )
         for entry, origin in pfg_info.pkg_dirs:
             file_base = _make_filetags(entry.attributes, "%dir")
@@ -351,25 +351,25 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
     ]
 
     if rpm_info.architecture:
-        rpm_lines += ["BuildArch: %s" % rpm_info.architecture]
+        rpm_lines.append("BuildArch: %s" % rpm_info.architecture)
 
     if rpm_info.epoch:
-        rpm_lines += ["Epoch: %s" % rpm_info.epoch]
+        rpm_lines.append("Epoch: %s" % rpm_info.epoch)
 
     if rpm_info.version:
-        rpm_lines += ["Version: %s" % rpm_info.version]
+        rpm_lines.append("Version: %s" % rpm_info.version)
 
     for r in rpm_info.requires:
-        rpm_lines += ["Requires: %s" % r]
+        rpm_lines.append("Requires: %s" % r)
 
     for p in rpm_info.provides:
-        rpm_lines += ["Provides: %s" % p]
+        rpm_lines.append("Provides: %s" % p)
 
     for c in rpm_info.conflicts:
-        rpm_lines += ["Conflicts: %s" % c]
+        rpm_lines.append("Conflicts: %s" % c)
 
     for o in rpm_info.obsoletes:
-        rpm_lines += ["Obsoletes: %s" % o]
+        rpm_lines.append("Obsoletes: %s" % o)
 
     rpm_lines += [
         "",
@@ -394,10 +394,10 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
 
         # rpmbuild will be unhappy if we have no files so we stick
         # default file mode in for that scenario
-        rpm_lines += [DEFAULT_FILE_MODE]
+        rpm_lines.append(DEFAULT_FILE_MODE)
         rpm_lines += sub_rpm_ctx.rpm_files_list
 
-        rpm_lines += [""]
+        rpm_lines.append("")
 
     rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
     rpm_ctx.packaged_directories.extend(sub_rpm_ctx.packaged_directories)
@@ -726,7 +726,12 @@ def _pkg_rpm_impl(ctx):
         subrpm_lines = []
         for s in ctx.attr.subrpms:
             subrpm_lines.extend(_process_subrpm(
-                ctx, rpm_name, s[PackageSubRPMInfo], rpm_ctx, debuginfo_type))
+                ctx,
+                rpm_name,
+                s[PackageSubRPMInfo],
+                rpm_ctx,
+                debuginfo_type,
+            ))
 
         subrpm_file = ctx.actions.declare_file(
             "{}.spec.subrpms".format(rpm_name),
@@ -740,7 +745,8 @@ def _pkg_rpm_impl(ctx):
 
     if debuginfo_type != "none":
         debuginfo_default_file = ctx.actions.declare_file(
-            "{}-debuginfo.rpm".format(rpm_name))
+            "{}-debuginfo.rpm".format(rpm_name),
+        )
         debuginfo_package_file_name = _make_rpm_filename(
             rpm_name,
             ctx.attr.version,
@@ -757,7 +763,8 @@ def _pkg_rpm_impl(ctx):
 
         rpm_ctx.output_rpm_files.append(debuginfo_output_file)
         rpm_ctx.make_rpm_args.append(
-            "--subrpm_out_file=debuginfo:%s" % debuginfo_output_file.path )
+            "--subrpm_out_file=debuginfo:%s" % debuginfo_output_file.path,
+        )
 
     #### Procedurally-generated scripts/lists (%install, %files)
 

@@ -14,6 +14,7 @@
 
 load(
     "//pkg:mappings.bzl",
+    _REMOVE_BASE_DIRECTORY = "REMOVE_BASE_DIRECTORY",
     _filter_directory = "filter_directory",
     _pkg_attributes = "pkg_attributes",
     _pkg_filegroup = "pkg_filegroup",
@@ -21,7 +22,6 @@ load(
     _pkg_mkdirs = "pkg_mkdirs",
     _pkg_mklink = "pkg_mklink",
     _strip_prefix = "strip_prefix",
-    _REMOVE_BASE_DIRECTORY = "REMOVE_BASE_DIRECTORY",
 )
 
 REMOVE_BASE_DIRECTORY = _REMOVE_BASE_DIRECTORY
