@@ -43,5 +43,5 @@ verify_archive_test(
 verify_archive_test(
     name = "test_visibility_is_allowed",
     target = ":loremipsum_tar",
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
 )
