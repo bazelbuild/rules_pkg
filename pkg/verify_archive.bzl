@@ -96,7 +96,8 @@ def verify_archive_test(
         min_size = 1,
         max_size = -1,
         tags = None,
-        verify_links = None):
+        verify_links = None,
+        **kwargs):
     """Tests that an archive contains specific file patterns.
 
     This test is used to verify that an archive contains the expected content.
@@ -111,6 +112,7 @@ def verify_archive_test(
       max_size: The maximum number of entries which must be in the archive.
       tags: standard meaning
       verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
+      **kwargs: The args to be passed to the underlying py_test rule.
     """
     test_src = name + "__internal_main.py"
     _gen_verify_archive_test_main(
@@ -133,4 +135,5 @@ def verify_archive_test(
         main = test_src,
         data = [target],
         python_version = "PY3",
+        **kwargs
     )
