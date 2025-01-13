@@ -285,8 +285,6 @@ pkg_tar(
 
 verify_archive_test(
     name = "repackaging_long_filename_test",
-    size = "small",
-    testonly = True,
     max_size = 2,
     must_contain = [
         "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
