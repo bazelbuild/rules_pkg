@@ -96,13 +96,12 @@ class VerifyArchiveTest(unittest.TestCase):
         if r_comp.match(path):
           matched = True
           break
-      if not match:
+      if not matched:
         self.fail('Did not find pattern (%s) in the archive' % pattern)
 
   def check_must_not_contain_regex(self, must_not_contain_regex):
     for pattern in must_not_contain_regex:
       r_comp = re.compile(pattern)
-      matched = False
       for path in self.paths:
         if r_comp.match(path):
           self.fail('Found disallowed pattern (%s) in the archive' % pattern)
@@ -134,10 +133,10 @@ class ${TEST_NAME}(VerifyArchiveTest):
   def test_must_not_contain(self):
     self.check_must_not_contain(${MUST_NOT_CONTAIN})
 
-  def test_must_not_contain(self):
+  def test_must_contain_regex(self):
     self.check_must_contain_regex(${MUST_CONTAIN_REGEX})
 
-  def test_must_not_contain(self):
+  def test_must_not_contain_regex(self):
     self.check_must_not_contain_regex(${MUST_NOT_CONTAIN_REGEX})
 
   def test_verify_links(self):
