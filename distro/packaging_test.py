@@ -44,7 +44,6 @@ class PackagingTest(unittest.TestCase):
       content = inp.read()
       if _VERBOSE:
         print('=== Expect', want)
-      module_block_re = re.compile
       m = re.search(
           r"""module\([^)]+\)""",
           content,
@@ -92,7 +91,7 @@ class PackagingTest(unittest.TestCase):
     CopyTestFile('BUILD.tpl', 'BUILD')
 
     os.chdir(tempdir)
-    build_result = subprocess.check_output(['bazel', 'build', ':dummy_tar'])
+    build_result = subprocess.check_output(['bazel', 'build', '--enable_workspace', ':dummy_tar'])
     if _VERBOSE:
       print('=== Build Result ===')
       print(build_result)
