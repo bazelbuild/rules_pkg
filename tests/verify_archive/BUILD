@@ -26,22 +26,44 @@ pkg_tar(
     ],
 )
 
+pkg_tar(
+    name = "loremipsum_tar_test_only",
+    testonly = True,
+    srcs = [
+        "//tests:loremipsum_txt",
+    ],
+)
+
 # Test cases
 
 verify_archive_test(
-    name = "test_size_is_allowed",
+    name = "test_py_test_attrs_is_allowed",
     size = "small",
+    timeout = "moderate",
+    flaky = True,
     target = ":loremipsum_tar",
 )
 
 verify_archive_test(
     name = "test_testonly_is_allowed",
     testonly = True,
-    target = ":loremipsum_tar",
+    target = ":loremipsum_tar_test_only",
 )
 
 verify_archive_test(
     name = "test_visibility_is_allowed",
     target = ":loremipsum_tar",
     visibility = ["//visibility:private"],
+)
+
+verify_archive_test(
+    name = "test_tags_are_allowed",
+    tags = ["test_tag"],
+    target = ":loremipsum_tar",
+)
+
+verify_archive_test(
+    name = "test_target_compatible_with_is_allowed",
+    target = ":loremipsum_tar",
+    target_compatible_with = ["@platforms//cpu:x86_64"],
 )
