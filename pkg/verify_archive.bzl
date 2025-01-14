@@ -126,6 +126,7 @@ def verify_archive_test(
       max_size: The maximum number of entries which must be in the archive.
       verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
       **kwargs: The args to be passed to the underlying rules, if supported.
+                See https://github.com/bazelbuild/rules_pkg/blob/main/pkg/verify_archive.bzl for the full list.
     """
     test_src = name + "__internal_main.py"
     _gen_verify_archive_test_main(
