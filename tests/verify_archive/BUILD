@@ -57,13 +57,13 @@ verify_archive_test(
 )
 
 verify_archive_test(
-    name = "test_tags_are_allowed",
-    tags = ["test_tag"],
-    target = ":loremipsum_tar",
-)
-
-verify_archive_test(
     name = "test_target_compatible_with_is_allowed",
     target = ":loremipsum_tar",
     target_compatible_with = ["@platforms//cpu:x86_64"],
+)
+
+verify_archive_test(
+    name = "test_tags_are_allowed",
+    tags = ["test_tag"],
+    target = ":loremipsum_tar",
 )
