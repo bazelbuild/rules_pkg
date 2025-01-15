@@ -23,6 +23,21 @@ The execution time is O(# expected patterns * size of archive).
 
 load("@rules_python//python:defs.bzl", "py_test")
 
+# Attribute names common to all build rules. See https://bazel.build/reference/be/common-definitions
+COMMON_BUILD_ATTR_NAMES = [
+    "tags",
+    "target_compatible_with",
+    "testonly",
+    "visibility",
+]
+
+# Attribute names common to all test rules. See https://bazel.build/reference/be/common-definitions#common-attributes-tests
+COMMON_TEST_ATTR_NAMES = COMMON_BUILD_ATTR_NAMES + [
+    "size",
+    "timeout",
+    "flaky",
+]
+
 def _gen_verify_archive_test_main_impl(ctx):
     ctx.actions.expand_template(
         template = ctx.file._template,
@@ -95,8 +110,8 @@ def verify_archive_test(
         must_not_contain_regex = None,
         min_size = 1,
         max_size = -1,
-        tags = None,
-        verify_links = None):
+        verify_links = None,
+        **kwargs):
     """Tests that an archive contains specific file patterns.
 
     This test is used to verify that an archive contains the expected content.
@@ -109,8 +124,9 @@ def verify_archive_test(
       must_not_contain_regex: A list of path regexes which must not appear in the archive.
       min_size: The minimum number of entries which must be in the archive.
       max_size: The maximum number of entries which must be in the archive.
-      tags: standard meaning
       verify_links: Dict keyed by paths which must appear, and be symlinks to their values.
+      **kwargs: The args to be passed to the underlying rules, if supported.
+                See https://github.com/bazelbuild/rules_pkg/blob/main/pkg/verify_archive.bzl for the full list.
     """
     test_src = name + "__internal_main.py"
     _gen_verify_archive_test_main(
@@ -124,8 +140,8 @@ def verify_archive_test(
         must_not_contain_regex = must_not_contain_regex,
         min_size = min_size,
         max_size = max_size,
-        tags = tags,
         verify_links = verify_links,
+        **{key: kwargs[key] for key in COMMON_BUILD_ATTR_NAMES if key in kwargs}
     )
     py_test(
         name = name,
@@ -133,4 +149,5 @@ def verify_archive_test(
         main = test_src,
         data = [target],
         python_version = "PY3",
+        **{key: kwargs[key] for key in COMMON_TEST_ATTR_NAMES if key in kwargs}
     )
