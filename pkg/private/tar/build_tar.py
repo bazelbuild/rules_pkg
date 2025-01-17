@@ -74,7 +74,7 @@ class TarFile(object):
     # paths should not have a leading ./
     if dest.startswith('./'):
       dest = dest[2:]
-    # No path should ever come in with slashs on either end, but protect
+    # No path should ever come in with slashes on either end, but protect
     # against that anyway.
     dest = dest.strip('/')
     # This prevents a potential problem for users with both a prefix_dir and

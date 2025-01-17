@@ -10,3 +10,12 @@ repos:
       hooks:
           - id: buildifier
           - id: buildifier-lint
+    - repo: https://github.com/crate-ci/typos
+      rev: v1.29.4
+      hooks:
+        - id: typos
+          exclude: |
+            (?x)^(
+              CHANGELOG.md|
+              tests/testdata/|
+            )

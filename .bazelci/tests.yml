@@ -61,7 +61,7 @@ win_tests: &win_tests
     - "-//pkg/legacy/tests/rpm/..."
 
 #
-# Commmon features and tests by platform
+# Common features and tests by platform
 #
 ubuntu2204: &ubuntu
   platform: ubuntu2204

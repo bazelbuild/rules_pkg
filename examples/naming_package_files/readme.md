@@ -87,7 +87,7 @@ pkg_deb(
     name = "a_deb_package",
     package = "foo-tools",
     ...
-    # Note: target_cpu comes from the --cpu on the command line, and dows not
+    # Note: target_cpu comes from the --cpu on the command line, and does not
     # have to be stated in the BUILD file.
     package_file_name = "foo-tools_{version}-{revision}_{target_cpu}.deb",
     package_variables = ":my_naming_vars",
