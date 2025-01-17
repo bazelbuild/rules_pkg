@@ -46,5 +46,5 @@ For macOS, it would be mostly the same, but files under `usr/share/foo` would
 move to `Library/Foo`.
 
 To emulate reality better, the source tree is organized in a way that is
-convenient for the developers. This example illustrates techniques create
+convenient for the developers. This example illustrates techniques to create
 the desired final structure.
