@@ -107,7 +107,7 @@ class TarFileWriter(object):
     self.directories = set()
     # Preseed the added directory list with things we should not add. If we
     # some day need to allow '.' or '/' as an explicit member of the archive,
-    # we can adjust that here based on the setting of root_dirctory.
+    # we can adjust that here based on the setting of root_directory.
     self.directories.add('/')
     self.directories.add('./')
     self.create_parents = create_parents

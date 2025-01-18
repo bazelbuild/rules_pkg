@@ -43,7 +43,7 @@ Thanks to: Alex Bozhenko, Chuck Grindel, Diego Ortin, and Tomasz Wojno
 -   Align pkg_rpm returned files with other rules (#692)
 -   fix(pkg_tar): properly normalize paths for empty files (#760)
 -   Document that package_dir also uses package_variables (#747)
--   Fix handling paths with whitepsaces (#733)
+-   Fix handling paths with whitespaces (#733)
 -   Fix python 3.6, doesn't support compresslevel
 -   Use Gzip compress level 6 (#720)
 -   write debian Date field in UTC rather than local time (#712)
@@ -414,7 +414,7 @@ and Ulf Adams
 
 -   Author: aiuto <aiuto@google.com>
     Date:   Fri May 22 14:50:42 2020 -0400
-    Add a minimal WORKSPACE file to the distributon. (#182)
+    Add a minimal WORKSPACE file to the distribution. (#182)
     We extract this from the top level workspace so it is easier to keep in sync.
 -   commit 808c192a0c48f292e6dfaaeb3bfa3d4378f6996d
 
