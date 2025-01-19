@@ -30,18 +30,18 @@ pkg_rpm(
     srcs = [
         ":rpm_files",
     ],
-    release = "0",
-    version = "1",
-    summary = "rules_pkg example RPM",
+    architecture = "x86_64",
     description = "This is a package description.",
     license = "Apache License, v2.0",
-    architecture = "x86_64",
-    requires = [
-        "somerpm",
-    ],
     provides = [
         "somefile",
     ],
+    release = "0",
+    requires = [
+        "somerpm",
+    ],
+    summary = "rules_pkg example RPM",
+    version = "1",
 )
 
 # If you have rpmbuild, you probably have rpm2cpio too.

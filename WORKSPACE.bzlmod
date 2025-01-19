@@ -21,6 +21,7 @@ experimental_find_system_git_bzlmod(
     name = "rules_pkg_git",
     verbose = False,
 )
+
 register_toolchains(
     "@rules_pkg_git//:git_auto_toolchain",
     "//toolchains/git:git_missing_toolchain",

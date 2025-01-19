@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_python//python:defs.bzl", "py_library")
 load(
     "//pkg:mappings.bzl",
     "pkg_attributes",
@@ -27,8 +28,6 @@ load(
     "mappings_analysis_tests",
     "mappings_unit_tests",
 )
-load("@rules_python//python:defs.bzl", "py_library")
-
 
 package(default_applicable_licenses = ["//:license"])
 

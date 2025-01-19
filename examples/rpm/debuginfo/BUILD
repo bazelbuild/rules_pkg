@@ -13,16 +13,15 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
 
 cc_binary(
     name = "test",
-    copts = ["-g"],
     srcs = [
         "test.c",
     ],
+    copts = ["-g"],
 )
 
 pkg_files(
@@ -37,12 +36,12 @@ pkg_rpm(
     srcs = [
         ":rpm_files",
     ],
-    release = "0",
-    version = "1",
-    license = "Some license",
-    summary = "Summary",
-    description = "Description",
     debuginfo = True,
+    description = "Description",
+    license = "Some license",
+    release = "0",
+    summary = "Summary",
+    version = "1",
 )
 
 # If you have rpmbuild, you probably have rpm2cpio too.

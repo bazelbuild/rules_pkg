@@ -128,9 +128,13 @@ pkg_filegroup(
 ############################################################################
 
 _POST_SCRIPTLET = "echo post"
+
 _POSTUN_SCRIPTLET = "echo postun"
+
 _PRE_SCRIPTLET = "echo pre"
+
 _PREUN_SCRIPTLET = "echo preun"
+
 _POSTTRANS_SCRIPTLET = "echo posttrans"
 
 [
@@ -153,6 +157,7 @@ _POSTTRANS_SCRIPTLET = "echo posttrans"
 ############################################################################
 
 _VERSION = "1.1.1"
+
 _RELEASE = "2222"
 
 genrule(
@@ -181,10 +186,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -206,10 +211,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -234,10 +239,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -258,10 +263,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet_file = ":post",
+    posttrans_scriptlet_file = ":posttrans",
     postun_scriptlet_file = ":postun",
     pre_scriptlet_file = ":pre",
     preun_scriptlet_file = ":preun",
-    posttrans_scriptlet_file = ":posttrans",
     provides = ["test"],
     release = "2222",
     requires = ["test-lib > 1.0"],
@@ -283,10 +288,10 @@ pkg_rpm(
     epoch = "1",
     license = "Apache 2.0",
     post_scriptlet_file = ":post",
+    posttrans_scriptlet_file = ":posttrans",
     postun_scriptlet_file = ":postun",
     pre_scriptlet_file = ":pre",
     preun_scriptlet_file = ":preun",
-    posttrans_scriptlet_file = ":posttrans",
     provides = ["test"],
     release_file = ":release_file",
     requires = ["test-lib > 1.0"],
@@ -308,10 +313,10 @@ pkg_rpm(
     epoch = "1",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -429,11 +434,11 @@ sh_library(
         ":test_rpm",
         ":test_rpm_bzip2",
         ":test_rpm_direct",
+        ":test_rpm_epoch",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
-        ":test_rpm_scriptlets_files",
         ":test_rpm_release_version_files",
-        ":test_rpm_epoch",
+        ":test_rpm_scriptlets_files",
     ],
 )
 
@@ -510,21 +515,21 @@ pkg_files(
 pkg_sub_rpm(
     name = "sub_rpm",
     package_name = "test_sub_rpm",
-    description = "Test subrpm description",
-    summary = "Test subrpm",
     srcs = [
         ":test_sub_rpm_files",
     ],
+    description = "Test subrpm description",
+    summary = "Test subrpm",
 )
 
 pkg_sub_rpm(
     name = "sub_rpm2",
     package_name = "test_sub_rpm2",
-    description = "Test subrpm2 description",
-    summary = "Test subrpm2",
     srcs = [
         ":test_sub_rpm_files",
     ],
+    description = "Test subrpm2 description",
+    summary = "Test subrpm2",
 )
 
 genrule(
@@ -542,19 +547,19 @@ pkg_files(
 
 pkg_rpm(
     name = "test_sub_rpm_main",
-    description = "This is a package description.",
-    summary = "rules_pkg example RPM",
-    architecture = "noarch",
-    version = "1",
-    license = "Apache License, v2.0",
-    release = "0",
     srcs = [
         ":test_sub_rpm_main_files",
     ],
+    architecture = "noarch",
+    description = "This is a package description.",
+    license = "Apache License, v2.0",
+    release = "0",
     subrpms = [
         ":sub_rpm",
         ":sub_rpm2",
     ],
+    summary = "rules_pkg example RPM",
+    version = "1",
 )
 
 genrule(
@@ -587,10 +592,10 @@ diff_test(
 ############################################################################
 cc_binary(
     name = "test_debuginfo",
-    copts = ["-g"],
     srcs = [
         "test.c",
     ],
+    copts = ["-g"],
 )
 
 pkg_files(
@@ -602,15 +607,15 @@ pkg_files(
 
 pkg_rpm(
     name = "test_debuginfo_rpm",
-        srcs = [
+    srcs = [
         ":test_debuginfo_rpm_files",
     ],
-    release = "0",
-    version = "1",
-    license = "Some license",
-    summary = "Summary",
-    description = "Description",
     debuginfo = True,
+    description = "Description",
+    license = "Some license",
+    release = "0",
+    summary = "Summary",
+    version = "1",
 )
 
 genrule(

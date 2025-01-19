@@ -28,4 +28,4 @@ load(
     "find_system_rpmbuild",
 )
 
-find_system_rpmbuild(name="my_rpmbuild")
+find_system_rpmbuild(name = "my_rpmbuild")

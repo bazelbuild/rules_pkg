@@ -259,8 +259,8 @@ pkg_tar_impl = rule(
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),
         "include_runfiles": attr.bool(
-            doc = ("""Include runfiles for executables. These appear as they would in bazel-bin."""
-                   + """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
+            doc = ("""Include runfiles for executables. These appear as they would in bazel-bin.""" +
+                   """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
         ),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),

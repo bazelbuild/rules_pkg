@@ -14,7 +14,7 @@
 # -*- coding: utf-8 -*-
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@rules_pkg//pkg:rpm.bzl", "pkg_sub_rpm", "pkg_rpm")
+load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm", "pkg_sub_rpm")
 
 pkg_files(
     name = "subrpm_files",
@@ -26,17 +26,17 @@ pkg_files(
 pkg_sub_rpm(
     name = "subrpm",
     package_name = "subrpm",
-    summary = "Test subrpm",
-    description = "Test subrpm description",
-    requires = [
-        "somerpm",
-    ],
-    provides = [
-        "someprovision",
-    ],
     srcs = [
         ":subrpm_files",
     ],
+    description = "Test subrpm description",
+    provides = [
+        "someprovision",
+    ],
+    requires = [
+        "somerpm",
+    ],
+    summary = "Test subrpm",
 )
 
 pkg_files(
@@ -52,21 +52,21 @@ pkg_rpm(
     srcs = [
         ":rpm_files",
     ],
-    release = "0",
-    version = "1",
-    summary = "rules_pkg example RPM",
+    architecture = "x86_64",
     description = "This is a package description.",
     license = "Apache License, v2.0",
-    architecture = "x86_64",
-    requires = [
-        "somerpm",
-    ],
     provides = [
         "somefile",
+    ],
+    release = "0",
+    requires = [
+        "somerpm",
     ],
     subrpms = [
         ":subrpm",
     ],
+    summary = "rules_pkg example RPM",
+    version = "1",
 )
 
 # If you have rpmbuild, you probably have rpm2cpio too.
