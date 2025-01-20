@@ -20,7 +20,7 @@ def get_timestamp(volatile_status_file):
   Reads a file of "name<space>value" pairs and returns the value
   of the BUILD_TIMESTAMP. The file should be in the workspace status
   format: https://docs.bazel.build/versions/master/user-manual.html#workspace_status
-  
+
   Args:
     volatile_status_file: path to input file. Typically ctx.version_file.path.
   Returns:

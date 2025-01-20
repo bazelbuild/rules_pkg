@@ -66,8 +66,8 @@ def read_rpm_filedata(rpm_file_path, rpm_bin_path="rpm", query_tag_map=None):
 
     - FILENAMES        -> path (file absolute path)
     - FILEDIGESTS      -> digest (hash of file.  MD5 for compatibility)
-    - FILEUSERNAME     -> user (UNIX owning user) 
-    - FILEGROUPNAME    -> group (UNIX owning group) 
+    - FILEUSERNAME     -> user (UNIX owning user)
+    - FILEGROUPNAME    -> group (UNIX owning group)
     - FILEMODES:octal  -> mode (UNIX mode, as an octal string)
     - FILEFLAGS:fflags -> fflags (RPM file flags as a string, see upstream documentation)
     - FILELINKTOS      -> Symlink target, or nothing (something "falsy") if not provided

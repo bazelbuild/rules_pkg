@@ -441,7 +441,7 @@ pkg_files = rule(
             will result in all containing files and directories being installed
             relative to the otherwise specified install prefix (via the `prefix`
             and `strip_prefix` attributes), not the directory name.
-            
+
             The following keys are rejected:
 
             - Any label that expands to more than one file (mappings must be
@@ -449,13 +449,13 @@ pkg_files = rule(
 
             - Any label or file that was either not provided or explicitly
               `exclude`d.
-            
+
             The following values result in undefined behavior:
 
             - "" (the empty string)
 
             - "."
-            
+
             - Anything containing ".."
 
             """,
@@ -808,14 +808,14 @@ filter_directory = rule(
     doc = """Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
 
     Effective order of operations:
-    
+
     1) Files are `exclude`d
     2) `renames` _or_ `strip_prefix` is applied.
-    3) `prefix` is applied 
-    
+    3) `prefix` is applied
+
     In particular, if a `rename` applies to an individual file, `strip_prefix`
     will not be applied to that particular file.
-    
+
     Each non-`rename``d path will look like this:
 
     ```
@@ -823,11 +823,11 @@ filter_directory = rule(
     ```
 
     Each `rename`d path will look like this:
-    
+
     ```
     $OUTPUT_DIR/$PREFIX/$FILE_RENAMED
     ```
-    
+
     If an operation cannot be applied (`strip_prefix`) to any component in the
     directory, or if one is unused (`exclude`, `rename`), the underlying command
     will fail.  See the individual attributes for details.
@@ -858,11 +858,11 @@ filter_directory = rule(
         ),
         "renames": attr.string_dict(
             doc = """Files to rename in the output directory.
-            
+
             Keys are destinations, values are sources prior to any path
             modifications (e.g. via `prefix` or `strip_prefix`).  Files that are
             `exclude`d must not be renamed.
-            
+
             This currently only operates on individual files.  `strip_prefix`
             does not apply to them.
 
@@ -871,7 +871,7 @@ filter_directory = rule(
         ),
         "excludes": attr.string_list(
             doc = """Files to exclude from the output directory.
-            
+
             Each element must refer to an individual file in `src`.
 
             All exclusions must be used.

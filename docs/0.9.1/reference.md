@@ -204,7 +204,7 @@ Creates an RPM format package via `pkg_filegroup` and friends.
 
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
-    
+
 
 **ATTRIBUTES**
 
@@ -365,14 +365,14 @@ filter_directory(<a href="#filter_directory-name">name</a>, <a href="#filter_dir
 Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
 
     Effective order of operations:
-    
+
     1) Files are `exclude`d
     2) `renames` _or_ `strip_prefix` is applied.
-    3) `prefix` is applied 
-    
+    3) `prefix` is applied
+
     In particular, if a `rename` applies to an individual file, `strip_prefix`
     will not be applied to that particular file.
-    
+
     Each non-`rename``d path will look like this:
 
     ```
@@ -380,15 +380,15 @@ Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
     ```
 
     Each `rename`d path will look like this:
-    
+
     ```
     $OUTPUT_DIR/$PREFIX/$FILE_RENAMED
     ```
-    
+
     If an operation cannot be applied (`strip_prefix`) to any component in the
     directory, or if one is unused (`exclude`, `rename`), the underlying command
     will fail.  See the individual attributes for details.
-    
+
 
 **ATTRIBUTES**
 
@@ -417,7 +417,7 @@ Package contents grouping rule.
     This rule represents a collection of packaging specifications (e.g. those
     created by `pkg_files`, `pkg_mklink`, etc.) that have something in common,
     such as a prefix or a human-readable category.
-    
+
 
 **ATTRIBUTES**
 
@@ -449,7 +449,7 @@ General-purpose package target-to-destination mapping rule.
     Consumers of `pkg_files`s will, where possible, create the necessary
     directory structure for your files so you do not have to unless you have
     special requirements.  Consult `pkg_mkdirs` for more details.
-    
+
 
 **ATTRIBUTES**
 
@@ -488,7 +488,7 @@ Defines creation and ownership of directories in packages
     For some package management systems (e.g. RPM), directory ownership (2) may
     imply additional semantics.  Consult your package manager's and target
     distribution's documentation for more details.
-    
+
 
 **ATTRIBUTES**
 
@@ -515,7 +515,7 @@ Define a symlink  within packages
     Symbolic links specified by this rule may point at files/directories outside of the
     package, or otherwise left dangling.
 
-    
+
 
 **ATTRIBUTES**
 
@@ -684,6 +684,3 @@ Legacy version
 | <a id="pkg_rpm-spec_file"></a>spec_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 | <a id="pkg_rpm-version"></a>version |  -   | String | optional | "" |
 | <a id="pkg_rpm-version_file"></a>version_file |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
-
-
-

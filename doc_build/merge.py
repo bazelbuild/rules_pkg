@@ -75,7 +75,7 @@ def fix_stardoc_table_align(line: str) -> str:
 
 def main(argv: typing.Sequence[str]) -> None:
   wrapper_map = {}
-  for file in argv[1:]: 
+  for file in argv[1:]:
     merge_file(file, sys.stdout, wrapper_map)
   if wrapper_map:
     print("We didn't use all the @wraps()", wrapper_map, file=sys.stderr)
