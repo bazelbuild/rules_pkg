@@ -17,5 +17,5 @@ repos:
           exclude: |
             (?x)^(
               CHANGELOG.md|
-              tests/testdata/|
+              tests/testdata/
             )
