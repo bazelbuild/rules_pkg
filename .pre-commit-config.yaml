@@ -10,6 +10,18 @@ repos:
       hooks:
           - id: buildifier
           - id: buildifier-lint
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+        - id: check-toml
+        - id: destroyed-symlinks
+        - id: detect-private-key
+        - id: end-of-file-fixer
+          exclude: |
+            (?x)^(
+              tests/testdata/
+            )
+        - id: trailing-whitespace
     - repo: https://github.com/crate-ci/typos
       rev: v1.29.4
       hooks:

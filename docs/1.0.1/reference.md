@@ -765,6 +765,3 @@ Legacy version
 | <a id="pkg_rpm-spec_file"></a>spec_file |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 | <a id="pkg_rpm-version"></a>version |  -   | String | optional |  `""`  |
 | <a id="pkg_rpm-version_file"></a>version_file |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
-
-
-

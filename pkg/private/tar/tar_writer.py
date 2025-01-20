@@ -102,7 +102,7 @@ class TarFileWriter(object):
     self.name = name
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
-                            format=tarfile.GNU_FORMAT) 
+                            format=tarfile.GNU_FORMAT)
     self.members = set()
     self.directories = set()
     # Preseed the added directory list with things we should not add. If we
@@ -344,4 +344,3 @@ class TarFileWriter(object):
     if self.compressor_proc and self.compressor_proc.wait() != 0:
       raise self.Error('Custom compression command '
                        '"{}" failed'.format(self.compressor_cmd))
-

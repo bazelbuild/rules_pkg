@@ -13,7 +13,7 @@ Read the BUILD file for more details.
 ## Try this
 
 ```
-bazel build :* 
+bazel build :*
 for tarball in bazel-bin/*.tar ; do
   echo ==== $tarball
   tar tvf $tarball
