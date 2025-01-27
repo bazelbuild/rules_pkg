@@ -219,7 +219,15 @@ class ZipWriter(object):
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
-      to_write[dest_dir] = None
+      if dest_dir:
+        to_write[dest_dir] = None
+      else:
+        # This branch represents the case where we are evaluating the
+        # root of a tree which is mapped to the root of the zip archive,
+        # such as via `REMOVE_BASE_DIRECTORY`.  When that happens, we
+        # do nothing.  (We do not record an entry for the root of the
+        # zip file.)
+        pass
       for file in files:
         content_path = os.path.abspath(os.path.join(root, file))
         if os.name == "nt":

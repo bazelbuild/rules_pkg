@@ -124,6 +124,20 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
         {"filename": "generate_tree/b/e"},
     ])
 
+  def test_zip_tree_remove_base_directory(self):
+    # Files' mode of `0o644` comes from `pkg_files`'s default.
+    self.assertZipFileContent("test_zip_tree_remove_base_directory.zip", [
+        {"filename": "a/", "isdir": True, "attr": 0o755},
+        {"filename": "a/a", "attr": 0o644},
+        {"filename": "a/b/", "isdir": True, "attr": 0o755},
+        {"filename": "a/b/c", "attr": 0o644},
+        {"filename": "b/", "isdir": True, "attr": 0o755},
+        {"filename": "b/c/", "isdir": True, "attr": 0o755},
+        {"filename": "b/c/d", "attr": 0o644},
+        {"filename": "b/d", "attr": 0o644},
+        {"filename": "b/e", "attr": 0o644},
+    ])
+
   def test_compression_deflated(self):
     if sys.version_info >= (3, 7):
       self.assertZipFileContent("test_zip_deflated_level_3.zip", [

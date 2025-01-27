@@ -15,7 +15,7 @@
 
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "REMOVE_BASE_DIRECTORY", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory")
@@ -132,6 +132,17 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_tree",
     srcs = [":generate_tree"],
+)
+
+pkg_zip(
+    name = "test_zip_tree_remove_base_directory",
+    srcs = [":generate_tree_remove_base_directory"],
+)
+
+pkg_files(
+    name = "generate_tree_remove_base_directory",
+    srcs = [":generate_tree"],
+    renames = {":generate_tree": REMOVE_BASE_DIRECTORY},
 )
 
 pkg_zip(
@@ -289,6 +300,7 @@ py_test(
         ":test_zip_stored",
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",
+        ":test_zip_tree_remove_base_directory.zip",
     ],
     python_version = "PY3",
     deps = [
