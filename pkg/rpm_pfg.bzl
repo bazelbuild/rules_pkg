@@ -350,6 +350,9 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
         "Summary: %s" % rpm_info.summary,
     ]
 
+    if rpm_info.group:
+        rpm_lines.append("Group: %s" % rpm_info.group)
+
     if rpm_info.architecture:
         rpm_lines.append("BuildArch: %s" % rpm_info.architecture)
 
