@@ -60,7 +60,6 @@ def _pkg_files_contents_test_impl(ctx):
 
     expected_dests = {e: None for e in ctx.attr.expected_dests}
     actual_dests = target_under_test[PackageFilesInfo].dest_src_map.keys()
-    n_found = 0
 
     for actual in actual_dests:
         asserts.true(
