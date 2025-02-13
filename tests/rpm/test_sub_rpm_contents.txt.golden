@@ -42,4 +42,8 @@ Source RPM  : test_sub_rpm_main-1-0.src.rpm
 Summary     : Test subrpm2
 Description :
 Test subrpm2 description
+postinstall scriptlet (using /bin/sh):
+echo post
+postuninstall scriptlet (using /bin/sh):
+echo postun
 /test_sub_rpm_file_input.txt

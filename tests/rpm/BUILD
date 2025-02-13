@@ -529,6 +529,8 @@ pkg_sub_rpm(
         ":test_sub_rpm_files",
     ],
     description = "Test subrpm2 description",
+    post_scriptlet = "echo post",
+    postun_scriptlet = "echo postun",
     summary = "Test subrpm2",
 )
 
@@ -570,13 +572,13 @@ genrule(
     # pkg_rpm emits two outputs
     RPMS=($(SRCS))
     echo "===== main RPM =====" > $@
-    rpm -qpi --list $${RPMS[0]} | \
+    rpm -qpi --scripts --list $${RPMS[0]} | \
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     echo "===== sub RPM ======" >> $@
-    rpm -qpi --list $${RPMS[1]} | \
+    rpm -qpi --scripts --list $${RPMS[1]} | \
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     echo "===== sub RPM ======" >> $@
-    rpm -qpi --list $${RPMS[2]} | \
+    rpm -qpi --scripts --list $${RPMS[2]} | \
         grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
     """,
 )

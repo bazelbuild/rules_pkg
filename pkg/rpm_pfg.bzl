@@ -47,6 +47,7 @@ PackageSubRPMInfo = provider(
         "group": "RPM subpackage `Group` tag",
         "description": "Multi-line description of this subpackage",
         "post_scriptlet": "RPM `$post` scriplet for this subpackage",
+        "postun_scriptlet": "RPM `$postun` scriplet for this subpackage",
         "architecture": "Subpackage architecture",
         "epoch": "RPM `Epoch` tag for this subpackage",
         "version": "RPM `Version` tag for this subpackage",
@@ -384,6 +385,14 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
         rpm_lines += [
             "",
             "%%post %s" % rpm_info.package_name,
+            rpm_info.post_scriptlet,
+        ]
+
+    if rpm_info.postun_scriptlet:
+        rpm_lines += [
+            "",
+            "%%postun %s" % rpm_info.package_name,
+            rpm_info.postun_scriptlet,
         ]
 
     if rpm_info.srcs:
@@ -1302,6 +1311,7 @@ def _pkg_sub_rpm_impl(ctx):
             group = ctx.attr.group,
             description = ctx.attr.description,
             post_scriptlet = ctx.attr.post_scriptlet,
+            postun_scriptlet = ctx.attr.postun_scriptlet,
             architecture = ctx.attr.architecture,
             epoch = ctx.attr.epoch,
             version = ctx.attr.version,
@@ -1339,6 +1349,7 @@ pkg_sub_rpm = rule(
         ),
         "description": attr.string(doc = "Multi-line description of this subrpm"),
         "post_scriptlet": attr.string(doc = "RPM `%post` scriplet for this subrpm"),
+        "postun_scriptlet": attr.string(doc = "RPM `%postun` scriplet for this subrpm"),
         "architecture": attr.string(doc = "Sub RPM architecture"),
         "epoch": attr.string(doc = "RPM `Epoch` tag for this subrpm"),
         "version": attr.string(doc = "RPM `Version` tag for this subrpm"),
