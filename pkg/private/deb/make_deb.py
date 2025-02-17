@@ -59,6 +59,7 @@ DEBIAN_FIELDS = [
     ('Built-Using', False, False, None),
     ('Distribution', False, False, 'unstable'),
     ('Urgency', False, False, 'medium'),
+    ('Multi-Arch', False, False),
 ]
 
 # size of chunks for copying package content to final .deb file
@@ -407,7 +408,9 @@ def main():
       priority=options.priority,
       conflicts=options.conflicts,
       breaks=options.breaks,
-      installedSize=helpers.GetFlagValue(options.installed_size))
+      installedSize=helpers.GetFlagValue(options.installed_size),
+      multiArch=helpers.GetFlagValue(options.multi_arch)
+  )
   CreateChanges(
       output=options.changes,
       deb_file=options.output,
