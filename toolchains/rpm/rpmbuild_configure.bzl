@@ -58,7 +58,7 @@ def _parse_release_info(release_info):
     return os_name, os_version
 
 KNOWN_DEBUGINFO_VERSIONS = {
-    "almalinux": ["9.3"],
+    "almalinux": ["9.3", "9.5"],
     "centos": ["7", "9"],
     "fedora": ["40"],
 }
