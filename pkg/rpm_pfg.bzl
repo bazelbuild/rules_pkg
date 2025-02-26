@@ -26,6 +26,11 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
 load(
+    "@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl",
+    "DEBUGINFO_TYPE_FEDORA",
+    "DEBUGINFO_TYPE_NONE",
+)
+load(
     "//pkg:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
@@ -223,7 +228,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debugi
             rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
 
             install_stanza_fmt = _INSTALL_FILE_STANZA_FMT
-            if debuginfo_type == "fedora40":
+            if debuginfo_type == DEBUGINFO_TYPE_FEDORA:
                 install_stanza_fmt = _INSTALL_FILE_STANZA_FMT_FEDORA40_DEBUGINFO
 
             rpm_ctx.install_script_pieces.append(install_stanza_fmt.format(
@@ -470,7 +475,7 @@ def _pkg_rpm_impl(ctx):
 
     files = []
     tools = []
-    debuginfo_type = "none"
+    debuginfo_type = DEBUGINFO_TYPE_NONE
     name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
     rpm_ctx.make_rpm_args.append("--name=" + name)
 
@@ -755,7 +760,7 @@ def _pkg_rpm_impl(ctx):
         files.append(subrpm_file)
         rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
 
-    if debuginfo_type != "none":
+    if debuginfo_type != DEBUGINFO_TYPE_NONE:
         debuginfo_default_file = ctx.actions.declare_file(
             "{}-debuginfo.rpm".format(rpm_name),
         )

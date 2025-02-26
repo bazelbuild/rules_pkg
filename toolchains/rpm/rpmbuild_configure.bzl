@@ -57,19 +57,21 @@ def _parse_release_info(release_info):
 
     return os_name, os_version
 
-KNOWN_DEBUGINFO_VERSIONS = {
-    "almalinux": ["9.3"],
-    "centos": ["7", "9"],
-    "fedora": ["40"],
+DEBUGINFO_TYPE_NONE = "none"
+DEBUGINFO_TYPE_CENTOS = "centos"
+DEBUGINFO_TYPE_FEDORA = "fedora"
+
+DEBUGINFO_TYPE_BY_OS_RELEASE = {
+    "almalinux": DEBUGINFO_TYPE_CENTOS,
+    "centos": DEBUGINFO_TYPE_CENTOS,
+    "fedora": DEBUGINFO_TYPE_FEDORA,
 }
 
 def _build_repo_for_rpmbuild_toolchain_impl(rctx):
-    debuginfo_type = "none"
+    debuginfo_type = DEBUGINFO_TYPE_NONE
     if rctx.path(RELEASE_PATH).exists:
-        os_name, os_version = _parse_release_info(rctx.read(RELEASE_PATH))
-        if (os_name in KNOWN_DEBUGINFO_VERSIONS and
-            os_version in KNOWN_DEBUGINFO_VERSIONS[os_name]):
-            debuginfo_type = os_name + os_version
+        os_name, _ = _parse_release_info(rctx.read(RELEASE_PATH))
+        debuginfo_type = DEBUGINFO_TYPE_BY_OS_RELEASE.get(os_name, debuginfo_type)
 
     rpmbuild_path = rctx.which("rpmbuild")
     if rctx.attr.verbose:
@@ -110,7 +112,7 @@ build_repo_for_rpmbuild_toolchain = repository_rule(
             doc = """
             The underlying debuginfo configuration for the system rpmbuild.
 
-            One of centos7, fedora40, or none
+            One of `centos`, `fedora`, and `none`
             """,
             default = "none",
         ),
