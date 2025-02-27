@@ -23,3 +23,10 @@ register_toolchains(
     "@rules_pkg_rpmbuild//:all",
     dev_dependency = True,
 )
+
+local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+
+local_repository(
+    name = "mappings_test_external_repo",
+    path = "tests/mappings/external_repo",
+)
