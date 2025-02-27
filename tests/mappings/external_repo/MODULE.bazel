@@ -13,7 +13,7 @@
 # limitations under the License.
 
 module(
-    name = "test_external_project"
+    name = "test_external_project",
     version = "0",
     compatibility_level = 0,
 )
