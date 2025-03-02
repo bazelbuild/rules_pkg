@@ -69,7 +69,10 @@ genrule(
         symbol_names = [
             rule,
         ],
-        deps = [":rules_pkg_lib"],
+        deps = [
+            ":rules_pkg_lib",
+            "//toolchains/rpm:standard_package",
+        ],
     )
     for rule, src in ORDER
     if src
