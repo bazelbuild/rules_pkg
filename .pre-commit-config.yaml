@@ -19,7 +19,7 @@ repos:
         - id: end-of-file-fixer
           exclude: |
             (?x)^(
-              tests/testdata/
+              tests/testdata/|
               docs/
             )
         - id: trailing-whitespace
