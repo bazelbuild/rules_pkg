@@ -801,4 +801,3 @@ Legacy version
 | <a id="pkg_rpm-version_file"></a>version_file |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 
 
-
