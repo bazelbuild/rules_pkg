@@ -20,6 +20,7 @@ repos:
           exclude: |
             (?x)^(
               tests/testdata/
+              docs/
             )
         - id: trailing-whitespace
     - repo: https://github.com/crate-ci/typos
