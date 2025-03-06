@@ -56,9 +56,9 @@ pkg_files(
         ":foo",
         ":fooctl",
     ],
+    include_runfiles = True,
     # Where it should be in the final package
     prefix = select(shared_object_path_selector) + "/bin",
-    include_runfiles = True,
 )
 
 pkg_files(
