@@ -538,9 +538,15 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, src, origin, mapping_context.allow_duplicates_with_different_content)
+
+    if hasattr(src, "is_symlink") and src.is_symlink:  # File.is_symlink is Bazel 8+
+        entry_type = ENTRY_IS_RAW_LINK
+    else:
+        entry_type = ENTRY_IS_FILE
+
     mapping_context.content_map[dest] = _DestFile(
         src = src,
-        entry_type = ENTRY_IS_FILE,
+        entry_type = entry_type,
         origin = origin,
         mode = mode,
         user = user or mapping_context.default_user,

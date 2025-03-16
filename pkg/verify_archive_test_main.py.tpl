@@ -109,7 +109,7 @@ class VerifyArchiveTest(unittest.TestCase):
   def verify_links(self, verify_links):
     for link, target in verify_links.items():
       if link not in self.paths:
-        self.fail('Required link (%s) is not in the archive' % link)
+        self.fail('Required link (%s) is not in the archive, found %s' % (link, self.paths))
       if self.links[link] != target:
         self.fail('link (%s) points to the wrong place. Expected (%s) got (%s)' %
             (link, target, self.links[link]))

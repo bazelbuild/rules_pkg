@@ -24,6 +24,7 @@ load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
+load(":defs.bzl", "raw_symlinks")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -628,6 +629,23 @@ pkg_tar(
 #
 # Test with symlinks
 #
+
+raw_symlinks(name = "raw_symlinks")
+
+pkg_tar(
+    name = "raw_symlinks_tar",
+    srcs = [":raw_symlinks"],
+    include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "raw_symlinks_test",
+    target = ":raw_symlinks_tar",
+    verify_links = {
+        "raw_symlinks_link1": "../link1",
+        "raw_symlinks_link1.runfiles/_main/tests/tar/raw_symlinks_link2": "../link2",
+    },
+)
 
 link_tree(
     name = "node_modules",
