@@ -336,8 +336,15 @@ class TarFile(object):
     if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
     elif entry.type == manifest.ENTRY_IS_RAW_LINK:
-        link_dest = os.readlink(entry.src)
+        import subprocess
         import sys
+        print("===subproc start", flush=True, file=sys.stderr)
+        res = subprocess.run(f"dir {entry.src}", shell=True, capture_output=True, text=True)
+        print(f'res: {res.returncode=} {res.args=}', flush=True, file=sys.stderr)
+        print('stdout:', res.stdout, flush=True, file=sys.stderr)
+        print('stderr:', res.stderr, flush=True, file=sys.stderr)
+        print("===subproc end", flush=True, file=sys.stderr)
+        link_dest = os.readlink(entry.src)
         print(f"===ADD MANIFEST LINK: {entry.dest} -> {link_dest}", flush=True, file=sys.stderr)
         self.add_link(entry.dest, os.readlink(entry.src), **attrs)
     elif entry.type == manifest.ENTRY_IS_DIR:
