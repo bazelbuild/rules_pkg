@@ -193,6 +193,9 @@ class TarFile(object):
       dest = self.normalize_path(symlink)
     else:
       dest = symlink
+
+    import sys
+    print(f"===ADD LINK: {symlink} -> {destination}", flush=True, file=sys.stderr)
     self.tarfile.add_file(
         dest,
         tarfile.SYMTYPE,
@@ -333,6 +336,9 @@ class TarFile(object):
     if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
     elif entry.type == manifest.ENTRY_IS_RAW_LINK:
+        link_dest = os.readlink(entry.src)
+        import sys
+        print(f"===ADD MANIFEST LINK: {entry.dest} -> {link_dest}", flush=True, file=sys.stderr)
         self.add_link(entry.dest, os.readlink(entry.src), **attrs)
     elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(self.normalize_path(entry.dest), **attrs)
