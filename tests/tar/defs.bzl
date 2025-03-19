@@ -1,3 +1,5 @@
+"""Helpers for testing tar packaging."""
+
 def _raw_symlinks_impl(ctx):
     link1 = ctx.actions.declare_symlink(ctx.label.name + "_link1")
     ctx.actions.symlink(output = link1, target_path = "../link1")
