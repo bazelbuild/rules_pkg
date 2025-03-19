@@ -41,8 +41,10 @@ default_tests_with_rpm: &default_tests_with_rpm
 win_tests: &win_tests
   test_flags:
     - "--test_tag_filters=-nowindows,only-this-test"
+    - "--windows_enable_symlinks"
   build_flags:
     - "--build_tag_filters=-nowindows,only-this-test"
+    - "--windows_enable_symlinks"
   test_targets:
     - "//tests/tar:raw_symlinks_test"
     ## - "//pkg/..."
