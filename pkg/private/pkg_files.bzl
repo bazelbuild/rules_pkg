@@ -623,14 +623,16 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pret
       use_short_path: write out the manifest file destinations in terms of "short" paths, suitable for `bazel run`.
       pretty_print: indent the output nicely. Takes more space so it is off by default.
     """
+    manifest_str = "[\n" + ",\n".join(
+        [
+            _encode_manifest_entry(dst, content_map[dst], use_short_path, pretty_print)
+            for dst in sorted(content_map.keys())
+        ],
+    ) + "\n]\n"
+    print("===write manifest:final:\n{}".format(manifest_str))
     ctx.actions.write(
         manifest_file,
-        "[\n" + ",\n".join(
-            [
-                _encode_manifest_entry(dst, content_map[dst], use_short_path, pretty_print)
-                for dst in sorted(content_map.keys())
-            ],
-        ) + "\n]\n",
+        manifest_str,
     )
 
 def _encode_manifest_entry(dest, df, use_short_path, pretty_print = False):
