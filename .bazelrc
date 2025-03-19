@@ -1,1 +1,2 @@
 build --enable_workspace
+startup --windows_enable_symlinks
