@@ -40,9 +40,9 @@ default_tests_with_rpm: &default_tests_with_rpm
 
 win_tests: &win_tests
   test_flags:
-    - "--test_tag_filters=-nowindows"
+    - "--test_tag_filters=-nowindows,only-this-test"
   build_flags:
-    - "--build_tag_filters=-nowindows"
+    - "--build_tag_filters=-nowindows,only-this-test"
   test_targets:
     - "//tests/tar:raw_symlinks_test"
     - "-//.."

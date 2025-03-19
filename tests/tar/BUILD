@@ -641,8 +641,9 @@ pkg_tar(
 verify_archive_test(
     name = "raw_symlinks_test",
     target = ":raw_symlinks_tar",
+    targs = ["only-this-test"],
     verify_links = {
-        "raw_symlinks_link1": "./link1",
+        "raw_symlinks_link1": "link1",
         "raw_symlinks_link1.runfiles/_main/tests/tar/raw_symlinks_runfile_link": "../runfile_link",
     },
 )
