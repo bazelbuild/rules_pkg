@@ -57,6 +57,8 @@ def read_entries_from(fh):
     # Subtle: decode the content with read() rather than in json.load() because
     # the load in older python releases (< 3.7?) does not know how to decode.
     raw_entries = json.loads(fh.read())
+    import sys
+    print(f"===raw json manifest: {raw_entries", flush=True, file=sys.stderr)
     return [ManifestEntry(**entry) for entry in raw_entries]
 
 def read_entries_from_file(manifest_path):
