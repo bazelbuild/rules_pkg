@@ -134,6 +134,8 @@ class TarFileWriter(object):
               'picking first occurrence' % info.name)
         return
 
+    import sys
+    print(f"==== TAR ADD: {info.name} -> {info.linkname}", flush=True, file=sys.stderr)
     self.tar.addfile(info, fileobj)
     self.members.add(info.name)
     if info.type == tarfile.DIRTYPE:
