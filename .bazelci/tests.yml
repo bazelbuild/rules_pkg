@@ -45,7 +45,6 @@ win_tests: &win_tests
     - "--build_tag_filters=-nowindows,only-this-test"
   test_targets:
     - "//tests/tar:raw_symlinks_test"
-    - "-//..."
     ## - "//pkg/..."
     ## - "//tests/..."
     ## - "//toolchains/..."
