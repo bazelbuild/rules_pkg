@@ -40,26 +40,25 @@ default_tests_with_rpm: &default_tests_with_rpm
 
 win_tests: &win_tests
   test_flags:
-    - "--test_tag_filters=-nowindows,only-this-test"
+    - "--test_tag_filters=-nowindows"
   build_flags:
-    - "--build_tag_filters=-nowindows,only-this-test"
+    - "--build_tag_filters=-nowindows"
   test_targets:
-    - "//tests/tar:raw_symlinks_test"
-    ## - "//pkg/..."
-    ## - "//tests/..."
-    ## - "//toolchains/..."
-    ## - "-//tests:package_naming_aggregate_test"
-    ## - "-//tests:path_test"
-    ## # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
-    ## # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
-    ## - "-//tests/mappings:utf8_manifest_test"
-    ## - "-//tests/mappings/filter_directory/..."
-    ## - "-//tests/zip:unicode_test"
-    ## # See #387
-    ## - "-//tests/install/..."
-    ## # rpmbuild(8) is not supported on Windows
-    ## - "-//tests/rpm/..."
-    ## - "-//pkg/legacy/tests/rpm/..."
+    - "//pkg/..."
+    - "//tests/..."
+    - "//toolchains/..."
+    - "-//tests:package_naming_aggregate_test"
+    - "-//tests:path_test"
+    # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
+    # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
+    - "-//tests/mappings:utf8_manifest_test"
+    - "-//tests/mappings/filter_directory/..."
+    - "-//tests/zip:unicode_test"
+    # See #387
+    - "-//tests/install/..."
+    # rpmbuild(8) is not supported on Windows
+    - "-//tests/rpm/..."
+    - "-//pkg/legacy/tests/rpm/..."
 
 #
 # Common features and tests by platform

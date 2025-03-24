@@ -193,9 +193,6 @@ class TarFile(object):
       dest = self.normalize_path(symlink)
     else:
       dest = symlink
-
-    import sys
-    print(f"===ADD LINK: {symlink} -> {destination}", flush=True, file=sys.stderr)
     self.tarfile.add_file(
         dest,
         tarfile.SYMTYPE,
@@ -336,17 +333,7 @@ class TarFile(object):
     if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
     elif entry.type == manifest.ENTRY_IS_RAW_LINK:
-        import subprocess
-        import sys
-        print("===subproc start", flush=True, file=sys.stderr)
-        res = subprocess.run(f"dir {entry.src}", shell=True, capture_output=True, text=True)
-        print(f'res: {res.returncode=} {res.args=}', flush=True, file=sys.stderr)
-        print('stdout:', res.stdout, flush=True, file=sys.stderr)
-        print('stderr:', res.stderr, flush=True, file=sys.stderr)
-        print("===subproc end", flush=True, file=sys.stderr)
-        link_dest = os.readlink(entry.src)
-        print(f"===ADD MANIFEST LINK: {entry.dest} -> {link_dest}", flush=True, file=sys.stderr)
-        self.add_link(entry.dest, os.readlink(entry.src), **attrs)
+      self.add_link(entry.dest, os.readlink(entry.src), **attrs)
     elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(self.normalize_path(entry.dest), **attrs)
     elif entry.type == manifest.ENTRY_IS_TREE:
