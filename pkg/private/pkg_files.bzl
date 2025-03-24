@@ -395,6 +395,7 @@ def add_from_default_info(
       data_path: path to package
       data_path_without_prefix: path to the package after prefix stripping
       include_runfiles: Include runfiles
+      workspace_name: name of the main workspace
     """
     if not DefaultInfo in src:
         return

@@ -33,7 +33,10 @@ filegroup(
     srcs = glob([
         "*",
     ]),
-    visibility = ["//distro:__pkg__"],
+    visibility = [
+        "//distro:__pkg__",
+        "//doc_build:__pkg__",
+    ],
 )
 
 exports_files(

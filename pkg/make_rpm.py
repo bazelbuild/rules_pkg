@@ -178,6 +178,15 @@ class RpmBuilder(object):
   RPMS_DIR = 'RPMS'
   DIRS = [SOURCE_DIR, BUILD_DIR, RPMS_DIR, TEMP_DIR]
 
+  # `debuginfo` RPM types as defined in `toolchains/rpm/rpmbuild_configure.bzl`
+  DEBUGINFO_TYPE_NONE = "none"
+  DEBUGINFO_TYPE_CENTOS = "centos"
+  DEBUGINFO_TYPE_FEDORA = "fedora"
+  SUPPORTED_DEBUGINFO_TYPES = {
+    DEBUGINFO_TYPE_CENTOS,
+    DEBUGINFO_TYPE_FEDORA,
+  }
+
   def __init__(self, name, version, release, arch, rpmbuild_path,
                source_date_epoch=None,
                debug=False):
@@ -362,7 +371,7 @@ class RpmBuilder(object):
     if self.debug:
       args.append('-vv')
 
-    if debuginfo_type == "fedora40":
+    if debuginfo_type == RpmBuilder.DEBUGINFO_TYPE_FEDORA:
       os.makedirs(f'{dirname}/{RpmBuilder.BUILD_DIR}/{RpmBuilder.BUILD_SUBDIR}')
 
     # Common options
@@ -375,13 +384,13 @@ class RpmBuilder(object):
       '--define', '_builddir %s/BUILD' % dirname,
     ]
 
-    if debuginfo_type in ["fedora40", "centos7", "centos9", "almalinux9.3"]:
+    if debuginfo_type in RpmBuilder.SUPPORTED_DEBUGINFO_TYPES:
       args += ['--undefine', '_debugsource_packages']
 
-    if debuginfo_type in ["centos7", "centos9", "almalinux9.3"]:
+    if debuginfo_type == RpmBuilder.DEBUGINFO_TYPE_CENTOS:
       args += ['--define', 'buildsubdir .']
 
-    if debuginfo_type == "fedora40":
+    if debuginfo_type == RpmBuilder.DEBUGINFO_TYPE_FEDORA:
       args += ['--define', f'buildsubdir {RpmBuilder.BUILD_SUBDIR}']
 
     args += [
@@ -399,7 +408,7 @@ class RpmBuilder(object):
     if self.file_list_path:
       # %files -f is taken relative to the package root
       base_path = os.path.basename(self.file_list_path)
-      if debuginfo_type == "fedora40":
+      if debuginfo_type == RpmBuilder.DEBUGINFO_TYPE_FEDORA:
         base_path = os.path.join("..", base_path)
 
       args += ['--define', 'build_rpm_files %s' % base_path]
@@ -556,30 +565,31 @@ def main(argv):
   parser.add_argument('--install_script',
                       help='Installer script')
   parser.add_argument('--file_list',
-                      help='File containing a list of files to include with rpm spec %files -f')
+                      help='File containing a list of files to include with rpm spec %%files -f')
   parser.add_argument('--preamble',
                       help='File containing the RPM Preamble')
   parser.add_argument('--description',
-                      help='File containing the RPM %description text')
+                      help='File containing the RPM %%description text')
   parser.add_argument('--subrpms',
                       help='File containing the RPM subrpm details')
   parser.add_argument('--pre_scriptlet',
-                      help='File containing the RPM %pre scriptlet, if to be substituted')
+                      help='File containing the RPM %%pre scriptlet, if to be substituted')
   parser.add_argument('--post_scriptlet',
-                      help='File containing the RPM %post scriptlet, if to be substituted')
+                      help='File containing the RPM %%post scriptlet, if to be substituted')
   parser.add_argument('--preun_scriptlet',
-                      help='File containing the RPM %preun scriptlet, if to be substituted')
+                      help='File containing the RPM %%preun scriptlet, if to be substituted')
   parser.add_argument('--postun_scriptlet',
-                      help='File containing the RPM %postun scriptlet, if to be substituted')
+                      help='File containing the RPM %%postun scriptlet, if to be substituted')
   parser.add_argument('--posttrans_scriptlet',
-                      help='File containing the RPM %posttrans scriptlet, if to be substituted')
+                      help='File containing the RPM %%posttrans scriptlet, if to be substituted')
   parser.add_argument('--changelog',
                       help='File containing the RPM changelog text')
 
   parser.add_argument('--rpmbuild_arg', dest='rpmbuild_args', action='append',
                       help='Any additional arguments to pass to rpmbuild')
-  parser.add_argument('--debuginfo_type', dest='debuginfo_type', default='none',
-                      help='debuginfo type to use (centos7, fedora40, or none)')
+  parser.add_argument('--debuginfo_type', default=RpmBuilder.DEBUGINFO_TYPE_NONE,
+                      choices=sorted(RpmBuilder.SUPPORTED_DEBUGINFO_TYPES) + [RpmBuilder.DEBUGINFO_TYPE_NONE],
+                      help='debuginfo type to use')
   parser.add_argument('files', nargs='*')
 
   options = parser.parse_args(argv or ())

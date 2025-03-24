@@ -26,6 +26,11 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
 load(
+    "@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl",
+    "DEBUGINFO_TYPE_FEDORA",
+    "DEBUGINFO_TYPE_NONE",
+)
+load(
     "//pkg:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
@@ -47,6 +52,7 @@ PackageSubRPMInfo = provider(
         "group": "RPM subpackage `Group` tag",
         "description": "Multi-line description of this subpackage",
         "post_scriptlet": "RPM `$post` scriplet for this subpackage",
+        "postun_scriptlet": "RPM `$postun` scriplet for this subpackage",
         "architecture": "Subpackage architecture",
         "epoch": "RPM `Epoch` tag for this subpackage",
         "version": "RPM `Version` tag for this subpackage",
@@ -222,7 +228,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debugi
             rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
 
             install_stanza_fmt = _INSTALL_FILE_STANZA_FMT
-            if debuginfo_type == "fedora40":
+            if debuginfo_type == DEBUGINFO_TYPE_FEDORA:
                 install_stanza_fmt = _INSTALL_FILE_STANZA_FMT_FEDORA40_DEBUGINFO
 
             rpm_ctx.install_script_pieces.append(install_stanza_fmt.format(
@@ -350,6 +356,9 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
         "Summary: %s" % rpm_info.summary,
     ]
 
+    if rpm_info.group:
+        rpm_lines.append("Group: %s" % rpm_info.group)
+
     if rpm_info.architecture:
         rpm_lines.append("BuildArch: %s" % rpm_info.architecture)
 
@@ -381,6 +390,14 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
         rpm_lines += [
             "",
             "%%post %s" % rpm_info.package_name,
+            rpm_info.post_scriptlet,
+        ]
+
+    if rpm_info.postun_scriptlet:
+        rpm_lines += [
+            "",
+            "%%postun %s" % rpm_info.package_name,
+            rpm_info.postun_scriptlet,
         ]
 
     if rpm_info.srcs:
@@ -458,7 +475,7 @@ def _pkg_rpm_impl(ctx):
 
     files = []
     tools = []
-    debuginfo_type = "none"
+    debuginfo_type = DEBUGINFO_TYPE_NONE
     name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
     rpm_ctx.make_rpm_args.append("--name=" + name)
 
@@ -743,7 +760,7 @@ def _pkg_rpm_impl(ctx):
         files.append(subrpm_file)
         rpm_ctx.make_rpm_args.append("--subrpms=" + subrpm_file.path)
 
-    if debuginfo_type != "none":
+    if debuginfo_type != DEBUGINFO_TYPE_NONE:
         debuginfo_default_file = ctx.actions.declare_file(
             "{}-debuginfo.rpm".format(rpm_name),
         )
@@ -1299,6 +1316,7 @@ def _pkg_sub_rpm_impl(ctx):
             group = ctx.attr.group,
             description = ctx.attr.description,
             post_scriptlet = ctx.attr.post_scriptlet,
+            postun_scriptlet = ctx.attr.postun_scriptlet,
             architecture = ctx.attr.architecture,
             epoch = ctx.attr.epoch,
             version = ctx.attr.version,
@@ -1336,6 +1354,7 @@ pkg_sub_rpm = rule(
         ),
         "description": attr.string(doc = "Multi-line description of this subrpm"),
         "post_scriptlet": attr.string(doc = "RPM `%post` scriplet for this subrpm"),
+        "postun_scriptlet": attr.string(doc = "RPM `%postun` scriplet for this subrpm"),
         "architecture": attr.string(doc = "Sub RPM architecture"),
         "epoch": attr.string(doc = "RPM `Epoch` tag for this subrpm"),
         "version": attr.string(doc = "RPM `Version` tag for this subrpm"),

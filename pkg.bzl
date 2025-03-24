@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Rules for manipulation of various packaging."""
+
 load("//pkg:deb.bzl", _pkg_deb = "pkg_deb")
 load("//pkg:tar.bzl", _pkg_tar = "pkg_tar")
 load("//pkg:zip.bzl", _pkg_zip = "pkg_zip")
