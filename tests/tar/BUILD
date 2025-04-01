@@ -640,7 +640,6 @@ pkg_tar(
 
 verify_archive_test(
     name = "raw_symlinks_test",
-    tags = ["only-this-test"],
     tags = ["no_windows"],
     target = ":raw_symlinks_tar",
     # This test checks using relative symlinks, but Bazel always writes absolute
