@@ -313,6 +313,19 @@ class TarFileWriterTest(unittest.TestCase):
     ]
     self.assertTarFileContent(self.tempfile, content)
 
+  def testSymlinkDoesNotShadowDirectory(self):
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
+      f.add_file("target_dir", tarfile.DIRTYPE)
+      f.add_file("not_a_symlink", tarfile.DIRTYPE)
+      f.add_file("not_a_symlink", tarfile.SYMTYPE, link="target_dir")
+      f.add_file('not_a_symlink/a', content="q")
+    content = [
+      {"name": "target_dir", "type": tarfile.DIRTYPE},
+      {"name": "not_a_symlink", "type": tarfile.DIRTYPE},
+      {"name": "not_a_symlink/a", "type": tarfile.REGTYPE},
+    ]
+    self.assertTarFileContent(self.tempfile, content)
+
 
 if __name__ == "__main__":
   unittest.main()
