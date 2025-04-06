@@ -162,7 +162,7 @@ class TarFileWriterTest(unittest.TestCase):
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
-      for file_name in f.members:
+      for file_name in f.existing_members.keys():
         input_file = input_tar.getmember(file_name)
         output_file = f.tar.getmember(file_name)
         self.assertEqual(input_file.mtime, output_file.mtime)

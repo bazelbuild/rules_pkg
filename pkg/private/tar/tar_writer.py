@@ -35,6 +35,18 @@ PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 _DEBUG_VERBOSITY = 0
 
+TARFILE_MEMBER_TYPE_TO_STR = {
+    b"0": "REGTYPE",
+    b"\0": "AREGTYPE",
+    b"1": "LNKTYPE",
+    b"2": "SYMTYPE",
+    b"3": "CHRTYPE",
+    b"4": "BLKTYPE",
+    b"5": "DIRTYPE",
+    b"6": "FIFOTYPE",
+    b"7": "CONTTYPE",
+}
+
 
 class TarFileWriter(object):
   """A wrapper to write tar files."""
@@ -103,13 +115,7 @@ class TarFileWriter(object):
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
                             format=tarfile.GNU_FORMAT)
-    self.members = set()
-    self.directories = set()
-    # Preseed the added directory list with things we should not add. If we
-    # some day need to allow '.' or '/' as an explicit member of the archive,
-    # we can adjust that here based on the setting of root_directory.
-    self.directories.add('/')
-    self.directories.add('./')
+    self.existing_members = {}
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
 
@@ -119,28 +125,43 @@ class TarFileWriter(object):
   def __exit__(self, t, v, traceback):
     self.close()
 
-  def _have_added(self, path):
-    """Have we added this file before."""
-    return (path in self.members) or (path in self.directories)
+  def _existing_member_type(self, path):
+    """Retrieve an existing tar file member's type if we have added it previously,
+    return None otherwise."""
+    # Things we should not add.
+    # If we some day need to allow '.' or '/' as an explicit member of the archive,
+    # we can adjust that here based on the setting of root_directory.
+    if path == '/' or path == './':
+      return tarfile.DIRTYPE
+
+    normalized_path = path.rstrip("/")
+    return self.existing_members.get(normalized_path, None)
 
   def _addfile(self, info, fileobj=None):
     """Add a file in the tar file if there is no conflict."""
     if info.type == tarfile.DIRTYPE:
-      # Enforce the ending / for directories so we correctly deduplicate.
+      # Enforce the ending / for directories.
       if not info.name.endswith('/'):
         info.name += '/'
-    if not self.allow_dups_from_deps and self._have_added(info.name):
+    existing_member_type = self._existing_member_type(info.name)
+    if not self.allow_dups_from_deps and existing_member_type is not None:
       # Directories with different contents should get merged without warnings.
       # If they have overlapping content, the warning will be on their duplicate *files* instead
       if info.type != tarfile.DIRTYPE:
         print('Duplicate file in archive: %s, '
               'picking first occurrence' % info.name)
+      # Directories that shadow
+      elif existing_member_type != tarfile.DIRTYPE and existing_member_type != tarfile.SYMTYPE:
+        print('Directory shadows a member of type %s in archive: %s, '
+              'picking first occurrence' % (TARFILE_MEMBER_TYPE_TO_STR.get(
+                  existing_member_type, "UNKNOWN"), info.name))
+
       return
 
     self.tar.addfile(info, fileobj)
-    self.members.add(info.name)
-    if info.type == tarfile.DIRTYPE:
-      self.directories.add(info.name)
+    # Strip the trailing slash from the path so that we can detect when, for example, we are
+    # trying to overwrite a symbolic link with a directory.
+    self.existing_members[info.name.rstrip("/")] = info.type
 
   def add_directory_path(self,
                          path,
@@ -182,7 +203,8 @@ class TarFileWriter(object):
     for next_level in dirs[0:-1]:
       parent_path = parent_path + next_level + '/'
 
-      if self.create_parents and not self._have_added(parent_path):
+      if self.create_parents and self._existing_member_type(
+          parent_path) is None:
         self.add_directory_path(
           parent_path,
           uid=uid,
@@ -224,7 +246,8 @@ class TarFileWriter(object):
       return
     if name == '.':
       return
-    if not self.allow_dups_from_deps and name in self.members:
+    if not self.allow_dups_from_deps and self._existing_member_type(
+        name) is not None:
       return
 
     if mtime is None:
