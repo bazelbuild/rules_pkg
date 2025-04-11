@@ -332,6 +332,8 @@ class TarFile(object):
         attrs['ids'] = (entry.uid, entry.uid)
     if entry.type == manifest.ENTRY_IS_LINK:
       self.add_link(entry.dest, entry.src, **attrs)
+    elif entry.type == manifest.ENTRY_IS_RAW_LINK:
+      self.add_link(entry.dest, os.readlink(entry.src), **attrs)
     elif entry.type == manifest.ENTRY_IS_DIR:
       self.add_empty_dir(self.normalize_path(entry.dest), **attrs)
     elif entry.type == manifest.ENTRY_IS_TREE:

@@ -45,6 +45,7 @@ load(
     "get_repo_mapping_manifest",
 )
 
+ENTRY_IS_RAW_LINK = "raw_symlink"  # Entry is a symlink kept as-is
 ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = "dir"  # Entry is an empty dir
@@ -444,9 +445,16 @@ def add_from_default_info(
                 d_path = mapping_context.path_mapper(base_path + "/" + rf.short_path)
                 fmode = "0755" if rf == the_executable else mapping_context.default_mode
                 _check_dest(mapping_context.content_map, d_path, rf, src.label, mapping_context.allow_duplicates_with_different_content)
+                if hasattr(rf, "is_symlink") and rf.is_symlink:  # File.is_symlink is Bazel 8+
+                    entry_type = ENTRY_IS_RAW_LINK
+                elif rf.is_directory:
+                    entry_type = ENTRY_IS_TREE
+                else:
+                    entry_type = ENTRY_IS_FILE
+
                 mapping_context.content_map[d_path] = _DestFile(
                     src = rf,
-                    entry_type = ENTRY_IS_TREE if rf.is_directory else ENTRY_IS_FILE,
+                    entry_type = entry_type,
                     origin = src.label,
                     mode = fmode,
                     user = mapping_context.default_user,
@@ -531,9 +539,15 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, src, origin, mapping_context.allow_duplicates_with_different_content)
+
+    if hasattr(src, "is_symlink") and src.is_symlink:  # File.is_symlink is Bazel 8+
+        entry_type = ENTRY_IS_RAW_LINK
+    else:
+        entry_type = ENTRY_IS_FILE
+
     mapping_context.content_map[dest] = _DestFile(
         src = src,
-        entry_type = ENTRY_IS_FILE,
+        entry_type = entry_type,
         origin = origin,
         mode = mode,
         user = user or mapping_context.default_user,
