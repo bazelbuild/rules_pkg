@@ -25,6 +25,7 @@ load(
     "write_manifest",
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -40,9 +41,12 @@ SUPPORTED_TAR_COMPRESSIONS = (
 _DEFAULT_MTIME = -1
 _stamp_condition = Label("//pkg/private:private_stamp_detect")
 
-def _remap(remap_paths, path):
+def _remap(ctx, path):
     """If path starts with a key in remap_paths, rewrite it."""
-    for prefix, replacement in remap_paths.items():
+    for prefix, replacement in ctx.attr.remap_paths.items():
+        prefix = expand_variables(ctx, prefix)
+        replacement = expand_variables(ctx, replacement)
+
         if path.startswith(prefix):
             return replacement + path[len(prefix):]
     return path
@@ -120,7 +124,7 @@ def _pkg_tar_impl(ctx):
     # Now we begin processing the files.
     path_mapper = None
     if ctx.attr.remap_paths:
-        path_mapper = lambda path: _remap(ctx.attr.remap_paths, path)
+        path_mapper = lambda path: _remap(ctx, path)
 
     mapping_context = create_mapping_context_from_ctx(
         ctx,

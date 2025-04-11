@@ -423,6 +423,16 @@ pkg_tar(
     },
 )
 
+pkg_tar(
+    name = "test-remap-paths-variables",
+    srcs = [
+        ":tree_artifact_to_rename",
+    ],
+    remap_paths = {
+        "/rename_me": "$(COMPILATION_MODE)"
+    },
+)
+
 verify_archive_test(
     name = "runfiles_remap_full_paths_test",
     must_contain = [
