@@ -41,12 +41,9 @@ SUPPORTED_TAR_COMPRESSIONS = (
 _DEFAULT_MTIME = -1
 _stamp_condition = Label("//pkg/private:private_stamp_detect")
 
-def _remap(ctx, path):
+def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
-    for prefix, replacement in ctx.attr.remap_paths.items():
-        prefix = expand_variables(ctx, prefix)
-        replacement = expand_variables(ctx, replacement)
-
+    for prefix, replacement in remap_paths.items():
         if path.startswith(prefix):
             return replacement + path[len(prefix):]
     return path
@@ -123,8 +120,15 @@ def _pkg_tar_impl(ctx):
 
     # Now we begin processing the files.
     path_mapper = None
+    expanded_remap_paths = {}
     if ctx.attr.remap_paths:
-        path_mapper = lambda path: _remap(ctx, path)
+        for prefix, replacement in ctx.attr.remap_paths.items():
+            prefix = expand_variables(ctx, prefix)
+            destination = expand_variables(ctx, prefix)
+            expanded_remap_paths[prefix] = destination
+
+
+        path_mapper = lambda path: _remap(expanded_remap_paths, path)
 
     mapping_context = create_mapping_context_from_ctx(
         ctx,
