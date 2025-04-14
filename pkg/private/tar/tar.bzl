@@ -123,9 +123,9 @@ def _pkg_tar_impl(ctx):
     expanded_remap_paths = {}
     if ctx.attr.remap_paths:
         for prefix, replacement in ctx.attr.remap_paths.items():
-            prefix = expand_variables(ctx, prefix)
-            destination = expand_variables(ctx, prefix)
-            expanded_remap_paths[prefix] = destination
+            expanded_prefix = expand_variables(ctx, prefix)
+            expanded_replacement = expand_variables(ctx, replacement)
+            expanded_remap_paths[expanded_prefix] = expanded_replacement
 
 
         path_mapper = lambda path: _remap(expanded_remap_paths, path)
