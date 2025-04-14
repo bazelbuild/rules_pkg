@@ -287,7 +287,7 @@ class PkgTarTest(unittest.TestCase):
 
   def test_remap_paths_make_variables(self):
     content = [
-      {'name': 'fastbuild/', 'isdir': True},
+      {'name': 'fastbuild', 'isdir': True},
       {'name': 'fastbuild/a'},
       {'name': 'fastbuild/rename_me', 'isdir': True},
       {'name': 'fastbuild/rename_me/should_not_rename'},
