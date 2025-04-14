@@ -423,16 +423,6 @@ pkg_tar(
     },
 )
 
-pkg_tar(
-    name = "test-remap-paths-variables",
-    srcs = [
-        ":tree_artifact_to_rename",
-    ],
-    remap_paths = {
-        "/rename_me": "$(COMPILATION_MODE)"
-    },
-)
-
 verify_archive_test(
     name = "runfiles_remap_full_paths_test",
     must_contain = [
@@ -474,6 +464,7 @@ py_test(
         ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-pkg-tar-with-attributes",
         ":test-remap-paths-tree-artifact",
+        ":test-remap-paths-variables",
         ":test-respect-externally-defined-duplicates.tar",
         ":test-tar-compression_level--1",
         ":test-tar-compression_level-3",
@@ -633,6 +624,16 @@ pkg_tar(
     ],
     remap_paths = {
         "/rename_me": "a_new_name",
+    },
+)
+
+pkg_tar(
+    name = "test-remap-paths-variables",
+    srcs = [
+        ":tree_artifact_to_rename",
+    ],
+    remap_paths = {
+        "/rename_me": "$(COMPILATION_MODE)"
     },
 )
 
