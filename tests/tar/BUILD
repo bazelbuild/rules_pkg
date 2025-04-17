@@ -633,7 +633,7 @@ pkg_tar(
         ":tree_artifact_to_rename",
     ],
     remap_paths = {
-        "/rename_me": "$(COMPILATION_MODE)"
+        "/rename_me": "$(COMPILATION_MODE)",
     },
 )
 

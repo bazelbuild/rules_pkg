@@ -72,7 +72,7 @@ genrule(
         deps = [
             ":rules_pkg_lib",
             "//toolchains/rpm:standard_package",
-            "@aspect_bazel_lib//lib:expand_make_vars"
+            "@aspect_bazel_lib//lib:expand_make_vars",
         ],
     )
     for rule, src in ORDER

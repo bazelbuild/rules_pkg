@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules for making .tar files."""
 
+load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
@@ -25,7 +26,6 @@ load(
     "write_manifest",
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
-load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -126,7 +126,6 @@ def _pkg_tar_impl(ctx):
             expanded_prefix = expand_variables(ctx, prefix)
             expanded_replacement = expand_variables(ctx, replacement)
             expanded_remap_paths[expanded_prefix] = expanded_replacement
-
 
         path_mapper = lambda path: _remap(expanded_remap_paths, path)
 
