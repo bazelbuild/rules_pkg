@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rules for making .tar files."""
 
+load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
@@ -119,8 +120,14 @@ def _pkg_tar_impl(ctx):
 
     # Now we begin processing the files.
     path_mapper = None
+    expanded_remap_paths = {}
     if ctx.attr.remap_paths:
-        path_mapper = lambda path: _remap(ctx.attr.remap_paths, path)
+        for prefix, replacement in ctx.attr.remap_paths.items():
+            expanded_prefix = expand_variables(ctx, prefix)
+            expanded_replacement = expand_variables(ctx, replacement)
+            expanded_remap_paths[expanded_prefix] = expanded_replacement
+
+        path_mapper = lambda path: _remap(expanded_remap_paths, path)
 
     mapping_context = create_mapping_context_from_ctx(
         ctx,
