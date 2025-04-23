@@ -15,6 +15,7 @@
 
 import argparse
 import os
+import stat
 import tarfile
 import tempfile
 
@@ -43,7 +44,7 @@ class TarFile(object):
     pass
 
   def __init__(self, output, directory, compression, compressor, create_parents,
-               allow_dups_from_deps, default_mtime, compression_level):
+               allow_dups_from_deps, default_mtime, compression_level, preserve_mode):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -54,6 +55,7 @@ class TarFile(object):
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
     self.compression_level = compression_level
+    self.preserve_mode = preserve_mode
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -103,7 +105,10 @@ class TarFile(object):
     dest = self.normalize_path(destfile)
     # If mode is unspecified, derive the mode from the file's mode.
     if mode is None:
-      mode = 0o755 if os.access(f, os.X_OK) else 0o644
+      if self.preserve_mode:
+        mode = stat.S_IMODE(os.stat(f).st_mode)
+      else:
+        mode = 0o755 if os.access(f, os.X_OK) else 0o644
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -402,6 +407,9 @@ def main():
   parser.add_argument('--allow_dups_from_deps',
                       action='store_true',
                       help='')
+  parser.add_argument('--preserve_mode',
+                      action='store_false',
+                      help='')
   parser.add_argument(
       '--compression_level', default=-1,
       help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
@@ -461,7 +469,8 @@ def main():
       default_mtime=default_mtime,
       create_parents=options.create_parents,
       allow_dups_from_deps=options.allow_dups_from_deps,
-      compression_level = compression_level) as output:
+      compression_level = compression_level,
+      preserve_mode = options.preserve_mode) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):
