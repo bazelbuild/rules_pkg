@@ -103,11 +103,13 @@ class TarFile(object):
          copied to `self.directory/destfile` in the layer.
     """
     dest = self.normalize_path(destfile)
-    # If mode is unspecified, derive the mode from the file's mode.
-    if mode is None:
-      if self.preserve_mode:
-        mode = stat.S_IMODE(os.stat(f).st_mode)
-      else:
+    # If preserve_mode is enabled, set mode by extracting the permission bits
+    # from the file's mode attribute. Note: the mode argument is ignored.
+    # Otherwise; if mode is unspecified, derive the mode from the file's mode.
+    if self.preserve_mode is True:
+      mode = stat.S_IMODE(os.stat(f).st_mode)
+    else:
+      if mode is None:     
         mode = 0o755 if os.access(f, os.X_OK) else 0o644
     if ids is None:
       ids = (0, 0)
@@ -407,9 +409,10 @@ def main():
   parser.add_argument('--allow_dups_from_deps',
                       action='store_true',
                       help='')
-  parser.add_argument('--preserve_mode',
-                      action='store_false',
-                      help='')
+  parser.add_argument(
+      '--preserve_mode', default='False',
+      action='store_true',
+      help='Preserve original file permissions in the archive. Mode argument is ignored.')
   parser.add_argument(
       '--compression_level', default=-1,
       help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
