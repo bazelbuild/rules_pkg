@@ -808,7 +808,7 @@ verify_archive_test(
     name = "test-tar-preserve_mode-%s" % state,
     preserve_mode = state,
     srcs = [
-        "//tests:testdata/file_with_chmod_645.txt",
+        "//tests:testdata/hello.txt",
     ],
 ) for state in [ 
     True,
