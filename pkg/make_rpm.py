@@ -420,6 +420,7 @@ class RpmBuilder(object):
     env = {
         'LANG': 'C',
         'RPM_BUILD_ROOT': buildroot,
+        'PATH': os.getenv( 'PATH' ),
     }
 
     if self.source_date_epoch is not None:
