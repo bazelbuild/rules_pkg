@@ -307,10 +307,16 @@ class PkgTarTest(unittest.TestCase):
       self.assertEqual(file_size, expected_size, 'size error for ' + file_name)
 
   def test_preserve_mode(self):
-    expected_mode = [
-      ('test-tar-preserve_mode-False.tar', "0o555"), # chmod 555 = r-x r-x r-x
-      ('test-tar-preserve_mode-True.tar', "0o644"),  # chmod 644 = rw- r-- r--
-    ]
+    if os.name == 'nt':
+      expected_mode = [
+        ('test-tar-preserve_mode-False.tar', "0o555"), # chmod 555 = r-x r-x r-x
+        ('test-tar-preserve_mode-True.tar', "0o666"),  # chmod 666 = rw- rw- rw-
+      ]
+    else:
+      expected_mode = [
+        ('test-tar-preserve_mode-False.tar', "0o555"), # chmod 555 = r-x r-x r-x
+        ('test-tar-preserve_mode-True.tar', "0o644"),  # chmod 644 = rw- r-- r--
+      ]      
     for file_name, expected_mode in expected_mode:
       file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
       with tarfile.open(file_path, 'r') as f:
