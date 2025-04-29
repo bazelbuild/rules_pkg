@@ -108,8 +108,7 @@ class TarFile(object):
     # Otherwise; if mode is unspecified, derive the mode from the file's mode.
     if self.preserve_mode is True:
       mode = stat.S_IMODE(os.stat(f).st_mode)
-    else:
-      if mode is None:     
+    elif mode is None: 
         mode = 0o755 if os.access(f, os.X_OK) else 0o644
     if ids is None:
       ids = (0, 0)
