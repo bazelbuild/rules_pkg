@@ -806,11 +806,11 @@ verify_archive_test(
 
 [pkg_tar(
     name = "test-tar-preserve_mode-%s" % state,
-    preserve_mode = state,
     srcs = [
-        "//tests:testdata/hello.txt",    # rw- r-- r--
+        "//tests:testdata/hello.txt",  # rw- r-- r--
     ],
-) for state in [ 
+    preserve_mode = state,
+) for state in [
     True,
-    False 
+    False,
 ]]
