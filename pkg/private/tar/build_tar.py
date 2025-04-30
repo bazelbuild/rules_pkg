@@ -15,6 +15,7 @@
 
 import argparse
 import os
+import stat
 import tarfile
 import tempfile
 
@@ -43,7 +44,7 @@ class TarFile(object):
     pass
 
   def __init__(self, output, directory, compression, compressor, create_parents,
-               allow_dups_from_deps, default_mtime, compression_level):
+               allow_dups_from_deps, default_mtime, compression_level, preserve_mode):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -54,6 +55,7 @@ class TarFile(object):
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
     self.compression_level = compression_level
+    self.preserve_mode = preserve_mode
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -101,9 +103,13 @@ class TarFile(object):
          copied to `self.directory/destfile` in the layer.
     """
     dest = self.normalize_path(destfile)
-    # If mode is unspecified, derive the mode from the file's mode.
-    if mode is None:
-      mode = 0o755 if os.access(f, os.X_OK) else 0o644
+    # If preserve_mode is enabled, set mode by extracting the permission bits
+    # from the file's mode attribute. Note: the mode argument is ignored.
+    # Otherwise; if mode is unspecified, derive the mode from the file's mode.
+    if self.preserve_mode is True:
+      mode = stat.S_IMODE(os.stat(f).st_mode)
+    elif mode is None:
+        mode = 0o755 if os.access(f, os.X_OK) else 0o644
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -403,6 +409,10 @@ def main():
                       action='store_true',
                       help='')
   parser.add_argument(
+      '--preserve_mode', default='False',
+      action='store_true',
+      help='Preserve original file permissions in the archive. Mode argument is ignored.')
+  parser.add_argument(
       '--compression_level', default=-1,
       help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
   options = parser.parse_args()
@@ -461,7 +471,8 @@ def main():
       default_mtime=default_mtime,
       create_parents=options.create_parents,
       allow_dups_from_deps=options.allow_dups_from_deps,
-      compression_level = compression_level) as output:
+      compression_level = compression_level,
+      preserve_mode = options.preserve_mode) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

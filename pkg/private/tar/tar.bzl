@@ -181,6 +181,9 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.allow_duplicates_from_deps:
         args.add("--allow_dups_from_deps")
 
+    if ctx.attr.preserve_mode:
+        args.add("--preserve_mode")
+
     inputs = depset(
         direct = ctx.files.deps + files,
         transitive = mapping_context.file_deps,
@@ -293,6 +296,10 @@ pkg_tar_impl = rule(
 Such behaviour is always incorrect, but we provide a flag to support it in case old
 builds were accidentally doing it. Never explicitly set this to true for new code.
 """,
+        ),
+        "preserve_mode": attr.bool(
+            default = False,
+            doc = """If true, will add file to archive with preserved file permissions.""",
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:
