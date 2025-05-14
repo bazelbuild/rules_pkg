@@ -1,7 +1,7 @@
 # These tests check the run-time behavior under various combinations
 #
 # - Tests: behavior only. release tools are in the integration tests
-# - Platforms: ubuntu, centos, macos, windows
+# - Platforms: ubuntu, rockylinux, macos, windows
 # - bzlmod enabled or not
 # - bazel: LTS-1, LTS, rolling
 #
@@ -68,8 +68,8 @@ ubuntu2204: &ubuntu
   <<: *common
   <<: *default_tests
 
-centos7: &centos
-  platform: centos7_java11_devtoolset10
+rockylinux8: &rockylinux
+  platform: rockylinux8_java11_devtoolset10
   <<: *common
   <<: *default_tests_with_rpm
 
@@ -117,10 +117,10 @@ tasks:
     <<: *ubuntu
     <<: *nobzlmod
 
-  cent_lts:
-    name: cent_lts
+  rockylinux_lts:
+    name: rockylinux_lts
     bazel: latest
-    <<: *centos
+    <<: *rockylinux
 
   mac_head_bzlmod:
     name: mac_head_bzlmod

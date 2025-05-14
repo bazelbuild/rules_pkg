@@ -4,8 +4,8 @@ common: &common
   - "..."
 
 tasks:
-  centos7:
-    platform: centos7_java11_devtoolset10
+  rockylinux8:
+    platform: rockylinux8_java11_devtoolset10
     <<: *common
   ubuntu2204:
     platform: ubuntu2204
