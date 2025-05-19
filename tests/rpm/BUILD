@@ -486,6 +486,7 @@ genrule(
     cmd = """
     # pkg_rpm emits two outputs
     RPMS=($(SRCS))
+    echo "${RPMS}"
     rpm -qp --queryformat '[%{FILEMODES:perms} %{FILENAMES}\n]' $${RPMS[0]} > $@
     """,
 )
