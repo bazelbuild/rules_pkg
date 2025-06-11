@@ -138,7 +138,7 @@ def _pkg_tar_impl(ctx):
     # The files attribute is a map of labels to destinations. We can add them
     # directly to the content map.
     for target, f_dest_path in ctx.attr.files.items():
-        target_files = target.files.to_list()
+        target_files = target[DefaultInfo].files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
         mapping_context.file_deps.append(depset([target_files[0]]))
