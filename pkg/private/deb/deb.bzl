@@ -76,6 +76,9 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.triggers:
         args.append("--triggers=@" + ctx.file.triggers.path)
         files.append(ctx.file.triggers)
+    if ctx.attr.md5sums:
+        args.append("--md5sums=@" + ctx.file.md5sums.path)
+        files.append(ctx.file.md5sums)
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
@@ -274,6 +277,13 @@ pkg_deb_impl = rule(
         "triggers": attr.label(
             doc = """triggers file for configuring installation events exchanged by packages.
             See https://wiki.debian.org/DpkgTriggers.""",
+            allow_single_file = True,
+        ),
+        "md5sums": attr.label(
+            doc = """A file listing md5 checksums of files in the data archive.
+            This file is optional.
+            See https://manpages.debian.org/bookworm/dpkg-dev/deb-md5sums.5.en.html.
+            """,
             allow_single_file = True,
         ),
         "built_using": attr.string(
