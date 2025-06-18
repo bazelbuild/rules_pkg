@@ -15,6 +15,7 @@
 """Rules and macros to support testing rules that output directories."""
 
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 
 def _inspect_directory_script_impl(ctx):
     script = ctx.actions.declare_file("{}.py".format(ctx.attr.name))
@@ -58,7 +59,7 @@ def inspect_directory_test(name, directory, expected_structure, **kwargs):
 
     # This appears to be necessary because of
     # https://github.com/bazelbuild/bazel/issues/1147
-    native.sh_library(
+    sh_library(
         name = name + "_dir_lib",
         srcs = [directory],
     )

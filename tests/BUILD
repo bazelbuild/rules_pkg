@@ -15,6 +15,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//pkg:deb.bzl", "pkg_deb")
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "strip_prefix")
 load("//pkg:tar.bzl", "pkg_tar")
