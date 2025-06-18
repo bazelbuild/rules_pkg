@@ -38,7 +38,7 @@ default_tests_with_rpm: &default_tests_with_rpm
     - "//tests/..."
     - "//toolchains/..."
     # This has started to fail, even on CentOS.
-    - "-//tests/rpm:test_golden_debuginfo_rpm_contents
+    - "-//tests/rpm:test_golden_debuginfo_rpm_contents"
 
 win_tests: &win_tests
   test_flags:
