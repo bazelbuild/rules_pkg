@@ -257,7 +257,7 @@ def _pkg_files_impl(ctx):
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
         # rename_src.files is a depset
-        rename_src_files = rename_src.files.to_list()
+        rename_src_files = rename_src[DefaultInfo].files.to_list()
 
         # Need to do a length check before proceeding. We cannot rename
         # multiple files simultaneously.
