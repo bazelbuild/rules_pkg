@@ -33,6 +33,13 @@ genrule(
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
 )
 
+genrule(
+    name = "generate_md5sums",
+    srcs = [":generate_files"],
+    outs = ["md5sums"],
+    cmd = "md5sum $(SRCS) | sed 's|$(RULEDIR)/||' > $@",
+)
+
 my_package_naming(
     name = "my_package_variables",
     label = "some_value",
@@ -80,6 +87,7 @@ pkg_deb(
     distribution = "trusty",
     license = "Apache-2.0",
     maintainer = "soméone@somewhere.com",
+    md5sums = ":generate_md5sums",
     package = "fizzbuzz",
     preinst = "deb_preinst",
     provides = ["hello"],

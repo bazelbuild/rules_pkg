@@ -177,6 +177,7 @@ class PkgDebTest(unittest.TestCase):
         {'name': './config', 'mode': 0o755},
         {'name': './control', 'mode': 0o644},
         {'name': './preinst', 'mode': 0o755},
+        {'name': './md5sums', 'mode': 0o644},
         {'name': './templates', 'mode': 0o644},
         {'name': './triggers', 'mode': 0o644},
     ]
