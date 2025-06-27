@@ -878,7 +878,7 @@ def _pkg_rpm_impl(ctx):
         executable = ctx.executable._make_rpm,
         use_default_shell_env = True,
         arguments = rpm_ctx.make_rpm_args,
-        inputs = files,
+        inputs = files + (ctx.files.data or []),
         outputs = rpm_ctx.output_rpm_files,
         env = {
             "LANG": "en_US.UTF-8",
@@ -1278,6 +1278,10 @@ pkg_rpm = rule(
         ),
         "rpmbuild_path": attr.string(
             doc = """Path to a `rpmbuild` binary.  Deprecated in favor of the rpmbuild toolchain""",
+        ),
+        "data": attr.label_list(
+            doc = """Extra files that are needed by rpmbuild or find-debuginfo""",
+            allow_files = True,
         ),
         # Implicit dependencies.
         "_make_rpm": attr.label(
