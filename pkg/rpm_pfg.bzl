@@ -26,11 +26,6 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
 load(
-    "@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl",
-    "DEBUGINFO_TYPE_FEDORA",
-    "DEBUGINFO_TYPE_NONE",
-)
-load(
     "//pkg:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
@@ -39,6 +34,11 @@ load(
     "PackageVariablesInfo",
 )
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load(
+    "//toolchains/rpm:rpmbuild_configure.bzl",
+    "DEBUGINFO_TYPE_FEDORA",
+    "DEBUGINFO_TYPE_NONE",
+)
 
 rpm_filetype = [".rpm"]
 
