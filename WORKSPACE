@@ -81,3 +81,12 @@ http_archive(
 load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
 rules_cc_dependencies()
+
+http_archive(
+    name = "aspect_bazel_lib",
+    sha256 = "40ba9d0f62deac87195723f0f891a9803a7b720d7b89206981ca5570ef9df15b",
+    strip_prefix = "bazel-lib-2.14.0",
+    url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.14.0/bazel-lib-v2.14.0.tar.gz",
+)
+
+aspect_bazel_lib_dependencies()
