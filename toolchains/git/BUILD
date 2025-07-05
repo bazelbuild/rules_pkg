@@ -67,9 +67,3 @@ toolchain_type(
 git_toolchain(
     name = "no_git",
 )
-
-toolchain(
-    name = "git_missing_toolchain",
-    toolchain = ":no_git",
-    toolchain_type = ":git_toolchain_type",
-)

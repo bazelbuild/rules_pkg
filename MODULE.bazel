@@ -25,6 +25,15 @@ register_toolchains(
     dev_dependency = True,
 )
 
+# Find the system Git if one is available.
+find_git = use_extension("//toolchains/git:git_configure.bzl", "experimental_find_system_git_extension", dev_dependency = True)
+use_repo(find_git, "rules_pkg_git")
+
+register_toolchains(
+    "@rules_pkg_git//:all",
+    dev_dependency = True,
+)
+
 local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
 
 local_repository(

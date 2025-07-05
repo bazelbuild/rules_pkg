@@ -14,3 +14,9 @@ toolchain(
     toolchain = ":git_auto",
     toolchain_type = "@rules_pkg//toolchains/git:git_toolchain_type",
 )
+
+toolchain(
+    name = "zzz_git_missing_toolchain",  # keep name lexicographically last
+    toolchain = "@rules_pkg//toolchains/git:no_git",
+    toolchain_type = "@rules_pkg//toolchains/git:git_toolchain_type",
+)
