@@ -30,8 +30,7 @@ find_git = use_extension("//toolchains/git:git_configure.bzl", "experimental_fin
 use_repo(find_git, "rules_pkg_git")
 
 register_toolchains(
-    "//:git_auto_toolchain",
-    "@rules_pkg//toolchains/git:git_missing_toolchain",
+    "@rules_pkg_git//:all",
     dev_dependency = True,
 )
 

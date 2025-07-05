@@ -74,8 +74,7 @@ def experimental_find_system_git(name, workspace_file = None, verbose = False):
         workspace_file = Label("//:WORKSPACE")
     _find_system_git(name = name, workspace_file = workspace_file, verbose = verbose)
     native.register_toolchains(
-        "@%s//:git_auto_toolchain" % name,
-        "@rules_pkg//toolchains/git:git_missing_toolchain",
+        "@%s//:all" % name,
     )
 
 # buildifier: disable=function-docstring-args
