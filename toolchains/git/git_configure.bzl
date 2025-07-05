@@ -93,3 +93,8 @@ def experimental_find_system_git_bzlmod(name, workspace_file = None, verbose = F
     if not workspace_file:
         workspace_file = Label("//:MODULE.bazel")
     _find_system_git(name = name, workspace_file = workspace_file, verbose = verbose)
+
+# For use from MODULE.bzl
+experimental_find_system_git_extension = module_extension(
+    implementation = lambda ctx: _find_system_git(name = "rules_pkg_git", workspace_file = Label("//:MODULE.bazel"))
+)
