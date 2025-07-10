@@ -21,7 +21,12 @@ volume="${VOLUME:-bazel-cache}"
 dir=$(realpath "$(dirname "$0")")
 repo_root="$dir/../.."
 
-docker build -t "$tag" --build-arg USER_ID="$(id -u)" --build-arg GROUP_ID="$(id -g)" "$dir/docker"
+USER_ID=${USER_ID:-1000}
+GROUP_ID=${GROUP_ID:-1000}
+(
+   set -x
+   docker build -t "$tag" --build-arg USER_ID="$USER_ID" --build-arg GROUP_ID="$GROUP_ID" "$dir/docker"
+)
 
 docker_args=(
    -v "$volume":/home/devuser/.cache
@@ -31,4 +36,7 @@ docker_args=(
    -i
    -t
 )
-exec docker run "${docker_args[@]}" "$tag" "$@"
+(
+   set -x
+   exec docker run "${docker_args[@]}" "$tag" "$@"
+)

@@ -1,10 +1,11 @@
 FROM almalinux:9.6
 
-ARG USER_ID
-ARG GROUP_ID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+ARG TARGETARCH
 
 ENV BAZELISK_VERSION=v1.26.0
-ENV BAZELISK_URL=https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64
+ENV BAZELISK_URL=https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}
 
 RUN dnf install -y \
     ca-certificates \
