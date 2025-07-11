@@ -36,7 +36,6 @@ docker_args=(
    -i
    -t
 )
-(
-   set -x
-   exec docker run "${docker_args[@]}" "$tag" "$@"
-)
+
+set -x
+exec docker run "${docker_args[@]}" "$tag" "$@"
