@@ -83,8 +83,8 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
 
     debuginfo_type = rctx.attr.debuginfo_type
     if debuginfo_type == DEBUGINFO_TYPE_AUTODETECT:
-        rctx.watch(RELEASE_PATH)
         if rctx.path(RELEASE_PATH).exists:
+            rctx.watch(RELEASE_PATH)
             os_name, _ = _parse_release_info(rctx.read(RELEASE_PATH))
             debuginfo_type = DEBUGINFO_TYPE_BY_OS_RELEASE.get(os_name, debuginfo_type)
         else:
