@@ -370,7 +370,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-deps">deps</a>, <a h
 | <a id="pkg_tar-create_parents"></a>create_parents |  -   | Boolean | optional |  `True`  |
 | <a id="pkg_tar-empty_dirs"></a>empty_dirs |  -   | List of strings | optional |  `[]`  |
 | <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional |  `[]`  |
-| <a id="pkg_tar-extension"></a>extension |  -   | String | optional |  `"tar"`  |
+| <a id="pkg_tar-extension"></a>extension | The extension of the generated file. If `"gz"`, `"bz2"`, or `"xz"`, the tarball will also be compressed using that tool, and is mutually exclusive with `compressor`. Note that `xz` may not be supported based on the Python toolchain. | String | optional |  `"tar"`  |
 | <a id="pkg_tar-files"></a>files |  Obsolete. Do not use.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: Label -> String</a> | optional |  `{}`  |
 | <a id="pkg_tar-include_runfiles"></a>include_runfiles |  Include runfiles for executables. These appear as they would in bazel-bin.For example: 'path/to/myprog.runfiles/path/to/my_data.txt'.   | Boolean | optional |  `False`  |
 | <a id="pkg_tar-mode"></a>mode |  -   | String | optional |  `"0555"`  |
