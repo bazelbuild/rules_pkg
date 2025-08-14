@@ -44,7 +44,7 @@ class TarFile(object):
     pass
 
   def __init__(self, output, directory, compression, compressor, create_parents,
-               allow_dups_from_deps, default_mtime, compression_level, preserve_mode):
+               allow_dups_from_deps, default_mtime, compression_level, preserve_mode, preserve_mtime):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -56,6 +56,7 @@ class TarFile(object):
     self.allow_dups_from_deps = allow_dups_from_deps
     self.compression_level = compression_level
     self.preserve_mode = preserve_mode
+    self.preserve_mtime = preserve_mtime
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -90,7 +91,7 @@ class TarFile(object):
       dest = self.directory + dest
     return dest
 
-  def add_file(self, f, destfile, mode=None, ids=None, names=None):
+  def add_file(self, f, destfile, mode=None, ids=None, names=None, mtime=None):
     """Add a file to the tar file.
 
     Args:
@@ -110,6 +111,8 @@ class TarFile(object):
       mode = stat.S_IMODE(os.stat(f).st_mode)
     elif mode is None:
         mode = 0o755 if os.access(f, os.X_OK) else 0o644
+    if self.preserve_mtime is True:
+      mtime = os.stat(f).st_mtime
     if ids is None:
       ids = (0, 0)
     if names is None:
@@ -121,7 +124,8 @@ class TarFile(object):
         uid=ids[0],
         gid=ids[1],
         uname=names[0],
-        gname=names[1])
+        gname=names[1],
+        mtime=mtime)
 
   def add_empty_file(self,
                      destfile,
@@ -413,6 +417,10 @@ def main():
       action='store_true',
       help='Preserve original file permissions in the archive. Mode argument is ignored.')
   parser.add_argument(
+      '--preserve_mtime', default='False',
+      action='store_true',
+      help='Preserve original file mtime in the archive. mtime argument is ignored.')
+  parser.add_argument(
       '--compression_level', default=-1,
       help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
   options = parser.parse_args()
@@ -472,7 +480,8 @@ def main():
       create_parents=options.create_parents,
       allow_dups_from_deps=options.allow_dups_from_deps,
       compression_level = compression_level,
-      preserve_mode = options.preserve_mode) as output:
+      preserve_mode = options.preserve_mode,
+      preserve_mtime = options.preserve_mtime) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

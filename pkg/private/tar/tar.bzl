@@ -184,6 +184,9 @@ def _pkg_tar_impl(ctx):
     if ctx.attr.preserve_mode:
         args.add("--preserve_mode")
 
+    if ctx.attr.preserve_mtime:
+        args.add("--preserve_mtime")
+
     inputs = depset(
         direct = ctx.files.deps + files,
         transitive = mapping_context.file_deps,
@@ -300,6 +303,10 @@ builds were accidentally doing it. Never explicitly set this to true for new cod
         "preserve_mode": attr.bool(
             default = False,
             doc = """If true, will add file to archive with preserved file permissions.""",
+        ),
+        "preserve_mtime": attr.bool(
+            default = False,
+            doc = """If true, will add file to archive with preserved file mtime.""",
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:
