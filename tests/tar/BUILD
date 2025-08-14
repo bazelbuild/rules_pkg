@@ -823,7 +823,6 @@ verify_archive_test(
         "//tests:testdata/hello.txt", # ok
     ],
     preserve_mtime = state,
-    #portable_mtime = False,
 ) for state in [
     True,
     False,
