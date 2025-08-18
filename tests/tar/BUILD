@@ -820,7 +820,7 @@ verify_archive_test(
 [pkg_tar(
     name = "test-tar-preserve_mtime-%s" % state,
     srcs = [
-        "//tests:testdata/hello.txt", # ok
+        "//tests:testdata/hello.txt",
     ],
     preserve_mtime = state,
 ) for state in [

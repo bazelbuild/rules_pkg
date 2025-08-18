@@ -327,7 +327,7 @@ class PkgTarTest(unittest.TestCase):
   def test_preserve_mtime(self):
     test_cases = [
       # tar file name, mtime should be equal to PORTABLE_MTIME?
-      ('test-tar-preserve_mtime-False.tar', True), 
+      ('test-tar-preserve_mtime-False.tar', True),
       ('test-tar-preserve_mtime-True.tar', False),
     ]
     for file_name, should_be_equal_to_portable_mtime in test_cases:
