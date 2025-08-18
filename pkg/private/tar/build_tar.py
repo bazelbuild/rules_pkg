@@ -44,7 +44,8 @@ class TarFile(object):
     pass
 
   def __init__(self, output, directory, compression, compressor, create_parents,
-               allow_dups_from_deps, default_mtime, compression_level, preserve_mode, preserve_mtime):
+               allow_dups_from_deps, default_mtime, compression_level, preserve_mode,
+               preserve_mtime):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
