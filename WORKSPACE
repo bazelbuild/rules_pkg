@@ -88,12 +88,13 @@ http_archive(
     strip_prefix = "bazel-lib-2.21.0",
     url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.0/bazel-lib-v2.21.0.tar.gz",
 )
+load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
 
-aspect_bazel_lib_dependencies()
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@platforms//host:extension.bzl", "host_platform_repo")
+# aspect_bazel_lib_dependencies()
+# load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+# load("@platforms//host:extension.bzl", "host_platform_repo")
 
-maybe(
-    host_platform_repo,
-    name = "host_platform",
-)
+# maybe(
+#     host_platform_repo,
+#     name = "host_platform",
+# )
