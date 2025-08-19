@@ -90,7 +90,7 @@ http_archive(
 )
 load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
 
-# aspect_bazel_lib_dependencies()
+aspect_bazel_lib_dependencies()
 # load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 # load("@platforms//host:extension.bzl", "host_platform_repo")
 
