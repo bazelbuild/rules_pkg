@@ -91,29 +91,29 @@ http_archive(
     url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.0/bazel-lib-v2.21.0.tar.gz",
 )
 
-load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
+# load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
 
-# Required bazel-lib dependencies
+# # Required bazel-lib dependencies
 
-aspect_bazel_lib_dependencies()
+# aspect_bazel_lib_dependencies()
 
-# Required rules_shell dependencies
-load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
+# # Required rules_shell dependencies
+# load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
 
-rules_shell_dependencies()
+# rules_shell_dependencies()
 
-rules_shell_toolchains()
+# rules_shell_toolchains()
 
-# Register bazel-lib toolchains
+# # Register bazel-lib toolchains
 
-aspect_bazel_lib_register_toolchains()
+# aspect_bazel_lib_register_toolchains()
 
-# Create the host platform repository transitively required by bazel-lib
+# # Create the host platform repository transitively required by bazel-lib
 
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@platforms//host:extension.bzl", "host_platform_repo")
+# load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+# load("@platforms//host:extension.bzl", "host_platform_repo")
 
-maybe(
-    host_platform_repo,
-    name = "host_platform",
-)
+# maybe(
+#     host_platform_repo,
+#     name = "host_platform",
+# )
