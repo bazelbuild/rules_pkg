@@ -91,7 +91,7 @@ http_archive(
     url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.0/bazel-lib-v2.21.0.tar.gz",
 )
 
-load("@bazel_tools//tools/platforms:platforms.bzl", "local_config_platform")
+# load("@bazel_tools//tools/platforms:platforms.bzl", "local_config_platform")
 
-local_config_platform(name = "local_config_platform")
+# local_config_platform(name = "local_config_platform")
 
