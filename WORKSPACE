@@ -82,16 +82,9 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 
 rules_cc_dependencies()
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "aspect_bazel_lib",
     sha256 = "6d636cfdecc7f5c1a5d82b9790fb5d5d5e8aa6ea8b53a71a75f1ba53c8d29f61",
     strip_prefix = "bazel-lib-2.21.0",
     url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.21.0/bazel-lib-v2.21.0.tar.gz",
 )
-
-# load("@bazel_tools//tools/platforms:platforms.bzl", "local_config_platform")
-
-# local_config_platform(name = "local_config_platform")
-
