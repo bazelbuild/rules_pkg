@@ -82,7 +82,7 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
         fail("debuginfo_type must be one of", DEBUGINFO_VALID_VALUES)
 
     debuginfo_type = rctx.attr.debuginfo_type
-    if debuginfo_type == DEBUGINFO_TYPE_AUTODETECT:   
+    if debuginfo_type == DEBUGINFO_TYPE_AUTODETECT:
         if rctx.path(RELEASE_PATH).exists:
             rctx.watch(RELEASE_PATH)
             os_name, _ = _parse_release_info(rctx.read(RELEASE_PATH))

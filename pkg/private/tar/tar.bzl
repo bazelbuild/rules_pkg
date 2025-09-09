@@ -115,7 +115,7 @@ def _pkg_tar_impl(ctx):
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
     if ctx.attr.compression_level:
-        args.add("--compression_level", ctx.attr.compression_level)
+        args.add("--compression_level", str(ctx.attr.compression_level))
 
     # Now we begin processing the files.
     path_mapper = None
