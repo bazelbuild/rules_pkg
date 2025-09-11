@@ -6,8 +6,8 @@
 /.pre-commit-config.yaml	@meteorcloudy
 
 /deb_packages/  @aiuto
-/docs/		@aiuto @jylinv0
-/doc_build/	@aiuto @jylinv0
+/docs/		@aiuto
+/doc_build/	@aiuto
 
 /pkg/rpm/		@nacl
 /pkg/tests/rpm/		@nacl
