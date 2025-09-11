@@ -476,6 +476,8 @@ py_test(
         ":test-tar-mtime.tar",
         ":test-tar-preserve_mode-False.tar",
         ":test-tar-preserve_mode-True.tar",
+        ":test-tar-preserve_mtime-False.tar",
+        ":test-tar-preserve_mtime-True.tar",
         ":test-tar-repackaging-long-filename.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
@@ -810,6 +812,17 @@ verify_archive_test(
         "//tests:testdata/hello.txt",  # rw- r-- r--
     ],
     preserve_mode = state,
+) for state in [
+    True,
+    False,
+]]
+
+[pkg_tar(
+    name = "test-tar-preserve_mtime-%s" % state,
+    srcs = [
+        "//tests:testdata/hello.txt",
+    ],
+    preserve_mtime = state,
 ) for state in [
     True,
     False,
