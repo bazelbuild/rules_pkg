@@ -27,9 +27,10 @@ license(
     license_text = "LICENSE",
 )
 
-exports_files(
-    ["WORKSPACE"],
-)
+exports_files([
+    "MODULE.bazel",
+    "WORKSPACE",
+])
 
 exports_files(
     glob([
@@ -44,7 +45,6 @@ filegroup(
     ]) + [
         "BUILD",
         "LICENSE",
-        "MODULE.bazel",
     ],
     visibility = ["//distro:__pkg__"],
 )

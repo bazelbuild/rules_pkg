@@ -32,6 +32,7 @@ alias(
 pkg_tar(
     name = "rules_pkg-%s" % version,
     srcs = [
+        ":small_module",
         ":small_workspace",
         "//:standard_package",
         "//pkg:standard_package",
@@ -50,6 +51,13 @@ pkg_tar(
     owner = "0.0",
     package_dir = ".",
     strip_prefix = ".",
+)
+
+genrule(
+    name = "small_module",
+    srcs = ["//:MODULE.bazel"],
+    outs = ["MODULE.bazel"],
+    cmd = "sed -e '/### INTERNAL ONLY/,$$d' $(location //:MODULE.bazel) >$@",
 )
 
 genrule(
