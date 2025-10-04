@@ -258,12 +258,18 @@ pkg_tar_impl = rule(
         "ownername": attr.string(default = "."),
         "owners": attr.string_dict(),
         "ownernames": attr.string_dict(),
-        "extension": attr.string(default = "tar"),
+        "extension": attr.string(
+            default = "tar",
+            doc = """The extension of the generated file. If `"gz"`, `"bz2"`, or `"xz"`, the
+tarball will also be compressed using that tool, and is mutually exclusive with `compressor`.
+Note that `xz` may not be supported based on the Python toolchain.
+""",
+        ),
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),
         "include_runfiles": attr.bool(
             doc = ("""Include runfiles for executables. These appear as they would in bazel-bin.""" +
-                   """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
+                   """ For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
         ),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
