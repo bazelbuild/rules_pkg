@@ -29,9 +29,11 @@ class PkgInstallTestBase(unittest.TestCase):
     def setUpClass(cls):
         cls.runfiles = runfiles.Create()
         # Somewhat of an implementation detail, but it works.  I think.
-        manifest_file = cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer_install_script-install-manifest.json")
+        manifest_file = cls.runfiles.Rlocation(
+            "rules_pkg/tests/install/test_installer_install_script-install-manifest.json"
+        )
 
-        with open(manifest_file, 'r') as fh:
+        with open(manifest_file, "r") as fh:
             manifest_entries = manifest.read_entries_from(fh)
             cls.manifest_data = {}
 
@@ -46,12 +48,15 @@ class PkgInstallTest(PkgInstallTestBase):
         super().setUpClass()
         env = {}
         env.update(cls.runfiles.EnvVars())
-        subprocess.check_call([
-            cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
-            "--destdir", cls.installdir,
-            "--verbose",
-        ],
-                              env=env)
+        subprocess.check_call(
+            [
+                cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+                "--destdir",
+                cls.installdir,
+                "--verbose",
+            ],
+            env=env,
+        )
 
     def entity_type_at_path(self, path):
         if path.is_symlink():
@@ -69,37 +74,46 @@ class PkgInstallTest(PkgInstallTestBase):
         actual_entry_type = self.entity_type_at_path(actual_path)
 
         # TreeArtifacts looks like directories.
-        if (entry.type == manifest.ENTRY_IS_TREE and
-                actual_entry_type == manifest.ENTRY_IS_DIR):
+        if (
+            entry.type == manifest.ENTRY_IS_TREE
+            and actual_entry_type == manifest.ENTRY_IS_DIR
+        ):
             return
 
-        self.assertEqual(actual_entry_type, entry.type,
-                        "Entity {} should be a {}, but was actually {}".format(
-                            entry.dest,
-                            manifest.entry_type_to_string(entry.type),
-                            manifest.entry_type_to_string(actual_entry_type),
-                        ))
+        self.assertEqual(
+            actual_entry_type,
+            entry.type,
+            "Entity {} should be a {}, but was actually {}".format(
+                entry.dest,
+                manifest.entry_type_to_string(entry.type),
+                manifest.entry_type_to_string(actual_entry_type),
+            ),
+        )
 
-    def assertEntryModeMatches(self, entry, actual_path,
-                               is_tree_artifact_content=False):
+    def assertEntryModeMatches(
+        self, entry, actual_path, is_tree_artifact_content=False
+    ):
         # TODO: permissions in windows are... tricky.  Don't bother
         # testing for them if we're in it for the time being
-        if os.name == 'nt':
+        if os.name == "nt":
             return
 
-        actual_mode = stat.S_IMODE(os.stat(actual_path).st_mode)
+        actual_mode = stat.S_IMODE(os.stat(actual_path, follow_symlinks=False).st_mode)
         expected_mode = int(entry.mode, 8)
 
-        if (not is_tree_artifact_content and
-                entry.type == manifest.ENTRY_IS_TREE):
+        if not is_tree_artifact_content and entry.type == manifest.ENTRY_IS_TREE:
             expected_mode |= 0o555
 
-        self.assertEqual(actual_mode, expected_mode,
+        self.assertEqual(
+            actual_mode,
+            expected_mode,
             "Entry {}{} has mode {:04o}, expected {:04o}".format(
-            entry.dest,
-            f" ({actual_path})" if is_tree_artifact_content else "",
-            actual_mode, expected_mode,
-        ))
+                entry.dest,
+                f" ({actual_path})" if is_tree_artifact_content else "",
+                actual_mode,
+                expected_mode,
+            ),
+        )
 
     def _find_tree_entry(self, path, owned_trees):
         for tree_root in owned_trees:
@@ -108,7 +122,7 @@ class PkgInstallTest(PkgInstallTestBase):
         return None
 
     def _path_starts_with(self, path, other):
-        return path.parts[:len(other.parts)] == other.parts
+        return path.parts[: len(other.parts)] == other.parts
 
     def test_manifest_matches(self):
         unowned_dirs = set()
@@ -165,7 +179,8 @@ class PkgInstallTest(PkgInstallTestBase):
                     # prefix of some entity in the manifest.
                     is_unowned = rel_root_path in unowned_dirs
                     is_tree_intermediate_dir = bool(
-                        self._find_tree_entry(rel_root_path, owned_trees))
+                        self._find_tree_entry(rel_root_path, owned_trees)
+                    )
                     self.assertTrue(is_unowned or is_tree_intermediate_dir)
 
             for f in files:
@@ -196,8 +211,9 @@ class PkgInstallTest(PkgInstallTestBase):
 
                 if entity_tree_root:
                     entry = owned_trees[entity_tree_root]
-                    self.assertEntryModeMatches(entry, fpath,
-                                                is_tree_artifact_content=True)
+                    self.assertEntryModeMatches(
+                        entry, fpath, is_tree_artifact_content=True
+                    )
 
                 found_entries[rel_fpath] = True
 
@@ -214,12 +230,15 @@ class WipeTest(PkgInstallTestBase):
         self.installdir.mkdir(exist_ok=True)
         (self.installdir / "should_be_deleted.txt").touch()
 
-        subprocess.check_call([
-            self.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
-            "--destdir", self.installdir,
-            "--wipe_destdir",
-        ],
-                              env=self.runfiles.EnvVars())
+        subprocess.check_call(
+            [
+                self.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+                "--destdir",
+                self.installdir,
+                "--wipe_destdir",
+            ],
+            env=self.runfiles.EnvVars(),
+        )
         self.assertFalse((self.installdir / "should_be_deleted.txt").exists())
 
 

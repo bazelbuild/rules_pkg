@@ -14,7 +14,7 @@
 
 load("@rules_python//python:defs.bzl", "py_test")
 load("//pkg:install.bzl", "pkg_install")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
 load("//tests/util:defs.bzl", "directory", "fake_artifact")
 
 package(default_applicable_licenses = ["//:license"])
@@ -47,6 +47,8 @@ pkg_install(
         ":artifact-in-owned-dir",
         ":artifact-in-unowned-dir",
         ":dirs",
+        ":fake_lib_link",
+        ":fake_so_in_lib",
         ":generate_tree_pkg_files",
     ],
 )
@@ -96,4 +98,20 @@ pkg_files(
     attributes = pkg_attributes(
         mode = "640",
     ),
+)
+
+fake_artifact(
+    name = "fake.so.1.2.3",
+)
+
+pkg_files(
+    name = "fake_so_in_lib",
+    srcs = [":fake.so.1.2.3"],
+    prefix = "/lib",
+)
+
+pkg_mklink(
+    name = "fake_lib_link",
+    link_name = "/lib/fake.so.1",
+    target = "fake.so.1.2.3",
 )
