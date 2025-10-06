@@ -102,8 +102,11 @@ class NativeInstaller(object):
         logging.debug("SYMLINK %s <- %s %s %s %s", target, link_name, mode, user, group)
         os.symlink(target, link_name)
         if mode:
-            logging.debug("CHMOD %s %s", mode, link_name)
-            os.lchmod(link_name, int(mode, 8))
+            if hasattr(os, "lchmod"):
+                 logging.debug("CHMOD %s %s", mode, link_name)
+                 os.lchmod(link_name, int(mode, 8))
+            else:
+                 logging.debug("CHMOD-NOT AVAILABLE %s %s", mode, link_name)
         if user or group:
             # Ownership can only be changed by sufficiently
             # privileged users.
