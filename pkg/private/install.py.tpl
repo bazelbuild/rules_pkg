@@ -99,7 +99,7 @@ class NativeInstaller(object):
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
     def _do_symlink(self, target, link_name, mode, user, group):
-        logging.debug("SYMLINK %s <- %s %s %s %s", target, link_name, mode, user, group)
+        logging.debug("SYMLINK %s <- %s", link_name, target)
         os.symlink(target, link_name)
         if mode:
             if hasattr(os, "lchmod"):
