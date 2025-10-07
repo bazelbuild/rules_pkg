@@ -99,7 +99,21 @@ class NativeInstaller(object):
         os.makedirs(dirname, int(mode, 8), exist_ok=True)
 
     def _do_symlink(self, target, link_name, mode, user, group):
-        raise NotImplementedError("symlinking not yet supported")
+        logging.debug("SYMLINK %s <- %s", link_name, target)
+        os.symlink(target, link_name)
+        if mode:
+            if hasattr(os, "lchmod"):
+                 logging.debug("CHMOD %s %s", mode, link_name)
+                 os.lchmod(link_name, int(mode, 8))
+            else:
+                 logging.debug("CHMOD-NOT AVAILABLE %s %s", mode, link_name)
+        if user or group:
+            # Ownership can only be changed by sufficiently
+            # privileged users.
+            # TODO(nacl): This does not support windows
+            if hasattr(os, "lchown") and os.getuid() == 0:
+                logging.debug("CHOWN %s:%s %s", user, group, link_name)
+                os.lchown(link_name, user, group)
 
     def _maybe_make_unowned_dir(self, path):
         logging.debug("MKDIR (unowned) %s", path)
@@ -161,10 +175,8 @@ class NativeInstaller(object):
         self._chown_chmod(entry.dest, top_dir_mode, entry.user, entry.group)
 
     def _install_symlink(self, entry):
-        raise NotImplementedError("symlinking not yet supported")
-        logging.debug("SYMLINK %s <- %s", entry.dest, entry.link_to)
-        logging.debug("CHMOD %s %s", entry.dest, entry.mode)
-        logging.debug("CHOWN %s.%s %s", entry.dest, entry.user, entry.group)
+        self._maybe_make_unowned_dir(os.path.dirname(entry.dest))
+        self._do_symlink(entry.src, entry.dest, entry.mode, entry.user, entry.group)
 
     def include_manifest_path(self, path):
         with open(path, 'r') as fh:

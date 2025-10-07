@@ -87,7 +87,7 @@ class PkgInstallTest(PkgInstallTestBase):
         if os.name == 'nt':
             return
 
-        actual_mode = stat.S_IMODE(os.stat(actual_path).st_mode)
+        actual_mode = stat.S_IMODE(os.stat(actual_path, follow_symlinks=False).st_mode)
         expected_mode = int(entry.mode, 8)
 
         if (not is_tree_artifact_content and
