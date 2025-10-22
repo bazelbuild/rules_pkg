@@ -150,6 +150,13 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
           {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 543},
     ])
 
+  def test_symlink(self):
+    self.assertZipFileContent("test_zip_symlink.zip", [
+          {"filename": "BUILD", "islink": False},
+          {"filename": "fake_symlink", "islink": True}, # raw symlink -> keep symlink
+          {"filename": "outer_BUILD", "islink": False},# nonraw symlink -> copy
+    ])
+
 
 
 if __name__ == "__main__":
