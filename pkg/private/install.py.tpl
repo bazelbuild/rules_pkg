@@ -80,19 +80,17 @@ class NativeInstaller(object):
 
     def _do_file_copy(self, src, dest):
         logging.debug("COPY %s <- %s", dest, src)
-        # Copy to a temporary file and then move it to the destination.
+        # Copy to a temporary directory and then move it to the destination.
         # This ensures code-signed executables on certain platforms
         # behave correctly.
         # See: https://developer.apple.com/documentation/security/updating-mac-software
+        # Use `TemporaryDirectory` instead of `NamedTemporaryFile` to avoid Windows file locking issues.
         # Use `dir` to ensure the temporary file is created on the same file system as the destination,
         # to avoid cross-filesystem replace which is an error on some platforms.
-        with tempfile.NamedTemporaryFile(delete=False, dir=os.path.dirname(dest)) as tmp_file:
-            try:
-                shutil.copyfile(src, tmp_file.name)
-                os.replace(tmp_file.name, dest)
-            except:
-                pathlib.Path(tmp_file.name).unlink(missing_ok=True)
-                raise
+        with tempfile.TemporaryDirectory(dir=os.path.dirname(dest)) as tmp_dir:
+            tmp_file = os.path.join(tmp_dir, os.path.basename(dest))
+            shutil.copyfile(src, tmp_file)
+            os.replace(tmp_file, dest)
 
     def _do_mkdir(self, dirname, mode):
         logging.debug("MKDIR %s %s", mode, dirname)
