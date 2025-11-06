@@ -25,6 +25,8 @@ from pkg.private import manifest
 
 
 class PkgInstallTestBase(unittest.TestCase):
+    _extension = ".exe" if os.name == "nt" else ""
+
     @classmethod
     def setUpClass(cls):
         cls.runfiles = runfiles.Create()
@@ -47,7 +49,7 @@ class PkgInstallTest(PkgInstallTestBase):
         env = {}
         env.update(cls.runfiles.EnvVars())
         subprocess.check_call([
-            cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+            cls.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{cls._extension}"),
             "--destdir", cls.installdir,
             "--verbose",
         ],
@@ -215,7 +217,7 @@ class WipeTest(PkgInstallTestBase):
         (self.installdir / "should_be_deleted.txt").touch()
 
         subprocess.check_call([
-            self.runfiles.Rlocation("rules_pkg/tests/install/test_installer"),
+            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
             "--destdir", self.installdir,
             "--wipe_destdir",
         ],
