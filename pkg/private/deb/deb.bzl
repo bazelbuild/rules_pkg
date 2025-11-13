@@ -75,6 +75,9 @@ def _pkg_deb_impl(ctx):
     if ctx.attr.triggers:
         args.add("--triggers", "@" + ctx.file.triggers.path)
         files.append(ctx.file.triggers)
+    if ctx.attr.md5sums:
+        args.add("--md5sums", "@" + ctx.file.md5sums.path)
+        files.append(ctx.file.md5sums)
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
@@ -162,7 +165,6 @@ def _pkg_deb_impl(ctx):
 
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = True)
-    print(args)
     ctx.actions.run(
         mnemonic = "MakeDeb",
         executable = ctx.executable._make_deb,
