@@ -87,7 +87,7 @@ def _pkg_deb_impl(ctx):
         files.append(ctx.file.conffiles_file)
     elif ctx.attr.conffiles:
         for cf in ctx.attr.conffiles:
-          args.add("--conffile", cf)
+            args.add("--conffile", cf)
 
     # Version and description can be specified by a file or inlined
     if ctx.attr.version_file:
