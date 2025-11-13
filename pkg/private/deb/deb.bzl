@@ -50,38 +50,38 @@ def _pkg_deb_impl(ctx):
         if ctx.attr.architecture != "all":
             fail("Both architecture and architecture_file attributes were specified")
         args.add("--architecture", "@" + ctx.file.architecture_file.path)
-        files += [ctx.file.architecture_file]
+        files.append(ctx.file.architecture_file)
     else:
         args.add("--architecture", ctx.attr.architecture)
 
     if ctx.attr.preinst:
         args.add("--preinst", "@" + ctx.file.preinst.path)
-        files += [ctx.file.preinst]
+        files.append(ctx.file.preinst)
     if ctx.attr.postinst:
         args.add("--postinst", "@" + ctx.file.postinst.path)
-        files += [ctx.file.postinst]
+        files.append(ctx.file.postinst)
     if ctx.attr.prerm:
         args.add("--prerm", "@" + ctx.file.prerm.path)
-        files += [ctx.file.prerm]
+        files.append(ctx.file.prerm)
     if ctx.attr.postrm:
         args.add("--postrm", "@" + ctx.file.postrm.path)
-        files += [ctx.file.postrm]
+        files.append(ctx.file.postrm)
     if ctx.attr.config:
         args.add("--config", "@" + ctx.file.config.path)
-        files += [ctx.file.config]
+        files.append(ctx.file.config)
     if ctx.attr.templates:
         args.add("--templates", "@" + ctx.file.templates.path)
-        files += [ctx.file.templates]
+        files.append(ctx.file.templates)
     if ctx.attr.triggers:
         args.add("--triggers", "@" + ctx.file.triggers.path)
-        files += [ctx.file.triggers]
+        files.append(ctx.file.triggers)
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
         if ctx.attr.conffiles:
             fail("Both conffiles and conffiles_file attributes were specified")
         args.add("--conffile", "@" + ctx.file.conffiles_file.path)
-        files += [ctx.file.conffiles_file]
+        files.append(ctx.file.conffiles_file)
     elif ctx.attr.conffiles:
         for cf in ctx.attr.conffiles:
           args.add("--conffile", cf)
@@ -91,7 +91,7 @@ def _pkg_deb_impl(ctx):
         if ctx.attr.version:
             fail("Both version and version_file attributes were specified")
         args.add("--version", "@" + ctx.file.version_file.path)
-        files += [ctx.file.version_file]
+        files.append(ctx.file.version_file)
     elif ctx.attr.version:
         args.add("--version", ctx.attr.version)
     else:
@@ -101,7 +101,7 @@ def _pkg_deb_impl(ctx):
         if ctx.attr.description:
             fail("Both description and description_file attributes were specified")
         args.add("--description", "@" + ctx.file.description_file.path)
-        files += [ctx.file.description_file]
+        files.append(ctx.file.description_file)
     elif ctx.attr.description:
         desc_file = ctx.actions.declare_file(out_file_name_base + ".description")
         ctx.actions.write(desc_file, ctx.attr.description)
@@ -119,7 +119,7 @@ def _pkg_deb_impl(ctx):
         if ctx.attr.built_using:
             fail("Both build_using and built_using_file attributes were specified")
         args.add("--built_using", "@" + ctx.file.built_using_file.path)
-        files += [ctx.file.built_using_file]
+        files.append(ctx.file.built_using_file)
     elif ctx.attr.built_using:
         args.add("--built_using", ctx.attr.built_using)
 
@@ -127,31 +127,12 @@ def _pkg_deb_impl(ctx):
         if ctx.attr.depends:
             fail("Both depends and depends_file attributes were specified")
         args.add("--depends", "@" + ctx.file.depends_file.path)
-        files += [ctx.file.depends_file]
+        files.append(ctx.file.depends_file)
     elif ctx.attr.depends:
         for d in ctx.attr.depends:
             args.add("--depends", d)
 
     if ctx.attr.priority:
-        args.append("--priority=" + ctx.attr.priority)
-    if ctx.attr.section:
-        args.append("--section=" + ctx.attr.section)
-    if ctx.attr.homepage:
-        args.append("--homepage=" + ctx.attr.homepage)
-    if ctx.attr.license:
-        args.append("--license=" + ctx.attr.license)
-
-    args.append("--distribution=" + ctx.attr.distribution)
-    args.append("--urgency=" + ctx.attr.urgency)
-    args += ["--suggests=" + d for d in ctx.attr.suggests]
-    args += ["--enhances=" + d for d in ctx.attr.enhances]
-    args += ["--conflicts=" + d for d in ctx.attr.conflicts]
-    args += ["--breaks=" + d for d in ctx.attr.breaks]
-    args += ["--pre_depends=" + d for d in ctx.attr.predepends]
-    args += ["--recommends=" + d for d in ctx.attr.recommends]
-    args += ["--replaces=" + d for d in ctx.attr.replaces]
-    args += ["--provides=" + d for d in ctx.attr.provides]
-=======
         args.add("--priority", ctx.attr.priority)
     if ctx.attr.section:
         args.add("--section", ctx.attr.section)
