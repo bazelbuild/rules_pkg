@@ -285,6 +285,15 @@ class PkgTarTest(unittest.TestCase):
     ]
     self.assertTarFileContent('test-remap-paths-tree-artifact.tar', content)
 
+  def test_remap_paths_make_variables(self):
+    content = [
+      {'name': 'fastbuild', 'isdir': True},
+      {'name': 'fastbuild/a'},
+      {'name': 'fastbuild/rename_me', 'isdir': True},
+      {'name': 'fastbuild/rename_me/should_not_rename'},
+    ]
+    self.assertTarFileContent('test-remap-paths-variables.tar', content)
+
   def test_externally_defined_duplicate_structure(self):
     content = [
       {'name': './a'},
