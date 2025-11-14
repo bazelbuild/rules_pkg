@@ -114,6 +114,8 @@ def _pkg_tar_impl(ctx):
                 "--owner_names",
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
+    if ctx.attr.compression_level:
+        args.add("--compression_level", str(ctx.attr.compression_level))
 
     # Now we begin processing the files.
     path_mapper = None
@@ -136,7 +138,7 @@ def _pkg_tar_impl(ctx):
     # The files attribute is a map of labels to destinations. We can add them
     # directly to the content map.
     for target, f_dest_path in ctx.attr.files.items():
-        target_files = target.files.to_list()
+        target_files = target[DefaultInfo].files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
         mapping_context.file_deps.append(depset([target_files[0]]))
@@ -172,6 +174,18 @@ def _pkg_tar_impl(ctx):
 
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = False)
+
+    if ctx.attr.create_parents:
+        args.add("--create_parents")
+
+    if ctx.attr.allow_duplicates_from_deps:
+        args.add("--allow_dups_from_deps")
+
+    if ctx.attr.preserve_mode:
+        args.add("--preserve_mode")
+
+    if ctx.attr.preserve_mtime:
+        args.add("--preserve_mtime")
 
     inputs = depset(
         direct = ctx.files.deps + files,
@@ -247,12 +261,18 @@ pkg_tar_impl = rule(
         "ownername": attr.string(default = "."),
         "owners": attr.string_dict(),
         "ownernames": attr.string_dict(),
-        "extension": attr.string(default = "tar"),
+        "extension": attr.string(
+            default = "tar",
+            doc = """The extension of the generated file. If `"gz"`, `"bz2"`, or `"xz"`, the
+tarball will also be compressed using that tool, and is mutually exclusive with `compressor`.
+Note that `xz` may not be supported based on the Python toolchain.
+""",
+        ),
         "symlinks": attr.string_dict(),
         "empty_files": attr.string_list(),
         "include_runfiles": attr.bool(
-            doc = ("""Include runfiles for executables. These appear as they would in bazel-bin."""
-                   + """For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
+            doc = ("""Include runfiles for executables. These appear as they would in bazel-bin.""" +
+                   """ For example: 'path/to/myprog.runfiles/path/to/my_data.txt'."""),
         ),
         "empty_dirs": attr.string_list(),
         "remap_paths": attr.string_dict(),
@@ -263,6 +283,12 @@ pkg_tar_impl = rule(
         ),
         "compressor_args": attr.string(
             doc = """Arg list for `compressor`.""",
+        ),
+        "create_parents": attr.bool(default = True),
+        "allow_duplicates_from_deps": attr.bool(default = False),
+        "compression_level": attr.int(
+            doc = """Specify the numeric compression level in gzip mode; may be 0-9 or -1 (default to 6).""",
+            default = -1,
         ),
 
         # Common attributes
@@ -279,6 +305,14 @@ pkg_tar_impl = rule(
 Such behaviour is always incorrect, but we provide a flag to support it in case old
 builds were accidentally doing it. Never explicitly set this to true for new code.
 """,
+        ),
+        "preserve_mode": attr.bool(
+            default = False,
+            doc = """If true, will add file to archive with preserved file permissions.""",
+        ),
+        "preserve_mtime": attr.bool(
+            default = False,
+            doc = """If true, will add file to archive with preserved file mtime.""",
         ),
         "stamp": attr.int(
             doc = """Enable file time stamping.  Possible values:

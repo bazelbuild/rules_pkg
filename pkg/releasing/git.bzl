@@ -26,9 +26,9 @@ def _git_changelog_impl(ctx):
     if toolchain.path:
         args.add("--git_path", toolchain.path)
     else:
-        executable = toolchain.label.files_to_run.executable
+        executable = toolchain.label[DefaultInfo].files_to_run.executable
         tools.append(executable)
-        tools.append(toolchain.label.default_runfiles.files.to_list())
+        tools.append(toolchain.label[DefaultInfo].default_runfiles.files.to_list())
         args.add("--git_path", executable.path)
     args.add("--git_root", toolchain.client_top)
     args.add("--from_ref", ctx.attr.from_ref)

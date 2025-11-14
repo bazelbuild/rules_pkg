@@ -59,6 +59,7 @@ DEBIAN_FIELDS = [
     ('Built-Using', False, False, None),
     ('Distribution', False, False, 'unstable'),
     ('Urgency', False, False, 'medium'),
+    ('Multi-Arch', False, False),
 ]
 
 # size of chunks for copying package content to final .deb file
@@ -197,6 +198,7 @@ def CreateDeb(output,
               config=None,
               templates=None,
               triggers=None,
+              md5sums=None,
               conffiles=None,
               changelog=None,
               **kwargs):
@@ -216,6 +218,8 @@ def CreateDeb(output,
     extrafiles['templates'] = (templates, 0o644)
   if triggers:
     extrafiles['triggers'] = (triggers, 0o644)
+  if md5sums:
+    extrafiles['md5sums'] = (md5sums, 0o644)
   if conffiles:
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
   if changelog:
@@ -365,6 +369,9 @@ def main():
   parser.add_argument(
       '--triggers',
       help='The triggers file (prefix with @ to provide a path).')
+  parser.add_argument(
+      '--md5sums',
+      help='The md5sums file (prefix with @ to provide a path).')
   # see
   # https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-conffile
   parser.add_argument(
@@ -386,6 +393,7 @@ def main():
       config=helpers.GetFlagValue(options.config, False),
       templates=helpers.GetFlagValue(options.templates, False),
       triggers=helpers.GetFlagValue(options.triggers, False),
+      md5sums=helpers.GetFlagValue(options.md5sums, False),
       conffiles=GetFlagValues(options.conffile),
       changelog=helpers.GetFlagValue(options.changelog, False),
       package=options.package,
@@ -407,7 +415,9 @@ def main():
       priority=options.priority,
       conflicts=options.conflicts,
       breaks=options.breaks,
-      installedSize=helpers.GetFlagValue(options.installed_size))
+      installedSize=helpers.GetFlagValue(options.installed_size),
+      multiArch=helpers.GetFlagValue(options.multi_arch)
+  )
   CreateChanges(
       output=options.changes,
       deb_file=options.output,

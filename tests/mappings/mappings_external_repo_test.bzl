@@ -132,7 +132,7 @@ def mappings_external_repo_analysis_tests():
             # file, but then have it consumed by some remote package.
             "@mappings_test_external_repo//pkg:pf_local_file_in_extrepo",
             # This test is more focused around the verify_archive_test repo but is still
-            # based on using someting from another repo. In particular, ensuring the
+            # based on using something from another repo. In particular, ensuring the
             # verify_archive_test macro can be called properly from a workspace outside
             # of the main one.
             "@mappings_test_external_repo//pkg:external_archive_test",

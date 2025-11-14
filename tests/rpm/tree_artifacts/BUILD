@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 load(
     "//pkg:mappings.bzl",
     "REMOVE_BASE_DIRECTORY",

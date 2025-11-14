@@ -138,7 +138,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "foo/a", "data": b"a"},
         {"name": "foo/ab", "data": b"ab"},
         ]
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
       datafile = self.data_files.Rlocation(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
@@ -162,7 +162,7 @@ class TarFileWriterTest(unittest.TestCase):
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
-      for file_name in f.members:
+      for file_name in f.existing_members.keys():
         input_file = input_tar.getmember(file_name)
         output_file = f.tar.getmember(file_name)
         self.assertEqual(input_file.mtime, output_file.mtime)
@@ -176,7 +176,7 @@ class TarFileWriterTest(unittest.TestCase):
         self.assertEqual(output_file.mtime, 0)
 
   def testAddingDirectoriesForFile(self):
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True) as f:
       f.add_file("d/f")
     content = [
         {"name": "d", "mode": 0o755},
@@ -185,7 +185,7 @@ class TarFileWriterTest(unittest.TestCase):
     self.assertTarFileContent(self.tempfile, content)
 
   def testAddingDirectoriesForFileManually(self):
-    with tar_writer.TarFileWriter(self.tempfile) as f:
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
       f.add_file("d", tarfile.DIRTYPE)
       f.add_file("d/f")
 
@@ -207,6 +207,19 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "x", "mode": 0o755},
         {"name": "x/y", "mode": 0o755},
         {"name": "x/y/f"},
+    ]
+    self.assertTarFileContent(self.tempfile, content)
+
+  def testAddingOnlySpecifiedFiles(self):
+    with tar_writer.TarFileWriter(self.tempfile, allow_dups_from_deps=False) as f:
+      f.add_file("a", tarfile.DIRTYPE)
+      f.add_file("a/b", tarfile.DIRTYPE)
+      f.add_file("a/b/", tarfile.DIRTYPE)
+      f.add_file("a/b/c/f")
+    content = [
+        {"name": "a", "mode": 0o755},
+        {"name": "a/b", "mode": 0o755},
+        {"name": "a/b/c/f"},
     ]
     self.assertTarFileContent(self.tempfile, content)
 
@@ -247,6 +260,71 @@ class TarFileWriterTest(unittest.TestCase):
     ]
     self.assertTarFileContent(original, expected_content)
     self.assertTarFileContent(self.tempfile, expected_content)
+
+  def testAdditionOfDuplicatePath(self):
+    expected_content = [
+        {"name": "./" + x} for x in ["a", "b", "ab"]] + [
+        {"name": "./b", "data": "q".encode("utf-8")}
+    ]
+    with tar_writer.TarFileWriter(self.tempfile) as f:
+      datafile = self.data_files.Rlocation(
+        "rules_pkg/tests/testdata/tar_test.tar")
+      f.add_tar(datafile)
+      f.add_file('./b', content="q")
+
+    self.assertTarFileContent(self.tempfile, expected_content)
+
+  def testAdditionOfArchives(self):
+
+    expected_content = [
+        {"name": "./" + x} for x in ["a", "b", "ab", "a", "b", "ab"]
+    ]
+    with tar_writer.TarFileWriter(self.tempfile) as f:
+      datafile = self.data_files.Rlocation(
+        "rules_pkg/tests/testdata/tar_test.tar")
+
+      f.add_tar(datafile)
+      f.add_tar(datafile)
+
+    self.assertTarFileContent(self.tempfile, expected_content)
+
+  def testOnlyIntermediateParentsInferred(self):
+    expected_content = [
+      {"name": "./a", "mode": 0o111},
+      {"name": "./a/b", "mode": 0o755},
+      {"name": "./a/b/c"},
+    ]
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True) as f:
+      f.add_file('./a', tarfile.DIRTYPE, mode=0o111)
+      f.add_file('./a/b/c')
+
+    self.assertTarFileContent(self.tempfile, expected_content)
+
+  def testDirectoryDoesNotShadowSymlink(self):
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
+      f.add_file("target_dir", tarfile.DIRTYPE)
+      f.add_file("symlink", tarfile.SYMTYPE, link="target_dir")
+      f.add_file("symlink", tarfile.DIRTYPE)
+      f.add_file('symlink/a', content="q")
+    content = [
+      {"name": "target_dir", "type": tarfile.DIRTYPE},
+      {"name": "symlink", "type": tarfile.SYMTYPE},
+      {"name": "symlink/a", "type": tarfile.REGTYPE},
+    ]
+    self.assertTarFileContent(self.tempfile, content)
+
+  def testSymlinkDoesNotShadowDirectory(self):
+    with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
+      f.add_file("target_dir", tarfile.DIRTYPE)
+      f.add_file("not_a_symlink", tarfile.DIRTYPE)
+      f.add_file("not_a_symlink", tarfile.SYMTYPE, link="target_dir")
+      f.add_file('not_a_symlink/a', content="q")
+    content = [
+      {"name": "target_dir", "type": tarfile.DIRTYPE},
+      {"name": "not_a_symlink", "type": tarfile.DIRTYPE},
+      {"name": "not_a_symlink/a", "type": tarfile.REGTYPE},
+    ]
+    self.assertTarFileContent(self.tempfile, content)
 
 
 if __name__ == "__main__":

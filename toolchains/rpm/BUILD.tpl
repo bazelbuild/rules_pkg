@@ -5,6 +5,7 @@ rpmbuild_toolchain(
     name = "rpmbuild_auto",
     path = "{RPMBUILD_PATH}",
     version = "{RPMBUILD_VERSION}",
+    debuginfo_type = "{RPMBUILD_DEBUGINFO_TYPE}",
 )
 
 toolchain(
@@ -14,7 +15,7 @@ toolchain(
 )
 
 toolchain(
-    name = "zzz_rpmbuild_missing_toolchain",  # keep name lexigraphically last
+    name = "zzz_rpmbuild_missing_toolchain",  # keep name lexicographically last
     toolchain = "@rules_pkg//toolchains/rpm:no_rpmbuild",
     toolchain_type = "@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type",
 )

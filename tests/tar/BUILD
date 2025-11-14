@@ -24,6 +24,7 @@ load("//pkg:verify_archive.bzl", "verify_archive_test")
 load("//pkg/private/tar:tar.bzl", "SUPPORTED_TAR_COMPRESSIONS", "pkg_tar")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory", "fake_artifact", "link_tree")
+load(":defs.bzl", "raw_symlinks")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -89,6 +90,13 @@ pkg_tar(
     compressor = ":compressor",
     compressor_args = "-a -b -c",
     deps = ["//tests:testdata/tar_test.tar"],
+)
+
+pkg_tar(
+    name = "test-respect-externally-defined-duplicates",
+    allow_duplicates_from_deps = True,
+    create_parents = False,
+    deps = ["//tests:testdata/duplicate_entries.tar"],
 )
 
 #
@@ -283,7 +291,7 @@ verify_archive_test(
         "can_i_repackage_a_file_with_a_long_name/file_with_a_ridiculously_long_name_consectetur_adipiscing_elit_fusce_laoreet_lorem_neque_sed_pharetra_erat.txt",
     ],
     must_contain_regex = [
-        ".*can_i_repackage_a_file_with_a_long_name/$",
+        ".*can_i_repackage_a_file_with_a_long_name/",
     ],
     # there is really no need for these cases. I just want to use all the test capabilities.
     must_not_contain = [
@@ -323,9 +331,9 @@ pkg_tar(
 
 fake_artifact(
     name = "a_program",
+    executable = True,
     files = ["//tests:testdata/executable.sh"],
     runfiles = ["BUILD"],
-    executable = True,
 )
 
 pkg_tar(
@@ -339,25 +347,25 @@ pkg_tar(
 
 verify_archive_test(
     name = "runfiles_test",
-    target = ":test-tar-with-runfiles",
     must_contain = [
         "a_program",
-        "a_program.runfiles/tests/tar/BUILD",
+        "a_program.runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
             "an_executable.exe",
-            "an_executable.exe.runfiles/tests/foo.cc",
-            "an_executable.exe.runfiles/tests/an_executable.exe",
-            "an_executable.exe.runfiles/tests/testdata/hello.txt",
+            "an_executable.exe.runfiles/_main/tests/foo.cc",
+            "an_executable.exe.runfiles/_main/tests/an_executable.exe",
+            "an_executable.exe.runfiles/_main/tests/testdata/hello.txt",
         ],
         "//conditions:default": [
             "an_executable",
-            "an_executable.runfiles/tests/foo.cc",
-            "an_executable.runfiles/tests/an_executable",
-            "an_executable.runfiles/tests/testdata/hello.txt",
-        ]
+            "an_executable.runfiles/_main/tests/foo.cc",
+            "an_executable.runfiles/_main/tests/an_executable",
+            "an_executable.runfiles/_main/tests/testdata/hello.txt",
+        ],
     }),
+    target = ":test-tar-with-runfiles",
 )
 
 pkg_tar(
@@ -377,20 +385,20 @@ verify_archive_test(
     name = "runfiles_remap_base_path_test",
     must_contain = [
         "new_name",
-        "new_name.runfiles/tests/tar/BUILD",
+        "new_name.runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
             "other/different_name.exe",
-            "other/different_name.exe.runfiles/tests/foo.cc",
-            "other/different_name.exe.runfiles/tests/an_executable.exe",
-            "other/different_name.exe.runfiles/tests/testdata/hello.txt",
+            "other/different_name.exe.runfiles/_main/tests/foo.cc",
+            "other/different_name.exe.runfiles/_main/tests/an_executable.exe",
+            "other/different_name.exe.runfiles/_main/tests/testdata/hello.txt",
         ],
         "//conditions:default": [
             "other/different_name",
-            "other/different_name.runfiles/tests/foo.cc",
-            "other/different_name.runfiles/tests/an_executable",
-            "other/different_name.runfiles/tests/testdata/hello.txt",
+            "other/different_name.runfiles/_main/tests/foo.cc",
+            "other/different_name.runfiles/_main/tests/an_executable",
+            "other/different_name.runfiles/_main/tests/testdata/hello.txt",
         ],
     }),
     target = ":test-tar-remap-runfiles-base-path",
@@ -407,11 +415,11 @@ pkg_tar(
         # rename the entire runfiles directory
         "/a_program.runfiles/": "/a/program/runfiles/",
         # rename a specific file
-        "/an_executable.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
-        "/an_executable.exe.runfiles/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        "/an_executable.runfiles/_main/tests/testdata/hello.txt": "/myfiles/hello.txt",
+        "/an_executable.exe.runfiles/_main/tests/testdata/hello.txt": "/myfiles/hello.txt",
         # rename a specific subdirectory
-        "/an_executable.runfiles/tests/": "/mytests/",
-        "/an_executable.exe.runfiles/tests/": "/mytests/",
+        "/an_executable.runfiles/_main/tests/": "/mytests/",
+        "/an_executable.exe.runfiles/_main/tests/": "/mytests/",
     },
 )
 
@@ -419,7 +427,7 @@ verify_archive_test(
     name = "runfiles_remap_full_paths_test",
     must_contain = [
         "a_program",
-        "a/program/runfiles/tests/tar/BUILD",
+        "a/program/runfiles/_main/tests/tar/BUILD",
         "executable.sh",
     ] + select({
         "@platforms//os:windows": [
@@ -456,11 +464,20 @@ py_test(
         ":test-pkg-tar-from-pkg-files-with-attributes",
         ":test-pkg-tar-with-attributes",
         ":test-remap-paths-tree-artifact",
+        ":test-respect-externally-defined-duplicates.tar",
+        ":test-tar-compression_level--1",
+        ":test-tar-compression_level-3",
+        ":test-tar-compression_level-6",
+        ":test-tar-compression_level-9",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
         ":test-tar-long-filename",
         ":test-tar-mtime.tar",
+        ":test-tar-preserve_mode-False.tar",
+        ":test-tar-preserve_mode-True.tar",
+        ":test-tar-preserve_mtime-False.tar",
+        ":test-tar-preserve_mtime-True.tar",
         ":test-tar-repackaging-long-filename.tar",
         ":test-tar-strip_prefix-dot.tar",
         ":test-tar-strip_prefix-empty.tar",
@@ -617,6 +634,31 @@ pkg_tar(
 # Test with symlinks
 #
 
+raw_symlinks(name = "raw_symlinks")
+
+pkg_tar(
+    name = "raw_symlinks_tar",
+    srcs = [":raw_symlinks"],
+    include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "raw_symlinks_test",
+    tags = ["no_windows"],
+    target = ":raw_symlinks_tar",
+    # This test checks using relative symlinks, but Bazel always writes absolute
+    # symlinks on windows.
+    # See https://github.com/bazelbuild/bazel/issues/14224
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    verify_links = {
+        "raw_symlinks_link1": "link1",
+        "raw_symlinks_link1.runfiles/_main/tests/tar/raw_symlinks_runfile_link": "../runfile_link",
+    },
+)
+
 link_tree(
     name = "node_modules",
     links = {
@@ -710,3 +752,78 @@ verify_archive_test(
         "new/base/something/this": "that",
     },
 )
+
+fake_artifact(
+    name = "program_with_dir_runfiles",
+    files = ["//tests:testdata/executable.sh"],
+    runfiles = [
+        ":generate_tree",
+    ],
+)
+
+pkg_tar(
+    name = "program_with_dir_runfiles_tar",
+    srcs = [
+        ":program_with_dir_runfiles",
+    ],
+    include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "program_with_dir_runfiles_test",
+    must_contain = [
+        "program_with_dir_runfiles.runfiles",
+        "program_with_dir_runfiles.runfiles/_main",
+        "program_with_dir_runfiles.runfiles/_main/tests",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/a",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/b",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/a/b/c",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/c",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/c/d",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/d",
+        "program_with_dir_runfiles.runfiles/_main/tests/tar/generate_tree/b/e",
+        "executable.sh",
+        "program_with_dir_runfiles",
+    ],
+    target = ":program_with_dir_runfiles_tar",
+)
+
+[pkg_tar(
+    name = "test-tar-compression_level-%s" % compression_level,
+    compression_level = compression_level,
+    extension = "tgz",
+    deps = [
+        "//tests:testdata/tar_test.tar",
+    ],
+) for compression_level in [
+    -1,
+    3,
+    6,
+    9,
+]]
+
+[pkg_tar(
+    name = "test-tar-preserve_mode-%s" % state,
+    srcs = [
+        "//tests:testdata/hello.txt",  # rw- r-- r--
+    ],
+    preserve_mode = state,
+) for state in [
+    True,
+    False,
+]]
+
+[pkg_tar(
+    name = "test-tar-preserve_mtime-%s" % state,
+    srcs = [
+        "//tests:testdata/hello.txt",
+    ],
+    preserve_mtime = state,
+) for state in [
+    True,
+    False,
+]]

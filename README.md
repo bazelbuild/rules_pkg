@@ -28,7 +28,7 @@ Any new capabilities will be added here.
 
 Sample, but see [releases](https://github.com/bazelbuild/rules_pkg/releases) for the current release.
 
-```
+```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_pkg",
@@ -44,7 +44,7 @@ rules_pkg_dependencies()
 
 To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
 system installed `rpmbuild` with this stanza.
-```
+```starlark
 load("@rules_pkg//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild")
 
 find_system_rpmbuild(
@@ -55,12 +55,12 @@ find_system_rpmbuild(
 
 ## MODULE.bazel setup
 
-```
+```starlark
 bazel_dep(name = "rules_pkg", version = "0.0.10")
 ```
 To use `pkg_rpm()`, you must provide a copy of `rpmbuild`. You can use the
 system installed `rpmbuild` with this stanza.
-```
+```starlark
 find_rpm = use_extension("//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild_bzlmod")
 use_repo(find_rpm, "rules_pkg_rpmbuild")
 register_toolchains("@rules_pkg_rpmbuild//:all")

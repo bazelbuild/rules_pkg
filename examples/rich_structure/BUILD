@@ -22,7 +22,7 @@ load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
 #
 # This example shows various techniques for specifying how your source tree
 # transforms into the installation tree. As such, it favors using a lot of
-# distict features, at the expense of uniformity.
+# distinct features, at the expense of uniformity.
 
 pkg_files(
     name = "share_doc",

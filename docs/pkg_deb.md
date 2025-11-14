@@ -79,5 +79,3 @@ Creates a deb file. See pkg_deb_impl.
 | name |  <p align="center"> - </p>   |  none |
 | archive_name |  <p align="center"> - </p>   |  <code>None</code> |
 | kwargs |  <p align="center"> - </p>   |  none |
-
-

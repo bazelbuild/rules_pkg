@@ -59,14 +59,20 @@ def _pkg_files_contents_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     expected_dests = {e: None for e in ctx.attr.expected_dests}
-    n_found = 0
-    for got in target_under_test[PackageFilesInfo].dest_src_map.keys():
+    actual_dests = target_under_test[PackageFilesInfo].dest_src_map.keys()
+
+    for actual in actual_dests:
         asserts.true(
-            got in expected_dests,
-            "got <%s> not in expected set: %s" % (got, ctx.attr.expected_dests),
+            env,
+            actual in expected_dests,
+            "actual dest <%s> not in expected expected set: %s" % (actual, ctx.attr.expected_dests),
         )
-        n_found += 1
-    asserts.equals(env, len(expected_dests), n_found)
+    for expected in expected_dests:
+        asserts.true(
+            env,
+            expected in actual_dests,
+            "expected dest <%s> missing from actual set: %s" % (expected, actual_dests),
+        )
 
     # Simple equality checks for the others, if specified
     if ctx.attr.expected_attributes:
@@ -248,6 +254,35 @@ def _test_pkg_files_contents():
     generic_negative_test(
         name = "pf_strip_prefix_from_root_invalid",
         target_under_test = ":pf_strip_prefix_from_root_invalid_g",
+    )
+
+    # Test include_runfiles.
+    pkg_files(
+        name = "pf_include_runfiles_g",
+        include_runfiles = True,
+        srcs = ["//tests:an_executable"],
+        tags = ["manual"],
+    )
+
+    pkg_files_contents_test(
+        name = "pf_include_runfiles",
+        target_under_test = ":pf_include_runfiles_g",
+        expected_dests = select(
+            {
+                "@bazel_tools//src/conditions:windows": [
+                    "an_executable.exe",
+                    "an_executable.exe.runfiles/_repo_mapping",
+                    "an_executable.exe.runfiles/_main/tests/foo.cc",
+                    "an_executable.exe.runfiles/_main/tests/testdata/hello.txt",
+                ],
+                "//conditions:default": [
+                    "an_executable",
+                    "an_executable.runfiles/_repo_mapping",
+                    "an_executable.runfiles/_main/tests/foo.cc",
+                    "an_executable.runfiles/_main/tests/testdata/hello.txt",
+                ],
+            },
+        ),
     )
 
 def _test_pkg_files_exclusions():
@@ -970,7 +1005,6 @@ _gen_manifest_test_main = rule(
     },
 )
 
-# buildifier: disable=function-docstring-args
 def manifest_golden_test(name, target, expected):
     """Tests that a content manifest file matches a golden copy.
 
@@ -978,6 +1012,7 @@ def manifest_golden_test(name, target, expected):
     expected content.
 
     Args:
+      name: name
       target: A target which produces a content manifest with the name
           <target> + ".manifest"
       expected: label of a file containing the expected content.

@@ -25,13 +25,14 @@ UNIX_DIR_BIT = 0o40000
 MSDOS_DIR_BIT = 0x10
 UNIX_RWX_BITS = 0o777
 UNIX_RX_BITS = 0o555
+UNIX_SYMLINK_BIT = 0o120000
 
 # The ZIP epoch date: (1980, 1, 1, 0, 0, 0)
 _ZIP_EPOCH_DT = datetime.datetime(1980, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
 _ZIP_EPOCH_S = int(_ZIP_EPOCH_DT.timestamp())
 
 def seconds_to_ziptime(s):
-  dt = datetime.datetime.utcfromtimestamp(s)
+  dt = datetime.datetime.fromtimestamp(s, tz=datetime.timezone.utc)
   return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 
@@ -77,7 +78,17 @@ class ZipContentsTestBase(ZipTest):
                            oct(expected.get("attr", 0o755)))
         elif "isexe" in expected:
           got_mode = (info.external_attr >> 16) & UNIX_RX_BITS
-          self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
+          if expected['isexe']:
+            self.assertEqual(oct(got_mode), oct(UNIX_RX_BITS))
+          else:
+            self.assertNotEqual(oct(got_mode), oct(UNIX_RX_BITS))
+        elif "islink" in expected:
+          got_mode = (info.external_attr >> 16) & UNIX_SYMLINK_BIT
+          if expected['islink']:
+            self.assertEqual(oct(got_mode), oct(UNIX_SYMLINK_BIT))
+          else:
+            self.assertNotEqual(oct(got_mode), oct(UNIX_SYMLINK_BIT))
+
         elif "size" in expected:
           self.assertEqual(info.compress_size, expected["size"])
 

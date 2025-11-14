@@ -13,15 +13,3 @@ local_repository(
 #    name = "rules_pkg_rpmbuild",
 #    verbose = False,
 #)
-
-# Needed for making our release notes
-load("//toolchains/git:git_configure.bzl", "experimental_find_system_git_bzlmod")
-
-experimental_find_system_git_bzlmod(
-    name = "rules_pkg_git",
-    verbose = False,
-)
-register_toolchains(
-    "@rules_pkg_git//:git_auto_toolchain",
-    "//toolchains/git:git_missing_toolchain",
-)

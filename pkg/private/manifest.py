@@ -19,6 +19,7 @@ import json
 
 
 # These must be kept in sync with the declarations in private/pkg_files.bzl
+ENTRY_IS_RAW_LINK = "raw_symlink"  # Entry is a file: take content from <src>
 ENTRY_IS_FILE = "file"  # Entry is a file: take content from <src>
 ENTRY_IS_LINK = "symlink"  # Entry is a symlink: dest -> <src>
 ENTRY_IS_DIR = "dir"  # Entry is an empty dir

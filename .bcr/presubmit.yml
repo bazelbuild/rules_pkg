@@ -11,7 +11,7 @@ platforms:
     build_targets: *build_targets
   macos:
     build_targets: *build_targets
-  ubuntu2004:
+  ubuntu2204:
     build_targets: *build_targets
   windows:
     build_targets: *build_targets

@@ -29,10 +29,12 @@ The mechanism for choosing between the two is documented in the function itself.
 
 """
 
-load("//pkg:rpm_pfg.bzl", pkg_rpm_pfg = "pkg_rpm")
+load("//pkg:rpm_pfg.bzl", _pkg_sub_rpm = "pkg_sub_rpm", pkg_rpm_pfg = "pkg_rpm")
 load("//pkg/legacy:rpm.bzl", pkg_rpm_legacy = "pkg_rpm")
 
-def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
+pkg_sub_rpm = _pkg_sub_rpm
+
+def pkg_rpm(name, srcs = None, spec_file = None, subrpms = None, **kwargs):
     """pkg_rpm wrapper
 
     This rule selects between the two implementations of pkg_rpm as described in
@@ -47,20 +49,25 @@ def pkg_rpm(name, srcs = None, spec_file = None, **kwargs):
       name: rule name
       srcs: pkg_rpm_pfg `srcs` attribute
       spec_file: pkg_rpm_legacy `spec_file` attribute
+      subrpms: pkg_rpm_pfg `subrpms` attribute
       **kwargs: arguments to either `pkg_rpm_pfg` or `pkg_rpm_legacy`,
                 depending on mode
 
     """
-    if srcs and spec_file:
+    if srcs != None and spec_file:
         fail("Cannot determine which pkg_rpm rule to use.  `srcs` and `spec_file` are mutually exclusive")
 
-    if not srcs and not spec_file:
+    if subrpms and spec_file:
+        fail("Cannot build sub RPMs with a specfile.  `subrpms` and `spec_file` are mutually exclusive")
+
+    if srcs == None and not spec_file:
         fail("Either `srcs` or `spec_file` must be provided.")
 
-    if srcs:
+    if srcs != None:
         pkg_rpm_pfg(
             name = name,
             srcs = srcs,
+            subrpms = subrpms,
             **kwargs
         )
     elif spec_file:

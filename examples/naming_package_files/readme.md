@@ -87,7 +87,7 @@ pkg_deb(
     name = "a_deb_package",
     package = "foo-tools",
     ...
-    # Note: target_cpu comes from the --cpu on the command line, and dows not
+    # Note: target_cpu comes from the --cpu on the command line, and does not
     # have to be stated in the BUILD file.
     package_file_name = "foo-tools_{version}-{revision}_{target_cpu}.deb",
     package_variables = ":my_naming_vars",
@@ -104,4 +104,3 @@ $ ls -l bazel-bin/a_deb_package.deb bazel-bin/foo-tools_1-2_k8.deb
 lrwxrwxrwx 1 user primarygroup   163 Jul 26 12:56 bazel-bin/a_deb_package.deb -> /home/user/.cache/bazel/_bazel_user/.../execroot/rules_pkg_examples/bazel-out/k8-fastbuild/bin/foo-tools_1-2_k8.deb
 -r-xr-xr-x 1 user primarygroup 10662 Jul 26 12:56 bazel-bin/foo-tools_1-2_k8.deb
 ```
-

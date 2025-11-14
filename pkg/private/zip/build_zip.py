@@ -74,7 +74,7 @@ def _combine_paths(left, right):
 
 
 def parse_date(ts):
-  ts = datetime.datetime.utcfromtimestamp(ts)
+  ts = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
   return (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
 
 
@@ -182,6 +182,11 @@ class ZipWriter(object):
       # Set directory bits
       entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
       self.zip_file.writestr(entry_info, src.encode('utf-8'))
+    elif entry_type == manifest.ENTRY_IS_RAW_LINK:
+      entry_info.compress_type = zipfile.ZIP_STORED
+      # Set directory bits
+      entry_info.external_attr |= (UNIX_SYMLINK_BIT << 16)
+      self.zip_file.writestr(entry_info, os.readlink(src).encode('utf-8'))
     elif entry_type == manifest.ENTRY_IS_TREE:
       self.add_tree(src, dst_path, mode)
     elif entry_type == manifest.ENTRY_IS_EMPTY_FILE:

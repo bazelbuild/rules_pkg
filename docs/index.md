@@ -16,6 +16,8 @@ attributes only defined in the "Legacy" documentation. You may have to
 consult more than one place to get a complete picture.
 
 *   [Latest Snapshot at head](latest.md)
+*   [Version 1.1.0](1.1.0/reference.md)
+*   [Version 1.0.1](1.0.1/reference.md)
 *   [Version 0.10.0](0.10.0/reference.md)
 *   [Version 0.9.1](0.9.1/reference.md)
 *   [Version 0.8.0](0.8.0/reference.md)

@@ -29,8 +29,9 @@ here.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
+load("//pkg/private:util.bzl", "get_repo_mapping_manifest")
 
-# TODO(#333): strip_prefix module functions should produce unique outputs.  In
+# TODO(#333): strip_prefix module functions should produce unique outputs. In
 # particular, this one and `_sp_from_pkg` can overlap.
 _PKGFILEGROUP_STRIP_ALL = "."
 
@@ -42,14 +43,12 @@ def _sp_files_only():
 def _sp_from_pkg(path = ""):
     if path.startswith("/"):
         return path[1:]
-    else:
-        return path
+    return path
 
 def _sp_from_root(path = ""):
     if path.startswith("/"):
         return path
-    else:
-        return "/" + path
+    return "/" + path
 
 strip_prefix = struct(
     _doc = """pkg_files `strip_prefix` helper.  Instructs `pkg_files` what to do with directory prefixes of files.
@@ -147,21 +146,20 @@ def _do_strip_prefix(path, to_strip, src_file):
 
     if path_norm.startswith(to_strip_norm):
         return path_norm[len(to_strip_norm):]
-    elif src_file.is_directory and (path_norm + "/") == to_strip_norm:
+    if src_file.is_directory and (path_norm + "/") == to_strip_norm:
         return ""
-    else:
-        # Avoid user surprise by failing if prefix stripping doesn't work as
-        # expected.
-        #
-        # We already leave enough breadcrumbs, so if File.owner() returns None,
-        # this won't be a problem.
-        failmsg = "Could not strip prefix '{}' from file {} ({})".format(to_strip, str(src_file), str(src_file.owner))
-        if src_file.is_directory:
-            failmsg += """\n\nNOTE: prefix stripping does not operate within TreeArtifacts (directory outputs)
+
+    # Avoid user surprise by failing if prefix stripping doesn't work as expected.
+    #
+    # We already leave enough breadcrumbs, so if File.owner() returns None,
+    # this won't be a problem.
+    failmsg = "Could not strip prefix '{}' from file {} ({})".format(to_strip, str(src_file), str(src_file.owner))
+    if src_file.is_directory:
+        failmsg += """\n\nNOTE: prefix stripping does not operate within TreeArtifacts (directory outputs)
 
 To strip the directory named by the TreeArtifact itself, see documentation for the `renames` attribute.
 """
-        fail(failmsg)
+    fail(failmsg)
 
 # The below routines make use of some path checking magic that may difficult to
 # understand out of the box.  This following table may be helpful to demonstrate
@@ -188,8 +186,7 @@ def _owner(file):
     # File.owner returns a Label structure
     if file.owner == None:
         fail("File {} ({}) has no owner attribute; cannot continue".format(file, file.path))
-    else:
-        return file.owner
+    return file.owner
 
 def _relative_workspace_root(label):
     # Helper function that returns the workspace root relative to the bazel File
@@ -218,7 +215,7 @@ def _path_relative_to_repo_root(file):
     )
 
 def _pkg_files_impl(ctx):
-    # The input sources are already known.  Let's calculate the destinations...
+    # The input sources are already known. Let's calculate the destinations...
 
     # Exclude excludes
     srcs = []  # srcs is source File objects, not Targets
@@ -260,9 +257,9 @@ def _pkg_files_impl(ctx):
     # Do file renaming
     for rename_src, rename_dest in ctx.attr.renames.items():
         # rename_src.files is a depset
-        rename_src_files = rename_src.files.to_list()
+        rename_src_files = rename_src[DefaultInfo].files.to_list()
 
-        # Need to do a length check before proceeding.  We cannot rename
+        # Need to do a length check before proceeding. We cannot rename
         # multiple files simultaneously.
         if len(rename_src_files) != 1:
             fail(
@@ -298,7 +295,7 @@ def _pkg_files_impl(ctx):
             target = file_to_target[src]
             runfiles = target[DefaultInfo].default_runfiles
             if runfiles:
-                base_path = src_dest_paths_map[src] + ".runfiles"
+                base_path = src_dest_paths_map[src] + ".runfiles/" + ctx.workspace_name
                 for rf in runfiles.files.to_list():
                     dest_path = paths.join(base_path, rf.short_path)
 
@@ -310,6 +307,13 @@ def _pkg_files_impl(ctx):
                             print("same source mapped to different locations", rf, have_it, dest_path)
                     else:
                         src_dest_paths_map[rf] = dest_path
+
+                # if repo_mapping manifest exists (for e.g. with --enable_bzlmod),
+                # create _repo_mapping under runfiles directory
+                repo_mapping_manifest = get_repo_mapping_manifest(target)
+                if repo_mapping_manifest:
+                    dest_path = paths.join(src_dest_paths_map[src] + ".runfiles", "_repo_mapping")
+                    src_dest_paths_map[repo_mapping_manifest] = dest_path
 
     # At this point, we have a fully valid src -> dest mapping in src_dest_paths_map.
     #
@@ -433,7 +437,7 @@ pkg_files = rule(
             will result in all containing files and directories being installed
             relative to the otherwise specified install prefix (via the `prefix`
             and `strip_prefix` attributes), not the directory name.
-            
+
             The following keys are rejected:
 
             - Any label that expands to more than one file (mappings must be
@@ -441,13 +445,13 @@ pkg_files = rule(
 
             - Any label or file that was either not provided or explicitly
               `exclude`d.
-            
+
             The following values result in undefined behavior:
 
             - "" (the empty string)
 
             - "."
-            
+
             - Anything containing ".."
 
             """,
@@ -800,14 +804,14 @@ filter_directory = rule(
     doc = """Transform directories (TreeArtifacts) using pkg_filegroup-like semantics.
 
     Effective order of operations:
-    
+
     1) Files are `exclude`d
     2) `renames` _or_ `strip_prefix` is applied.
-    3) `prefix` is applied 
-    
+    3) `prefix` is applied
+
     In particular, if a `rename` applies to an individual file, `strip_prefix`
     will not be applied to that particular file.
-    
+
     Each non-`rename``d path will look like this:
 
     ```
@@ -815,11 +819,11 @@ filter_directory = rule(
     ```
 
     Each `rename`d path will look like this:
-    
+
     ```
     $OUTPUT_DIR/$PREFIX/$FILE_RENAMED
     ```
-    
+
     If an operation cannot be applied (`strip_prefix`) to any component in the
     directory, or if one is unused (`exclude`, `rename`), the underlying command
     will fail.  See the individual attributes for details.
@@ -850,11 +854,11 @@ filter_directory = rule(
         ),
         "renames": attr.string_dict(
             doc = """Files to rename in the output directory.
-            
+
             Keys are destinations, values are sources prior to any path
             modifications (e.g. via `prefix` or `strip_prefix`).  Files that are
             `exclude`d must not be renamed.
-            
+
             This currently only operates on individual files.  `strip_prefix`
             does not apply to them.
 
@@ -863,7 +867,7 @@ filter_directory = rule(
         ),
         "excludes": attr.string_list(
             doc = """Files to exclude from the output directory.
-            
+
             Each element must refer to an individual file in `src`.
 
             All exclusions must be used.

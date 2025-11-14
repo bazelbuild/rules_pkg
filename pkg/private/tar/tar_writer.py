@@ -35,6 +35,18 @@ PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
 
 _DEBUG_VERBOSITY = 0
 
+TARFILE_MEMBER_TYPE_TO_STR = {
+    b"0": "REGTYPE",
+    b"\0": "AREGTYPE",
+    b"1": "LNKTYPE",
+    b"2": "SYMTYPE",
+    b"3": "CHRTYPE",
+    b"4": "BLKTYPE",
+    b"5": "DIRTYPE",
+    b"6": "FIFOTYPE",
+    b"7": "CONTTYPE",
+}
+
 
 class TarFileWriter(object):
   """A wrapper to write tar files."""
@@ -46,8 +58,11 @@ class TarFileWriter(object):
                name,
                compression='',
                compressor='',
+               create_parents=False,
+               allow_dups_from_deps=True,
                default_mtime=None,
-               preserve_tar_mtimes=True):
+               preserve_tar_mtimes=True,
+               compression_level=-1):
     """TarFileWriter wraps tarfile.open().
 
     Args:
@@ -84,10 +99,11 @@ class TarFileWriter(object):
     else:
       mode = 'w:'
       if compression in ['tgz', 'gz']:
+        compression_level = min(compression_level, 9) if compression_level >= 0 else 6
         # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
         # Instead, we manually reimplement gzopen from tarfile.py and set mtime.
         self.fileobj = gzip.GzipFile(
-            filename=name, mode='w', compresslevel=6, mtime=self.default_mtime)
+            filename=name, mode='w', compresslevel=compression_level, mtime=self.default_mtime)
     self.compressor_proc = None
     if self.compressor_cmd:
       mode = 'w|'
@@ -98,14 +114,10 @@ class TarFileWriter(object):
     self.name = name
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
-                            format=tarfile.GNU_FORMAT) 
-    self.members = set()
-    self.directories = set()
-    # Preseed the added directory list with things we should not add. If we
-    # some day need to allow '.' or '/' as an explicit member of the archive,
-    # we can adjust that here based on the setting of root_dirctory.
-    self.directories.add('/')
-    self.directories.add('./')
+                            format=tarfile.GNU_FORMAT)
+    self.existing_members = {}
+    self.create_parents = create_parents
+    self.allow_dups_from_deps = allow_dups_from_deps
 
   def __enter__(self):
     return self
@@ -113,24 +125,43 @@ class TarFileWriter(object):
   def __exit__(self, t, v, traceback):
     self.close()
 
-  def _have_added(self, path):
-    """Have we added this file before."""
-    return (path in self.members) or (path in self.directories)
+  def _existing_member_type(self, path):
+    """Retrieve an existing tar file member's type if we have added it previously,
+    return None otherwise."""
+    # Things we should not add.
+    # If we some day need to allow '.' or '/' as an explicit member of the archive,
+    # we can adjust that here based on the setting of root_directory.
+    if path == '/' or path == './':
+      return tarfile.DIRTYPE
+
+    normalized_path = path.rstrip("/")
+    return self.existing_members.get(normalized_path, None)
 
   def _addfile(self, info, fileobj=None):
     """Add a file in the tar file if there is no conflict."""
     if info.type == tarfile.DIRTYPE:
-      # Enforce the ending / for directories so we correctly deduplicate.
+      # Enforce the ending / for directories.
       if not info.name.endswith('/'):
         info.name += '/'
-    if not self._have_added(info.name):
-      self.tar.addfile(info, fileobj)
-      self.members.add(info.name)
-      if info.type == tarfile.DIRTYPE:
-        self.directories.add(info.name)
-    elif info.type != tarfile.DIRTYPE:
-      print('Duplicate file in archive: %s, '
-            'picking first occurrence' % info.name)
+    existing_member_type = self._existing_member_type(info.name)
+    if not self.allow_dups_from_deps and existing_member_type is not None:
+      # Directories with different contents should get merged without warnings.
+      # If they have overlapping content, the warning will be on their duplicate *files* instead
+      if info.type != tarfile.DIRTYPE:
+        print('Duplicate file in archive: %s, '
+              'picking first occurrence' % info.name)
+      # Directories that shadow
+      elif existing_member_type != tarfile.DIRTYPE and existing_member_type != tarfile.SYMTYPE:
+        print('Directory shadows a member of type %s in archive: %s, '
+              'picking first occurrence' % (TARFILE_MEMBER_TYPE_TO_STR.get(
+                  existing_member_type, "UNKNOWN"), info.name))
+
+      return
+
+    self.tar.addfile(info, fileobj)
+    # Strip the trailing slash from the path so that we can detect when, for example, we are
+    # trying to overwrite a symbolic link with a directory.
+    self.existing_members[info.name.rstrip("/")] = info.type
 
   def add_directory_path(self,
                          path,
@@ -152,7 +183,7 @@ class TarFileWriter(object):
       mode: unix permission mode of the file, default: 0755.
     """
     assert path[-1] == '/'
-    if not path or self._have_added(path):
+    if not path:
       return
     if _DEBUG_VERBOSITY > 1:
       print('DEBUG: adding directory', path)
@@ -166,12 +197,15 @@ class TarFileWriter(object):
     tarinfo.gname = gname
     self._addfile(tarinfo)
 
-  def add_parents(self, path, uid=0, gid=0, uname='', gname='', mtime=0, mode=0o755):
+  def conditionally_add_parents(self, path, uid=0, gid=0, uname='', gname='', mtime=0, mode=0o755):
     dirs = path.split('/')
     parent_path = ''
     for next_level in dirs[0:-1]:
       parent_path = parent_path + next_level + '/'
-      self.add_directory_path(
+
+      if self.create_parents and self._existing_member_type(
+          parent_path) is None:
+        self.add_directory_path(
           parent_path,
           uid=uid,
           gid=gid,
@@ -212,14 +246,15 @@ class TarFileWriter(object):
       return
     if name == '.':
       return
-    if name in self.members:
+    if not self.allow_dups_from_deps and self._existing_member_type(
+        name) is not None:
       return
 
     if mtime is None:
       mtime = self.default_mtime
 
     # Make directories up the file
-    self.add_parents(name, mtime=mtime, mode=0o755, uid=uid, gid=gid, uname=uname, gname=gname)
+    self.conditionally_add_parents(name, mtime=mtime, mode=0o755, uid=uid, gid=gid, uname=uname, gname=gname)
 
     tarinfo = tarfile.TarInfo(name)
     tarinfo.mtime = mtime
@@ -291,7 +326,7 @@ class TarFileWriter(object):
         if prefix:
           in_name = os.path.normpath(prefix + in_name).replace(os.path.sep, '/')
         tarinfo.name = in_name
-        self.add_parents(
+        self.conditionally_add_parents(
             path=tarinfo.name,
             mtime=tarinfo.mtime,
             mode=0o755,
@@ -335,4 +370,3 @@ class TarFileWriter(object):
     if self.compressor_proc and self.compressor_proc.wait() != 0:
       raise self.Error('Custom compression command '
                        '"{}" failed'.format(self.compressor_cmd))
-

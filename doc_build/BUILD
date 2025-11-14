@@ -20,7 +20,8 @@ How to:
 """
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
 
 package(default_applicable_licenses = ["//:license"])
@@ -30,20 +31,9 @@ filegroup(
     srcs = [
         "BUILD",
     ] + glob([
-        "*.bzl",
         "*.py",
     ]),
     visibility = ["//distro:__pkg__"],
-)
-
-exports_files(
-    glob([
-        "*.bzl",
-    ]),
-    visibility = [
-        "//distro:__pkg__",
-        "//doc_build:__pkg__",
-    ],
 )
 
 # pairs of rule name and the source file to get it from
@@ -53,6 +43,7 @@ ORDER = [
     ("common", None),
     ("pkg_deb", "//pkg/private/deb:deb.bzl"),
     ("pkg_deb_impl", "//pkg/private/deb:deb.bzl"),
+    ("pkg_sub_rpm", "//pkg:rpm_pfg.bzl"),
     ("pkg_rpm", "//pkg:rpm_pfg.bzl"),
     ("pkg_tar", "//pkg/private/tar:tar.bzl"),
     ("pkg_tar_impl", "//pkg/private/tar:tar.bzl"),
@@ -78,7 +69,10 @@ genrule(
         symbol_names = [
             rule,
         ],
-        deps = [":rules_pkg_lib"],
+        deps = [
+            ":rules_pkg_lib",
+            "//toolchains/rpm:standard_package",
+        ],
     )
     for rule, src in ORDER
     if src

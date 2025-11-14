@@ -282,4 +282,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    exit(main(sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

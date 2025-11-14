@@ -43,7 +43,7 @@ Thanks to: Alex Bozhenko, Chuck Grindel, Diego Ortin, and Tomasz Wojno
 -   Align pkg_rpm returned files with other rules (#692)
 -   fix(pkg_tar): properly normalize paths for empty files (#760)
 -   Document that package_dir also uses package_variables (#747)
--   Fix handling paths with whitepsaces (#733)
+-   Fix handling paths with whitespaces (#733)
 -   Fix python 3.6, doesn't support compresslevel
 -   Use Gzip compress level 6 (#720)
 -   write debian Date field in UTC rather than local time (#712)
@@ -51,7 +51,7 @@ Thanks to: Alex Bozhenko, Chuck Grindel, Diego Ortin, and Tomasz Wojno
 
 **Breaking Changes
 -   Remove PackageArtifactsInfo. (#752)
-    
+
 Thanks to: Adam Azarchs, Alex Eagle, August Karlstedt, Austin Schuh, Adrian Vogelsgesang,
 flode, Florian Scheibner, Ignas Kaziukėnas, Jean-Hadrien Chabran, Matt,
 Mike Kelly, Paul Draper, Sam Schwebach, Tomasz Wojno, and Vertexwahn
@@ -117,7 +117,7 @@ for contributions to this release.
 - Get rid of the long deprecated archive_name and extension from pkg_zip. (#552)
   - Make 'out' work in a reasonable way. Fixes #414
   - Partial fix for #284
- 
+
 ## Bug fixes:
 
 - Only allow .deb Description to be multiline. (#573)
@@ -414,7 +414,7 @@ and Ulf Adams
 
 -   Author: aiuto <aiuto@google.com>
     Date:   Fri May 22 14:50:42 2020 -0400
-    Add a minimal WORKSPACE file to the distributon. (#182)
+    Add a minimal WORKSPACE file to the distribution. (#182)
     We extract this from the top level workspace so it is easier to keep in sync.
 -   commit 808c192a0c48f292e6dfaaeb3bfa3d4378f6996d
 
@@ -533,11 +533,11 @@ commit 48001d12e7037b04dc5b28fadfb1e10a8447e2fc
     Date:   Thu Mar 12 15:14:32 2020 -0400
 
     Depend on rules_python (#140)
-    
+
     * load rules python
-    
+
     * add workspace deps
-    
+
     * add missing loads
 
 commit 2b375a08bfe36d2c35885a6f4e5b12d7898c9426
@@ -545,11 +545,11 @@ commit 2b375a08bfe36d2c35885a6f4e5b12d7898c9426
     Date:   Wed Mar 11 14:49:21 2020 -0400
 
     Update test data in response to #121 (#137)
-    
+
     PR #121 changed pkg_deb's behavior but didn't update test data to match.
-    
+
     Reported in PR #132.
-    
+
     Testing Done:
     - `bazelisk test ...`
 
@@ -558,29 +558,29 @@ commit e5919f43791b2d4c5ab9e68786087cf889b9987e
     Date:   Fri Feb 28 01:22:37 2020 -0500
 
     Add pkgfilegroup for package-independent destination mappings (#128)
-    
+
     * Add pkgfilegroup for package-independent destination mappings
-    
+
     This adds an experimental rule, `pkgfilegroup`, along with associated Providers,
     that gives rule developers and users a consistent mechanism for using the output
     of bazel targets in packaging rules.
-    
+
     Inspired by #36.
-    
+
     Other capabilities that are provided by this that were not mentioned in #36 are:
-    
+
     - Creation of empty directories (`pkg_mkdirs`)
     - Exclusion of files from a `pkgfilegroup` (`excludes`)
     - Renames of files in a `pkgfilegroup` (`renames`)
-    
+
     * Add analysis tests for pkgfilegroup and friends
-    
+
     This provides some analysis tests for various features of `pkgfilegroup` and
     `pkg_mkdirs`.  See #128.
-    
+
     You can run them by invoking `bazel test experimental/...` from the `pkg`
     directory
-    
+
     This implementation of pkgfilegroup was inspired by #36.
 
 commit 7a991dea418ab17c7e86f0a7b5e7d4a87ef4304b
@@ -588,15 +588,15 @@ commit 7a991dea418ab17c7e86f0a7b5e7d4a87ef4304b
     Date:   Fri Feb 28 01:02:24 2020 -0500
 
     Improve handling of sources from external repositories (#132)
-    
+
     Avoid use of [`File.short_path`][1] when mapping filenames, because when
     creating archives from files imported from external repositories we'll create
     archive members with leading `./../` prefixes.  Instead, we'll stick to stripping
     to leading `File.root.path` (if present) from `File.path`, resulting in archive
     members like `external/repo/package/file.txt`.
-    
+
     [1]: https://docs.bazel.build/versions/master/skylark/lib/File.html#short_path
-    
+
     Resolves #131.
 
 commit 532f2857e712c5fcb71c662d680108685b242251
@@ -610,7 +610,7 @@ commit 5877fa85b8598b5bb2186d3addca2408b1e61c5e
     Date:   Fri Feb 28 05:49:40 2020 +0000
 
     Rpm source date epoch (#113)
-    
+
     * Added --source_date_epoch
     * Support source_date_epoch_file since stamp variables are not accessible
     * Fixed _make_rpm label
@@ -628,9 +628,9 @@ commit 2f5c9815a7bde4f18acfde268bd63fedd107d87c
     Date:   Wed Dec 4 22:32:01 2019 +0100
 
     Add "./" prefix to files in control.tar (#121)
-    
+
     This improves compatibility to Debian packages created using dpkg.
-    
+
     https://github.com/bazelbuild/rules_pkg/issues/116
 
 commit 2f09779667f0d6644c2ca5914d6113a82666ec63
@@ -638,7 +638,7 @@ commit 2f09779667f0d6644c2ca5914d6113a82666ec63
     Date:   Fri Nov 15 10:09:45 2019 -0800
 
     pkg_deb: Support Breaks and Replaces. (#117)
-    
+
     https://www.debian.org/doc/debian-policy/ch-relationships.html#overwriting-files-and-replacing-packages-replaces
 
 commit 9192d3b3a0f6ccfdecdc66f08f0b2664fa0afc0f
@@ -646,7 +646,7 @@ commit 9192d3b3a0f6ccfdecdc66f08f0b2664fa0afc0f
    Date:   Fri Oct 4 16:33:47 2019 -0400
 
     Fix repo names with '-' in them.
-    
+
     We can not use the form "@repo-name" in Bazel, so the common solution is
     to transform that to "@repo_name". We auto-correct the repo names to the
     required form when printing the WORKSPACE stanza.

@@ -23,7 +23,7 @@ import sys
 import typing
 
 
-ID_RE = re.compile(r'<a id="#(.*)">')
+ID_RE = re.compile(r'<a id="(.*)">')
 WRAPS_RE = re.compile(r'@wraps\((.*)\)')
 SINCE_RE = re.compile(r'@since\(([^)]*)\)')
 CENTER_RE = re.compile(r'<p align="center">([^<]*)</p>')
@@ -75,12 +75,13 @@ def fix_stardoc_table_align(line: str) -> str:
 
 def main(argv: typing.Sequence[str]) -> None:
   wrapper_map = {}
-  for file in argv[1:]: 
+  for file in argv[1:]:
     merge_file(file, sys.stdout, wrapper_map)
   if wrapper_map:
-    print("We didn't use all the @wraps()", wrapper_map)
+    print("We didn't use all the @wraps()", wrapper_map, file=sys.stderr)
     sys.exit(1)
+  return 0
 
 
 if __name__ == '__main__':
-  main(sys.argv)
+  sys.exit(main(sys.argv))

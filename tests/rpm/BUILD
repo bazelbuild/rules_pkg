@@ -15,7 +15,9 @@
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 load(
     "//pkg:mappings.bzl",
     "pkg_attributes",
@@ -24,7 +26,7 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
 )
-load("//pkg:rpm.bzl", "pkg_rpm")
+load("//pkg:rpm.bzl", "pkg_rpm", "pkg_sub_rpm")
 load("analysis_tests.bzl", "analysis_tests")
 load("toolchain_tests.bzl", "create_toolchain_analysis_tests")
 
@@ -128,9 +130,13 @@ pkg_filegroup(
 ############################################################################
 
 _POST_SCRIPTLET = "echo post"
+
 _POSTUN_SCRIPTLET = "echo postun"
+
 _PRE_SCRIPTLET = "echo pre"
+
 _PREUN_SCRIPTLET = "echo preun"
+
 _POSTTRANS_SCRIPTLET = "echo posttrans"
 
 [
@@ -153,6 +159,7 @@ _POSTTRANS_SCRIPTLET = "echo posttrans"
 ############################################################################
 
 _VERSION = "1.1.1"
+
 _RELEASE = "2222"
 
 genrule(
@@ -181,10 +188,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -206,10 +213,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -234,10 +241,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
     pre_scriptlet = _PRE_SCRIPTLET,
     preun_scriptlet = _PREUN_SCRIPTLET,
-    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     provides = ["test"],
     release = _RELEASE,
     requires = ["test-lib > 1.0"],
@@ -258,10 +265,10 @@ pkg_rpm(
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
     post_scriptlet_file = ":post",
+    posttrans_scriptlet_file = ":posttrans",
     postun_scriptlet_file = ":postun",
     pre_scriptlet_file = ":pre",
     preun_scriptlet_file = ":preun",
-    posttrans_scriptlet_file = ":posttrans",
     provides = ["test"],
     release = "2222",
     requires = ["test-lib > 1.0"],
@@ -280,12 +287,13 @@ pkg_rpm(
     architecture = "noarch",
     conflicts = ["not-a-test"],
     description = """pkg_rpm test rpm description""",
+    epoch = "1",
     license = "Apache 2.0",
     post_scriptlet_file = ":post",
+    posttrans_scriptlet_file = ":posttrans",
     postun_scriptlet_file = ":postun",
     pre_scriptlet_file = ":pre",
     preun_scriptlet_file = ":preun",
-    posttrans_scriptlet_file = ":posttrans",
     provides = ["test"],
     release_file = ":release_file",
     requires = ["test-lib > 1.0"],
@@ -293,6 +301,31 @@ pkg_rpm(
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
     version_file = ":version_file",
+)
+
+# Like the first one, except we set an epoch
+pkg_rpm(
+    name = "test_rpm_epoch",
+    srcs = [
+        ":test_pfg",
+    ],
+    architecture = "noarch",
+    conflicts = ["not-a-test"],
+    description = """pkg_rpm test rpm description""",
+    epoch = "1",
+    license = "Apache 2.0",
+    post_scriptlet = _POST_SCRIPTLET,
+    posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
+    postun_scriptlet = _POSTUN_SCRIPTLET,
+    pre_scriptlet = _PRE_SCRIPTLET,
+    preun_scriptlet = _PREUN_SCRIPTLET,
+    provides = ["test"],
+    release = _RELEASE,
+    requires = ["test-lib > 1.0"],
+    requires_contextual = {"preun": ["bash"]},
+    spec_template = "template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version = _VERSION,
 )
 
 ############################################################################
@@ -403,10 +436,11 @@ sh_library(
         ":test_rpm",
         ":test_rpm_bzip2",
         ":test_rpm_direct",
+        ":test_rpm_epoch",
         ":test_rpm_manifest",
         ":test_rpm_metadata",
-        ":test_rpm_scriptlets_files",
         ":test_rpm_release_version_files",
+        ":test_rpm_scriptlets_files",
     ],
 )
 
@@ -462,6 +496,152 @@ diff_test(
     name = "test_rpm_dirs_contents_golden_test",
     file1 = ":test_rpm_dirs_contents",
     file2 = "test_rpm_dirs_contents.txt.golden",
+)
+
+############################################################################
+# pkg_sub_rpm tests
+############################################################################
+genrule(
+    name = "test_sub_rpm_file_input",
+    outs = ["test_sub_rpm_file_input.txt"],
+    cmd = """
+    echo "test subrpm data" > $@
+    """,
+)
+
+pkg_files(
+    name = "test_sub_rpm_files",
+    srcs = [":test_sub_rpm_file_input"],
+)
+
+pkg_sub_rpm(
+    name = "sub_rpm",
+    package_name = "test_sub_rpm",
+    srcs = [
+        ":test_sub_rpm_files",
+    ],
+    description = "Test subrpm description",
+    summary = "Test subrpm",
+)
+
+pkg_sub_rpm(
+    name = "sub_rpm2",
+    package_name = "test_sub_rpm2",
+    srcs = [
+        ":test_sub_rpm_files",
+    ],
+    description = "Test subrpm2 description",
+    post_scriptlet = "echo post",
+    postun_scriptlet = "echo postun",
+    summary = "Test subrpm2",
+)
+
+genrule(
+    name = "test_sub_rpm_main_file_input",
+    outs = ["test_sub_rpm_main_file_input.txt"],
+    cmd = """
+    echo "test main rpm data" > $@
+    """,
+)
+
+pkg_files(
+    name = "test_sub_rpm_main_files",
+    srcs = [":test_sub_rpm_main_file_input"],
+)
+
+pkg_rpm(
+    name = "test_sub_rpm_main",
+    srcs = [
+        ":test_sub_rpm_main_files",
+    ],
+    architecture = "noarch",
+    description = "This is a package description.",
+    license = "Apache License, v2.0",
+    release = "0",
+    subrpms = [
+        ":sub_rpm",
+        ":sub_rpm2",
+    ],
+    summary = "rules_pkg example RPM",
+    version = "1",
+)
+
+genrule(
+    name = "test_sub_rpm_contents",
+    srcs = [":test_sub_rpm_main"],
+    outs = [":test_sub_rpm_contents.txt"],
+    cmd = """
+    # pkg_rpm emits two outputs
+    RPMS=($(SRCS))
+    echo "===== main RPM =====" > $@
+    rpm -qpi --scripts --list $${RPMS[0]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qpi --scripts --list $${RPMS[1]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qpi --scripts --list $${RPMS[2]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' >> $@
+    """,
+)
+
+diff_test(
+    name = "test_golden_sub_rpm_contents",
+    file1 = ":test_sub_rpm_contents",
+    file2 = "test_sub_rpm_contents.txt.golden",
+)
+
+############################################################################
+# debuginfo tests
+############################################################################
+cc_binary(
+    name = "test_debuginfo",
+    srcs = [
+        "test.c",
+    ],
+    copts = ["-g"],
+)
+
+pkg_files(
+    name = "test_debuginfo_rpm_files",
+    srcs = [
+        ":test_debuginfo",
+    ],
+)
+
+pkg_rpm(
+    name = "test_debuginfo_rpm",
+    srcs = [
+        ":test_debuginfo_rpm_files",
+    ],
+    debuginfo = True,
+    description = "Description",
+    license = "Some license",
+    release = "0",
+    summary = "Summary",
+    version = "1",
+)
+
+genrule(
+    name = "test_debuginfo_rpm_contents",
+    srcs = [":test_debuginfo_rpm"],
+    outs = [":test_debuginfo_rpm_contents.txt"],
+    cmd = """
+    # pkg_rpm emits two outputs
+    RPMS=($(SRCS))
+    echo "===== main RPM =====" > $@
+    rpm -qpi --list $${RPMS[0]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v 'Architecture' | grep -v 'Size' | grep -v '.build-id' >> $@
+    echo "===== sub RPM ======" >> $@
+    rpm -qpi --list $${RPMS[1]} | \
+        grep -v 'Build Date' | grep -v 'Build Host' | grep -v 'Relocations' | grep -v 'Architecture' | grep -v 'Size' | grep -v '.build-id' >> $@
+    """,
+)
+
+diff_test(
+    name = "test_golden_debuginfo_rpm_contents",
+    file1 = ":test_debuginfo_rpm_contents",
+    file2 = "test_debuginfo_rpm_contents.txt.golden",
 )
 
 ############################################################################
