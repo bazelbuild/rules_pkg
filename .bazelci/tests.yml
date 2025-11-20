@@ -3,7 +3,7 @@
 # - Tests: behavior only. release tools are in the integration tests
 # - Platforms: ubuntu, centos, macos, windows
 # - bzlmod enabled or not
-# - bazel: LTS-1, LTS, rolling
+# - bazel: LTS-1, LTS, latest
 #
 #
 
@@ -89,13 +89,13 @@ windows: &windows
 tasks:
   ub_head_bzlmod:
     name: ub_head_bzlmod
-    bazel: rolling
+    bazel: latest
     <<: *ubuntu
     <<: *bzlmod
 
   ub_head_nobzlmod:
     name: ub_head_nobzlmod
-    bazel: rolling
+    bazel: latest
     <<: *ubuntu
     <<: *nobzlmod
 
@@ -124,7 +124,7 @@ tasks:
 
   mac_head_bzlmod:
     name: mac_head_bzlmod
-    bazel: rolling
+    bazel: latest
     <<: *macos
     <<: *bzlmod
 
@@ -142,7 +142,7 @@ tasks:
 
   win_head_bzlmod:
     name: win_head_bzlmod
-    bazel: rolling
+    bazel: latest
     <<: *windows
     <<: *bzlmod
 
