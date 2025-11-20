@@ -40,9 +40,9 @@ def _pkg_deb_impl(ctx):
 
     files = [ctx.file.data]
     args = ctx.actions.args()
-    args.add("--output", output_file.path)
-    args.add("--changes", changes_file.path)
-    args.add("--data", ctx.file.data.path)
+    args.add("--output", output_file)
+    args.add("--changes", changes_file)
+    args.add("--data", ctx.file.data)
     args.add("--package", ctx.attr.package)
     args.add("--maintainer", ctx.attr.maintainer)
 
@@ -114,7 +114,7 @@ def _pkg_deb_impl(ctx):
         fail("Neither description_file nor description attribute was specified")
 
     if ctx.attr.changelog:
-        args.append("--changelog=@" + ctx.file.changelog.path)
+        args.append("--changelog" + "@" + ctx.file.changelog.path)
         files.append(ctx.file.changelog)
 
     # Built using can also be specified by a file or inlined (but is not mandatory)
