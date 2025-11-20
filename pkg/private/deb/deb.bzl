@@ -34,19 +34,19 @@ def _pkg_deb_impl(ctx):
         package_file_name = package_file_name,
     )
 
-    package = substitute_package_variables(ctx, ctx.attr.package)
-
-    changes_file = ctx.actions.declare_file(output_name.rsplit(".", 1)[0] + ".changes")
+    out_file_name_base = output_name.rsplit(".", 1)[0]
+    changes_file = ctx.actions.declare_file(out_file_name_base + ".changes")
     outputs.append(changes_file)
 
+    package = substitute_package_variables(ctx, ctx.attr.package)
+
     files = [ctx.file.data]
-    args = [
-        "--output=" + output_file.path,
-        "--changes=" + changes_file.path,
-        "--data=" + ctx.file.data.path,
-        "--package=" + package,
-        "--maintainer=" + ctx.attr.maintainer,
-    ]
+    args = ctx.actions.args()
+    args.add("--output", output_file)
+    args.add("--changes", changes_file)
+    args.add("--data", ctx.file.data)
+    args.add("--package", package)
+    args.add("--maintainer", ctx.attr.maintainer)
 
     # Version and description can be specified by a file or inlined
     if ctx.attr.architecture_file:
