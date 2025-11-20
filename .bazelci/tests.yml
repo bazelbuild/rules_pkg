@@ -64,7 +64,7 @@ win_tests: &win_tests
 # Common features and tests by platform
 #
 ubuntu2204: &ubuntu
-  olatform: ubuntu2204
+  platform: ubuntu2204
   <<: *common
   <<: *default_tests
 
