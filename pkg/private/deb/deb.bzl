@@ -34,127 +34,141 @@ def _pkg_deb_impl(ctx):
         package_file_name = package_file_name,
     )
 
-    changes_file = ctx.actions.declare_file(output_name.rsplit(".", 1)[0] + ".changes")
+    out_file_name_base = output_name.rsplit(".", 1)[0]
+    changes_file = ctx.actions.declare_file(out_file_name_base + ".changes")
     outputs.append(changes_file)
 
     files = [ctx.file.data]
-    args = [
-        "--output=" + output_file.path,
-        "--changes=" + changes_file.path,
-        "--data=" + ctx.file.data.path,
-        "--package=" + ctx.attr.package,
-        "--maintainer=" + ctx.attr.maintainer,
-    ]
+    args = ctx.actions.args()
+    args.add("--output", output_file)
+    args.add("--changes", changes_file)
+    args.add("--data", ctx.file.data)
+    args.add("--package", ctx.attr.package)
+    args.add("--maintainer", ctx.attr.maintainer)
 
-    # Version and description can be specified by a file or inlined
     if ctx.attr.architecture_file:
         if ctx.attr.architecture != "all":
             fail("Both architecture and architecture_file attributes were specified")
-        args.append("--architecture=@" + ctx.file.architecture_file.path)
+        args.add("--architecture", "@" + ctx.file.architecture_file.path)
         files.append(ctx.file.architecture_file)
     else:
-        args.append("--architecture=" + ctx.attr.architecture)
+        args.add("--architecture", ctx.attr.architecture)
 
     if ctx.attr.preinst:
-        args.append("--preinst=@" + ctx.file.preinst.path)
+        args.add("--preinst", "@" + ctx.file.preinst.path)
         files.append(ctx.file.preinst)
     if ctx.attr.postinst:
-        args.append("--postinst=@" + ctx.file.postinst.path)
+        args.add("--postinst", "@" + ctx.file.postinst.path)
         files.append(ctx.file.postinst)
     if ctx.attr.prerm:
-        args.append("--prerm=@" + ctx.file.prerm.path)
+        args.add("--prerm", "@" + ctx.file.prerm.path)
         files.append(ctx.file.prerm)
     if ctx.attr.postrm:
-        args.append("--postrm=@" + ctx.file.postrm.path)
+        args.add("--postrm", "@" + ctx.file.postrm.path)
         files.append(ctx.file.postrm)
     if ctx.attr.config:
-        args.append("--config=@" + ctx.file.config.path)
+        args.add("--config", "@" + ctx.file.config.path)
         files.append(ctx.file.config)
     if ctx.attr.templates:
-        args.append("--templates=@" + ctx.file.templates.path)
+        args.add("--templates", "@" + ctx.file.templates.path)
         files.append(ctx.file.templates)
     if ctx.attr.triggers:
-        args.append("--triggers=@" + ctx.file.triggers.path)
+        args.add("--triggers", "@" + ctx.file.triggers.path)
         files.append(ctx.file.triggers)
     if ctx.attr.md5sums:
-        args.append("--md5sums=@" + ctx.file.md5sums.path)
+        args.add("--md5sums", "@" + ctx.file.md5sums.path)
         files.append(ctx.file.md5sums)
 
     # Conffiles can be specified by a file or a string list
     if ctx.attr.conffiles_file:
         if ctx.attr.conffiles:
             fail("Both conffiles and conffiles_file attributes were specified")
-        args.append("--conffile=@" + ctx.file.conffiles_file.path)
+        args.add("--conffile", "@" + ctx.file.conffiles_file.path)
         files.append(ctx.file.conffiles_file)
     elif ctx.attr.conffiles:
-        args += ["--conffile=%s" % cf for cf in ctx.attr.conffiles]
+        for cf in ctx.attr.conffiles:
+            args.add("--conffile", cf)
 
     # Version and description can be specified by a file or inlined
     if ctx.attr.version_file:
         if ctx.attr.version:
             fail("Both version and version_file attributes were specified")
-        args.append("--version=@" + ctx.file.version_file.path)
+        args.add("--version", "@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
-        args.append("--version=" + ctx.attr.version)
+        args.add("--version", ctx.attr.version)
     else:
         fail("Neither version_file nor version attribute was specified")
 
     if ctx.attr.description_file:
         if ctx.attr.description:
             fail("Both description and description_file attributes were specified")
-        args.append("--description=@" + ctx.file.description_file.path)
+        args.add("--description", "@" + ctx.file.description_file.path)
         files.append(ctx.file.description_file)
     elif ctx.attr.description:
-        args.append("--description=" + ctx.attr.description)
+        desc_file = ctx.actions.declare_file(out_file_name_base + ".description")
+        ctx.actions.write(desc_file, ctx.attr.description)
+        files.append(desc_file)
+        args.add("--description", "@" + desc_file.path)
     else:
         fail("Neither description_file nor description attribute was specified")
 
     if ctx.attr.changelog:
-        args.append("--changelog=@" + ctx.file.changelog.path)
+        args.append("--changelog" + "@" + ctx.file.changelog.path)
         files.append(ctx.file.changelog)
 
     # Built using can also be specified by a file or inlined (but is not mandatory)
     if ctx.attr.built_using_file:
         if ctx.attr.built_using:
             fail("Both build_using and built_using_file attributes were specified")
-        args.append("--built_using=@" + ctx.file.built_using_file.path)
+        args.add("--built_using", "@" + ctx.file.built_using_file.path)
         files.append(ctx.file.built_using_file)
     elif ctx.attr.built_using:
-        args.append("--built_using=" + ctx.attr.built_using)
+        args.add("--built_using", ctx.attr.built_using)
 
     if ctx.attr.depends_file:
         if ctx.attr.depends:
             fail("Both depends and depends_file attributes were specified")
-        args.append("--depends=@" + ctx.file.depends_file.path)
+        args.add("--depends", "@" + ctx.file.depends_file.path)
         files.append(ctx.file.depends_file)
     elif ctx.attr.depends:
-        args += ["--depends=" + d for d in ctx.attr.depends]
+        for d in ctx.attr.depends:
+            args.add("--depends", d)
 
     if ctx.attr.priority:
-        args.append("--priority=" + ctx.attr.priority)
+        args.add("--priority", ctx.attr.priority)
     if ctx.attr.section:
-        args.append("--section=" + ctx.attr.section)
+        args.add("--section", ctx.attr.section)
     if ctx.attr.homepage:
-        args.append("--homepage=" + ctx.attr.homepage)
+        args.add("--homepage", ctx.attr.homepage)
     if ctx.attr.license:
-        args.append("--license=" + ctx.attr.license)
+        args.add("--license", ctx.attr.license)
 
-    args.append("--distribution=" + ctx.attr.distribution)
-    args.append("--urgency=" + ctx.attr.urgency)
-    args += ["--suggests=" + d for d in ctx.attr.suggests]
-    args += ["--enhances=" + d for d in ctx.attr.enhances]
-    args += ["--conflicts=" + d for d in ctx.attr.conflicts]
-    args += ["--breaks=" + d for d in ctx.attr.breaks]
-    args += ["--pre_depends=" + d for d in ctx.attr.predepends]
-    args += ["--recommends=" + d for d in ctx.attr.recommends]
-    args += ["--replaces=" + d for d in ctx.attr.replaces]
-    args += ["--provides=" + d for d in ctx.attr.provides]
+    args.add("--distribution", ctx.attr.distribution)
+    args.add("--urgency", ctx.attr.urgency)
+    for d in ctx.attr.suggests:
+        args.add("--suggests", d)
+    for d in ctx.attr.enhances:
+        args.add("--enhances", d)
+    for d in ctx.attr.conflicts:
+        args.add("--conflicts", d)
+    for d in ctx.attr.breaks:
+        args.add("--breaks", d)
+    for d in ctx.attr.predepends:
+        args.add("--pre_depends", d)
+    for d in ctx.attr.recommends:
+        args.add("--recommends", d)
+    for d in ctx.attr.replaces:
+        args.add("--replaces", d)
+    for d in ctx.attr.provides:
+        args.add("--provides", d)
 
+    args.set_param_file_format("flag_per_line")
+    args.use_param_file("@%s", use_always = True)
     ctx.actions.run(
         mnemonic = "MakeDeb",
         executable = ctx.executable._make_deb,
-        arguments = args,
+        arguments = [args],
         inputs = files,
         outputs = [output_file, changes_file],
         env = {
