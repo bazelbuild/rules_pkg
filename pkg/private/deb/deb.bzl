@@ -14,7 +14,7 @@
 """Rule for creating Debian packages."""
 
 load("//pkg:providers.bzl", "PackageVariablesInfo")
-load("//pkg/private:util.bzl", "setup_output_files")
+load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz", "tar.zst"]
 
@@ -38,12 +38,14 @@ def _pkg_deb_impl(ctx):
     changes_file = ctx.actions.declare_file(out_file_name_base + ".changes")
     outputs.append(changes_file)
 
+    package = substitute_package_variables(ctx, ctx.attr.package)
+
     files = [ctx.file.data]
     args = ctx.actions.args()
     args.add("--output", output_file)
     args.add("--changes", changes_file)
     args.add("--data", ctx.file.data)
-    args.add("--package", ctx.attr.package)
+    args.add("--package", package)
     args.add("--maintainer", ctx.attr.maintainer)
 
     if ctx.attr.architecture_file:
