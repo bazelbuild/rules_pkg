@@ -295,13 +295,17 @@ class PkgTarTest(unittest.TestCase):
     self.assertTarFileContent('test-respect-externally-defined-duplicates.tar', content)
 
   def test_compression_level(self):
-    sizes = [
+    cases = [
       ('test-tar-compression_level--1.tgz', 179),
       ('test-tar-compression_level-3.tgz', 230),
       ('test-tar-compression_level-6.tgz', 178),
       ('test-tar-compression_level-9.tgz', 167),
+      ('test-tar-xz-compression_level--1.tar.xz', 67216),
+      ('test-tar-xz-compression_level-3.tar.xz', 67264),
+      ('test-tar-xz-compression_level-6.tar.xz', 67216),
+      ('test-tar-xz-compression_level-9.tar.xz', 67156),
     ]
-    for file_name, expected_size in sizes:
+    for file_name, expected_size in cases:
       file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
       file_size = os.stat(file_path).st_size
       self.assertEqual(file_size, expected_size, 'size error for ' + file_name)

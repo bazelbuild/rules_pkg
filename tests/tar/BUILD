@@ -469,6 +469,10 @@ py_test(
         ":test-tar-compression_level-3",
         ":test-tar-compression_level-6",
         ":test-tar-compression_level-9",
+        ":test-tar-xz-compression_level--1",
+        ":test-tar-xz-compression_level-3",
+        ":test-tar-xz-compression_level-6",
+        ":test-tar-xz-compression_level-9",
         ":test-tar-empty_dirs.tar",
         ":test-tar-empty_files.tar",
         ":test-tar-files_dict.tar",
@@ -798,6 +802,20 @@ verify_archive_test(
     extension = "tgz",
     deps = [
         "//tests:testdata/tar_test.tar",
+    ],
+) for compression_level in [
+    -1,
+    3,
+    6,
+    9,
+]]
+
+[pkg_tar(
+    name = "test-tar-xz-compression_level-%s" % compression_level,
+    compression_level = compression_level,
+    extension = "tar.xz",
+    deps = [
+        "//tests:testdata/tar_xz_test.tar",
     ],
 ) for compression_level in [
     -1,
