@@ -17,6 +17,7 @@ This module provides an interface (`pkg_install`) for creating a `bazel
 run`-able installation script.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
 load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_src", "write_manifest")
@@ -33,6 +34,12 @@ def _pkg_install_script_impl(ctx):
         )
 
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-install-manifest.json")
+
+    destdir = ctx.attr.destdir
+    if ctx.attr.destdir_flag:
+        if BuildSettingInfo in ctx.attr.destdir_flag:
+            destdir = ctx.attr.destdir_flag[BuildSettingInfo].value
+            print("========================= DESTINATION", destdir)
 
     # Write out the manifest in terms of "short" paths, which are those expected
     # when you make `bazel run`nable binaries).
@@ -62,7 +69,7 @@ def _pkg_install_script_impl(ctx):
             "{WORKSPACE_NAME}": ctx.workspace_name,
             # Used to annotate --help with "bazel run //path/to/your:installer"
             "{TARGET_LABEL}": label_str,
-            "{DEFAULT_DESTDIR}": ctx.attr.destdir,
+            "{DEFAULT_DESTDIR}": destdir,
         },
         is_executable = True,
     )
@@ -100,6 +107,7 @@ _pkg_install_script = rule(
             doc = "Source mapping/grouping targets",
         ),
         "destdir": attr.string(),
+        "destdir_flag": attr.label(doc = "string flag to optain destdir from"),
         # This is private for now -- one could perhaps imagine making this
         # public, but that would require more documentation of the underlying
         # scripts and expected interfaces.
@@ -111,7 +119,7 @@ _pkg_install_script = rule(
     executable = True,
 )
 
-def pkg_install(name, srcs, destdir = None, **kwargs):
+def pkg_install(name, srcs, destdir = None, destdir_flag = None, **kwargs):
     """Create an installer script from pkg_filegroups and friends.
 
     This macro allows users to create `bazel run`nable installation scripts
@@ -170,14 +178,18 @@ def pkg_install(name, srcs, destdir = None, **kwargs):
 
             If this is an absolute path, it is used as-is. If this is a relative
             path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.
+        destdir_flag: A string_flag target used to optain the value of destdir.
         **kwargs: common rule attributes
 
     """
+    if destdir and destdir_flag:
+        fail("You may only set on of destdir or destdir_flag")
 
     _pkg_install_script(
         name = name + "_install_script",
         srcs = srcs,
         destdir = destdir,
+        destdir_flag = destdir_flag,
         **kwargs
     )
 
