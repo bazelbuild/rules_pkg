@@ -93,6 +93,7 @@ py_test(
     data = [
         "testdata/BUILD.tpl",
         ":distro",
+        ":small_module",
         "//:standard_package",
     ],
     imports = [".."],

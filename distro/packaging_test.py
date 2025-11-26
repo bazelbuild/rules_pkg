@@ -38,7 +38,7 @@ class PackagingTest(unittest.TestCase):
   def testVersionsMatch(self):
     """version.bzl must match MODULE.bazel"""
     module_bazel_path = self.data_files.Rlocation(
-          'rules_pkg/MODULE.bazel')
+          'rules_pkg/distro/MODULE.bazel')
     with open(module_bazel_path, encoding="utf-8") as inp:
       want = 'version = "%s"' % self.version
       content = inp.read()
