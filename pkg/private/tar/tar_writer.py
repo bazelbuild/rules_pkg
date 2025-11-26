@@ -84,16 +84,19 @@ class TarFileWriter(object):
 
     self.fileobj = None
     self.compressor_cmd = (compressor or '').strip()
+    extra_tar_args = {}
     if self.compressor_cmd:
       # Some custom command has been specified: no need for further
       # configuration, we're just going to use it.
       pass
     # Support xz compression through xz... until we can use Py3
     elif compression in ['xz', 'lzma']:
+      compression_level = min(compression_level, 9) if compression_level >= 0 else 6
       if HAS_LZMA:
         mode = 'w:xz'
+        extra_tar_args['preset'] = compression_level
       else:
-        self.compressor_cmd = 'xz -F {} -'.format(compression)
+        self.compressor_cmd = 'xz -F {} -{} -'.format(compression, compression_level)
     elif compression in ['bzip2', 'bz2']:
       mode = 'w:bz2'
     else:
@@ -114,7 +117,7 @@ class TarFileWriter(object):
     self.name = name
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
-                            format=tarfile.GNU_FORMAT)
+                            format=tarfile.GNU_FORMAT, **extra_tar_args)
     self.existing_members = {}
     self.create_parents = create_parents
     self.allow_dups_from_deps = allow_dups_from_deps
