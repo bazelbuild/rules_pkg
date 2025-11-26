@@ -486,6 +486,10 @@ py_test(
         ":test-tar-strip_prefix-substring.tar",
         ":test-tar-tree-artifact",
         ":test-tar-tree-artifact-noroot",
+        ":test-tar-xz-compression_level--1",
+        ":test-tar-xz-compression_level-3",
+        ":test-tar-xz-compression_level-6",
+        ":test-tar-xz-compression_level-9",
         ":test-tree-input-with-strip-prefix",
         ":test_tar_leading_dotslash",
         ":test_tar_package_dir_substitution.tar",
@@ -798,6 +802,20 @@ verify_archive_test(
     extension = "tgz",
     deps = [
         "//tests:testdata/tar_test.tar",
+    ],
+) for compression_level in [
+    -1,
+    3,
+    6,
+    9,
+]]
+
+[pkg_tar(
+    name = "test-tar-xz-compression_level-%s" % compression_level,
+    compression_level = compression_level,
+    extension = "tar.xz",
+    deps = [
+        "//tests:testdata/tar_xz_test.tar",
     ],
 ) for compression_level in [
     -1,
