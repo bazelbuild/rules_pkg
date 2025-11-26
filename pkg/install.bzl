@@ -106,7 +106,7 @@ _pkg_install_script = rule(
             doc = "Source mapping/grouping targets",
         ),
         "destdir": attr.string(),
-        "destdir_flag": attr.label(doc = "string flag to optain destdir from"),
+        "destdir_flag": attr.label(doc = "string flag to obtain destdir from"),
         # This is private for now -- one could perhaps imagine making this
         # public, but that would require more documentation of the underlying
         # scripts and expected interfaces.
@@ -177,7 +177,7 @@ def pkg_install(name, srcs, destdir = None, destdir_flag = None, **kwargs):
 
             If this is an absolute path, it is used as-is. If this is a relative
             path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.
-        destdir_flag: A string_flag target used to optain the value of destdir.
+        destdir_flag: A string_flag target used to obtain the value of destdir.
         **kwargs: common rule attributes
 
     """
