@@ -211,6 +211,25 @@ class PkgInstallTest(PkgInstallTestBase):
         self.assertEqual(num_missing, 0)
 
 
+class DestdirFlagTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        r = runfiles.Create()
+        cls.script_path = r.Rlocation(
+            f"rules_pkg/tests/install/test_installer_flag_install_script.py"
+        )
+
+    def test_installer_build_from_flag(self):
+        # This is about as good as we can do without a lot of scaffolding.
+        # To test the flag, we would have to invoke bazel from bazel, which is messy.
+        with open(self.script_path) as installer:
+            script = installer.read()
+            # Default value from BUILD file.
+            self.assertIn("FromFlag", script)
+
+
 class WipeTest(PkgInstallTestBase):
     def test_wipe(self):
         self.installdir.mkdir(exist_ok=True)
