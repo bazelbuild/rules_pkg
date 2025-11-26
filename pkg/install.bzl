@@ -39,7 +39,6 @@ def _pkg_install_script_impl(ctx):
     if ctx.attr.destdir_flag:
         if BuildSettingInfo in ctx.attr.destdir_flag:
             destdir = ctx.attr.destdir_flag[BuildSettingInfo].value
-            print("========================= DESTINATION", destdir)
 
     # Write out the manifest in terms of "short" paths, which are those expected
     # when you make `bazel run`nable binaries).
