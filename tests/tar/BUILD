@@ -309,6 +309,9 @@ pkg_tar(
         ":generate_tree",
         "//tests:loremipsum_txt",
     ],
+    modes = {
+        "a_tree/generate_tree/b/c": "0777",
+    },
     package_dir = "a_tree",
 )
 
@@ -326,6 +329,9 @@ pkg_tar(
         ":tree_noroot",
         "//tests:loremipsum_txt",
     ],
+    modes = {
+        "a_tree/b/c": "0777",
+    },
     package_dir = "a_tree",
 )
 
