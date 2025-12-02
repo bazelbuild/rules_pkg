@@ -22,11 +22,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "Bazel 9.x: @rules_pkg (Linux x64)"
-            bazel_version: "9.x"
-            filter: ""
-            runner: "ubuntu-latest"
-
           - name: "Bazel 8.x: @rules_pkg (Linux x64)"
             bazel_version: "8.x"
             filter: ""
