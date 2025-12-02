@@ -273,6 +273,7 @@ create_fake_symlink(
     name = "fake_symlink",
     link = "fake_symlink",
     target = "../does_not_exist",
+    tags = ["REQUIRES_BAZEL_8"],
 )
 
 pkg_zip(
@@ -281,6 +282,7 @@ pkg_zip(
         ":fake_symlink",
         "//tests:file_and_link",
     ],
+    tags = ["REQUIRES_BAZEL_8"],
 )
 
 py_test(
@@ -302,7 +304,6 @@ py_test(
         ":test_zip_package_dir_substitution.zip",
         ":test_zip_permissions.zip",
         ":test_zip_stored",
-        ":test_zip_symlink",
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",
     ],
@@ -310,6 +311,21 @@ py_test(
     deps = [
         ":zip_test_lib",
     ],
+)
+
+py_test(
+    name = "zip_symlink_test",
+    srcs = [
+        "zip_symlink_test.py",
+    ],
+    data = [
+        ":test_zip_symlink",
+    ],
+    python_version = "PY3",
+    deps = [
+        ":zip_test_lib",
+    ],
+    tags = ["REQUIRES_BAZEL_8"],
 )
 
 py_test(

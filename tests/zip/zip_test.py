@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-import filecmp
 import os
 import sys
 import unittest
-import zipfile
 
 from python.runfiles import runfiles
 from tests.zip import zip_test_lib
@@ -149,14 +146,6 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
     self.assertZipFileContent("test_zip_stored.zip", [
           {"filename": "loremipsum.txt", "crc": LOREM_CRC, "size": 543},
     ])
-
-  def test_symlink(self):
-    self.assertZipFileContent("test_zip_symlink.zip", [
-          {"filename": "BUILD", "islink": False},
-          {"filename": "fake_symlink", "islink": True}, # raw symlink -> keep symlink
-          {"filename": "outer_BUILD", "islink": False},# nonraw symlink -> copy
-    ])
-
 
 
 if __name__ == "__main__":
