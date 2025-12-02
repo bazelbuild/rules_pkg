@@ -272,8 +272,8 @@ pkg_zip(
 create_fake_symlink(
     name = "fake_symlink",
     link = "fake_symlink",
-    target = "../does_not_exist",
     tags = ["REQUIRES_BAZEL_8"],
+    target = "../does_not_exist",
 )
 
 pkg_zip(
@@ -322,10 +322,10 @@ py_test(
         ":test_zip_symlink",
     ],
     python_version = "PY3",
+    tags = ["REQUIRES_BAZEL_8"],
     deps = [
         ":zip_test_lib",
     ],
-    tags = ["REQUIRES_BAZEL_8"],
 )
 
 py_test(

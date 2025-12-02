@@ -652,7 +652,10 @@ pkg_tar(
 
 verify_archive_test(
     name = "raw_symlinks_test",
-    tags = ["no_windows", "REQUIRES_BAZEL_8"],
+    tags = [
+        "REQUIRES_BAZEL_8",
+        "no_windows",
+    ],
     target = ":raw_symlinks_tar",
     # This test checks using relative symlinks, but Bazel always writes absolute
     # symlinks on windows.
