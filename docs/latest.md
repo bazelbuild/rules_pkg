@@ -438,80 +438,6 @@ pkg_zip(<a href="#pkg_zip-name">name</a>, <a href="#pkg_zip-srcs">srcs</a>, <a h
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-Rules for creating install scripts from pkg_filegroups and friends.
-
-This module provides an interface (`pkg_install`) for creating a `bazel
-run`-able installation script.
-
-<a id="pkg_install"></a>
-
-## pkg_install
-
-<pre>
-load("@rules_pkg//pkg:install.bzl", "pkg_install")
-
-pkg_install(<a href="#pkg_install-name">name</a>, <a href="#pkg_install-srcs">srcs</a>, <a href="#pkg_install-destdir">destdir</a>, <a href="#pkg_install-destdir_flag">destdir_flag</a>, <a href="#pkg_install-kwargs">**kwargs</a>)
-</pre>
-
-Create an installer script from pkg_filegroups and friends.
-
-This macro allows users to create `bazel run`nable installation scripts
-using the pkg_filegroup framework.
-
-For example:
-
-```python
-pkg_install(
-    name = "install",
-    srcs = [
-        # mapping/grouping targets here
-    ],
-    destdir = "out/install",
-)
-```
-
-Installation can be done by invoking:
-
-```
-bazel run -- //path/to:install
-```
-
-Additional features can be accessed by invoking the script with the --help
-option:
-
-```
-bazel run -- //path/to:install --help
-```
-
-WARNING: While this rule does function when being run from within a bazel
-rule, such use is not recommended.  If you do, **always** use the
-`--destdir` argument to specify the desired location for the installation to
-occur.  Not doing so can lead the outputs going to an unexpected location,
-or in some cases, failing.  Run the script command with `--help`, as
-mentioned above, for more details.
-
-One such use would be to run the script created by `pkg_install` to produce
-a directory output in the build root.  This may not function as expected or
-may suffer from poorly tested edge cases.  A purpose-written rule that would
-allow for creation of such directories is discussed in
-https://github.com/bazelbuild/rules_pkg/issues/388.
-
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :------------- | :------------- | :------------- |
-| <a id="pkg_install-name"></a>name |  rule name   |  none |
-| <a id="pkg_install-srcs"></a>srcs |  pkg_filegroup framework mapping or grouping targets   |  none |
-| <a id="pkg_install-destdir"></a>destdir |  The default destination directory.<br><br>If it is specified, this is the default destination to install the files. It is overridable by explicitly specifying `--destdir` in the command line or specifying the `DESTDIR` environment variable.<br><br>If it is not specified, `--destdir` must be set on the command line, or the `DESTDIR` environment variable must be set.<br><br>If this is an absolute path, it is used as-is. If this is a relative path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.   |  `None` |
-| <a id="pkg_install-destdir_flag"></a>destdir_flag |  A string_flag target used to obtain the value of destdir.   |  `None` |
-| <a id="pkg_install-kwargs"></a>kwargs |  common rule attributes   |  none |
-
-
-
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
-
 Package creation helper mapping rules.
 
 This module declares Provider interfaces and rules for specifying the contents
@@ -828,6 +754,80 @@ strip_prefix.from_root(<a href="#strip_prefix.from_root-path">path</a>)
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="strip_prefix.from_root-path"></a>path |   -    |  `""` |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Rules for creating install scripts from pkg_filegroups and friends.
+
+This module provides an interface (`pkg_install`) for creating a `bazel
+run`-able installation script.
+
+<a id="pkg_install"></a>
+
+## pkg_install
+
+<pre>
+load("@rules_pkg//pkg:install.bzl", "pkg_install")
+
+pkg_install(<a href="#pkg_install-name">name</a>, <a href="#pkg_install-srcs">srcs</a>, <a href="#pkg_install-destdir">destdir</a>, <a href="#pkg_install-destdir_flag">destdir_flag</a>, <a href="#pkg_install-kwargs">**kwargs</a>)
+</pre>
+
+Create an installer script from pkg_filegroups and friends.
+
+This macro allows users to create `bazel run`nable installation scripts
+using the pkg_filegroup framework.
+
+For example:
+
+```python
+pkg_install(
+    name = "install",
+    srcs = [
+        # mapping/grouping targets here
+    ],
+    destdir = "out/install",
+)
+```
+
+Installation can be done by invoking:
+
+```
+bazel run -- //path/to:install
+```
+
+Additional features can be accessed by invoking the script with the --help
+option:
+
+```
+bazel run -- //path/to:install --help
+```
+
+WARNING: While this rule does function when being run from within a bazel
+rule, such use is not recommended.  If you do, **always** use the
+`--destdir` argument to specify the desired location for the installation to
+occur.  Not doing so can lead the outputs going to an unexpected location,
+or in some cases, failing.  Run the script command with `--help`, as
+mentioned above, for more details.
+
+One such use would be to run the script created by `pkg_install` to produce
+a directory output in the build root.  This may not function as expected or
+may suffer from poorly tested edge cases.  A purpose-written rule that would
+allow for creation of such directories is discussed in
+https://github.com/bazelbuild/rules_pkg/issues/388.
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="pkg_install-name"></a>name |  rule name   |  none |
+| <a id="pkg_install-srcs"></a>srcs |  pkg_filegroup framework mapping or grouping targets   |  none |
+| <a id="pkg_install-destdir"></a>destdir |  The default destination directory.<br><br>If it is specified, this is the default destination to install the files. It is overridable by explicitly specifying `--destdir` in the command line or specifying the `DESTDIR` environment variable.<br><br>If it is not specified, `--destdir` must be set on the command line, or the `DESTDIR` environment variable must be set.<br><br>If this is an absolute path, it is used as-is. If this is a relative path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.   |  `None` |
+| <a id="pkg_install-destdir_flag"></a>destdir_flag |  A string_flag target used to obtain the value of destdir.   |  `None` |
+| <a id="pkg_install-kwargs"></a>kwargs |  common rule attributes   |  none |
 
 
 
