@@ -2,11 +2,6 @@
 
 set -o pipefail
 
-bazel build  //distro:distro
-exit_code="$?"
-if [ "${exit_code}" -ne 0 ] ; then
-    exit "${exit_code}"
-fi
 
 FILTERS=()
 if [[ -n "${TEST_FILTER:-}" ]] ; then
@@ -16,14 +11,18 @@ fi
 echo bazel test "${FILTERS[@]}" -- //tests/... //examples/... -//tests/rpm/...
 bazel test "${FILTERS[@]}" -- //tests/... //examples/... -//tests/rpm/... 
 exit_code="$?"
-case "${exit_code}" in
-  "4")
-    # Status code indicates that the build succeeded but there were no tests to
-    # run. Ignore and exit successfully.
-    exit "0"
-    ;;
 
-  *)
+if [ "${exit_code}" -ne 0 ] ; then
     exit "${exit_code}"
-    ;;
-esac
+fi
+
+if [ -n "${BUILD_DISTRO:-}" ] ; then
+    bazel build  //distro:distro
+    exit_code="$?"
+    if [ "${exit_code}" -ne 0 ] ; then
+        echo "Could not build //distro:distro"
+        exit "${exit_code}"
+    fi
+fi
+
+exit "${exit_code}"
