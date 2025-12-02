@@ -13,8 +13,8 @@ if [[ -n "${TEST_FILTER:-}" ]] ; then
    FILTERS=(--build_tag_filters="${TEST_FILTER}"  --test_tag_filters="${TEST_FILTER}")
 fi
 
-echo bazel test -- //tests/... //examples/... -//tests/rpm/... "${FILTERS[@]}"
-bazel test -- //tests/... //examples/... -//tests/rpm/... "${FILTERS[@]}"
+echo bazel test "${FILTERS[@]}" -- //tests/... //examples/... -//tests/rpm/...
+bazel test "${FILTERS[@]}" -- //tests/... //examples/... -//tests/rpm/... 
 exit_code="$?"
 case "${exit_code}" in
   "4")
