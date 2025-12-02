@@ -57,7 +57,9 @@ genrule(
     name = "small_module",
     srcs = ["//:MODULE.bazel"],
     outs = ["MODULE.bazel"],
-    cmd = "sed -e '/### INTERNAL ONLY/,$$d' $(location //:MODULE.bazel) >$@",
+    cmd = """sed -e 's/version = ""/version = "{version}"/' -e '/### INTERNAL ONLY/,$$d' $(location //:MODULE.bazel) >$@""".format(
+       version = version
+    ),
 )
 
 genrule(
