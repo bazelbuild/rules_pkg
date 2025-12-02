@@ -13,8 +13,16 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 # Only for development
 bazel_dep(name = "platforms", version = "1.0.0", dev_dependency = True)
 bazel_dep(name = "rules_cc", version = "0.1.1", dev_dependency = True)
-bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)
+# bazel_dep(name = "rules_java", version = "8.16.1", dev_dependency = True)
 bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.8.0", dev_dependency = True)
+
+# java_toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
+# use_repo(
+#     java_toolchains,
+#     "local_jdk",
+# )
+
 
 # Find the system rpmbuild if one is available.
 find_rpm = use_extension("//toolchains/rpm:rpmbuild_configure.bzl", "find_system_rpmbuild_bzlmod", dev_dependency = True)
