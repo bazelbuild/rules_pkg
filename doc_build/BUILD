@@ -49,8 +49,8 @@ ORDER = [
     ("pkg_tar_impl", "//pkg/private/tar:tar.bzl"),
     ("pkg_zip", "//pkg/private/zip:zip.bzl"),
     ("pkg_zip_impl", "//pkg/private/zip:zip.bzl"),
-    ("pkg_install", None),
     ("mappings", None),
+    ("pkg_install", None),
     ("legacy_pkg_rpm", None),
 ]
 
