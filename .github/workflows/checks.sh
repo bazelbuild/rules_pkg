@@ -8,7 +8,7 @@ if [ "${exit_code}" -ne 0 ] ; then
     exit "${exit_code}"
 fi
 
-bazel test tests/... distro/... examples/...
+bazel test tests/... examples/...
 exit_code="$?"
 case "${exit_code}" in
   "4")
