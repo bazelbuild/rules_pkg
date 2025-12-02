@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-bazel build  //doc_build:reference //distro:distro
+bazel build  //distro:distro
 exit_code="$?"
 if [ "${exit_code}" -ne 0 ] ; then
     exit "${exit_code}"
