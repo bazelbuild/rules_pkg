@@ -24,14 +24,17 @@ jobs:
         include:
           - name: "Bazel latest: @rules_pkg (Linux x64)"
             bazel_version: "rolling"
+            filter: ""
             runner: "ubuntu-latest"
 
           - name: "Bazel 8.x: @rules_pkg (Linux x64)"
             bazel_version: "8.x"
+            filter: ""
             runner: "ubuntu-latest"
 
           - name: "Bazel 7.x: @rules_pkg (Linux x64)"
             bazel_version: "7.x"
+            filter: "-REQUIRES_BAZEL_8"
             runner: "ubuntu-latest"
 
     runs-on:
@@ -44,6 +47,7 @@ jobs:
         working-directory: "${{ github.workspace }}"
         env:
           USE_BAZEL_VERSION: "${{ matrix.bazel_version }}"
+          TEST_FILTER: "${{ matrix.filter }}"
         run: bash "${{ github.workspace }}/.github/workflows/checks.sh"
 
   status:
