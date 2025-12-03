@@ -10,8 +10,10 @@ fi
 
 TESTS=$(bazel query 'filter(".*_test$", //tests/...)')
 
-echo bazel test "${FILTERS[@]}" -- ${TESTS} //examples/... -//tests/rpm/...
-bazel test --build_tests_only "${FILTERS[@]}" -- ${TESTS} //examples/... -//tests/rpm/...
+bazel_cmd=(bazel test --build_tests_only "${FILTERS[@]}" -- ${TESTS} //examples/... -//tests/rpm/...)
+
+echo "${bazel_cmd[@]}"
+"${bazel_cmd[@]}"
 exit_code="$?"
 if [ "${exit_code}" -ne 0 ] ; then
     exit "${exit_code}"
