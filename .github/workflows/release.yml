@@ -17,7 +17,7 @@ jobs:
   tests:
     name: "Release Tests"
     uses: "./.github/workflows/checks.yml"
-  
+
   create_tag:
     name: "Create tag"
     runs-on:
