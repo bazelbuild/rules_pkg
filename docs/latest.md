@@ -1,4 +1,4 @@
-# rules_pkg - 1.1.0
+# rules_pkg - 1.2.0
 
 <div class="toc">
   <h2>Common Attributes</h2>
@@ -347,7 +347,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-deps">deps</a>, <a h
              <a href="#pkg_tar-allow_duplicates_with_different_content">allow_duplicates_with_different_content</a>, <a href="#pkg_tar-compression_level">compression_level</a>, <a href="#pkg_tar-compressor">compressor</a>, <a href="#pkg_tar-compressor_args">compressor_args</a>,
              <a href="#pkg_tar-create_parents">create_parents</a>, <a href="#pkg_tar-empty_dirs">empty_dirs</a>, <a href="#pkg_tar-empty_files">empty_files</a>, <a href="#pkg_tar-extension">extension</a>, <a href="#pkg_tar-files">files</a>, <a href="#pkg_tar-include_runfiles">include_runfiles</a>, <a href="#pkg_tar-mode">mode</a>, <a href="#pkg_tar-modes">modes</a>,
              <a href="#pkg_tar-mtime">mtime</a>, <a href="#pkg_tar-owner">owner</a>, <a href="#pkg_tar-ownername">ownername</a>, <a href="#pkg_tar-ownernames">ownernames</a>, <a href="#pkg_tar-owners">owners</a>, <a href="#pkg_tar-package_dir">package_dir</a>, <a href="#pkg_tar-package_dir_file">package_dir_file</a>,
-             <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-preserve_mode">preserve_mode</a>,
+             <a href="#pkg_tar-package_file_name">package_file_name</a>, <a href="#pkg_tar-package_variables">package_variables</a>, <a href="#pkg_tar-portable_mtime">portable_mtime</a>, <a href="#pkg_tar-preserve_mode">preserve_mode</a>, <a href="#pkg_tar-preserve_mtime">preserve_mtime</a>,
              <a href="#pkg_tar-private_stamp_detect">private_stamp_detect</a>, <a href="#pkg_tar-remap_paths">remap_paths</a>, <a href="#pkg_tar-stamp">stamp</a>, <a href="#pkg_tar-strip_prefix">strip_prefix</a>, <a href="#pkg_tar-symlinks">symlinks</a>)
 </pre>
 
@@ -370,9 +370,9 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-deps">deps</a>, <a h
 | <a id="pkg_tar-create_parents"></a>create_parents |  -   | Boolean | optional |  `True`  |
 | <a id="pkg_tar-empty_dirs"></a>empty_dirs |  -   | List of strings | optional |  `[]`  |
 | <a id="pkg_tar-empty_files"></a>empty_files |  -   | List of strings | optional |  `[]`  |
-| <a id="pkg_tar-extension"></a>extension |  -   | String | optional |  `"tar"`  |
+| <a id="pkg_tar-extension"></a>extension |  The extension of the generated file. If `"gz"`, `"bz2"`, or `"xz"`, the tarball will also be compressed using that tool, and is mutually exclusive with `compressor`. Note that `xz` may not be supported based on the Python toolchain.   | String | optional |  `"tar"`  |
 | <a id="pkg_tar-files"></a>files |  Obsolete. Do not use.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: Label -> String</a> | optional |  `{}`  |
-| <a id="pkg_tar-include_runfiles"></a>include_runfiles |  Include runfiles for executables. These appear as they would in bazel-bin.For example: 'path/to/myprog.runfiles/path/to/my_data.txt'.   | Boolean | optional |  `False`  |
+| <a id="pkg_tar-include_runfiles"></a>include_runfiles |  Include runfiles for executables. These appear as they would in bazel-bin. For example: 'path/to/myprog.runfiles/path/to/my_data.txt'.   | Boolean | optional |  `False`  |
 | <a id="pkg_tar-mode"></a>mode |  -   | String | optional |  `"0555"`  |
 | <a id="pkg_tar-modes"></a>modes |  -   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 | <a id="pkg_tar-mtime"></a>mtime |  -   | Integer | optional |  `-1`  |
@@ -386,6 +386,7 @@ pkg_tar(<a href="#pkg_tar-name">name</a>, <a href="#pkg_tar-deps">deps</a>, <a h
 | <a id="pkg_tar-package_variables"></a>package_variables |  See [Common Attributes](#package_variables)   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="pkg_tar-portable_mtime"></a>portable_mtime |  -   | Boolean | optional |  `True`  |
 | <a id="pkg_tar-preserve_mode"></a>preserve_mode |  If true, will add file to archive with preserved file permissions.   | Boolean | optional |  `False`  |
+| <a id="pkg_tar-preserve_mtime"></a>preserve_mtime |  If true, will add file to archive with preserved file mtime.   | Boolean | optional |  `False`  |
 | <a id="pkg_tar-private_stamp_detect"></a>private_stamp_detect |  -   | Boolean | optional |  `False`  |
 | <a id="pkg_tar-remap_paths"></a>remap_paths |  -   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 | <a id="pkg_tar-stamp"></a>stamp |  Enable file time stamping.  Possible values: <li>stamp = 1: Use the time of the build as the modification time of each file in the archive. <li>stamp = 0: Use an "epoch" time for the modification time of each file. This gives good build result caching. <li>stamp = -1: Control the chosen modification time using the --[no]stamp flag. <div class="since"><i>Since 0.5.0</i></div>   | Integer | optional |  `0`  |
@@ -753,6 +754,80 @@ strip_prefix.from_root(<a href="#strip_prefix.from_root-path">path</a>)
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="strip_prefix.from_root-path"></a>path |   -    |  `""` |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Rules for creating install scripts from pkg_filegroups and friends.
+
+This module provides an interface (`pkg_install`) for creating a `bazel
+run`-able installation script.
+
+<a id="pkg_install"></a>
+
+## pkg_install
+
+<pre>
+load("@rules_pkg//pkg:install.bzl", "pkg_install")
+
+pkg_install(<a href="#pkg_install-name">name</a>, <a href="#pkg_install-srcs">srcs</a>, <a href="#pkg_install-destdir">destdir</a>, <a href="#pkg_install-destdir_flag">destdir_flag</a>, <a href="#pkg_install-kwargs">**kwargs</a>)
+</pre>
+
+Create an installer script from pkg_filegroups and friends.
+
+This macro allows users to create `bazel run`nable installation scripts
+using the pkg_filegroup framework.
+
+For example:
+
+```python
+pkg_install(
+    name = "install",
+    srcs = [
+        # mapping/grouping targets here
+    ],
+    destdir = "out/install",
+)
+```
+
+Installation can be done by invoking:
+
+```
+bazel run -- //path/to:install
+```
+
+Additional features can be accessed by invoking the script with the --help
+option:
+
+```
+bazel run -- //path/to:install --help
+```
+
+WARNING: While this rule does function when being run from within a bazel
+rule, such use is not recommended.  If you do, **always** use the
+`--destdir` argument to specify the desired location for the installation to
+occur.  Not doing so can lead the outputs going to an unexpected location,
+or in some cases, failing.  Run the script command with `--help`, as
+mentioned above, for more details.
+
+One such use would be to run the script created by `pkg_install` to produce
+a directory output in the build root.  This may not function as expected or
+may suffer from poorly tested edge cases.  A purpose-written rule that would
+allow for creation of such directories is discussed in
+https://github.com/bazelbuild/rules_pkg/issues/388.
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="pkg_install-name"></a>name |  rule name   |  none |
+| <a id="pkg_install-srcs"></a>srcs |  pkg_filegroup framework mapping or grouping targets   |  none |
+| <a id="pkg_install-destdir"></a>destdir |  The default destination directory.<br><br>If it is specified, this is the default destination to install the files. It is overridable by explicitly specifying `--destdir` in the command line or specifying the `DESTDIR` environment variable.<br><br>If it is not specified, `--destdir` must be set on the command line, or the `DESTDIR` environment variable must be set.<br><br>If this is an absolute path, it is used as-is. If this is a relative path, it is interpreted against `BUILD_WORKSPACE_DIRECTORY`.   |  `None` |
+| <a id="pkg_install-destdir_flag"></a>destdir_flag |  A string_flag target used to obtain the value of destdir.   |  `None` |
+| <a id="pkg_install-kwargs"></a>kwargs |  common rule attributes   |  none |
 
 
 

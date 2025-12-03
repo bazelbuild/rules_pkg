@@ -50,6 +50,7 @@ ORDER = [
     ("pkg_zip", "//pkg/private/zip:zip.bzl"),
     ("pkg_zip_impl", "//pkg/private/zip:zip.bzl"),
     ("mappings", None),
+    ("pkg_install", None),
     ("legacy_pkg_rpm", None),
 ]
 
@@ -112,6 +113,17 @@ bzl_library(
         "@bazel_skylib//lib:paths",
     ],
     visibility = ["//visibility:public"],
+)
+
+stardoc(
+    name = "pkg_install",
+    out = "pkg_install.md",
+    input = "//pkg:install.bzl",
+    deps = [
+        ":rules_pkg_lib",
+        "@bazel_skylib//rules:common_settings",
+        "@rules_python//python:defs_bzl",
+    ],
 )
 
 py_binary(
