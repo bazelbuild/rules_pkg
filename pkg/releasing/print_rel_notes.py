@@ -78,8 +78,8 @@ def print_notes(org, repo, version, tarball_path, mirror_host=None,
     )
 
     if False:
-        # TODO: This matters for the Bazel team at Googel, who can mirror it,
-        # but does not sense for the rest of the world.  Figure out if we should
+        # TODO: This matters for the Bazel team at Googel, who can mirror it, but
+        # does not make sense for the rest of the world.  Figure out if we should
         # keep it or not.
         mirroring_template = string.Template(textwrap.dedent(
             """
