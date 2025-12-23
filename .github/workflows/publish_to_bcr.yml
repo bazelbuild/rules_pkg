@@ -1,4 +1,4 @@
-name: "Push release to BCR"
+name: "Publish release to BCR"
 
 on:
   workflow_dispatch:
@@ -6,10 +6,6 @@ on:
       version:
         required: true
         type: "string"
-  # DNS: remove before submit
-  push:
-    branches:
-      - bcr
 
 permissions:
   id-token: write
@@ -27,9 +23,7 @@ jobs:
 
     uses: "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0"
     with:
-      # DNS: revert hacked version before submit
-      # tag_name: "${{ inputs.version }}"
-      tag_name: "1.2.0"
+      tag_name: "${{ inputs.version }}"
       tag_prefix: ""
       registry_fork: "bazel-contrib/bazel-central-registry"
       draft: false
