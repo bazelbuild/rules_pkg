@@ -6,6 +6,7 @@ on:
       version:
         required: true
         type: "string"
+  # DNS: remove before submit
   push:
     branches:
       - bcr
@@ -26,6 +27,7 @@ jobs:
 
     uses: "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0"
     with:
+      # DNS: revert hacked version before submit
       # tag_name: "${{ inputs.version }}"
       tag_name: "1.2.0"
       tag_prefix: ""
