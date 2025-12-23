@@ -2,8 +2,8 @@
     "homepage": "https://github.com/bazelbuild/rules_pkg",
     "maintainers": [
 	    {
-		    "email": "aiuto@google.com",
-		    "name": "Tony Aiuto",
+		    "email": "aiuto@datadoghq.com",
+		    "name": "Tony Aiuto"
 	    }
     ],
     "repository": ["github:bazelbuild/rules_pkg"],
