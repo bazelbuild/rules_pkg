@@ -1,12 +1,16 @@
 {
-    "homepage": "https://github.com/bazelbuild/rules_pkg",
-    "maintainers": [
-	    {
-		    "email": "aiuto@datadoghq.com",
-		    "name": "Tony Aiuto"
-	    }
-    ],
-    "repository": ["github:bazelbuild/rules_pkg"],
-    "versions": [],
-    "yanked_versions": {}
+  "homepage": "https://github.com/bazelbuild/rules_pkg",
+  "maintainers": [
+    {
+      "email": "tony@aiuto.dev",
+      "name": "Tony Aiuto",
+      "github": "aiuto",
+      "github_user_id": "3044252"
+   }
+  ],
+  "repository": [
+    "github:bazelbuild/rules_pkg"
+  ],
+  "versions": [],
+  "yanked_versions": {}
 }
