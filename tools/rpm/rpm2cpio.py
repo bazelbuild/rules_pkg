@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2026 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +17,9 @@
 Gleaned from: http://ftp.rpm.org/max-rpm/s1-rpm-file-format-rpm-file-format.html.
 """
 
+import argparse
 from collections import namedtuple
+import bz2
 import lzma
 import sys
 import zlib
@@ -79,7 +82,7 @@ RPMTAG_PAYLOADCOMPRESSOR = 1125
 
 
 def _read_network_byte(stream):
-    return int.from_bytes(stream.read(1))
+    return int.from_bytes(stream.read(1), byteorder='big')
 
 
 def _read_network_short(stream):
@@ -99,6 +102,14 @@ def _read_string(stream, max_len):
     return buf.decode('utf-8')
 
 
+def _get_int16(buf, pos):
+    return int.from_bytes(buf[pos:pos+2], byteorder='big')
+
+
+def _get_int32(buf, pos):
+    return int.from_bytes(buf[pos:pos+4], byteorder='big')
+
+
 def _get_null_terminated_string(buf, pos):
     ret = []
     while True:
@@ -109,168 +120,205 @@ def _get_null_terminated_string(buf, pos):
         ret.append(c)
 
 
-def _get_rpm_lead(stream):
-    """Get the legacy lead header."""
-    magic = stream.read(4)
-    major = _read_network_byte(stream)
-    minor = _read_network_byte(stream)
-    type = _read_network_short(stream)
-    arch = _read_network_short(stream)
-    name = _read_string(stream, 66)
-    os = _read_network_short(stream)
-    signature_type = _read_network_short(stream)
-    rpm_reserved = stream.read(16)
-    return RpmLead(magic=magic, major=major, minor=minor, type=type, arch=arch,
-		   name=name, os=os, signature_type=signature_type)
+class RpmDumper(object):
+
+    BLOCKSIZE = 32768
+
+    def __init__(self, stream):
+        self.stream = stream
+
+    def _get_rpm_lead(self):
+        """Get the legacy lead header."""
+        magic = self.stream.read(4)
+        major = _read_network_byte(self.stream)
+        minor = _read_network_byte(self.stream)
+        type = _read_network_short(self.stream)
+        arch = _read_network_short(self.stream)
+        name = _read_string(self.stream, 66)
+        os = _read_network_short(self.stream)
+        signature_type = _read_network_short(self.stream)
+        rpm_reserved = self.stream.read(16)
+        return RpmLead(magic=magic, major=major, minor=minor, type=type,
+                       arch=arch, name=name, os=os,
+                       signature_type=signature_type)
 
 
-def _read_header_start(stream):
-    """The start of the header is 16 bytes long."""
-    magic = stream.read(3)
-    if magic != RPM_HEADER_MAGIC:
-       raise ValueError(f"expected header magic '{RPM_HEADER_MAGIC}', got '{magic}'")
-    version = _read_network_byte(stream)
-    if version != 1:
-       raise ValueError(f"expected header version '1', got '{version}'")
-    _ = stream.read(4)  # skip reserved bytes
-    n_entries = _read_network_long(stream)
-    data_len = _read_network_long(stream)
-    return n_entries, data_len
+    def _read_header_start(self):
+        """The start of the header is 16 bytes long."""
+        magic = self.stream.read(3)
+        if magic != RPM_HEADER_MAGIC:
+           raise ValueError(f"expected header magic '{RPM_HEADER_MAGIC}', got '{magic}'")
+        version = _read_network_byte(self.stream)
+        if version != 1:
+           raise ValueError(f"expected header version '1', got '{version}'")
+        _ = self.stream.read(4)  # skip reserved bytes
+        n_entries = _read_network_long(self.stream)
+        data_len = _read_network_long(self.stream)
+        return n_entries, data_len
 
 
-def _get_rpm_signature(stream):
-    n_entries, data_len = _read_header_start(stream)
-    headers = []
-    for i in range(n_entries):
-        tag = _read_network_long(stream)
-        type = _read_network_long(stream)
-        offset = _read_network_long(stream)
-        count = _read_network_long(stream)
-        headers.append((tag, type, offset, count))
-    data_store = stream.read(data_len)
+    def _get_rpm_signature(self):
+        n_entries, data_len = self._read_header_start()
+        headers = []
+        for i in range(n_entries):
+            tag = _read_network_long(self.stream)
+            type = _read_network_long(self.stream)
+            offset = _read_network_long(self.stream)
+            count = _read_network_long(self.stream)
+            headers.append((tag, type, offset, count))
+        data_store = self.stream.read(data_len)
 
-    for header in headers:
-        tag, type, offset, count = header
-        if VERBOSE > 1:
-            print(f'sig header: {tag}, {type}, {offset} {count}')
-        if tag == 1000:  # SIGTAG_SIZE
-            # TODO: Report errors better.
-            assert type == HEADER_INT32
-            assert count == 1
-            file_size = int.from_bytes(data_store[offset:offset+4])
-            if VERBOSE > 0:
-                print(f"Signature: file size: {file_size}")
-        if VERBOSE > 1:
-            if type == HEADER_STRING:
-                print("  STRING:", _get_null_terminated_string(data_store, offset))
-            if type == HEADER_STRING_ARRAY:
-                for i in range(count):
-                   s = _get_null_terminated_string(data_store, offset)
-                   print("  STRING:", i, s)
-                   offset += len(s) + 1
-    # We could return some intereesting stuff here.
-    return 0
-
-
-def _get_headers(stream):
-    n_entries, data_len = _read_header_start(stream)
-    headers = []
-    for i in range(n_entries):
-        tag = _read_network_long(stream)
-        type = _read_network_long(stream)
-        offset = _read_network_long(stream)
-        count = _read_network_long(stream)
-        headers.append((tag, type, offset, count))
-    data_store = stream.read(data_len)
-    for header in headers:
-        tag, type, offset, count = header
-        if VERBOSE > 1:
-            print(f'header: {tag}, {type}, {offset} {count}', file=sys.stderr)
-        if tag == RPMTAG_PAYLOADCOMPRESSOR:
-            compressor = _get_null_terminated_string(data_store, offset)
-            print("Compression:", compressor, file=sys.stderr)
-        if tag == RPMTAG_ARCH:
-            print("arch:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_BUILDHOST:
-            print("build_host:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_DESCRIPTION:
-            print("description:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_DISTRIBUTION:
-            print("distribution:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_LICENSE:
-            print("license:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_OS:
-            print("os:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_SUMMARY:
-            print("summary:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if tag == RPMTAG_VENDOR:
-            print("vendor:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
-        if VERBOSE > 1 and type == HEADER_STRING:
-            print("  STRING:", _get_null_terminated_string(data_store, offset))
-
-    return Headers(compressor=compressor)
+        for header in headers:
+            tag, type, offset, count = header
+            if VERBOSE > 1:
+                print(f'sig header: {tag}, {type}, {offset} {count}', file=sys.stderr)
+            if tag == 1000:  # SIGTAG_SIZE
+                # TODO: Report errors better.
+                assert type == HEADER_INT32
+                assert count == 1
+                file_size = _get_int32(data_store, offset)
+                if VERBOSE > 0:
+                    print(f"Signature: file size: {file_size}", file=sys.stderr)
+            if VERBOSE > 1:
+                if type == HEADER_STRING:
+                    print("  STRING:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+                if type == HEADER_STRING_ARRAY:
+                    for i in range(count):
+                       s = _get_null_terminated_string(data_store, offset)
+                       print("  STRING:", i, s, file=sys.stderr)
+                       offset += len(s) + 1
+        # We could return some interesting stuff here.
+        return 0
 
 
-def _handle_payload(stream, compressor, out_stream):
-    if not compressor:
-        while True:
-            block = stream.read(128 * 1024)        
-            if not block:
-               break
-            out_stream.write(block)
+    def _get_headers(self):
+        n_entries, data_len = self._read_header_start()
+        headers = []
+        for i in range(n_entries):
+            tag = _read_network_long(self.stream)
+            type = _read_network_long(self.stream)
+            offset = _read_network_long(self.stream)
+            count = _read_network_long(self.stream)
+            headers.append((tag, type, offset, count))
+        data_store = self.stream.read(data_len)
+        for header in headers:
+            tag, type, offset, count = header
+            if VERBOSE > 1:
+                print(f'header: {tag}, {type}, {offset} {count}', file=sys.stderr)
+            if tag == RPMTAG_PAYLOADCOMPRESSOR:
+                compressor = _get_null_terminated_string(data_store, offset)
+                print("Compression:", compressor, file=sys.stderr)
+            if tag == RPMTAG_ARCH:
+                print("arch:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_BUILDHOST:
+                print("build_host:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_DESCRIPTION:
+                print("description:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_DISTRIBUTION:
+                print("distribution:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_LICENSE:
+                print("license:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_OS:
+                print("os:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_SUMMARY:
+                print("summary:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if tag == RPMTAG_VENDOR:
+                print("vendor:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
+            if VERBOSE > 1 and type == HEADER_STRING:
+                print("  STRING:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
 
-    if compressor == 'lzma' or compressor == 'xz':
-        decompressor = lzma.LZMADecompressor()
-        while True:
-            block = stream.read(32768)        
-            if not block:
-               break
-            out_stream.write(decompressor.decompress(block))
-            if decompressor.eof:
-               break
-        # If not at EOF, the input data was incomplete or corrupted.
-        if not decompressor.eof and not decompressor.needs_input:
-            raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
+        return Headers(compressor=compressor)
 
-    if compressor == 'gzip':
-        decompressor = zlib.decompressobj()
-        while True:
-            block = stream.read(32768)        
-            if not block:
-               break
-            out_stream.write(decompressor.decompress(block))
-            if decompressor.eof:
-               break
-        if not decompressor.eof:
-            raise IOError("gzip data ended before the end-of-stream marker was reached")
+    def _handle_payload(self, compressor, out_stream):
+        if not compressor:
+            while True:
+                block = self.stream.read(128 * 1024)        
+                if not block:
+                   break
+                out_stream.write(block)
 
-    # TODO: bzip2, zstd
+        if compressor == 'lzma' or compressor == 'xz':
+            decompressor = lzma.LZMADecompressor()
+            while True:
+                block = self.stream.read(RpmDumper.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            # If not at EOF, the input data was incomplete or corrupted.
+            if not decompressor.eof and not decompressor.needs_input:
+                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
+    
+        if compressor == 'gzip':
+            decompressor = zlib.decompressobj()
+            while True:
+                block = self.stream.read(RpmDumper.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            if not decompressor.eof:
+                raise IOError("gzip data ended before the end-of-stream marker was reached")
 
+        if compressor == 'bzip2':
+            decompressor = bz2.BZ2Decompressor()
+            while True:
+                block = self.stream.read(RpmDumper.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            # If not at EOF, the input data was incomplete or corrupted.
+            if not decompressor.eof and not decompressor.needs_input:
+                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
 
-def rpm2cpio(stream, out_stream):
-    lead = _get_rpm_lead(stream)
-    print(lead)
-    if lead.magic != RPM_MAGIC:
-       raise ValueError(f"expected magic '{RPM_MAGIC}', got '{lead.magic}'")
-    if lead.major != 3:
-       raise ValueError(f"Can not handle RPM version '{lead.major}.{lead.minor}'")
-    if lead.signature_type != 5:
-       raise ValueError(f"Unexpected signature type '{lead.signature_type}'")
-    # sig_start = stream.tell()
-    # print("SIG START", sig_start)
-    sig = _get_rpm_signature(stream)
-    stream.read(4)  # Why are we off by 4?
-    headers = _get_headers(stream)
-    _handle_payload(stream, headers.compressor, out_stream)
+        # TODO: zstd
+
+    def rpm2cpio(self, out_stream):
+        lead = self._get_rpm_lead()
+        print(lead, file=sys.stderr)
+        if lead.magic != RPM_MAGIC:
+           raise ValueError(f"expected magic '{RPM_MAGIC}', got '{lead.magic}'")
+        if lead.major != 3:
+           raise ValueError(f"Can not handle RPM version '{lead.major}.{lead.minor}'")
+        if lead.signature_type != 5:
+           raise ValueError(f"Unexpected signature type '{lead.signature_type}'")
+        # sig_start = stream.tell()
+        # print("SIG START", sig_start)
+        sig = self._get_rpm_signature()
+        self.stream.read(4)  # Why are we off by 4?
+        headers = self._get_headers()
+        self._handle_payload(headers.compressor, out_stream)
 
 
 def main(args):
-    if args[1:]:
-        with open(args[1], 'rb') as inp:
-            with open(args[2], 'wb') as out:
-                rpm2cpio(inp, out_stream=out)
+    parser = argparse.ArgumentParser(
+        description='RPM file dumper',
+        fromfile_prefix_chars='@')
+    parser.add_argument('--rpm', required=False, help='path to an RPM file')
+    parser.add_argument('--cpio_out', help='output path for cpio stream')
+    parser.add_argument('--verbose', action='store_true')
+
+    options = parser.parse_args()
+    #   with open(args[2], 'wb') as out:
+
+    if options.cpio_out:
+        out = open(options.rpm, 'wb')
     else:
-        rpm2cpio(sys.stdin, sys.stdout)
+        out = sys.stdout.buffer
+
+    if options.rpm:
+        with open(options.rpm, 'rb') as inp:
+            dumper = RpmDumper(stream=inp)
+            dumper.rpm2cpio(out_stream=out)
+    else:
+        dumper = RpmDumper(stream=sys.stdin)
+        dumper.rpm2cpio(out_stream=out)
+    if out != sys.stdout:
+        out.close()
 
 if __name__ == '__main__':
     main(sys.argv)
