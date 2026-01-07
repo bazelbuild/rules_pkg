@@ -20,6 +20,7 @@ Gleaned from: http://ftp.rpm.org/max-rpm/s1-rpm-file-format-rpm-file-format.html
 import argparse
 from collections import namedtuple
 import bz2
+import json
 import lzma
 import sys
 import zlib
@@ -28,7 +29,6 @@ VERBOSE = 1
 
 
 RpmLead = namedtuple('RpmLead', 'magic, major, minor, type, arch, name, os, signature_type')
-Headers = namedtuple('Headers', 'compressor')
 
 RPM_MAGIC = b'\xed\xab\xee\xdb'
 RPM_TYPE_BINARY = 0
@@ -120,12 +120,14 @@ def _get_null_terminated_string(buf, pos):
         ret.append(c)
 
 
-class RpmDumper(object):
+class RpmReader(object):
 
     BLOCKSIZE = 32768
 
     def __init__(self, stream):
         self.stream = stream
+        self.compression = None   # compression of cpio payload
+        self.have_read_headers = False
 
     def _get_rpm_lead(self):
         """Get the legacy lead header."""
@@ -201,13 +203,14 @@ class RpmDumper(object):
             count = _read_network_long(self.stream)
             headers.append((tag, type, offset, count))
         data_store = self.stream.read(data_len)
+        ret = {}
         for header in headers:
             tag, type, offset, count = header
             if VERBOSE > 1:
                 print(f'header: {tag}, {type}, {offset} {count}', file=sys.stderr)
             if tag == RPMTAG_PAYLOADCOMPRESSOR:
-                compressor = _get_null_terminated_string(data_store, offset)
-                print("Compression:", compressor, file=sys.stderr)
+                self.compression = _get_null_terminated_string(data_store, offset)
+                print("Compression:", self.compression, file=sys.stderr)
             if tag == RPMTAG_ARCH:
                 print("arch:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
             if tag == RPMTAG_BUILDHOST:
@@ -227,57 +230,29 @@ class RpmDumper(object):
             if VERBOSE > 1 and type == HEADER_STRING:
                 print("  STRING:", _get_null_terminated_string(data_store, offset), file=sys.stderr)
 
-        return Headers(compressor=compressor)
+            if type == HEADER_INT16:
+                values = []
+                if count == 1:
+                    ret[tag] = _get_int16(data_store, offset)
+                else:
+                    for i in range(count):
+                        values.append(_get_int16(data_store, offset * i * 2))
+                    ret[tag] = values
+            elif type == HEADER_INT32:
+                values = []
+                if count == 1:
+                    ret[tag] = _get_int32(data_store, offset)
+                else:
+                    for _ in range(count):
+                        values.append(_get_int32(data_store, offset * i * 4))
+                    ret[tag] = values
+            elif type == HEADER_STRING:
+                ret[tag] = _get_null_terminated_string(data_store, offset)
 
-    def _handle_payload(self, compressor, out_stream):
-        if not compressor:
-            while True:
-                block = self.stream.read(128 * 1024)        
-                if not block:
-                   break
-                out_stream.write(block)
+        return ret
 
-        if compressor == 'lzma' or compressor == 'xz':
-            decompressor = lzma.LZMADecompressor()
-            while True:
-                block = self.stream.read(RpmDumper.BLOCKSIZE)        
-                if not block:
-                   break
-                out_stream.write(decompressor.decompress(block))
-                if decompressor.eof:
-                   break
-            # If not at EOF, the input data was incomplete or corrupted.
-            if not decompressor.eof and not decompressor.needs_input:
-                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
-    
-        if compressor == 'gzip':
-            decompressor = zlib.decompressobj()
-            while True:
-                block = self.stream.read(RpmDumper.BLOCKSIZE)        
-                if not block:
-                   break
-                out_stream.write(decompressor.decompress(block))
-                if decompressor.eof:
-                   break
-            if not decompressor.eof:
-                raise IOError("gzip data ended before the end-of-stream marker was reached")
-
-        if compressor == 'bzip2':
-            decompressor = bz2.BZ2Decompressor()
-            while True:
-                block = self.stream.read(RpmDumper.BLOCKSIZE)        
-                if not block:
-                   break
-                out_stream.write(decompressor.decompress(block))
-                if decompressor.eof:
-                   break
-            # If not at EOF, the input data was incomplete or corrupted.
-            if not decompressor.eof and not decompressor.needs_input:
-                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
-
-        # TODO: zstd
-
-    def rpm2cpio(self, out_stream):
+    def read_headers(self, headers_out=None):
+        """Read the initial part of the RPM file to get the headers."""
         lead = self._get_rpm_lead()
         print(lead, file=sys.stderr)
         if lead.magic != RPM_MAGIC:
@@ -291,7 +266,62 @@ class RpmDumper(object):
         sig = self._get_rpm_signature()
         self.stream.read(4)  # Why are we off by 4?
         headers = self._get_headers()
-        self._handle_payload(headers.compressor, out_stream)
+        if headers_out:
+           with open(headers_out, 'w') as out:
+              json.dump(headers, indent=2, fp=out)
+        self.have_read_headers = True
+
+    def stream_cpio(self, out_stream):
+        if not self.have_read_headers:
+            raise IOError('Called stream_cpio before calling read_headers.')
+
+        if not self.compression:
+            while True:
+                block = self.stream.read(128 * 1024)        
+                if not block:
+                   break
+                out_stream.write(block)
+
+        if self.compression == 'lzma' or self.compression == 'xz':
+            decompressor = lzma.LZMADecompressor()
+            while True:
+                block = self.stream.read(RpmReader.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            # If not at EOF, the input data was incomplete or corrupted.
+            if not decompressor.eof and not decompressor.needs_input:
+                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
+    
+        if self.compression == 'gzip':
+            decompressor = zlib.decompressobj()
+            while True:
+                block = self.stream.read(RpmReader.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            if not decompressor.eof:
+                raise IOError("gzip data ended before the end-of-stream marker was reached")
+
+        if self.compression == 'bzip2':
+            decompressor = bz2.BZ2Decompressor()
+            while True:
+                block = self.stream.read(RpmReader.BLOCKSIZE)        
+                if not block:
+                   break
+                out_stream.write(decompressor.decompress(block))
+                if decompressor.eof:
+                   break
+            # If not at EOF, the input data was incomplete or corrupted.
+            if not decompressor.eof and not decompressor.needs_input:
+                raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
+
+        # TODO: zstd
+        out_stream.flush()
 
 
 def main(args):
@@ -300,23 +330,24 @@ def main(args):
         fromfile_prefix_chars='@')
     parser.add_argument('--rpm', required=False, help='path to an RPM file')
     parser.add_argument('--cpio_out', help='output path for cpio stream')
+    parser.add_argument('--headers_out', help='output path for header dump')
     parser.add_argument('--verbose', action='store_true')
 
     options = parser.parse_args()
-    #   with open(args[2], 'wb') as out:
+
+    inp = open(options.rpm, 'rb') if options.rpm else sys.stdin
+    dumper = RpmReader(stream=inp)
 
     if options.cpio_out:
         out = open(options.rpm, 'wb')
     else:
         out = sys.stdout.buffer
 
-    if options.rpm:
-        with open(options.rpm, 'rb') as inp:
-            dumper = RpmDumper(stream=inp)
-            dumper.rpm2cpio(out_stream=out)
-    else:
-        dumper = RpmDumper(stream=sys.stdin)
-        dumper.rpm2cpio(out_stream=out)
+    dumper.read_headers(headers_out=options.headers_out)
+    dumper.stream_cpio(out_stream=out)
+
+    if inp != sys.stdin:
+        inp.close()
     if out != sys.stdout:
         out.close()
 
