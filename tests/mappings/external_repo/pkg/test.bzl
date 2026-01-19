@@ -52,17 +52,24 @@ pkg_files_contents_test = analysistest.make(
 
 # Called from the rules_pkg tests
 def test_referencing_remote_file(name):
-    pkg_files(
-        name = "{}_g".format(name),
-        prefix = "usr/share",
-        srcs = ["@//tests:loremipsum_txt"],
-        # The prefix in rules_pkg.  Why yes, this is knotty
-        strip_prefix = strip_prefix.from_root("tests"),
-        tags = ["manual"],
-    )
+    tests = [
+        struct(name = "{}_default".format(name), strip_prefix = None),  # External package prefix is automatically stripped
+        struct(name = "{}_strip_prefix".format(name), strip_prefix = strip_prefix.from_root("tests")),  # The prefix in rules_pkg
+    ]
 
-    pkg_files_contents_test(
-        name = name,
-        target_under_test = ":{}_g".format(name),
-        expected_dests = ["usr/share/testdata/loremipsum.txt"],
-    )
+    for test in tests:
+        pkg_files(
+            name = "{}_g".format(test.name),
+            prefix = "usr/share",
+            srcs = ["@//tests:loremipsum_txt"],
+            strip_prefix = test.strip_prefix,
+            tags = ["manual"],
+        )
+
+        pkg_files_contents_test(
+            name = test.name,
+            target_under_test = ":{}_g".format(test.name),
+            expected_dests = ["usr/share/testdata/loremipsum.txt"],
+        )
+
+    native.test_suite(name = name, tests = [":{}".format(test.name) for test in tests])
