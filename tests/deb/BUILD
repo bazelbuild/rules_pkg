@@ -30,14 +30,15 @@ genrule(
         "etc/nsswitch.conf",
         "usr/fizzbuzz",
     ],
-    cmd = "for i in $(OUTS); do echo 1 >$$i; done",
+    cmd = "for i in $(OUTS); do echo $$i >$$i; done",
 )
 
 genrule(
     name = "generate_md5sums",
     srcs = [":generate_files"],
     outs = ["md5sums"],
-    cmd = "md5sum $(SRCS) | sed 's|$(RULEDIR)/||' > $@",
+    cmd = 'for i in $(SRCS); do echo "$$($(execpath //tests/util:md5) $$i)  $${i#$(RULEDIR)/}"; done >$@',
+    tools = ["//tests/util:md5"],
 )
 
 my_package_naming(
