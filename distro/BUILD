@@ -98,6 +98,7 @@ py_test(
         ":small_module",
         "//:standard_package",
     ],
+    env_inherit = ["PATH"],
     imports = [".."],
     local = True,
     python_version = "PY3",

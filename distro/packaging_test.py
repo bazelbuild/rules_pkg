@@ -17,6 +17,7 @@
 import os
 import re
 import subprocess
+import tarfile
 import unittest
 
 from python.runfiles import runfiles
@@ -57,7 +58,8 @@ class PackagingTest(unittest.TestCase):
     tempdir = os.path.join(os.environ['TEST_TMPDIR'], 'build')
     if not os.path.exists(tempdir):
       os.makedirs(tempdir)
-    with open(os.path.join(tempdir, 'WORKSPACE'), 'w') as workspace:
+    filename, setup_lines, bazel_flags = self._select_bazel_supported_setup()
+    with open(os.path.join(tempdir, filename), 'w') as setup:
       file_name = release_tools.package_basename(self.source_repo, self.version)
       # The code looks wrong, but here is why it is correct.
       # - Rlocation requires '/' as path separators, not os.path.sep.
@@ -65,18 +67,11 @@ class PackagingTest(unittest.TestCase):
       local_path = self.data_files.Rlocation(
           'rules_pkg/distro/' + file_name).replace('/', os.path.sep)
       sha256 = release_tools.get_package_sha256(local_path)
-      workspace_content = '\n'.join((
-        'workspace(name = "test_rules_pkg_packaging")',
-        release_tools.workspace_content(
-            'file://%s' % local_path, self.source_repo, sha256,
-            rename_repo=self.dest_repo,
-            deps_method='rules_pkg_dependencies'
-        )
-      ))
-      workspace.write(workspace_content)
+      setup_content = '\n'.join(setup_lines(local_path, sha256))
+      setup.write(setup_content)
       if _VERBOSE:
-        print('=== WORKSPACE ===')
-        print(workspace_content)
+        print(f'=== {filename} ===')
+        print(setup_content)
 
     # We do a little dance of renaming *.tpl to *, mostly so that we do not
     # have a BUILD file in testdata, which would create a package boundary.
@@ -91,15 +86,39 @@ class PackagingTest(unittest.TestCase):
     CopyTestFile('BUILD.tpl', 'BUILD')
 
     os.chdir(tempdir)
-    build_result = subprocess.check_output(['bazel', 'build', '--enable_workspace', ':dummy_tar'])
+    build_result = subprocess.check_output(['bazel', 'build'] + bazel_flags + [':dummy_tar'])
     if _VERBOSE:
       print('=== Build Result ===')
       print(build_result)
 
-    # TODO(aiuto): Find tar in a disciplined way
-    content = subprocess.check_output(
-        ['tar', 'tzf', 'bazel-bin/dummy_tar.tar.gz'])
-    self.assertEqual(b'etc/\netc/BUILD\n', content)
+    with tarfile.open('bazel-bin/dummy_tar.tar.gz', 'r') as tar:
+      self.assertEqual(['etc', 'etc/BUILD'], tar.getnames())
+
+  def _select_bazel_supported_setup(self):
+    output = subprocess.check_output(['bazel', 'version'], text=True)
+    major_version = re.search(r'Build label:\s+(\d+)', output)
+    if major_version and int(major_version.group(1)) >= 9:
+      return 'MODULE.bazel', self._module_bazel_lines, []
+    return 'WORKSPACE', self._workspace_lines, ['--enable_workspace']
+
+  def _module_bazel_lines(self, local_path, sha256):
+    return (
+      'module(name = "test_rules_pkg_packaging")',
+      f'bazel_dep(name = "{self.source_repo}", version = "{self.version}", repo_name = "{self.dest_repo}")',
+      f'archive_override(module_name = "{self.source_repo}", sha256 = "{sha256}", url = "file://{local_path}")',
+    )
+
+  def _workspace_lines(self, local_path, sha256):
+    return (
+      'workspace(name = "test_rules_pkg_packaging")',
+      release_tools.workspace_content(
+        url=f'file://{local_path}',
+        repo=self.source_repo,
+        sha256=sha256,
+        rename_repo=self.dest_repo,
+        deps_method='rules_pkg_dependencies',
+      ),
+    )
 
 
 if __name__ == '__main__':
