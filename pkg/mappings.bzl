@@ -227,7 +227,16 @@ def _pkg_files_impl(ctx):
                 file_to_target[f] = src
 
     if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
-        src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
+        src_dest_paths_map = {}
+        for src in srcs:
+            target = file_to_target[src].label
+
+            # Preserve package path for: 1) external->main repo refs, 2) same-repo cross-package target refs (direct)
+            path = _path_relative_to_package(src) if (
+                (target.repo_name == "" and ctx.label.repo_name != "") or
+                (target.repo_name == ctx.label.repo_name and target.package != ctx.label.package and target != _owner(src))
+            ) else src.basename
+            src_dest_paths_map[src] = paths.join(ctx.attr.prefix, path)
     elif ctx.attr.strip_prefix.startswith("/"):
         # Relative to workspace/repository root
         src_dest_paths_map = {src: paths.join(

@@ -52,17 +52,36 @@ pkg_files_contents_test = analysistest.make(
 
 # Called from the rules_pkg tests
 def test_referencing_remote_file(name):
-    pkg_files(
-        name = "{}_g".format(name),
-        prefix = "usr/share",
-        srcs = ["@//tests:loremipsum_txt"],
-        # The prefix in rules_pkg.  Why yes, this is knotty
-        strip_prefix = strip_prefix.from_root("tests"),
-        tags = ["manual"],
-    )
+    """Test external package file references with automatic path preservation.
 
-    pkg_files_contents_test(
-        name = name,
-        target_under_test = ":{}_g".format(name),
-        expected_dests = ["usr/share/testdata/loremipsum.txt"],
-    )
+    This test suite verifies that `pkg_files` automatically preserves package-relative paths when referencing files from
+    an external package. Nested tests should produce the same result.
+
+    Args:
+        name: Name of the generated test suite, also base name for generated test targets.
+    """
+    tests = [
+        # The prefix in rules_pkg.  Why yes, this is knotty
+        struct(name = "{}_strip_prefix_from_root".format(name), strip_prefix = strip_prefix.from_root("tests")),
+        # ... which corresponds to stripping all directory components up to the package
+        struct(name = "{}_strip_prefix_from_pkg".format(name), strip_prefix = strip_prefix.from_pkg()),
+        # ... and should also match the default behavior
+        struct(name = "{}_auto_strip_prefix".format(name), strip_prefix = None),
+    ]
+
+    for test in tests:
+        pkg_files(
+            name = "{}_g".format(test.name),
+            prefix = "usr/share",
+            srcs = ["@//tests:loremipsum_txt"],
+            strip_prefix = test.strip_prefix,
+            tags = ["manual"],
+        )
+
+        pkg_files_contents_test(
+            name = test.name,
+            target_under_test = ":{}_g".format(test.name),
+            expected_dests = ["usr/share/testdata/loremipsum.txt"],
+        )
+
+    native.test_suite(name = name, tests = [":{}".format(test.name) for test in tests])

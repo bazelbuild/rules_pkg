@@ -140,6 +140,40 @@ def _test_pkg_files_contents():
         expected_dests = ["hello.txt"],
     )
 
+    # Test same-repository cross-package direct target reference:
+    # When referencing a target from another package, package-relative paths are preserved.
+    pkg_files(
+        name = "pf_cross_package_direct_g",
+        srcs = ["//tests:loremipsum_txt"],  # filegroup from different package
+        tags = ["manual"],
+    )
+
+    pkg_files_contents_test(
+        name = "pf_cross_package_direct",
+        target_under_test = ":pf_cross_package_direct_g",
+        expected_dests = ["testdata/loremipsum.txt"],  # package-relative path
+    )
+
+    # Test same-repository cross-package via local filegroup:
+    # Aggregation brings back earlier basename-only behavior if desired.
+    native.filegroup(
+        name = "loremipsum_via_filegroup",
+        srcs = ["//tests:loremipsum_txt"],
+        tags = ["manual"],
+    )
+
+    pkg_files(
+        name = "pf_cross_package_via_filegroup_g",
+        srcs = [":loremipsum_via_filegroup"],
+        tags = ["manual"],
+    )
+
+    pkg_files_contents_test(
+        name = "pf_cross_package_via_filegroup",
+        target_under_test = ":pf_cross_package_via_filegroup_g",
+        expected_dests = ["loremipsum.txt"],  # basename-only path
+    )
+
     # Used in the following tests
     fake_artifact(
         name = "testdata/test_script",
@@ -940,6 +974,8 @@ def mappings_analysis_tests():
             # Simple tests
             ":pf_no_strip_prefix",
             ":pf_files_only",
+            ":pf_cross_package_direct",
+            ":pf_cross_package_via_filegroup",
             ":pf_strip_testdata_from_pkg",
             ":pf_strip_prefix_from_root",
             ":pf_attributes_mode_overlay_if_not_provided",
