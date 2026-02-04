@@ -604,6 +604,13 @@ def _pkg_rpm_impl(ctx):
     if ctx.attr.architecture:
         preamble_pieces.append("BuildArch: " + ctx.attr.architecture)
 
+    if ctx.attr.debuginfo:
+        # RedHat distros have redhat-rpm-config with %_enable_debug_packages macro; others need explicit declaration
+        preamble_pieces.append("%{{!?_enable_debug_packages:%debug_package}}")  # set %debug_package unless macro exists
+
+        # https://rpm.org/wiki/Releases/4.14.0: "Add support for unique debug file names"
+        preamble_pieces.append("%undefine _unique_debug_names")  # no-op if not defined
+
     preamble_file = ctx.actions.declare_file(
         "{}.spec.preamble".format(rpm_name),
     )

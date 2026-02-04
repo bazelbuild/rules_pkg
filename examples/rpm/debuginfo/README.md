@@ -6,7 +6,7 @@ This example uses the `find_system_rpmbuild_bzlmod` module extension to help
 us register the system rpmbuild as a toolchain in a bzlmod environment.
 
 It configures the system toolchain to be aware of which debuginfo configuration
-to use (defaults to "none", the example uses "centos7").
+to use (defaults to "none", the example uses "centos" for RPM < 4.18).
 
 ## To use
 

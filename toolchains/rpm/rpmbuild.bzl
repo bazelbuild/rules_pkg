@@ -60,7 +60,7 @@ rpmbuild_toolchain = rule(
             doc = """
             The underlying debuginfo configuration for the system rpmbuild.
 
-            One of `centos`, `fedora`, and `none`
+            One of `centos` (RPM < 4.18), `fedora` (RPM >= 4.18), and `none`
             """,
             default = "none",
         ),
