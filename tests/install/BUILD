@@ -27,6 +27,7 @@ py_test(
     data = [
         ":test_installer",
         ":test_installer_flag",
+        "@mappings_test_external_repo//pkg:install_cross_repo",
     ],
     imports = ["../.."],
     main = "test.py",

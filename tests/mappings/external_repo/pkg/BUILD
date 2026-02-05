@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@//pkg:install.bzl", "pkg_install")
 load("@//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@//pkg:tar.bzl", "pkg_tar")
 load("@//pkg:verify_archive.bzl", "verify_archive_test")
@@ -55,4 +56,18 @@ verify_archive_test(
     min_size = 1,
     must_contain = ["extproj.sh"],
     target = ":external_archive",
+)
+
+# Generate an installer that references a file from the main repository.
+# This verifies that files resolve against their own repository, not the installer's repository.
+# Tested by: //tests/install:install_test
+pkg_install(
+    name = "install_cross_repo",
+    srcs = [":file_from_main_repo"],
+)
+
+pkg_files(
+    name = "file_from_main_repo",
+    srcs = ["@//tests:testdata/hello.txt"],
+    strip_prefix = strip_prefix.from_pkg(),
 )
