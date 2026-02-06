@@ -15,7 +15,7 @@
 
 import collections
 import imp
-import os
+import posixpath
 import unittest
 
 
@@ -37,7 +37,7 @@ class File(object):
     else:
       self.owner = Owner('', '')
       self.short_path = short_path
-    self.path = os.path.join(
+    self.path = posixpath.join(
         self.root.path, self.owner.workspace_root, short_path)
 
 
