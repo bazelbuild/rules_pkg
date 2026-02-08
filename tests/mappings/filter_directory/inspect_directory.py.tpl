@@ -17,6 +17,7 @@
 import json
 import os
 import unittest
+from pathlib import Path
 from python.runfiles import runfiles
 
 DIRECTORY_ROOT = "%DIRECTORY_ROOT%"
@@ -29,27 +30,22 @@ class DirectoryStructureTest(unittest.TestCase):
         self.runfiles = runfiles.Create()
 
     def test_directory_structure_matches_global(self):
-        real_directory_root = self.runfiles.Rlocation(
-            os.path.join(os.environ["TEST_WORKSPACE"], DIRECTORY_ROOT)
-        )
+        real_directory_root = Path(self.runfiles.Rlocation(
+            (Path(os.environ["TEST_WORKSPACE"]) / DIRECTORY_ROOT).as_posix()
+        ))
 
         # This may be a bazel bug -- shouldn't an empty directory be passed in
         # anyway?
         self.assertTrue(
-            os.path.isdir(real_directory_root),
+            real_directory_root.is_dir(),
             "TreeArtifact root does not exist, is the input empty?",
         )
 
         expected_set = set(json.loads(EXPECTED_STRUCTURE))
         actual_set = set()
-        for root, dirs, files in os.walk(real_directory_root):
-            if root != real_directory_root:
-                rel_root = os.path.relpath(root, real_directory_root)
-            else:
-                # We are in the root.  Don't bother with path relativization.
-                rel_root = ''
-            for f in files:
-                actual_set.add(os.path.join(rel_root, f))
+        for file_path in real_directory_root.rglob("*"):
+            if file_path.is_file():
+                actual_set.add(file_path.relative_to(real_directory_root).as_posix())
 
         self.assertEqual(
             expected_set,
