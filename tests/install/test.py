@@ -16,12 +16,13 @@
 
 import os
 import pathlib
-import unittest
 import stat
 import subprocess
+import tempfile
+import unittest
 
-from python.runfiles import runfiles
 from pkg.private import manifest
+from python.runfiles import runfiles
 
 
 class PkgInstallTestBase(unittest.TestCase):
@@ -242,6 +243,40 @@ class WipeTest(PkgInstallTestBase):
         ],
                               env=self.runfiles.EnvVars())
         self.assertFalse((self.installdir / "should_be_deleted.txt").exists())
+
+
+class CrossRepoInstallTest(unittest.TestCase):
+    """Test external repo's pkg_install can reference main repo files."""
+
+    def test_external_repo_installs_file_from_main_repo(self):
+        """Verify source files are resolved against their own repositories (not against installer's repository),
+        using different working directories to also verify resolution happens exclusively through runfiles.
+        """
+        runfiles_ = runfiles.Create()
+        test_tmpdir = pathlib.Path(os.environ["TEST_TMPDIR"])
+
+        for case, cwd in dict(
+            default_cwd=None,  # from main's runfiles directory, where accessing short paths directly might work
+            outside_cwd=tempfile.gettempdir(),  # from elsewhere, where bypassing runfiles resolution would fail
+        ).items():
+            with self.subTest(case):
+                destdir = test_tmpdir / f"cross_repo_{case}"
+                subprocess.check_call(
+                    [
+                        runfiles_.Rlocation(
+                            f"mappings_test_external_repo/pkg/install_cross_repo{PkgInstallTestBase._extension}"
+                        ),
+                        f"--destdir={destdir}",
+                        "--verbose",
+                    ],
+                    cwd=cwd,
+                    env=runfiles_.EnvVars(),
+                )
+
+                expected_path = destdir / "testdata/hello.txt"
+                self.assertTrue(
+                    expected_path.exists(), f"File from main repo not found: {expected_path}"
+                )
 
 
 if __name__ == "__main__":

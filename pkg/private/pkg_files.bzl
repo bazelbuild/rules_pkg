@@ -628,15 +628,17 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pret
         manifest_file,
         "[\n" + ",\n".join(
             [
-                _encode_manifest_entry(dst, content_map[dst], use_short_path, pretty_print)
+                _encode_manifest_entry(ctx, dst, content_map[dst], use_short_path, pretty_print)
                 for dst in sorted(content_map.keys())
             ],
         ) + "\n]\n",
     )
 
-def _encode_manifest_entry(dest, df, use_short_path, pretty_print = False):
+def _encode_manifest_entry(ctx, dest, df, use_short_path, pretty_print = False):
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
+    repository = None
     if df.src:
+        repository = (df.src.owner and df.src.owner.repo_name) or ctx.workspace_name
         src = df.src.short_path if use_short_path else df.src.path
         # entry_type is left as-is
 
@@ -667,6 +669,7 @@ def _encode_manifest_entry(dest, df, use_short_path, pretty_print = False):
         "uid": df.uid,
         "gid": df.gid,
         "origin": origin_str,
+        "repository": repository,
     }
 
     if pretty_print:
