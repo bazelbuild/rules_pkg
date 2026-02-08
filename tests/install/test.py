@@ -33,13 +33,7 @@ class PkgInstallTestBase(unittest.TestCase):
         cls.runfiles = runfiles.Create()
         # Somewhat of an implementation detail, but it works.  I think.
         manifest_file = cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer_install_script-install-manifest.json")
-
-        with open(manifest_file, 'r') as fh:
-            manifest_entries = manifest.read_entries_from(fh)
-            cls.manifest_data = {}
-
-            for entry in manifest_entries:
-                cls.manifest_data[pathlib.Path(entry.dest)] = entry
+        cls.manifest_data = {pathlib.Path(e.dest): e for e in manifest.read_entries_from(manifest_file)}
         cls.installdir = pathlib.Path(os.getenv("TEST_TMPDIR")) / "installdir"
 
 

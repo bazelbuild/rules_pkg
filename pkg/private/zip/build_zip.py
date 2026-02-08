@@ -262,7 +262,7 @@ class ZipWriter(object):
 def _load_manifest(prefix, manifest_path):
   manifest_map = {}
 
-  for entry in manifest.read_entries_from_file(manifest_path):
+  for entry in manifest.read_entries_from(manifest_path):
     entry.dest = _combine_paths(prefix, entry.dest)
     manifest_map[entry.dest] = entry
 

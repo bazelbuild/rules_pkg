@@ -47,10 +47,6 @@ win_tests: &win_tests
     - "//pkg/..."
     - "//tests/..."
     - "//toolchains/..."
-    # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
-    # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
-    - "-//tests/mappings:utf8_manifest_test"
-    - "-//tests/zip:unicode_test"
     # rpmbuild(8) is not supported on Windows
     - "-//tests/rpm/..."
     - "-//pkg/legacy/tests/rpm/..."
