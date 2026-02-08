@@ -179,13 +179,7 @@ class NativeInstaller(object):
         self._do_symlink(entry.src, entry.dest, entry.mode, entry.user, entry.group)
 
     def include_manifest_path(self, path):
-        with open(path, 'r') as fh:
-            self.include_manifest(fh)
-
-    def include_manifest(self, manifest_fh):
-        manifest_entries = manifest.read_entries_from(manifest_fh)
-
-        for entry in manifest_entries:
+        for entry in manifest.read_entries_from(path):
             # Swap out the source with the actual "runfile" location, except for
             # symbolic links as their targets denote installation paths
             if entry.type != manifest.ENTRY_IS_LINK and entry.src is not None:
