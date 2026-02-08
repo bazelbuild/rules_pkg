@@ -37,8 +37,6 @@ default_tests_with_rpm: &default_tests_with_rpm
     - "//pkg/..."
     - "//tests/..."
     - "//toolchains/..."
-    # This has started to fail, even on CentOS.
-    - "-//tests/rpm:test_golden_debuginfo_rpm_contents"
 
 win_tests: &win_tests
   test_flags:
@@ -50,7 +48,6 @@ win_tests: &win_tests
     - "//tests/..."
     - "//toolchains/..."
     - "-//tests:package_naming_aggregate_test"
-    - "-//tests:path_test"
     # Bazel might be broken w.r.t. Unicode processing for windows. Multiple issues:
     # https://github.com/bazelbuild/bazel/issues?q=is%3Aissue+is%3Aopen+%2Bunicode+%2Bwindows+
     - "-//tests/mappings:utf8_manifest_test"
@@ -66,7 +63,10 @@ win_tests: &win_tests
 ubuntu2204: &ubuntu
   platform: ubuntu2204
   <<: *common
-  <<: *default_tests
+  <<: *default_tests_with_rpm
+  shell_commands:
+    - sudo apt-get update
+    - sudo apt-get install -y rpm elfutils  # for rpmbuild & eu-strip
 
 centos7: &centos
   platform: centos7_java11_devtoolset10
