@@ -1,0 +1,66 @@
+[
+  {
+    "path": "file1.txt",
+    "mode": "100644",
+    "uid": 502,
+    "gid": 20,
+    "size": 9
+  },
+  {
+    "path": "link_to_file3",
+    "mode": "120755",
+    "uid": 502,
+    "gid": 20,
+    "is_symlink": true,
+    "target": "../subdir1/file2.txt"
+  },
+  {
+    "path": "shrinking_file.txt",
+    "mode": "100644",
+    "uid": 502,
+    "gid": 20,
+    "size": 6
+  },
+  {
+    "path": "subdir1",
+    "mode": "40755",
+    "uid": 502,
+    "gid": 20,
+    "is_dir": true
+  },
+  {
+    "path": "subdir1/file2.txt",
+    "mode": "100644",
+    "uid": 502,
+    "gid": 20,
+    "size": 40
+  },
+  {
+    "path": "subdir2",
+    "mode": "40755",
+    "uid": 502,
+    "gid": 20,
+    "is_dir": true
+  },
+  {
+    "path": "subdir2/file3.txt",
+    "mode": "100644",
+    "uid": 502,
+    "gid": 20,
+    "size": 6
+  },
+  {
+    "path": "subdir3",
+    "mode": "40755",
+    "uid": 502,
+    "gid": 20,
+    "is_dir": true
+  },
+  {
+    "path": "subdir3/extra_file.txt",
+    "mode": "100644",
+    "uid": 502,
+    "gid": 20,
+    "size": 6
+  }
+]
