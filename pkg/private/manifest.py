@@ -37,8 +37,9 @@ class ManifestEntry(object):
     uid: int
     gid: int
     origin: str = None
+    repository: str = None
 
-    def __init__(self, type, dest, src, mode, user, group, uid = None, gid = None, origin = None):
+    def __init__(self, type, dest, src, mode, user, group, uid = None, gid = None, origin = None, repository = None):
         self.type = type
         self.dest = dest
         self.src = src
@@ -48,6 +49,7 @@ class ManifestEntry(object):
         self.uid = uid
         self.gid = gid
         self.origin = origin
+        self.repository = repository
 
     def __repr__(self):
         return "ManifestEntry<{}>".format(vars(self))
