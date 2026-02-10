@@ -494,10 +494,8 @@ def main():
       }
 
     if options.manifest:
-      with open(options.manifest, 'r') as manifest_fp:
-        manifest_entries = manifest.read_entries_from(manifest_fp)
-        for entry in manifest_entries:
-          output.add_manifest_entry(entry, file_attributes)
+      for entry in manifest.read_entries_from(options.manifest):
+        output.add_manifest_entry(entry, file_attributes)
 
     for tar in options.tar or []:
       output.add_tar(tar)
