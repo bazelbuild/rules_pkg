@@ -63,7 +63,10 @@ def _pkg_zip_impl(ctx):
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
-    all_inputs = depset(direct = inputs, transitive = mapping_context.file_deps)
+    all_inputs = depset(
+        direct = mapping_context.file_deps_direct + inputs,
+        transitive = mapping_context.file_deps_transitive,
+    )
 
     ctx.actions.run(
         mnemonic = "PackageZip",

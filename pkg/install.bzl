@@ -75,7 +75,10 @@ def _pkg_install_script_impl(ctx):
 
     my_runfiles = ctx.runfiles(
         files = [manifest_file],
-        transitive_files = depset(transitive = mapping_context.file_deps),
+        transitive_files = depset(
+            direct = mapping_context.file_deps_direct,
+            transitive = mapping_context.file_deps_transitive,
+        ),
     )
 
     return [
