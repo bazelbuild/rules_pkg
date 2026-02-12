@@ -15,6 +15,7 @@
 """Tests for pkg_tar."""
 
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 # buildifier: disable=bzl-visibility
 load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
@@ -852,3 +853,32 @@ verify_archive_test(
     True,
     False,
 ]]
+
+sh_binary(
+    name = "program_with_rules_shell_runfiles",
+    srcs = ["program_with_rules_shell_runfiles.sh"],
+    deps = ["@rules_shell//shell/runfiles"],
+)
+
+pkg_tar(
+    name = "program_with_rules_shell_runfiles_tar",
+    srcs = [":program_with_rules_shell_runfiles"],
+    include_runfiles = True,
+)
+
+# When Bazel does not provide an integrated version of sh_binary(),
+# rules_shell will provide a local copy of the runfiles library. In that
+# case it uses runfiles.root_symlinks to ensure that runfiles.bash is
+# available at its traditional location.
+verify_archive_test(
+    name = "program_with_rules_shell_runfiles_test",
+    must_contain = select({
+        "@platforms//os:windows": [
+            "program_with_rules_shell_runfiles.exe.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash",
+        ],
+        "//conditions:default": [
+            "program_with_rules_shell_runfiles.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash",
+        ],
+    }),
+    target = ":program_with_rules_shell_runfiles_tar",
+)
