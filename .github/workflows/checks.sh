@@ -2,6 +2,14 @@
 
 set -o errexit -o nounset -o pipefail
 
+# First, check the core providers basically OK.
+bazel_cmd=(bazel query :all)
+echo "${bazel_cmd[@]}"
+( cd providers ; "${bazel_cmd[@]}" )
+exit_code="$?"
+if [ "${exit_code}" -ne 0 ] ; then
+    exit "${exit_code}"
+fi
 
 FILTERS=()
 if [[ -n "${TEST_FILTER:-}" ]] ; then
