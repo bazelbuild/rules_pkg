@@ -97,9 +97,10 @@ class PackagingTest(unittest.TestCase):
   def _select_bazel_supported_setup(self):
     output = subprocess.check_output(['bazel', 'version'], text=True)
     major_version = re.search(r'Build label:\s+(\d+)', output)
-    if major_version and int(major_version.group(1)) >= 9:
-      return 'MODULE.bazel', self._module_bazel_lines, []
-    return 'WORKSPACE', self._workspace_lines, ['--enable_workspace']
+    # Module support was not the default at 7
+    if major_version and int(major_version.group(1)) <= 7:
+      return 'WORKSPACE', self._workspace_lines, ['--enable_workspace']
+    return 'MODULE.bazel', self._module_bazel_lines, []
 
   def _module_bazel_lines(self, local_path, sha256):
     return (
