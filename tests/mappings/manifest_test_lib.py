@@ -23,6 +23,12 @@ class ContentManifestTest(unittest.TestCase):
 
   run_files = runfiles.Create()
 
+  @classmethod
+  def _read_manifest(cls, path, to_string):
+    with open(cls.run_files.Rlocation('rules_pkg/' + path), 'rb') as f:
+      raw = f.read()
+    return {x['dest']: x for x in json.loads(to_string(raw))}
+
   def assertManifestsMatch(self, expected_path, got_path):
     """Check two manifest files for equality.
 
@@ -30,18 +36,11 @@ class ContentManifestTest(unittest.TestCase):
         expected_path: The path to the content we expect.
         got_path: The path to the content we got.
     """
-    e_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + expected_path)
-    with open(e_file, mode='rt', encoding='utf-8') as e_fp:
-      expected = json.loads(e_fp.read())
-    expected_dict = {x['dest']: x for x in expected}
-    g_file = ContentManifestTest.run_files.Rlocation('rules_pkg/' + got_path)
-    with open(g_file, mode='rt', encoding='utf-8') as g_fp:
-      got = json.loads(g_fp.read())
-    got_dict = {x['dest']: x for x in got}
+    expected_dict = self._read_manifest(expected_path, lambda raw: raw.decode('utf-8'))
+    # Prior to Bazel 8 (bazelbuild/bazel#24231), non-ASCII characters led files to be UTF-16LE-encoded on Windows
+    got_dict = self._read_manifest(got_path, lambda raw: raw.decode('utf-16-le' if raw[1:2] == b'\0' else 'utf-8'))
 
     ok = True
-    expected_dests = set(expected_dict.keys())
-    got_dests = set(got_dict.keys())
     for dest, what in expected_dict.items():
       got = got_dict.get(dest)
       if got:
