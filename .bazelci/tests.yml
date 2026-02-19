@@ -11,10 +11,6 @@
 common: &common
   working_directory: ..
 
-bzlmod: &bzlmod
-  build_flags:
-    - "--enable_bzlmod"
-
 nobzlmod: &nobzlmod
   build_flags:
     - "--noenable_bzlmod"
@@ -85,23 +81,15 @@ windows: &windows
 # Finally, the cross product of bazel releases X platforms
 #
 tasks:
-  ub_head_bzlmod:
-    name: ub_head_bzlmod
+  ub_head:
+    name: ub_head
     bazel: latest
     <<: *ubuntu
-    <<: *bzlmod
 
-  ub_head_nobzlmod:
-    name: ub_head_nobzlmod
+  ub_lts:
+    name: ub_lts
     bazel: latest
     <<: *ubuntu
-    <<: *nobzlmod
-
-  ub_lts_bzlmod:
-    name: ub_lts_bzlmod
-    bazel: latest
-    <<: *ubuntu
-    <<: *bzlmod
 
   ub_lts_nobzlmod:
     name: ub_lts_nobzlmod
@@ -120,17 +108,15 @@ tasks:
     bazel: latest
     <<: *centos
 
-  mac_head_bzlmod:
-    name: mac_head_bzlmod
+  mac_head:
+    name: mac_head
     bazel: latest
     <<: *macos
-    <<: *bzlmod
 
-  mac_lts_bzlmod:
-    name: mac_lts_bzlmod
+  mac_lts:
+    name: mac_lts
     bazel: latest
     <<: *macos
-    <<: *bzlmod
 
   mac_lts_nobzlmod:
     name: mac_lts_nobzlmod
@@ -138,17 +124,15 @@ tasks:
     <<: *macos
     <<: *nobzlmod
 
-  win_head_bzlmod:
-    name: win_head_bzlmod
+  win_head:
+    name: win_head
     bazel: latest
     <<: *windows
-    <<: *bzlmod
 
-  win_lts_bzlmod:
-    name: win_lts_bzlmod
+  win_lts:
+    name: win_lts
     bazel: latest
     <<: *windows
-    <<: *bzlmod
 
   win_lts_nobzlmod:
     name: win_lts_nobzlmod
