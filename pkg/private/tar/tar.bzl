@@ -141,7 +141,7 @@ def _pkg_tar_impl(ctx):
         target_files = target[DefaultInfo].files.to_list()
         if len(target_files) != 1:
             fail("Each input must describe exactly one file.", attr = "files")
-        mapping_context.file_deps.append(depset([target_files[0]]))
+        mapping_context.file_deps_direct.append(target_files[0])
         add_single_file(
             mapping_context,
             f_dest_path,
@@ -188,8 +188,8 @@ def _pkg_tar_impl(ctx):
         args.add("--preserve_mtime")
 
     inputs = depset(
-        direct = ctx.files.deps + files,
-        transitive = mapping_context.file_deps,
+        direct = mapping_context.file_deps_direct + ctx.files.deps + files,
+        transitive = mapping_context.file_deps_transitive,
     )
 
     ctx.actions.run(
