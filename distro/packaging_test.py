@@ -97,7 +97,7 @@ class PackagingTest(unittest.TestCase):
   def _select_bazel_supported_setup(self):
     output = subprocess.check_output(['bazel', 'version'], text=True)
     major_version = re.search(r'Build label:\s+(\d+)', output)
-    if major_version and int(major_version.group(1)) >= 9:
+    if major_version and int(major_version.group(1)) >= 8:
       return 'MODULE.bazel', self._module_bazel_lines, []
     return 'WORKSPACE', self._workspace_lines, ['--enable_workspace']
 
@@ -106,6 +106,7 @@ class PackagingTest(unittest.TestCase):
       'module(name = "test_rules_pkg_packaging")',
       f'bazel_dep(name = "{self.source_repo}", version = "{self.version}", repo_name = "{self.dest_repo}")',
       f'archive_override(module_name = "{self.source_repo}", sha256 = "{sha256}", url = "file://{local_path}")',
+      f'bazel_dep(name = "rules_pkg_providers", version = "1.0.0")',
     )
 
   def _workspace_lines(self, local_path, sha256):

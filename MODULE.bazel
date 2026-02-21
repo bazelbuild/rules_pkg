@@ -5,6 +5,13 @@ module(
     repo_name = "rules_pkg",
 )
 
+local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+
+local_repository(
+    name = "rules_pkg_providers",
+    path = "providers",
+)
+
 # Do not update to newer versions until you need a specific new feature.
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_python", version = "1.0.0")
@@ -35,8 +42,6 @@ register_toolchains(
     "@rules_pkg_git//:all",
     dev_dependency = True,
 )
-
-local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
 
 local_repository(
     name = "mappings_test_external_repo",

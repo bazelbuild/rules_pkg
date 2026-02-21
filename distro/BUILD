@@ -97,6 +97,7 @@ py_test(
         ":distro",
         ":small_module",
         "//:standard_package",
+        "@rules_pkg_providers//:providers.bzl",
     ],
     env_inherit = ["PATH"],
     imports = [".."],
