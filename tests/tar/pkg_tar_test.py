@@ -228,7 +228,7 @@ class PkgTarTest(unittest.TestCase):
       {'name': 'a_tree/generate_tree/a/b', 'isdir': True, 'mode': 0o755},
       {'name': 'a_tree/generate_tree/a/b/c'},
       {'name': 'a_tree/generate_tree/b', 'isdir': True, 'mode': 0o755},
-      {'name': 'a_tree/generate_tree/b/c', 'isdir': True, 'mode': 0o755},
+      {'name': 'a_tree/generate_tree/b/c', 'isdir': True, 'mode': 0o777},
       {'name': 'a_tree/generate_tree/b/c/d'},
       {'name': 'a_tree/generate_tree/b/d'},
       {'name': 'a_tree/generate_tree/b/e'},
