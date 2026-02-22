@@ -352,7 +352,10 @@ class TarFile(object):
     elif entry.type == manifest.ENTRY_IS_EMPTY_FILE:
       self.add_empty_file(self.normalize_path(entry.dest), **attrs)
     else:
-      self.add_file(entry.src, entry.dest, **attrs)
+      if os.path.isdir(entry.src):
+        self.add_tree(entry.src, entry.dest, **attrs)
+      else:
+        self.add_file(entry.src, entry.dest, **attrs)
 
 
 def main():

@@ -66,6 +66,20 @@ genrule(
     cmd = "for i in $(OUTS); do echo 1 >$$i; done",
 )
 
+genrule(
+    name = "generate_dir_file",
+    outs = ["lib"],
+    cmd = "mkdir -p $@; echo 1 >$@/nsswitch.conf",
+)
+
+pkg_tar(
+    name = "test_tar_dir_file",
+    srcs = [
+        ":generate_dir_file",
+    ],
+    out = "dir_file.tar",
+)
+
 directory(
     name = "generate_tree",
     contents = "hello there",
