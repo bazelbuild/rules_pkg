@@ -16,9 +16,3 @@ tasks:
   windows:
     platform: windows
     <<: *common
-  bzlmod:
-    name: bzlmod
-    platform: ubuntu2204
-    build_flags:
-      - "--enable_bzlmod"
-    <<: *common
