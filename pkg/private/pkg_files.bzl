@@ -405,7 +405,7 @@ def add_from_default_info(
       include_runfiles: Include runfiles
       workspace_name: name of the main workspace
     """
-    if not DefaultInfo in src:
+    if not DefaultInfo in src or not src[DefaultInfo].files:
         return
 
     # Auto-detect the executable so we can set its mode.
