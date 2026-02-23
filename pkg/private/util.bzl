@@ -146,5 +146,3 @@ def get_stamp_detect(stamp_attr):
             "//conditions:default": False,
         })
     return False
-
-                      
