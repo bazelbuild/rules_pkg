@@ -24,7 +24,7 @@ load(
     "create_mapping_context_from_ctx",
     "write_manifest",
 )
-load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private:util.bzl", "get_stamp_detect", "setup_output_files", "substitute_package_variables")
 
 # TODO(aiuto): Figure  out how to get this from the python toolchain.
 # See check for lzma in archive.py for a hint at a method.
@@ -362,9 +362,6 @@ def pkg_tar(name, **kwargs):
     pkg_tar_impl(
         name = name,
         out = kwargs.pop("out", None) or (name + "." + extension),
-        private_stamp_detect = select({
-            _stamp_condition: True,
-            "//conditions:default": False,
-        }),
+        private_stamp_detect = get_stamp_detect(kwargs.get("stamp", 0)),
         **kwargs
     )
