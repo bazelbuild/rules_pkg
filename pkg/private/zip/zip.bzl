@@ -30,8 +30,6 @@ load(
     "substitute_package_variables",
 )
 
-_stamp_condition = Label("//pkg/private:private_stamp_detect")
-
 def _pkg_zip_impl(ctx):
     outputs, output_file, _ = setup_output_files(ctx)
 
