@@ -130,7 +130,14 @@ def get_repo_mapping_manifest(src):
     return None
 
 def get_stamp_detect(stamp_attr):
-    """Returns a boolean or select to resolve the stamp setting."""
+    """Returns a boolean or select to resolve the stamp setting.
+
+    Args:
+      stamp_attr: Rule-level stamp attribute value.
+
+    Returns:
+      Boolean or select to resolve the stamp setting.
+    """
     if stamp_attr == 1:
         return True
     if stamp_attr == -1:
