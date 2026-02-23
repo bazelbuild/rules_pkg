@@ -18,7 +18,7 @@ load(
     "PackageVariablesInfo",
 )
 load(
-    "//pkg/private:pkg_files.bzl",
+    "//pkg:package_content.bzl",
     "add_label_list",
     "create_mapping_context_from_ctx",
     "write_manifest",
