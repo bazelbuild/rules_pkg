@@ -135,8 +135,8 @@ def get_stamp_detect(stamp_attr):
         return True
     if stamp_attr == -1:
         return select({
-          _stamp_condition: True,
-          "//conditions:default": False,
+            _stamp_condition: True,
+            "//conditions:default": False,
         })
     return False
 
