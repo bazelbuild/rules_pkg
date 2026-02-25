@@ -82,6 +82,7 @@ py_binary(
     deps = [
         "//pkg:make_rpm_lib",
         "//pkg/private:archive",
+        "//pkg/private:build_info",
     ],
 )
 
