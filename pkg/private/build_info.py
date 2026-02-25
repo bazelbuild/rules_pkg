@@ -11,8 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Get BUILD_TIMESTAMP."""
+"""Workspace status file utilities."""
 
+def get_status_vars(status_file, include_empty=True):
+  result = {}
+  with open(status_file, 'r') as f:
+    for line in f:
+      if not line.strip():
+        continue
+      parts = line.strip().split(' ', 1)
+      if len(parts) == 2:
+        result[parts[0]] = parts[1]
+      elif include_empty:
+        result[parts[0]] = ""
+
+  return result
 
 def get_timestamp(volatile_status_file):
   """Get BUILD_TIMESTAMP as an integer.
@@ -28,10 +41,10 @@ def get_timestamp(volatile_status_file):
   Exceptions:
     Exception: Raised if there is no BUILD_TIMESTAMP or if it is not a number.
   """
-  with open(volatile_status_file, 'r') as status_f:
-    for line in status_f:
-      parts = line.strip().split(' ')
-      if len(parts) > 1 and parts[0] == 'BUILD_TIMESTAMP':
-        return int(parts[1])
+  status_vars = get_status_vars(volatile_status_file, include_empty=False)
+  key = 'BUILD_TIMESTAMP'
+  ts = status_vars.get(key)
+  if ts is not None:
+    return int(ts)
   raise Exception(
-      "Invalid status file <%s>. Expected to find BUILD_TIMESTAMP" % volatile_status_file)
+      "Invalid status file <%s>. Expected to find %s" % (volatile_status_file, key))
