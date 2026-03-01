@@ -759,6 +759,139 @@ strip_prefix.from_root(<a href="#strip_prefix.from_root-path">path</a>)
 
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+Packaging related providers.
+
+<a id="PackageArtifactInfo"></a>
+
+## PackageArtifactInfo
+
+<pre>
+load("@rules_pkg//providers:providers.bzl", "PackageArtifactInfo")
+
+PackageArtifactInfo(<a href="#PackageArtifactInfo-file">file</a>, <a href="#PackageArtifactInfo-file_name">file_name</a>, <a href="#PackageArtifactInfo-label">label</a>)
+</pre>
+
+Metadata about a package artifact.
+
+**FIELDS**
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="PackageArtifactInfo-file"></a>file |  File object for said artifact    |
+| <a id="PackageArtifactInfo-file_name"></a>file_name |  DEPRECATED (use fields of file instead): The file name of the artifact.    |
+| <a id="PackageArtifactInfo-label"></a>label |  Label which produced it    |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Packaging related providers.
+
+<a id="PackageDirsInfo"></a>
+
+## PackageDirsInfo
+
+<pre>
+load("@rules_pkg//providers:providers.bzl", "PackageDirsInfo")
+
+PackageDirsInfo(<a href="#PackageDirsInfo-attributes">attributes</a>, <a href="#PackageDirsInfo-dirs">dirs</a>)
+</pre>
+
+Provider representing the creation of one or more directories in a package
+
+**FIELDS**
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="PackageDirsInfo-attributes"></a>attributes |  See `attributes` in PackageFilesInfo.    |
+| <a id="PackageDirsInfo-dirs"></a>dirs |  string list: installed directory names    |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Packaging related providers.
+
+<a id="PackageFilegroupInfo"></a>
+
+## PackageFilegroupInfo
+
+<pre>
+load("@rules_pkg//providers:providers.bzl", "PackageFilegroupInfo")
+
+PackageFilegroupInfo(<a href="#PackageFilegroupInfo-pkg_files">pkg_files</a>, <a href="#PackageFilegroupInfo-pkg_dirs">pkg_dirs</a>, <a href="#PackageFilegroupInfo-pkg_symlinks">pkg_symlinks</a>)
+</pre>
+
+Provider representing a collection of related packaging providers,
+
+In the "fields" documentation, "origin" refers to the label identifying the
+where the provider was originally defined.  This can be used by packaging
+rules to provide better diagnostics related to where packaging rules were
+created.
+
+**FIELDS**
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="PackageFilegroupInfo-pkg_files"></a>pkg_files |  list of tuples of (PackageFilesInfo, origin)    |
+| <a id="PackageFilegroupInfo-pkg_dirs"></a>pkg_dirs |  list of tuples of (PackageDirsInfo, origin)    |
+| <a id="PackageFilegroupInfo-pkg_symlinks"></a>pkg_symlinks |  list of tuples of (PackageSymlinkInfo, origin)    |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Packaging related providers.
+
+<a id="PackageFilesInfo"></a>
+
+## PackageFilesInfo
+
+<pre>
+load("@rules_pkg//providers:providers.bzl", "PackageFilesInfo")
+
+PackageFilesInfo(<a href="#PackageFilesInfo-attributes">attributes</a>, <a href="#PackageFilesInfo-dest_src_map">dest_src_map</a>)
+</pre>
+
+Provider representing the installation of one or more files to destination with attributes
+
+**FIELDS**
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="PackageFilesInfo-attributes"></a>attributes |  Attribute information, represented as a `dict`.<br><br>Keys are strings representing attribute identifiers, values are arbitrary data structures that represent the associated data.  These are most often strings, but are not explicitly defined.<br><br>For known attributes and data type expectations, see the Common Attributes documentation in the `rules_pkg` reference.    |
+| <a id="PackageFilesInfo-dest_src_map"></a>dest_src_map |  Map of file destinations to sources.<br><br>Sources are represented by bazel `File` structures.    |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
+Packaging related providers.
+
+<a id="PackageSymlinkInfo"></a>
+
+## PackageSymlinkInfo
+
+<pre>
+load("@rules_pkg//providers:providers.bzl", "PackageSymlinkInfo")
+
+PackageSymlinkInfo(<a href="#PackageSymlinkInfo-attributes">attributes</a>, <a href="#PackageSymlinkInfo-destination">destination</a>, <a href="#PackageSymlinkInfo-target">target</a>)
+</pre>
+
+Provider representing the creation of a single symbolic link in a package
+
+**FIELDS**
+
+| Name  | Description |
+| :------------- | :------------- |
+| <a id="PackageSymlinkInfo-attributes"></a>attributes |  See `attributes` in PackageFilesInfo.    |
+| <a id="PackageSymlinkInfo-destination"></a>destination |  string: Filesystem link 'name'    |
+| <a id="PackageSymlinkInfo-target"></a>target |  string or Label: Filesystem link 'target'.<br><br>TODO(nacl): Label sources not yet supported.    |
+
+
+
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
 Rules for creating install scripts from pkg_filegroups and friends.
 
 This module provides an interface (`pkg_install`) for creating a `bazel
