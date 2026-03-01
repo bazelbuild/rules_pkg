@@ -50,6 +50,11 @@ ORDER = [
     ("pkg_zip", "//pkg/private/zip:zip.bzl"),
     ("pkg_zip_impl", "//pkg/private/zip:zip.bzl"),
     ("mappings", None),
+    ("PackageArtifactInfo", "//providers:providers.bzl"),
+    ("PackageDirsInfo", "//providers:providers.bzl"),
+    ("PackageFilegroupInfo", "//providers:providers.bzl"),
+    ("PackageFilesInfo", "//providers:providers.bzl"),
+    ("PackageSymlinkInfo", "//providers:providers.bzl"),
     ("pkg_install", None),
     ("legacy_pkg_rpm", None),
 ]
