@@ -19,7 +19,6 @@ How to:
    git commit -m 'update docs' docs/latest.md
 """
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//:version.bzl", "version")
@@ -76,7 +75,7 @@ genrule(
             rule,
         ],
         deps = [
-            ":rules_pkg_lib",
+            "//pkg:rules_pkg_lib",
             "//toolchains/rpm:standard_package",
         ],
     )
@@ -96,7 +95,7 @@ stardoc(
     name = "docs_legacy_rpm",
     out = "legacy_pkg_rpm.md",
     input = "//pkg/legacy:rpm.bzl",
-    deps = [":rules_pkg_lib"],
+    deps = ["//pkg:rules_pkg_lib"],
 )
 
 # Mappings has a lot of pure rules, so it is mostly in a good order.
@@ -105,19 +104,8 @@ stardoc(
     out = "mappings.md",
     input = "//pkg:mappings.bzl",
     deps = [
-        ":rules_pkg_lib",
+        "//pkg:rules_pkg_lib",
     ],
-)
-
-# gather all rules that should be documented
-bzl_library(
-    name = "rules_pkg_lib",
-    srcs = [
-        "//:version.bzl",
-        "//pkg:bzl_srcs",
-        "@bazel_skylib//lib:paths",
-    ],
-    visibility = ["//visibility:public"],
 )
 
 stardoc(
@@ -125,7 +113,7 @@ stardoc(
     out = "pkg_install.md",
     input = "//pkg:install.bzl",
     deps = [
-        ":rules_pkg_lib",
+        "//pkg:rules_pkg_lib",
         "@bazel_skylib//rules:common_settings",
         "@rules_python//python:defs_bzl",
     ],
