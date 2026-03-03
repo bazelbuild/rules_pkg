@@ -29,5 +29,9 @@ license(
 
 filegroup(
     name = "all_srcs",
-    srcs = glob(["**"]),
+    srcs = [
+        "BUILD",
+        "LICENSE",
+        "MODULE.bazel",
+    ] + glob(["**/*.bzl"]),
 )

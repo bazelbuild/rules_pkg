@@ -14,9 +14,11 @@
 
 load("@rules_python//python:defs.bzl", "py_test")
 load("//:version.bzl", "version")
+load("//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//pkg:tar.bzl", "pkg_tar")
 load("//pkg/releasing:defs.bzl", "print_rel_notes")
 load("//pkg/releasing:git.bzl", "git_changelog")
+load("//providers:version.bzl", providers_version = "version")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -116,4 +118,38 @@ genrule(
     name = "version_as_py",
     outs = ["release_version.py"],
     cmd = "echo RELEASE_VERSION = \\'%s\\' >$@" % version,
+)
+
+#
+# Submodules
+#
+pkg_files(
+    name = "rules_pkg_providers_files",
+    srcs = [
+        "//providers:all_srcs",
+    ],
+    strip_prefix = strip_prefix.from_root("providers"),
+)
+
+pkg_tar(
+    name = "rules_pkg_providers_tar",
+    srcs = [
+        ":rules_pkg_providers_files",
+    ],
+    out = "rules_pkg_providers-%s.tgz" % providers_version,
+    extension = "tgz",
+    # It is all source code, so make it read-only.
+    mode = "0444",
+    # Make it owned by root so it does not have the uid of the CI robot.
+    owner = "0.0",
+    package_dir = ".",
+)
+
+print_rel_notes(
+    name = "rules_pkg_providers_relnotes",
+    outs = ["rules_pkg_providers_relnotes.txt"],
+    artifact_name = "rules_pkg_providers-%s.tgz" % providers_version,
+    org = "bazelbuild",
+    repo = "rules_pkg_providers",
+    version = providers_version,
 )
