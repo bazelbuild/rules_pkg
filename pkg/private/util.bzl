@@ -15,6 +15,8 @@
 
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 
+_stamp_condition = Label("//pkg/private:private_stamp_detect")
+
 def setup_output_files(ctx, package_file_name = None, default_output_file = None):
     """Provide output file metadata for common packaging rules
 
@@ -126,3 +128,21 @@ def get_repo_mapping_manifest(src):
         # https://github.com/bazelbuild/bazel/issues/19937
         return getattr(files_to_run_provider, "repo_mapping_manifest")
     return None
+
+def get_stamp_detect(stamp_attr):
+    """Returns a boolean or select to resolve the stamp setting.
+
+    Args:
+      stamp_attr: Rule-level stamp attribute value.
+
+    Returns:
+      Boolean or select to resolve the stamp setting.
+    """
+    if stamp_attr == 1:
+        return True
+    if stamp_attr == -1:
+        return select({
+            _stamp_condition: True,
+            "//conditions:default": False,
+        })
+    return False
