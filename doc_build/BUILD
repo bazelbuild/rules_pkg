@@ -55,6 +55,7 @@ ORDER = [
     ("PackageFilesInfo", "//providers:providers.bzl"),
     ("PackageSymlinkInfo", "//providers:providers.bzl"),
     ("pkg_install", None),
+    ("package_content", None),
     ("legacy_pkg_rpm", None),
 ]
 
@@ -103,6 +104,21 @@ stardoc(
     name = "mappings",
     out = "mappings.md",
     input = "//pkg:mappings.bzl",
+    deps = [
+        "//pkg:rules_pkg_lib",
+    ],
+)
+
+stardoc(
+    name = "package_content",
+    out = "package_content.md",
+    input = "//pkg:package_content.bzl",
+    symbol_names = [
+        "create_mapping_context_from_ctx",
+        "add_label_list",
+        "process_src",
+        "write_manifest",
+    ],
     deps = [
         "//pkg:rules_pkg_lib",
     ],
