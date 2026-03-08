@@ -29,9 +29,12 @@ def _pkg_deb_impl(ctx):
             ctx.attr.architecture,
         )
 
+    out_file = ctx.outputs.out or ctx.actions.declare_file(ctx.attr.name + ".deb")
+
     outputs, output_file, output_name = setup_output_files(
         ctx,
         package_file_name = package_file_name,
+        default_output_file = out_file,
     )
 
     out_file_name_base = output_name.rsplit(".", 1)[0]
@@ -181,7 +184,7 @@ def _pkg_deb_impl(ctx):
         },
     )
     output_groups = {
-        "out": [ctx.outputs.out],
+        "out": [out_file],
         "deb": [output_file],
         "changes": [changes_file],
     }
@@ -194,7 +197,7 @@ def _pkg_deb_impl(ctx):
     ]
 
 # A rule for creating a deb file, see README.md
-pkg_deb_impl = rule(
+pkg_deb = rule(
     implementation = _pkg_deb_impl,
     doc = """
     Create a Debian package.
@@ -374,7 +377,6 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         # Common attributes
         "out": attr.output(
             doc = """See [Common Attributes](#out)""",
-            mandatory = True,
         ),
         "package_file_name": attr.string(
             doc = """See [Common Attributes](#package_file_name).
@@ -395,12 +397,3 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
     },
 )
 
-def pkg_deb(name, out = None, **kwargs):
-    """@wraps(pkg_deb_impl)."""
-    if not out:
-        out = name + ".deb"
-    pkg_deb_impl(
-        name = name,
-        out = out,
-        **kwargs
-    )
