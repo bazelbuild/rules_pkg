@@ -25,11 +25,10 @@ load(
 )
 load(
     "//pkg/private:util.bzl",
+    "get_stamp_detect",
     "setup_output_files",
     "substitute_package_variables",
 )
-
-_stamp_condition = Label("//pkg/private:private_stamp_detect")
 
 def _pkg_zip_impl(ctx):
     outputs, output_file, _ = setup_output_files(ctx)
@@ -186,9 +185,6 @@ def pkg_zip(name, out = None, **kwargs):
     pkg_zip_impl(
         name = name,
         out = out,
-        private_stamp_detect = select({
-            _stamp_condition: True,
-            "//conditions:default": False,
-        }),
+        private_stamp_detect = get_stamp_detect(kwargs.get("stamp", 0)),
         **kwargs
     )
