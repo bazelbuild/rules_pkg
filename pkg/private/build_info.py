@@ -17,9 +17,10 @@ def get_status_vars(status_file, include_empty=True):
   result = {}
   with open(status_file, 'r') as f:
     for line in f:
-      if not line.strip():
+      stripped = line.strip()
+      if not stripped:
         continue
-      parts = line.strip().split(' ', 1)
+      parts = stripped.split(' ', 1)
       if len(parts) == 2:
         result[parts[0]] = parts[1]
       elif include_empty:
