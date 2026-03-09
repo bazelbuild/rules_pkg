@@ -1,3 +1,3 @@
 """The version of rules_pkg_providers."""
 
-version = "@AUTO_VERSION@"
+version = "0.0.1f"
