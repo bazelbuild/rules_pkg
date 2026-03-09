@@ -31,14 +31,7 @@ Concepts and terms:
             by rule implementations and passed to the build_*.py helpers.
 """
 
-load("//pkg:path.bzl", "compute_data_path", "dest_path")
-load(
-    "//pkg:providers.bzl",
-    "PackageDirsInfo",
-    "PackageFilegroupInfo",
-    "PackageFilesInfo",
-    "PackageSymlinkInfo",
-)
+load("//pkg:path.bzl", "dest_path")
 load(
     "//pkg/private:util.bzl",
     "get_files_to_run_provider",
@@ -53,89 +46,45 @@ ENTRY_IS_TREE = "tree"  # Entry is a tree artifact: take tree from <src>
 ENTRY_IS_EMPTY_FILE = "empty-file"  # Entry is a an empty file
 
 # buildifier: disable=name-conventions
-_DestFile = provider(
+DestFile = provider(
     doc = """Information about each destination in the final package.""",
     fields = {
-        "src": "source file",
-        "mode": "mode, or empty",
-        "user": "user, or empty",
+        "entry_type": "string.  See ENTRY_IS_* values above.",
+        "gid": "gid, or empty",
         "group": "group, or empty",
         "link_to": "path to link to. src must not be set",
-        "entry_type": "string.  See ENTRY_IS_* values above.",
+        "mode": "mode, or empty",
         "origin": "target which added this",
+        "src": "source file",
         "uid": "uid, or empty",
-        "gid": "gid, or empty",
+        "user": "user, or empty",
     },
 )
 
 # buildifier: disable=name-conventions
-_MappingContext = provider(
+MappingContext = provider(
     doc = """Fields passed to process_* methods.""",
     fields = {
-        "content_map": "in/out The content_map we are building up",
-        "file_deps_direct": "in/out list of files represented in the map",
-        "file_deps_transitive": "in/out list of file Depsets represented in the map",
-        "label": "ctx.label",
 
         # Behaviors
         "allow_duplicates_with_different_content": "bool: don't fail when you double mapped files",
-        "include_runfiles": "bool: include runfiles",
-        "workspace_name": "string: name of the main workspace",
-        "strip_prefix": "strip_prefix",
-        "path_mapper": "function to map destination paths",
+        "content_map": "in/out The content_map we are building up",
+        "default_gid": "Default numeric gid to apply to file without a gid",
+        "default_group": "Default group name to apply to file without a group",
 
         # Defaults
         "default_mode": "Default mode to apply to file without a mode setting",
-        "default_user": "Default user name to apply to file without a user",
-        "default_group": "Default group name to apply to file without a group",
         "default_uid": "Default numeric uid to apply to file without a uid",
-        "default_gid": "Default numeric gid to apply to file without a gid",
+        "default_user": "Default user name to apply to file without a user",
+        "file_deps_direct": "in/out list of files represented in the map",
+        "file_deps_transitive": "in/out list of file Depsets represented in the map",
+        "include_runfiles": "bool: include runfiles",
+        "label": "ctx.label",
+        "path_mapper": "function to map destination paths",
+        "strip_prefix": "strip_prefix",
+        "workspace_name": "string: name of the main workspace",
     },
 )
-
-# buildifier: disable=function-docstring-args
-def create_mapping_context_from_ctx(
-        ctx,
-        label,
-        allow_duplicates_with_different_content = None,
-        strip_prefix = None,
-        include_runfiles = None,
-        default_mode = None,
-        path_mapper = None):
-    """Construct a MappingContext.
-
-    Args: See the provider definition.
-
-    Returns:
-        _MappingContext
-    """
-    if allow_duplicates_with_different_content == None:
-        allow_duplicates_with_different_content = ctx.attr.allow_duplicates_with_different_content if hasattr(ctx.attr, "allow_duplicates_with_different_content") else False
-    if strip_prefix == None:
-        strip_prefix = ctx.attr.strip_prefix if hasattr(ctx.attr, "strip_prefix") else ""
-    if include_runfiles == None:
-        include_runfiles = ctx.attr.include_runfiles if hasattr(ctx.attr, "include_runfiles") else False
-    if default_mode == None:
-        default_mode = ctx.attr.mode if hasattr(ctx.attr, "default_mode") else ""
-
-    return _MappingContext(
-        content_map = dict(),
-        file_deps_direct = list(),
-        file_deps_transitive = list(),
-        label = label,
-        allow_duplicates_with_different_content = allow_duplicates_with_different_content,
-        strip_prefix = strip_prefix,
-        include_runfiles = include_runfiles,
-        workspace_name = ctx.workspace_name,
-        default_mode = default_mode,
-        path_mapper = path_mapper or (lambda x: x),
-        # TODO(aiuto): allow these to be passed in as needed. But, before doing
-        # that, explore defauilt_uid/gid as 0 rather than None
-        default_user = "",
-        default_group = "",
-        default_uid = None,
-        default_gid = None,
-    )
 
 def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_content = False):
     old_entry = content_map.get(dest)
@@ -193,12 +142,20 @@ def _merge_context_attributes(info, mapping_context):
     default_gid = mapping_context.default_gid if hasattr(mapping_context, "default_gid") else ""
     return _merge_attributes(info, default_mode, default_user, default_group, default_uid, default_gid)
 
-def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
+def process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
+    """Process a pkg_dirs provider and add its contents to the content map.
+
+    Args:
+        mapping_context: (r/w) a MappingContext
+        pkg_dirs_info: the provider from a pkg_dirs target
+        origin: The rule instance adding this entry
+    """
+
     attrs = _merge_context_attributes(pkg_dirs_info, mapping_context)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
         _check_dest(mapping_context.content_map, dest, None, origin, mapping_context.allow_duplicates_with_different_content)
-        mapping_context.content_map[dest] = _DestFile(
+        mapping_context.content_map[dest] = DestFile(
             src = None,
             entry_type = ENTRY_IS_DIR,
             mode = attrs[0],
@@ -209,12 +166,19 @@ def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
             origin = origin,
         )
 
-def _process_pkg_files(mapping_context, pkg_files_info, origin):
+def process_pkg_files(mapping_context, pkg_files_info, origin):
+    """Process a pkg_files provider and add its contents to the content map.
+
+    Args:
+        mapping_context: (r/w) a MappingContext
+        pkg_files_info: the provider from a pkg_files target
+        origin: The rule instance adding this entry
+    """
     attrs = _merge_context_attributes(pkg_files_info, mapping_context)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
         _check_dest(mapping_context.content_map, dest, src, origin, mapping_context.allow_duplicates_with_different_content)
-        mapping_context.content_map[dest] = _DestFile(
+        mapping_context.content_map[dest] = DestFile(
             src = src,
             entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
             mode = attrs[0],
@@ -225,11 +189,11 @@ def _process_pkg_files(mapping_context, pkg_files_info, origin):
             origin = origin,
         )
 
-def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
+def process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
     dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_context_attributes(pkg_symlink_info, mapping_context)
     _check_dest(mapping_context.content_map, dest, None, origin, mapping_context.allow_duplicates_with_different_content)
-    mapping_context.content_map[dest] = _DestFile(
+    mapping_context.content_map[dest] = DestFile(
         src = None,
         entry_type = ENTRY_IS_LINK,
         mode = attrs[0],
@@ -241,62 +205,22 @@ def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
         link_to = pkg_symlink_info.target,
     )
 
-def _process_pkg_filegroup(mapping_context, pkg_filegroup_info):
-    if hasattr(pkg_filegroup_info, "pkg_dirs"):
-        for d in pkg_filegroup_info.pkg_dirs:
-            _process_pkg_dirs(mapping_context, d[0], d[1])
-    if hasattr(pkg_filegroup_info, "pkg_files"):
-        for pf in pkg_filegroup_info.pkg_files:
-            _process_pkg_files(mapping_context, pf[0], pf[1])
-    if hasattr(pkg_filegroup_info, "pkg_symlinks"):
-        for psl in pkg_filegroup_info.pkg_symlinks:
-            _process_pkg_symlink(mapping_context, psl[0], psl[1])
-
-def process_src(mapping_context, src, origin):
-    """Add an entry to the content map.
+def process_pkg_filegroup(mapping_context, pkg_filegroup_info):
+    """Process a pkg_filegroup provider and add its contents to the content map.
 
     Args:
-      mapping_context: (r/w) a MappingContext
-      src: Source Package*Info object
-      origin: The rule instance adding this entry
-
-    Returns:
-      True if src was a Package*Info and added to content_map.
+        mapping_context: (r/w) a MappingContext
+        pkg_filegroup_info: the provider from a pkg_filegroup target
     """
-
-    # Gather the files for every srcs entry here, even if it is not from
-    # a pkg_* rule.
-    if DefaultInfo in src:
-        mapping_context.file_deps_transitive.append(src[DefaultInfo].files)
-    found_info = False
-    if PackageFilesInfo in src:
-        _process_pkg_files(
-            mapping_context,
-            src[PackageFilesInfo],
-            origin,
-        )
-        found_info = True
-    if PackageFilegroupInfo in src:
-        _process_pkg_filegroup(
-            mapping_context,
-            src[PackageFilegroupInfo],
-        )
-        found_info = True
-    if PackageSymlinkInfo in src:
-        _process_pkg_symlink(
-            mapping_context,
-            src[PackageSymlinkInfo],
-            origin,
-        )
-        found_info = True
-    if PackageDirsInfo in src:
-        _process_pkg_dirs(
-            mapping_context,
-            src[PackageDirsInfo],
-            origin,
-        )
-        found_info = True
-    return found_info
+    if hasattr(pkg_filegroup_info, "pkg_dirs"):
+        for d in pkg_filegroup_info.pkg_dirs:
+            process_pkg_dirs(mapping_context, d[0], d[1])
+    if hasattr(pkg_filegroup_info, "pkg_files"):
+        for pf in pkg_filegroup_info.pkg_files:
+            process_pkg_files(mapping_context, pf[0], pf[1])
+    if hasattr(pkg_filegroup_info, "pkg_symlinks"):
+        for psl in pkg_filegroup_info.pkg_symlinks:
+            process_pkg_symlink(mapping_context, psl[0], psl[1])
 
 def add_directory(mapping_context, dir_path, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an empty directory to the content map.
@@ -311,7 +235,7 @@ def add_directory(mapping_context, dir_path, origin, mode = None, user = None, g
       uid: numeric uid
       gid: numeric gid
     """
-    mapping_context.content_map[dir_path.strip("/")] = _DestFile(
+    mapping_context.content_map[dir_path.strip("/")] = DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
         origin = origin,
@@ -337,7 +261,7 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
-    mapping_context.content_map[dest] = _DestFile(
+    mapping_context.content_map[dest] = DestFile(
         src = None,
         entry_type = ENTRY_IS_EMPTY_FILE,
         origin = origin,
@@ -347,40 +271,6 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
         uid = uid or mapping_context.default_uid,
         gid = gid or mapping_context.default_gid,
     )
-
-def add_label_list(mapping_context, srcs):
-    """Helper method to add a list of labels (typically 'srcs') to a content_map.
-
-    Args:
-      mapping_context: (r/w) a MappingContext
-      srcs: List of source objects
-    """
-
-    # Compute the relative path
-    data_path = compute_data_path(
-        mapping_context.label,
-        mapping_context.strip_prefix,
-    )
-    data_path_without_prefix = compute_data_path(
-        mapping_context.label,
-        ".",
-    )
-
-    for src in srcs:
-        if not process_src(
-            mapping_context,
-            src = src,
-            origin = src.label,
-        ):
-            # Add in the files of srcs which are not pkg_* types
-            add_from_default_info(
-                mapping_context,
-                src,
-                data_path,
-                data_path_without_prefix,
-                mapping_context.include_runfiles,
-                mapping_context.workspace_name,
-            )
 
 def add_from_default_info(
         mapping_context,
@@ -452,7 +342,7 @@ def add_from_default_info(
                 else:
                     entry_type = ENTRY_IS_FILE
 
-                mapping_context.content_map[d_path] = _DestFile(
+                mapping_context.content_map[d_path] = DestFile(
                     src = rf,
                     entry_type = entry_type,
                     origin = src.label,
@@ -561,7 +451,7 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
     else:
         entry_type = ENTRY_IS_FILE
 
-    mapping_context.content_map[dest] = _DestFile(
+    mapping_context.content_map[dest] = DestFile(
         src = src,
         entry_type = entry_type,
         origin = origin,
@@ -587,7 +477,7 @@ def add_symlink(mapping_context, dest_path, src, origin):
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
-    mapping_context.content_map[dest] = _DestFile(
+    mapping_context.content_map[dest] = DestFile(
         src = None,
         link_to = src,
         entry_type = ENTRY_IS_LINK,
@@ -613,7 +503,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
       uid: User id for the entry (probably unused)
       gid: Group id for the entry (probably unused)
     """
-    content_map[dest_path] = _DestFile(
+    content_map[dest_path] = DestFile(
         src = src,
         origin = origin,
         entry_type = ENTRY_IS_TREE,
@@ -624,33 +514,19 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         gid = gid,
     )
 
-def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pretty_print = False):
-    """Write a content map to a manifest file.
-
-    The format of this file is currently undocumented, as it is a private
-    contract between the rule implementation and the package writers.  It will
-    become a published interface in a future release.
-
-    For reproducibility, the manifest file must be ordered consistently.
+def encode_manifest_entry(ctx, dest, df, use_short_path, pretty_print = False):
+    """Encode a manifest entry as JSON.
 
     Args:
-      ctx: rule context
-      manifest_file: File object used as the output destination
-      content_map: content_map (see concepts at top of file)
-      use_short_path: write out the manifest file destinations in terms of "short" paths, suitable for `bazel run`.
-      pretty_print: indent the output nicely. Takes more space so it is off by default.
-    """
-    ctx.actions.write(
-        manifest_file,
-        "[\n" + ",\n".join(
-            [
-                _encode_manifest_entry(ctx, dst, content_map[dst], use_short_path, pretty_print)
-                for dst in sorted(content_map.keys())
-            ],
-        ) + "\n]\n",
-    )
+        ctx: The rule context, used for workspace name and repo mapping.
+        dest: The destination path for this entry in the package.
+        df: The DestFile to encode.
+        use_short_path: Whether to use the short path for the src, which is the path relative to the workspace root, instead of the full path.
+        pretty_print: Whether to pretty print the JSON output
 
-def _encode_manifest_entry(ctx, dest, df, use_short_path, pretty_print = False):
+    Returns:
+        A JSON string representing the manifest entry.
+    """
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     repository = None
     if df.src:
@@ -676,16 +552,16 @@ def _encode_manifest_entry(ctx, dest, df, use_short_path, pretty_print = False):
         origin_str = "@" + origin_str
 
     data = {
-        "type": entry_type,
-        "src": src,
         "dest": dest.strip("/"),
-        "mode": df.mode or "",
-        "user": df.user or None,
-        "group": df.group or None,
-        "uid": df.uid,
         "gid": df.gid,
+        "group": df.group or None,
+        "mode": df.mode or "",
         "origin": origin_str,
         "repository": repository,
+        "src": src,
+        "type": entry_type,
+        "uid": df.uid,
+        "user": df.user or None,
     }
 
     if pretty_print:
