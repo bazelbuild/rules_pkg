@@ -6,6 +6,8 @@ set -o errexit -o nounset -o pipefail
 TAG="${1}"
 
 # Get back to the root, because sometimes we are in .github/workflows, but other times we are not.
+# That seems plainly dumb, but working around it is far less effort than writing new workflows
+# where this is not a problem.
 if [[ ! -f MODULE.bazel ]] ; then
   cd ..
 fi

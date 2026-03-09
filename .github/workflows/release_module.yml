@@ -68,4 +68,9 @@ jobs:
       # TODO: https://github.com/bazelbuild/rules_pkg/issues/1031
       release_files: "bazel-bin/distro/rules_pkg_${{ inputs.subdir }}-*.tgz"
       tag_name: "rules_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
+      # We only do a partial test. The problem is that RPM does not work on the github runners
+      # so we must skip, but the release_ruleset flow appends cache flags to the command. That
+      # makes the syntax 'bazel test //... -- -//test/rpm/... =disk_cache-flag' impossible.
+      # It doesn't matter.  We have to do the full test anyway before hitting this, so everything
+      # should still work, if we only changed the version in the module.
       bazel_test_command: "bazel test --build_tests_only //tests/tar/... //tests/zip/..."
