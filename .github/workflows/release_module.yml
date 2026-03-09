@@ -67,4 +67,4 @@ jobs:
       # This will run release_prep.sh to do the dirty work.
       # TODO: https://github.com/bazelbuild/rules_pkg/issues/1031
       release_files: "bazel-bin/distro/rules_pkg_${{ inputs.subdir }}-*.tgz"
-      tag_name: "rule_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
+      tag_name: "rules_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
