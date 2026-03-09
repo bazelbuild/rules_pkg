@@ -38,7 +38,7 @@ jobs:
         env:
           SUBDIR: "${{ inputs.subdir }}"
           VERSION: "${{ inputs.version }}"
-          MODULE: "rules_pkg_${SUBDIR}"
+          MODULE: "rules_pkg_${{ inputs.subdir }}"
 
           GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
