@@ -50,7 +50,7 @@ jobs:
           curl -o "${RUNNER_TEMP}/buildozer" -L "https://github.com/bazelbuild/buildtools/releases/download/v7.3.1/buildozer-linux-amd64"
           chmod a+x "${RUNNER_TEMP}/buildozer"
           "${RUNNER_TEMP}/buildozer" "set version ${VERSION}" "//${SUBDIR}/MODULE.bazel:${MODULE}" || true
-          git add "${MODULE}/MODULE.bazel"
+          git add "${SUBDIR}/MODULE.bazel"
           git commit -m "Release `${MODULE}-${VERSION}`"
 
           # 3. Push release tag.
