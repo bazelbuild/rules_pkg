@@ -51,6 +51,8 @@ jobs:
           chmod a+x "${RUNNER_TEMP}/buildozer"
           "${RUNNER_TEMP}/buildozer" "set version ${VERSION}" "//${SUBDIR}/MODULE.bazel:${MODULE}" || true
           git add "${SUBDIR}/MODULE.bazel"
+          sed -i -e "s/@AUTO_VERSION@/${VERSION}/" ${SUBDIR}/version.bzl
+          git add "${SUBDIR}/version.bzl"
           git commit -m "Release `${MODULE}-${VERSION}`"
 
           # 3. Push release tag.
