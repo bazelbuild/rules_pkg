@@ -143,6 +143,14 @@ def _merge_context_attributes(info, mapping_context):
     return _merge_attributes(info, default_mode, default_user, default_group, default_uid, default_gid)
 
 def process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
+    """Process a pkg_dirs provider and add its contents to the content map.
+
+    Args:
+        mapping_context: (r/w) a MappingContext
+        pkg_dirs_info: the provider from a pkg_dirs target
+        origin: The rule instance adding this entry
+    """
+
     attrs = _merge_context_attributes(pkg_dirs_info, mapping_context)
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
@@ -159,6 +167,13 @@ def process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
         )
 
 def process_pkg_files(mapping_context, pkg_files_info, origin):
+    """Process a pkg_files provider and add its contents to the content map.
+
+    Args:
+        mapping_context: (r/w) a MappingContext
+        pkg_files_info: the provider from a pkg_files target
+        origin: The rule instance adding this entry
+    """
     attrs = _merge_context_attributes(pkg_files_info, mapping_context)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
@@ -191,6 +206,12 @@ def process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
     )
 
 def process_pkg_filegroup(mapping_context, pkg_filegroup_info):
+    """Process a pkg_filegroup provider and add its contents to the content map.
+
+    Args:
+        mapping_context: (r/w) a MappingContext
+        pkg_filegroup_info: the provider from a pkg_filegroup target
+    """
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
         for d in pkg_filegroup_info.pkg_dirs:
             process_pkg_dirs(mapping_context, d[0], d[1])
@@ -494,6 +515,18 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
     )
 
 def encode_manifest_entry(ctx, dest, df, use_short_path, pretty_print = False):
+    """Encode a manifest entry as JSON.
+
+    Args:
+        ctx: The rule context, used for workspace name and repo mapping.
+        dest: The destination path for this entry in the package.
+        df: The DestFile to encode.
+        use_short_path: Whether to use the short path for the src, which is the path relative to the workspace root, instead of the full path.
+        pretty_print: Whether to pretty print the JSON output
+
+    Returns:
+        A JSON string representing the manifest entry.
+    """
     entry_type = df.entry_type if hasattr(df, "entry_type") else ENTRY_IS_FILE
     repository = None
     if df.src:

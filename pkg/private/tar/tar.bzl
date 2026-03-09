@@ -13,13 +13,13 @@
 # limitations under the License.
 """Rules for making .tar files."""
 
-load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg:package_content.bzl",
     "add_label_list",
     "create_mapping_context_from_ctx",
     "write_manifest",
 )
+load("//pkg:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg/private:pkg_files.bzl",
     "add_directory",
