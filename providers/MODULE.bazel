@@ -1,6 +1,6 @@
 module(
     name = "rules_pkg_providers",
-    version = "",  # set by release pipeline from version.bzl.
+    version = "0.0.1g",  # set by release pipeline from version.bzl.
     compatibility_level = 1,
     repo_name = "rules_pkg_providers",
 )
