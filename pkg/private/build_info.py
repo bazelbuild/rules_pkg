@@ -14,6 +14,20 @@
 """Workspace status file utilities."""
 
 def get_status_vars(status_file, include_empty=True):
+  """Read workspace status variables from a status file.
+
+  Reads a file of "name<space>value" pairs and returns a dict of all
+  variables found.  The file should be in the workspace status format:
+  https://docs.bazel.build/versions/master/user-manual.html#workspace_status
+
+  Args:
+    status_file: path to a workspace status file.  Typically
+      ctx.info_file.path (stable) or ctx.version_file.path (volatile).
+    include_empty: if True (default), keys with no value are included
+      in the result with an empty-string value.
+  Returns:
+    dict: mapping of variable name to value.
+  """
   result = {}
   with open(status_file, 'r') as f:
     for line in f:
@@ -29,10 +43,9 @@ def get_status_vars(status_file, include_empty=True):
   return result
 
 def get_timestamp(volatile_status_file):
-  """Get BUILD_TIMESTAMP as an integer.
+  """Get BUILD_TIMESTAMP as an integer from volatile-status.txt.
 
-  Reads a file of "name<space>value" pairs and returns the value
-  of the BUILD_TIMESTAMP. The file should be in the workspace status
+  The file should be in the workspace status
   format: https://docs.bazel.build/versions/master/user-manual.html#workspace_status
 
   Args:

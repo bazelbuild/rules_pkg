@@ -33,14 +33,12 @@ load(
     "PackageSymlinkInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private:util.bzl", "get_stamp_detect", "setup_output_files", "substitute_package_variables")
 load(
     "//toolchains/rpm:rpmbuild_configure.bzl",
     "DEBUGINFO_TYPE_FEDORA",
     "DEBUGINFO_TYPE_NONE",
 )
-
-_stamp_condition = Label("//pkg/private:private_stamp_detect")
 
 rpm_filetype = [".rpm"]
 
@@ -1008,6 +1006,14 @@ pkg_rpm_impl = rule(
             doc = """RPM "Release" tag
 
             Exactly one of `release` or `release_file` must be provided.
+
+            When `stamp` is enabled, workspace status variable placeholders
+            of the form `{VARIABLE_NAME}` will be substituted at build time
+            using values from the stable and volatile status files.  For
+            example, setting `release = "0.{BUILD_TIMESTAMP}"` with
+            `stamp = 1` will embed the build timestamp in the release tag.
+            See https://bazel.build/docs/user-manual#workspace-status for
+            details on workspace status variables.
             """,
         ),
         "release_file": attr.label(
@@ -1345,10 +1351,7 @@ def pkg_rpm(name, **kwargs):
     """
     pkg_rpm_impl(
         name = name,
-        private_stamp_detect = select({
-            _stamp_condition: True,
-            "//conditions:default": False,
-        }),
+        private_stamp_detect = get_stamp_detect(kwargs.get("stamp", 0)),
         **kwargs
     )
 
