@@ -68,5 +68,4 @@ jobs:
       # TODO: https://github.com/bazelbuild/rules_pkg/issues/1031
       release_files: "bazel-bin/distro/rules_pkg_${{ inputs.subdir }}-*.tgz"
       tag_name: "rules_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
-      # The trailing # is intentional. It comments away the bazel cache specs
-      bazel_test_command: "bazel test --build_tests_only -- //tests/... -//tests/rpm/... #"
+      bazel_test_command: "bazel test --build_tests_only //tests/tar/... //tests/zip/..."

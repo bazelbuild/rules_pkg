@@ -5,8 +5,13 @@ set -o errexit -o nounset -o pipefail
 # Passed as argument when invoking the script.
 TAG="${1}"
 
-# Get back to the root
-cd ../../
+# Get back to the root, because sometimes we are in .github/workflows.
+if [[ ! -f MODULE.bazel ]] ; then
+  cd ..
+fi
+if [[ ! -f MODULE.bazel ]] ; then
+  cd ..
+fi
 
 case "${TAG}" in
   [0-9]* )
@@ -18,6 +23,11 @@ case "${TAG}" in
     bazel build //distro:relnotes
     cat bazel-bin/distro/relnotes.txt
     exit 0
+    ;;
+  rules_pkg_*-* )
+    # rules_pkg_providers-0.0.1
+    # This happens when the release script wants to make the notes based on the created tag.
+    TAG=$(echo "$TAG" | sed -e 's/^rules_pkg_//')
     ;;
   * )
     ;;
