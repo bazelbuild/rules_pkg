@@ -33,7 +33,7 @@ load(
     "PackageSymlinkInfo",
     "PackageVariablesInfo",
 )
-load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
+load("//pkg/private:util.bzl", "get_stamp_detect", "setup_output_files", "substitute_package_variables")
 load(
     "//toolchains/rpm:rpmbuild_configure.bzl",
     "DEBUGINFO_TYPE_FEDORA",
@@ -343,7 +343,7 @@ def _process_dep(dep, rpm_ctx, debuginfo_type):
                 rpm_ctx,
             )
 
-def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
+def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type, effective_release = None):
     sub_rpm_ctx = struct(
         dest_check_map = {},
         install_script_pieces = [],
@@ -424,7 +424,7 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type):
         version = rpm_info.version or ctx.attr.version,
         architecture = rpm_info.architecture or ctx.attr.architecture,
         package_name = rpm_info.package_name,
-        release = ctx.attr.release,
+        release = effective_release,
     )
 
     default_file = ctx.actions.declare_file("{}-{}.rpm".format(rpm_name, rpm_info.package_name))
@@ -478,6 +478,7 @@ def _pkg_rpm_impl(ctx):
     debuginfo_type = DEBUGINFO_TYPE_NONE
     name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
     rpm_ctx.make_rpm_args.append("--name=" + name)
+    _stamp_active = ctx.attr.stamp == 1 or (ctx.attr.stamp == -1 and ctx.attr.private_stamp_detect)
 
     if ctx.attr.debug:
         rpm_ctx.make_rpm_args.append("--debug")
@@ -513,13 +514,15 @@ def _pkg_rpm_impl(ctx):
 
     default_file = ctx.actions.declare_file("{}.rpm".format(rpm_name))
 
+    # When stamp is active, don't embed template placeholders in the filename.
+    effective_release = ctx.attr.release if (ctx.attr.release and not _stamp_active) else None
     package_file_name = ctx.attr.package_file_name
     if not package_file_name:
         package_file_name = _make_rpm_filename(
             rpm_name,
             ctx.attr.version,
             ctx.attr.architecture,
-            release = ctx.attr.release,
+            release = effective_release,
         )
 
     #### rpm spec "preamble"
@@ -549,9 +552,20 @@ def _pkg_rpm_impl(ctx):
         rpm_ctx.make_rpm_args.append("--release=@" + ctx.file.release_file.path)
         files.append(ctx.file.release_file)
     elif ctx.attr.release:
-        preamble_pieces.append("Release: " + ctx.attr.release)
+        if _stamp_active:
+            # Route through make_rpm.py so stamp vars can be substituted
+            preamble_pieces.append("Release: ${{RELEASE_FROM_FILE}}")
+            rpm_ctx.make_rpm_args.append("--release=" + ctx.attr.release)
+        else:
+            preamble_pieces.append("Release: " + ctx.attr.release)
     else:
         fail("None of the release or release_file attributes were specified")
+
+    if _stamp_active:
+        rpm_ctx.make_rpm_args.append("--volatile_status_file=" + ctx.version_file.path)
+        files.append(ctx.version_file)
+        rpm_ctx.make_rpm_args.append("--stable_status_file=" + ctx.info_file.path)
+        files.append(ctx.info_file)
 
     # source_date_epoch is an integer, and Bazel (as of 4.2.2) does not allow
     # you to put "None" as the default for an "int" attribute.  See also
@@ -755,6 +769,7 @@ def _pkg_rpm_impl(ctx):
                 s[PackageSubRPMInfo],
                 rpm_ctx,
                 debuginfo_type,
+                effective_release = effective_release,
             ))
 
         subrpm_file = ctx.actions.declare_file(
@@ -776,7 +791,7 @@ def _pkg_rpm_impl(ctx):
             ctx.attr.version,
             ctx.attr.architecture,
             package_name = "debuginfo",
-            release = ctx.attr.release,
+            release = effective_release,
         )
 
         _, debuginfo_output_file, _ = setup_output_files(
@@ -913,7 +928,7 @@ def _pkg_rpm_impl(ctx):
     ]
 
 # Define the rule.
-pkg_rpm = rule(
+pkg_rpm_impl = rule(
     doc = """Creates an RPM format package via `pkg_filegroup` and friends.
 
     The uses the outputs of the rules in `mappings.bzl` to construct arbitrary
@@ -991,6 +1006,14 @@ pkg_rpm = rule(
             doc = """RPM "Release" tag
 
             Exactly one of `release` or `release_file` must be provided.
+
+            When `stamp` is enabled, workspace status variable placeholders
+            of the form `{VARIABLE_NAME}` will be substituted at build time
+            using values from the stable and volatile status files.  For
+            example, setting `release = "0.{BUILD_TIMESTAMP}"` with
+            `stamp = 1` will embed the build timestamp in the release tag.
+            See https://bazel.build/docs/user-manual#workspace-status for
+            details on workspace status variables.
             """,
         ),
         "release_file": attr.label(
@@ -1290,6 +1313,18 @@ pkg_rpm = rule(
             doc = """Extra files that are needed by rpmbuild or find-debuginfo""",
             allow_files = True,
         ),
+        "stamp": attr.int(
+            doc = """Enable stamping for volatile release values.  Possible values:
+<li>stamp = 1: Substitute workspace status variables in the release tag.
+<li>stamp = 0: No substitution; release tag used as-is.
+<li>stamp = -1: Controlled by the --[no]stamp flag.
+""",
+            values = [-1, 0, 1],
+            default = 0,
+        ),
+        # Is --stamp set on the command line?
+        # TODO(https://github.com/bazelbuild/rules_pkg/issues/340): Remove this.
+        "private_stamp_detect": attr.bool(default = False),
         # Implicit dependencies.
         "_make_rpm": attr.label(
             default = Label("//pkg:make_rpm"),
@@ -1308,6 +1343,17 @@ pkg_rpm = rule(
     implementation = _pkg_rpm_impl,
     toolchains = ["@rules_pkg//toolchains/rpm:rpmbuild_toolchain_type"],
 )
+
+def pkg_rpm(name, **kwargs):
+    """Creates an RPM format package via `pkg_filegroup` and friends.
+
+    @wraps(pkg_rpm_impl)
+    """
+    pkg_rpm_impl(
+        name = name,
+        private_stamp_detect = get_stamp_detect(kwargs.get("stamp", 0)),
+        **kwargs
+    )
 
 def _pkg_sub_rpm_impl(ctx):
     mapped_files_depsets = []
