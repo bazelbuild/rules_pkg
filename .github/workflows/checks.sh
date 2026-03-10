@@ -22,5 +22,3 @@ echo "${bazel_cmd[@]}"
 if [ -n "${BUILD_DISTRO:-}" ] ; then
     bazel build  //distro:distro
 fi
-
-exit "${exit_code}"
