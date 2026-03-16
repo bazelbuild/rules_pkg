@@ -370,6 +370,23 @@ verify_archive_test(
 )
 
 pkg_tar(
+    name = "test-tar-with-only-runfiles",
+    srcs = [
+        "//tests:data_filegroup",
+    ],
+    include_runfiles = True,
+)
+
+verify_archive_test(
+    name = "runfiles_only_test",
+    must_contain = [
+        ".runfiles/_main/tests/testdata/loremipsum.txt",
+        ".runfiles/_main/tests/testdata/hello.txt",
+    ],
+    target = ":test-tar-with-only-runfiles",
+)
+
+pkg_tar(
     name = "test-tar-remap-runfiles-base-path",
     srcs = [
         ":a_program",
