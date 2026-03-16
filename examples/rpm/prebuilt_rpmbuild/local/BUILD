@@ -18,6 +18,7 @@ rpmbuild_toolchain(
     name = "prebuilt_rpmbuild",
     # You could also point to a target that builds rpmbuild from source.
     label = ":rpmbuild_binary",
+    data = glob(["lib/rpm/**"]),
 )
 
 toolchain(
