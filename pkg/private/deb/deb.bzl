@@ -364,12 +364,12 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             default = [],
         ),
         "provides": attr.string_list(
-            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            doc = """See https://www.debian.org/doc/debian-policy/ch-relationships.html#virtual-packages-provides.""",
             default = [],
         ),
         "provides_file": attr.label(
             doc = """File that contains a list of provided packages. Must not be used with `provides`.
-            See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            See https://www.debian.org/doc/debian-policy/ch-relationships.html#virtual-packages-provides.""",
             allow_single_file = True,
         ),
         "predepends": attr.string_list(
@@ -381,12 +381,12 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             default = [],
         ),
         "replaces": attr.string_list(
-            doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            doc = """See https://www.debian.org/doc/debian-policy/ch-relationships.html#overwriting-files-and-replacing-packages-replaces.""",
             default = [],
         ),
         "replaces_file": attr.label(
             doc = """File that contains a list of replaced packages. Must not be used with `replaces`.
-            See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            See https://www.debian.org/doc/debian-policy/ch-relationships.html#overwriting-files-and-replacing-packages-replaces.""",
             allow_single_file = True,
         ),
         "suggests": attr.string_list(
