@@ -160,10 +160,23 @@ def _pkg_deb_impl(ctx):
         args.add("--pre_depends", d)
     for d in ctx.attr.recommends:
         args.add("--recommends", d)
-    for d in ctx.attr.replaces:
-        args.add("--replaces", d)
-    for d in ctx.attr.provides:
-        args.add("--provides", d)
+    if ctx.attr.replaces_file:
+        if ctx.attr.replaces:
+            fail("Both replaces and replaces_file attributes were specified")
+        args.add("--replaces", "@" + ctx.file.replaces_file.path)
+        files.append(ctx.file.replaces_file)
+    elif ctx.attr.replaces:
+        for d in ctx.attr.replaces:
+            args.add("--replaces", d)
+
+    if ctx.attr.provides_file:
+        if ctx.attr.provides:
+            fail("Both provides and provides_file attributes were specified")
+        args.add("--provides", "@" + ctx.file.provides_file.path)
+        files.append(ctx.file.provides_file)
+    elif ctx.attr.provides:
+        for d in ctx.attr.provides:
+            args.add("--provides", d)
 
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = True)
@@ -354,6 +367,11 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],
         ),
+        "provides_file": attr.label(
+            doc = """File that contains a list of provided packages. Must not be used with `provides`.
+            See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            allow_single_file = True,
+        ),
         "predepends": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],
@@ -365,6 +383,11 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         "replaces": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],
+        ),
+        "replaces_file": attr.label(
+            doc = """File that contains a list of replaced packages. Must not be used with `replaces`.
+            See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
+            allow_single_file = True,
         ),
         "suggests": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
