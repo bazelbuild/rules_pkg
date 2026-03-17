@@ -55,8 +55,8 @@ filegroup(
 filegroup(
     name = "data_filegroup",
     data = [
-        "testdata/loremipsum.txt",
         "testdata/hello.txt",
+        "testdata/loremipsum.txt",
     ],
     visibility = ["//visibility:public"],
 )
