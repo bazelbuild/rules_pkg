@@ -22,6 +22,7 @@ RpmbuildInfo = provider(
         "path": "The path to a pre-built rpmbuild",
         "version": "The version string of rpmbuild",
         "debuginfo_type": "The variant of the underlying debuginfo config",
+        "data": "Additional files needed at runtime by rpmbuild",
     },
 )
 
@@ -37,6 +38,7 @@ def _rpmbuild_toolchain_impl(ctx):
             path = ctx.attr.path,
             version = ctx.attr.version,
             debuginfo_type = ctx.attr.debuginfo_type,
+            data = ctx.files.data,
         ),
     )
     return [toolchain_info]
@@ -63,6 +65,10 @@ rpmbuild_toolchain = rule(
             One of `centos` (RPM < 4.18), `fedora` (RPM >= 4.18), and `none`
             """,
             default = "none",
+        ),
+        "data": attr.label_list(
+            doc = "Additional files needed at runtime by rpmbuild.",
+            allow_files = True,
         ),
     },
 )

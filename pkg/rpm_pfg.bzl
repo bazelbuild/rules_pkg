@@ -475,6 +475,7 @@ def _pkg_rpm_impl(ctx):
 
     files = []
     tools = []
+    toolchain_data = []
     debuginfo_type = DEBUGINFO_TYPE_NONE
     name = ctx.attr.package_name if ctx.attr.package_name else ctx.label.name
     rpm_ctx.make_rpm_args.append("--name=" + name)
@@ -499,6 +500,8 @@ def _pkg_rpm_impl(ctx):
             executable_files = toolchain.label[DefaultInfo].files_to_run
             tools.append(executable_files)
             rpm_ctx.make_rpm_args.append("--rpmbuild=%s" % executable_files.executable.path)
+
+        toolchain_data = toolchain.data
 
         if ctx.attr.debuginfo:
             debuginfo_type = toolchain.debuginfo_type
@@ -885,7 +888,7 @@ def _pkg_rpm_impl(ctx):
         executable = ctx.executable._make_rpm,
         use_default_shell_env = True,
         arguments = rpm_ctx.make_rpm_args,
-        inputs = files + (ctx.files.data or []),
+        inputs = files + (ctx.files.data or []) + toolchain_data,
         outputs = rpm_ctx.output_rpm_files,
         env = {
             "LANG": "en_US.UTF-8",

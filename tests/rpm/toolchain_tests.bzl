@@ -53,6 +53,11 @@ def _toolchain_contents_test_impl(ctx):
         ctx.attr.expect_path,
         info.path,
     )
+    asserts.equals(
+        env,
+        ctx.attr.expect_data_count,
+        len(info.data),
+    )
     return analysistest.end(env)
 
 toolchain_contents_test = analysistest.make(
@@ -65,6 +70,7 @@ toolchain_contents_test = analysistest.make(
             allow_files = True,
         ),
         "expect_path": attr.string(),
+        "expect_data_count": attr.int(default = 0),
     },
 )
 
@@ -117,6 +123,21 @@ def _create_toolchain_creation_tests():
         expect_valid = True,
         expect_label = None,
         expect_path = "/usr/bin/foo",
+    )
+
+    rpmbuild_toolchain(
+        name = "tc_with_data",
+        path = "/usr/bin/foo",
+        data = [":toolchain_test.bzl"],
+        tags = ["manual"],
+    )
+    toolchain_contents_test(
+        name = "tc_with_data_test",
+        target_under_test = ":tc_with_data",
+        expect_valid = True,
+        expect_label = None,
+        expect_path = "/usr/bin/foo",
+        expect_data_count = 1,
     )
 
 # buildifier: disable=unnamed-macro
