@@ -173,6 +173,7 @@ class PkgDebTest(unittest.TestCase):
 
   def test_control_files(self):
     expected = [
+        {'name': './changelog', 'mode': 0o644},
         {'name': './conffiles', 'mode': 0o644},
         {'name': './config', 'mode': 0o755},
         {'name': './control', 'mode': 0o644},
@@ -188,6 +189,16 @@ class PkgDebTest(unittest.TestCase):
     self.assertEqual(
         conffiles,
         '/etc/nsswitch.conf\n/etc/other\n')
+
+  def test_changelog(self):
+    changelog = self.deb_file.get_deb_ctl_file('changelog')
+    self.assertEqual(
+        changelog,
+        'fizzbuzz (4.5.6) trusty; urgency=low\n'
+        '\n'
+        '  * Add changelog coverage.\n'
+        '\n'
+        ' -- Some One <someone@somewhere.com>  Thu, 01 Jan 1970 00:00:00 +0000\n')
 
   def test_config(self):
     config = self.deb_file.get_deb_ctl_file('config')

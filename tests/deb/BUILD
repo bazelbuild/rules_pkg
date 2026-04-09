@@ -74,6 +74,7 @@ pkg_deb(
     name = "test_deb",
     breaks = ["oldbrokenpkg"],
     built_using = "some_test_data (0.1.2)",
+    changelog = "changelog",
     conffiles = [
         "/etc/nsswitch.conf",
         "/etc/other",

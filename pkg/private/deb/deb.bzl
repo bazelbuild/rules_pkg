@@ -116,7 +116,7 @@ def _pkg_deb_impl(ctx):
         fail("Neither description_file nor description attribute was specified")
 
     if ctx.attr.changelog:
-        args.append("--changelog" + "@" + ctx.file.changelog.path)
+        args.add("--changelog", "@" + ctx.file.changelog.path)
         files.append(ctx.file.changelog)
 
     # Built using can also be specified by a file or inlined (but is not mandatory)
