@@ -5,16 +5,19 @@ def print_rel_notes(
         name,
         repo,
         version,
-        artifact_name = None,
         outs = None,
-        setup_file = "",
-        deps_method = "",
-        toolchains_method = "",
-        org = "bazelbuild",
+        artifact_name = None,
         changelog = None,
-        mirror_host = None):
+        deps_method = "",
+        mirror_host = None,
+        org = "bazelbuild",
+        release_name = None,
+        setup_file = "",
+        toolchains_method = ""):
     if not artifact_name:
         artifact_name = ":%s-%s.tar.gz" % (repo, version)
+    if not release_name:
+        release_name = ":%s-%s" % (repo, version)
 
     # Must use Label to get a path relative to the rules_pkg repository,
     # instead of the calling BUILD file.
@@ -26,6 +29,7 @@ def print_rel_notes(
         "--repo=%s" % repo,
         "--version=%s" % version,
         "--tarball=$(location %s)" % artifact_name,
+        "--release_name='%s'" % release_name,
     ]
     if setup_file:
         cmd.append("--setup_file=%s" % setup_file)
