@@ -239,6 +239,24 @@ class WipeTest(PkgInstallTestBase):
         self.assertFalse((self.installdir / "should_be_deleted.txt").exists())
 
 
+class SymlinkOverwriteTest(PkgInstallTestBase):
+    """Tests that installing over an existing symlink succeeds."""
+
+    def test_overwrite_existing_symlink(self):
+        link = self.installdir / "lib" / "fake.so.1"
+        self.installdir.mkdir(parents=True, exist_ok=True)
+        (self.installdir / "lib").mkdir(exist_ok=True)
+        if not link.is_symlink():
+            link.symlink_to("old_target")
+        subprocess.check_call([
+            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
+            "--destdir", self.installdir,
+        ],
+                              env=self.runfiles.EnvVars())
+        self.assertTrue(link.is_symlink())
+        self.assertEqual(os.readlink(link), "fake.so.1.2.3")
+
+
 class CrossRepoInstallTest(unittest.TestCase):
     """Test external repo's pkg_install can reference main repo files."""
 

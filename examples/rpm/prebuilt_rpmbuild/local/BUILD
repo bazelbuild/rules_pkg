@@ -16,6 +16,7 @@ load("@rules_pkg//toolchains/rpm:rpmbuild.bzl", "rpmbuild_toolchain")
 
 rpmbuild_toolchain(
     name = "prebuilt_rpmbuild",
+    data = glob(["lib/rpm/**"]),
     # You could also point to a target that builds rpmbuild from source.
     label = ":rpmbuild_binary",
 )

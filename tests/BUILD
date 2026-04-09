@@ -52,6 +52,15 @@ filegroup(
     srcs = glob(["**/*.txt"]),
 )
 
+filegroup(
+    name = "data_filegroup",
+    data = [
+        "testdata/hello.txt",
+        "testdata/loremipsum.txt",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 #
 # Data source for Unicode handling tests
 #
