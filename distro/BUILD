@@ -150,6 +150,7 @@ print_rel_notes(
     outs = ["rules_pkg_providers_relnotes.txt"],
     artifact_name = "rules_pkg_providers-%s.tgz" % providers_version,
     org = "bazelbuild",
-    repo = "rules_pkg_providers",
+    release_name = "rules_pkg_providers-%s" % providers_version,
+    repo = "rules_pkg",
     version = providers_version,
 )

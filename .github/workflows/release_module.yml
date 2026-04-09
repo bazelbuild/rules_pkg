@@ -38,7 +38,7 @@ jobs:
         env:
           SUBDIR: "${{ inputs.subdir }}"
           VERSION: "${{ inputs.version }}"
-          MODULE: "rules_pkg_${SUBDIR}"
+          MODULE: "rules_pkg_${{ inputs.subdir }}"
 
           GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
@@ -50,7 +50,9 @@ jobs:
           curl -o "${RUNNER_TEMP}/buildozer" -L "https://github.com/bazelbuild/buildtools/releases/download/v7.3.1/buildozer-linux-amd64"
           chmod a+x "${RUNNER_TEMP}/buildozer"
           "${RUNNER_TEMP}/buildozer" "set version ${VERSION}" "//${SUBDIR}/MODULE.bazel:${MODULE}" || true
-          git add "${MODULE}/MODULE.bazel"
+          git add "${SUBDIR}/MODULE.bazel"
+          sed -i -e "s/@AUTO_VERSION@/${VERSION}/" ${SUBDIR}/version.bzl
+          git add "${SUBDIR}/version.bzl"
           git commit -m "Release `${MODULE}-${VERSION}`"
 
           # 3. Push release tag.
@@ -67,4 +69,10 @@ jobs:
       # This will run release_prep.sh to do the dirty work.
       # TODO: https://github.com/bazelbuild/rules_pkg/issues/1031
       release_files: "bazel-bin/distro/rules_pkg_${{ inputs.subdir }}-*.tgz"
-      tag_name: "rule_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
+      tag_name: "rules_pkg_${{ inputs.subdir }}-${{ inputs.version }}"
+      # We only do a partial test. The problem is that RPM does not work on the github runners
+      # so we must skip, but the release_ruleset flow appends cache flags to the command. That
+      # makes the syntax 'bazel test //... -- -//test/rpm/... =disk_cache-flag' impossible.
+      # It doesn't matter.  We have to do the full test anyway before hitting this, so everything
+      # should still work, if we only changed the version in the module.
+      bazel_test_command: "bazel test --build_tests_only //tests/tar/... //tests/zip/..."
