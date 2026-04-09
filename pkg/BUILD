@@ -79,10 +79,7 @@ py_binary(
         "//conditions:default": [":not_compatible"],
     }),
     visibility = ["//visibility:public"],
-    deps = [
-        "//pkg:make_rpm_lib",
-        "//pkg/private:archive",
-    ],
+    deps = ["//pkg:make_rpm_lib"],
 )
 
 py_library(
@@ -96,6 +93,7 @@ py_library(
     ],
     deps = [
         "//pkg/private:archive",
+        "//pkg/private:build_info",
         "//pkg/private:helpers",
     ],
 )
