@@ -34,6 +34,7 @@ load(
     "PackageFilesInfo",
     "PackageSymlinkInfo",
 )
+load("//tests:my_package_name.bzl", "my_package_naming")
 load(
     "//tests/util:defs.bzl",
     "directory",
@@ -904,6 +905,72 @@ def _test_pkg_filegroup(name):
     )
 
 ##########
+# Test package_variables substitution in prefix
+##########
+
+def _test_pkg_files_package_variables():
+    my_package_naming(
+        name = "pf_pkg_vars_naming",
+        label = "amazing",
+        tags = ["manual"],
+    )
+
+    pkg_files(
+        name = "pf_with_package_variables_g",
+        srcs = ["testdata/hello.txt"],
+        prefix = "usr/$(label)/share",
+        package_variables = ":pf_pkg_vars_naming",
+        tags = ["manual"],
+    )
+
+    pkg_files_contents_test(
+        name = "pf_with_package_variables",
+        target_under_test = ":pf_with_package_variables_g",
+        expected_dests = ["usr/amazing/share/hello.txt"],
+    )
+
+def _test_pkg_filegroup_package_variables():
+    my_package_naming(
+        name = "pfg_pkg_vars_naming",
+        label = "amazing",
+        tags = ["manual"],
+    )
+
+    # Inner pkg_files with a literal prefix; variable substitution happens in
+    # the pkg_filegroup that wraps it.
+    pkg_files(
+        name = "pfg_pkg_vars_inner_files_g",
+        srcs = ["foo", "bar"],
+        prefix = "bin",
+        tags = ["manual"],
+    )
+
+    pkg_filegroup(
+        name = "pfg_with_package_variables_g",
+        srcs = [":pfg_pkg_vars_inner_files_g"],
+        prefix = "usr/$(label)",
+        package_variables = ":pfg_pkg_vars_naming",
+        tags = ["manual"],
+    )
+
+    # Reference target: the expected result after variable substitution.
+    pkg_files(
+        name = "pfg_pkg_vars_expected_g",
+        srcs = ["foo", "bar"],
+        prefix = "usr/amazing/bin",
+        tags = ["manual"],
+    )
+
+    pkg_filegroup_contents_test(
+        name = "pfg_with_package_variables",
+        target_under_test = ":pfg_with_package_variables_g",
+        expected_pkg_files = [":pfg_pkg_vars_expected_g"],
+        # Origins will differ (inner target vs. reference target); only check
+        # the resolved destinations.
+        verify_origins = False,
+    )
+
+##########
 # Test strip_prefix pseudo-module
 ##########
 
@@ -930,6 +997,8 @@ def mappings_analysis_tests():
     # TODO(nacl) migrate the above to use a scheme the one used here.  At the very
     # least, the test suites should be easy to find/name.
     _test_pkg_filegroup(name = "pfg_tests")
+    _test_pkg_files_package_variables()
+    _test_pkg_filegroup_package_variables()
 
     native.test_suite(
         name = "pkg_files_analysis_tests",
@@ -968,6 +1037,9 @@ def mappings_analysis_tests():
             ":pkg_mklink_mode_overlay_if_not_provided",
             # Tests involving pkg_filegroup
             ":pfg_tests",
+            # Tests for package_variables in prefix
+            ":pf_with_package_variables",
+            ":pfg_with_package_variables",
         ],
     )
 
