@@ -29,6 +29,7 @@ import sys
 import tempfile
 from string import Template
 
+from pkg.private import build_info
 from pkg.private import helpers
 
 
@@ -188,11 +189,14 @@ class RpmBuilder(object):
   }
 
   def __init__(self, name, version, release, arch, rpmbuild_path,
-               source_date_epoch=None,
+               source_date_epoch=None, stamp_vars=None,
                debug=False):
     self.name = name
     self.version = helpers.GetFlagValue(version)
     self.release = helpers.GetFlagValue(release)
+    if stamp_vars and self.release:
+      for key, val in stamp_vars.items():
+        self.release = self.release.replace('{' + key + '}', val)
     self.arch = arch
     self.files = []
     self.rpmbuild_path = FindRpmbuild(rpmbuild_path)
@@ -560,6 +564,10 @@ def main(argv):
                            'environment variable')
   parser.add_argument('--debug', action='store_true', default=False,
                       help='Print debug messages.')
+  parser.add_argument('--volatile_status_file', default='',
+                      help='Path to volatile-status.txt for stamp variable substitution.')
+  parser.add_argument('--stable_status_file', default='',
+                      help='Path to stable-status.txt for stamp variable substitution. ')
 
   # Options currently used experimental/rpm.bzl:
   parser.add_argument('--install_script',
@@ -595,10 +603,16 @@ def main(argv):
   options = parser.parse_args(argv or ())
 
   try:
+    stamp_vars = {}
+    if options.volatile_status_file:
+      stamp_vars = build_info.get_status_vars(options.volatile_status_file)
+    if options.stable_status_file:
+      stamp_vars.update(build_info.get_status_vars(options.stable_status_file))
     builder = RpmBuilder(options.name,
                          options.version, options.release,
                          options.arch, options.rpmbuild,
                          source_date_epoch=options.source_date_epoch,
+                         stamp_vars=stamp_vars,
                          debug=options.debug)
     builder.AddFiles(options.files)
     return builder.Build(options.spec_file, options.out_file,
