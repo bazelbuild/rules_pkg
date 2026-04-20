@@ -87,3 +87,5 @@ def GetFlagValue(flagvalue, strip=True):
     if strip:
       return flagvalue.strip()
   return flagvalue
+
+"""This is a totally useless statement to test CI"""
