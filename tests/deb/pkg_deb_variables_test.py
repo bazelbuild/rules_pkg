@@ -34,23 +34,23 @@ class DebInspect(object):
         with archive.SimpleArReader(deb_file) as f:
             info = f.next()
             while info:
-                if info.filename == 'debian-binary':
+                if info.filename == "debian-binary":
                     self.deb_version = info.data
-                elif info.filename == 'control.tar.gz':
+                elif info.filename == "control.tar.gz":
                     self.control = info.data
-                elif info.filename == 'data.tar.gz':
+                elif info.filename == "data.tar.gz":
                     self.data = info.data
                 else:
-                    raise Exception('Unexpected file: %s' % info.filename)
+                    raise Exception("Unexpected file: %s" % info.filename)
                 info = f.next()
 
     def get_deb_ctl_file(self, file_name):
         """Extract a control file."""
-        with tarfile.open(mode='r:gz', fileobj=BytesIO(self.control)) as f:
+        with tarfile.open(mode="r:gz", fileobj=BytesIO(self.control)) as f:
             for info in f:
-                if info.name == './' + file_name:
-                    return codecs.decode(f.extractfile(info).read(), 'utf-8')
-        raise Exception('Could not find control file: %s' % file_name)
+                if info.name == "./" + file_name:
+                    return codecs.decode(f.extractfile(info).read(), "utf-8")
+        raise Exception("Could not find control file: %s" % file_name)
 
 
 class PkgDebVariablesTest(unittest.TestCase):
@@ -59,38 +59,44 @@ class PkgDebVariablesTest(unittest.TestCase):
     def setUp(self):
         super(PkgDebVariablesTest, self).setUp()
         self.runfiles = runfiles.Create()
-        # my_package_variables provides label="some_value", so:
+        # my_package_variables provides arch=target_arch, label="some_value", so:
         #   package = "pkg-$(label)" -> "pkg-some_value"
-        #   architecture = "$(label)" -> "some_value"
+        #   architecture = "$(arch)" -> "target_arch"
         deb_path = self.runfiles.Rlocation(
-            'rules_pkg/tests/deb/pkg-some_value_1.0_some_value.deb')
+            "rules_pkg/tests/deb/pkg-some_value_1.0_target_arch.deb"
+        )
         self.deb_file = DebInspect(deb_path)
 
     def test_control_fields_have_substituted_values(self):
-        control = self.deb_file.get_deb_ctl_file('control')
+        control = self.deb_file.get_deb_ctl_file("control")
         # Variables from my_package_variables: label="some_value"
         fields_expected = [
-            'Package: pkg-some_value',
-            'Architecture: some_value',
-            'Depends: dep-some_value',
+            "Package: pkg-some_value",
+            "Architecture: target_arch",
+            "Depends: dep-some_value",
         ]
         for field in fields_expected:
             self.assertIn(
-                field, control,
-                'Missing or unsubstituted control field: <%s> in <%s>' % (field, control))
+                field,
+                control,
+                "Missing or unsubstituted control field: <%s> in <%s>"
+                % (field, control),
+            )
 
     def test_description_has_substituted_value(self):
-        control = self.deb_file.get_deb_ctl_file('control')
+        control = self.deb_file.get_deb_ctl_file("control")
         self.assertIn(
-            'Description: Description for some_value',
+            "Description: Description for some_value",
             control,
-            'Description field does not have substituted value in <%s>' % control)
+            "Description field does not have substituted value in <%s>" % control,
+        )
         # Confirm the raw variable syntax is NOT present
         self.assertNotIn(
-            '$(label)',
+            "$(label)",
             control,
-            'Raw variable syntax still present in control: <%s>' % control)
+            "Raw variable syntax still present in control: <%s>" % control,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

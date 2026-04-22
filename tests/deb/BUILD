@@ -162,7 +162,7 @@ package_naming_test(
 # Test case for expanding $(var) constructions from package_variables
 pkg_deb(
     name = "deb_with_package_variables",
-    architecture = "$(label)",
+    architecture = "{arch}",  # check both {} and $() styles
     config = "config",
     data = ":tar_input",
     depends = ["dep-$(label)"],
@@ -175,7 +175,7 @@ pkg_deb(
 
 package_naming_test(
     name = "expand_from_package_variables",
-    expected_name = "pkg-some_value_1.0_some_value.deb",
+    expected_name = "pkg-some_value_1.0_target_arch.deb",
     target_under_test = ":deb_with_package_variables",
 )
 

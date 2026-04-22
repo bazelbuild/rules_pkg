@@ -20,12 +20,14 @@ def _my_package_naming_impl(ctx):
     values = {}
 
     # then add in my own custom values
+    values["arch"] = ctx.attr.arch
     values["label"] = ctx.attr.label
     return PackageVariablesInfo(values = values)
 
 my_package_naming = rule(
     implementation = _my_package_naming_impl,
     attrs = {
+        "arch": attr.string(doc = "A fake architecture.", default = "target_arch"),
         "label": attr.string(doc = "A label that matters to me."),
     },
 )
