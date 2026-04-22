@@ -158,3 +158,40 @@ package_naming_test(
     expected_name = "fizzbuzz_7_fastbuild.deb",
     target_under_test = ":deb_using_ctxvar",
 )
+
+# Test case for expanding $(var) constructions from package_variables
+pkg_deb(
+    name = "deb_with_package_variables",
+    architecture = "$(label)",
+    config = "config",
+    data = ":tar_input",
+    depends = ["dep-$(label)"],
+    description = "Description for $(label)",
+    maintainer = "test@example.com",
+    package = "pkg-$(label)",
+    package_variables = ":my_package_variables",
+    version = "1.0",
+)
+
+package_naming_test(
+    name = "expand_from_package_variables",
+    expected_name = "pkg-some_value_1.0_some_value.deb",
+    target_under_test = ":deb_with_package_variables",
+)
+
+py_test(
+    name = "pkg_deb_variables_test",
+    size = "medium",
+    srcs = [
+        "pkg_deb_variables_test.py",
+    ],
+    data = [
+        ":deb_with_package_variables",
+    ],
+    imports = ["../.."],
+    python_version = "PY3",
+    deps = [
+        "//pkg/private:archive",
+        "@rules_python//python/runfiles",
+    ],
+)

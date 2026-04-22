@@ -46,7 +46,7 @@ def _pkg_deb_impl(ctx):
     args.add("--changes", changes_file)
     args.add("--data", ctx.file.data)
     args.add("--package", package)
-    args.add("--maintainer", ctx.attr.maintainer)
+    args.add("--maintainer", substitute_package_variables(ctx, ctx.attr.maintainer))
 
     if ctx.attr.architecture_file:
         if ctx.attr.architecture != "all":
@@ -54,7 +54,7 @@ def _pkg_deb_impl(ctx):
         args.add("--architecture", "@" + ctx.file.architecture_file.path)
         files.append(ctx.file.architecture_file)
     else:
-        args.add("--architecture", ctx.attr.architecture)
+        args.add("--architecture", substitute_package_variables(ctx, ctx.attr.architecture))
 
     if ctx.attr.preinst:
         args.add("--preinst", "@" + ctx.file.preinst.path)
@@ -98,7 +98,7 @@ def _pkg_deb_impl(ctx):
         args.add("--version", "@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
-        args.add("--version", ctx.attr.version)
+        args.add("--version", substitute_package_variables(ctx, ctx.attr.version))
     else:
         fail("Neither version_file nor version attribute was specified")
 
@@ -109,7 +109,7 @@ def _pkg_deb_impl(ctx):
         files.append(ctx.file.description_file)
     elif ctx.attr.description:
         desc_file = ctx.actions.declare_file(out_file_name_base + ".description")
-        ctx.actions.write(desc_file, ctx.attr.description)
+        ctx.actions.write(desc_file, substitute_package_variables(ctx, ctx.attr.description))
         files.append(desc_file)
         args.add("--description", "@" + desc_file.path)
     else:
@@ -126,7 +126,7 @@ def _pkg_deb_impl(ctx):
         args.add("--built_using", "@" + ctx.file.built_using_file.path)
         files.append(ctx.file.built_using_file)
     elif ctx.attr.built_using:
-        args.add("--built_using", ctx.attr.built_using)
+        args.add("--built_using", substitute_package_variables(ctx, ctx.attr.built_using))
 
     if ctx.attr.depends_file:
         if ctx.attr.depends:
@@ -135,31 +135,31 @@ def _pkg_deb_impl(ctx):
         files.append(ctx.file.depends_file)
     elif ctx.attr.depends:
         for d in ctx.attr.depends:
-            args.add("--depends", d)
+            args.add("--depends", substitute_package_variables(ctx, d))
 
     if ctx.attr.priority:
-        args.add("--priority", ctx.attr.priority)
+        args.add("--priority", substitute_package_variables(ctx, ctx.attr.priority))
     if ctx.attr.section:
-        args.add("--section", ctx.attr.section)
+        args.add("--section", substitute_package_variables(ctx, ctx.attr.section))
     if ctx.attr.homepage:
-        args.add("--homepage", ctx.attr.homepage)
+        args.add("--homepage", substitute_package_variables(ctx, ctx.attr.homepage))
     if ctx.attr.license:
-        args.add("--license", ctx.attr.license)
+        args.add("--license", substitute_package_variables(ctx, ctx.attr.license))
 
-    args.add("--distribution", ctx.attr.distribution)
-    args.add("--urgency", ctx.attr.urgency)
+    args.add("--distribution", substitute_package_variables(ctx, ctx.attr.distribution))
+    args.add("--urgency", substitute_package_variables(ctx, ctx.attr.urgency))
     for d in ctx.attr.suggests:
-        args.add("--suggests", d)
+        args.add("--suggests", substitute_package_variables(ctx, d))
     for d in ctx.attr.enhances:
-        args.add("--enhances", d)
+        args.add("--enhances", substitute_package_variables(ctx, d))
     for d in ctx.attr.conflicts:
-        args.add("--conflicts", d)
+        args.add("--conflicts", substitute_package_variables(ctx, d))
     for d in ctx.attr.breaks:
-        args.add("--breaks", d)
+        args.add("--breaks", substitute_package_variables(ctx, d))
     for d in ctx.attr.predepends:
-        args.add("--pre_depends", d)
+        args.add("--pre_depends", substitute_package_variables(ctx, d))
     for d in ctx.attr.recommends:
-        args.add("--recommends", d)
+        args.add("--recommends", substitute_package_variables(ctx, d))
     if ctx.attr.replaces_file:
         if ctx.attr.replaces:
             fail("Both replaces and replaces_file attributes were specified")
@@ -167,7 +167,7 @@ def _pkg_deb_impl(ctx):
         files.append(ctx.file.replaces_file)
     elif ctx.attr.replaces:
         for d in ctx.attr.replaces:
-            args.add("--replaces", d)
+            args.add("--replaces", substitute_package_variables(ctx, d))
 
     if ctx.attr.provides_file:
         if ctx.attr.provides:
@@ -176,7 +176,7 @@ def _pkg_deb_impl(ctx):
         files.append(ctx.file.provides_file)
     elif ctx.attr.provides:
         for d in ctx.attr.provides:
-            args.add("--provides", d)
+            args.add("--provides", substitute_package_variables(ctx, d))
 
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = True)

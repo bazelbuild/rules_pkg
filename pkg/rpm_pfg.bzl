@@ -511,7 +511,7 @@ def _pkg_rpm_impl(ctx):
     #### Calculate output file name
     # rpm_name takes precedence over name if provided
     if ctx.attr.package_name:
-        rpm_name = ctx.attr.package_name
+        rpm_name = substitute_package_variables(ctx, ctx.attr.package_name)
     else:
         rpm_name = ctx.attr.name
 
@@ -650,7 +650,7 @@ def _pkg_rpm_impl(ctx):
         )
         ctx.actions.write(
             output = description_file,
-            content = ctx.attr.description,
+            content = substitute_package_variables(ctx, ctx.attr.description),
         )
     else:
         fail("None of the description or description_file attributes were specified")
