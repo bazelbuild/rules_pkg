@@ -205,11 +205,6 @@ def _make_rpm_filename(rpm_name, version, architecture, package_name = None, rel
 def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debuginfo_type):
     for dest, src in pfi.dest_src_map.items():
         metadata = _package_contents_metadata(origin_label, grouping_label)
-        if dest in rpm_ctx.dest_check_map:
-            _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
-        else:
-            rpm_ctx.dest_check_map[dest] = metadata
-
         abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
         if src.is_directory:
             # Set aside TreeArtifact information for external processing
@@ -224,6 +219,11 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debugi
                 "tags": file_base,
             })
         else:
+            if dest in rpm_ctx.dest_check_map:
+                _conflicting_contents_error(dest, metadata, rpm_ctx.dest_check_map[dest])
+            else:
+                rpm_ctx.dest_check_map[dest] = metadata
+
             # Files are well-known.  Take care of them right here.
             rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
 

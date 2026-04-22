@@ -144,6 +144,12 @@ def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_
     if old_entry.src == src or old_entry.origin == origin:
         return
 
+    # Two tree artifacts mapping to the same destination directory is allowed;
+    # their contents are merged by the installer and individual file conflicts
+    # will be caught naturally if the same file path appears twice.
+    if src != None and src.is_directory and old_entry.src != None and old_entry.src.is_directory:
+        return
+
     # TODO(#385): This is insufficient but good enough for now. We should
     # compare over all the attributes too. That will detect problems where
     # people specify the owner in one place, but another overly broad glob

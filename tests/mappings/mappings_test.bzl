@@ -41,6 +41,7 @@ load(
     "fake_artifact",
     "generic_base_case_test",
     "generic_negative_test",
+    "write_content_manifest",
 )
 
 ##########
@@ -985,6 +986,50 @@ def _strip_prefix_test_impl(ctx):
 
 strip_prefix_test = unittest.make(_strip_prefix_test_impl)
 
+def _test_pkg_files_tree_dest_merge():
+    # Regression test: two tree artifacts mapping to the same destination should
+    # be allowed. The individual file paths within each tree are disjoint, so
+    # the merge is valid; actual file conflicts are caught at install time.
+    directory(
+        name = "directory_a",
+        filenames = ["a.h"],
+        tags = ["manual"],
+    )
+    directory(
+        name = "directory_b",
+        filenames = ["b/b.h"],
+        tags = ["manual"],
+    )
+    pkg_files(
+        name = "directory_files_a",
+        srcs = [":directory_a"],
+        renames = {":directory_a": "include"},
+        tags = ["manual"],
+    )
+    pkg_files(
+        name = "directory_files_b",
+        srcs = [":directory_b"],
+        renames = {":directory_b": "include"},
+        tags = ["manual"],
+    )
+    pkg_filegroup(
+        name = "directory_files",
+        srcs = [
+            ":directory_files_a",
+            ":directory_files_b",
+        ],
+        tags = ["manual"],
+    )
+    write_content_manifest(
+        name = "directory_manifest",
+        srcs = [":directory_files"],
+        tags = ["manual"],
+    )
+    generic_base_case_test(
+        name = "pf_tree_dest_merge",
+        target_under_test = ":directory_manifest",
+    )
+
 # buildifier: disable=unnamed-macro
 def mappings_analysis_tests():
     """Declare mappings.bzl analysis tests"""
@@ -999,6 +1044,7 @@ def mappings_analysis_tests():
     _test_pkg_filegroup(name = "pfg_tests")
     _test_pkg_files_package_variables()
     _test_pkg_filegroup_package_variables()
+    _test_pkg_files_tree_dest_merge()
 
     native.test_suite(
         name = "pkg_files_analysis_tests",
@@ -1040,6 +1086,8 @@ def mappings_analysis_tests():
             # Tests for package_variables in prefix
             ":pf_with_package_variables",
             ":pfg_with_package_variables",
+            # Regression tests
+            ":pf_tree_dest_merge",
         ],
     )
 
