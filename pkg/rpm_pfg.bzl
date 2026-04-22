@@ -515,6 +515,9 @@ def _pkg_rpm_impl(ctx):
     else:
         rpm_name = ctx.attr.name
 
+    version = substitute_package_variables(ctx, ctx.attr.version)
+    architecture = substitute_package_variables(ctx, ctx.attr.architecture)
+
     default_file = ctx.actions.declare_file("{}.rpm".format(rpm_name))
 
     # When stamp is active, don't embed template placeholders in the filename.
@@ -523,8 +526,8 @@ def _pkg_rpm_impl(ctx):
     if not package_file_name:
         package_file_name = _make_rpm_filename(
             rpm_name,
-            ctx.attr.version,
-            ctx.attr.architecture,
+            version,
+            architecture,
             release = effective_release,
         )
 
@@ -542,7 +545,7 @@ def _pkg_rpm_impl(ctx):
         rpm_ctx.make_rpm_args.append("--version=@" + ctx.file.version_file.path)
         files.append(ctx.file.version_file)
     elif ctx.attr.version:
-        preamble_pieces.append("Version: " + ctx.attr.version)
+        preamble_pieces.append("Version: " + version)
     else:
         fail("None of the version or version_file attributes were specified")
 
@@ -585,7 +588,7 @@ def _pkg_rpm_impl(ctx):
         rpm_ctx.make_rpm_args.append("--source_date_epoch=" + str(ctx.attr.source_date_epoch))
 
     if ctx.attr.epoch:
-        preamble_pieces.append("Epoch: " + ctx.attr.epoch)
+        preamble_pieces.append("Epoch: " + substitute_package_variables(ctx, ctx.attr.epoch))
     if ctx.attr.summary:
         preamble_pieces.append("Summary: " + ctx.attr.summary)
     if ctx.attr.url:
@@ -619,7 +622,7 @@ def _pkg_rpm_impl(ctx):
     # In the meantime, this will allow the "architecture" attribute to take
     # effect.
     if ctx.attr.architecture:
-        preamble_pieces.append("BuildArch: " + ctx.attr.architecture)
+        preamble_pieces.append("BuildArch: " + architecture)
 
     if ctx.attr.debuginfo:
         # RedHat distros have redhat-rpm-config with %_enable_debug_packages macro; others need explicit declaration
