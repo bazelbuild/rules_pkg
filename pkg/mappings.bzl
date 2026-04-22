@@ -28,8 +28,15 @@ here.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageFilesInfo", "PackageSymlinkInfo")
-load("//pkg/private:util.bzl", "get_repo_mapping_manifest")
+load(
+    "//pkg:providers.bzl",
+    "PackageDirsInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageSymlinkInfo",
+    "PackageVariablesInfo",
+)
+load("//pkg/private:util.bzl", "get_repo_mapping_manifest", "substitute_package_variables")
 
 # TODO(#333): strip_prefix module functions should produce unique outputs. In
 # particular, this one and `_sp_from_pkg` can overlap.
@@ -216,6 +223,7 @@ def _path_relative_to_repo_root(file):
 
 def _pkg_files_impl(ctx):
     # The input sources are already known. Let's calculate the destinations...
+    prefix = substitute_package_variables(ctx, ctx.attr.prefix)
 
     # Exclude excludes
     srcs = []  # srcs is source File objects, not Targets
@@ -227,11 +235,11 @@ def _pkg_files_impl(ctx):
                 file_to_target[f] = src
 
     if ctx.attr.strip_prefix == _PKGFILEGROUP_STRIP_ALL:
-        src_dest_paths_map = {src: paths.join(ctx.attr.prefix, src.basename) for src in srcs}
+        src_dest_paths_map = {src: paths.join(prefix, src.basename) for src in srcs}
     elif ctx.attr.strip_prefix.startswith("/"):
         # Relative to workspace/repository root
         src_dest_paths_map = {src: paths.join(
-            ctx.attr.prefix,
+            prefix,
             _do_strip_prefix(
                 _path_relative_to_repo_root(src),
                 ctx.attr.strip_prefix[1:],
@@ -241,7 +249,7 @@ def _pkg_files_impl(ctx):
     else:
         # Relative to package
         src_dest_paths_map = {src: paths.join(
-            ctx.attr.prefix,
+            prefix,
             _do_strip_prefix(
                 _path_relative_to_package(src),
                 ctx.attr.strip_prefix,
@@ -283,10 +291,10 @@ def _pkg_files_impl(ctx):
 
             # REMOVE_BASE_DIRECTORY results in the contents being dropped into
             # place directly in the prefix path.
-            src_dest_paths_map[src_file] = ctx.attr.prefix
+            src_dest_paths_map[src_file] = prefix
 
         else:
-            src_dest_paths_map[src_file] = paths.join(ctx.attr.prefix, rename_dest)
+            src_dest_paths_map[src_file] = paths.join(prefix, rename_dest)
 
     # At this point, we have a fully valid src -> dest mapping for all the
     # explicitly named targets in srcs. Now we can fill in their runfiles.
@@ -466,6 +474,10 @@ pkg_files = rule(
             `foo.runfiles/<repo name>/my_prog/<file>`
             """,
         ),
+        "package_variables": attr.label(
+            doc = """See [Common Attributes](#package_variables)""",
+            providers = [PackageVariablesInfo],
+        ),
     },
     provides = [PackageFilesInfo],
 )
@@ -632,8 +644,9 @@ def _pkg_filegroup_impl(ctx):
     dirs = []
     links = []
     mapped_files_depsets = []
+    prefix = substitute_package_variables(ctx, ctx.attr.prefix)
 
-    if ctx.attr.prefix:
+    if prefix:
         # If "prefix" is provided, we need to manipulate the incoming providers.
         for s in ctx.attr.srcs:
             if PackageFilegroupInfo in s:
@@ -643,7 +656,7 @@ def _pkg_filegroup_impl(ctx):
                     (
                         PackageFilesInfo(
                             dest_src_map = {
-                                paths.join(ctx.attr.prefix, dest): src
+                                paths.join(prefix, dest): src
                                 for dest, src in pfi.dest_src_map.items()
                             },
                             attributes = pfi.attributes,
@@ -655,7 +668,7 @@ def _pkg_filegroup_impl(ctx):
                 dirs += [
                     (
                         PackageDirsInfo(
-                            dirs = [paths.join(ctx.attr.prefix, d) for d in pdi.dirs],
+                            dirs = [paths.join(prefix, d) for d in pdi.dirs],
                             attributes = pdi.attributes,
                         ),
                         origin,
@@ -666,7 +679,7 @@ def _pkg_filegroup_impl(ctx):
                     (
                         PackageSymlinkInfo(
                             target = psi.target,
-                            destination = paths.join(ctx.attr.prefix, psi.destination),
+                            destination = paths.join(prefix, psi.destination),
                             attributes = psi.attributes,
                         ),
                         origin,
@@ -679,7 +692,7 @@ def _pkg_filegroup_impl(ctx):
             if PackageFilesInfo in s:
                 new_pfi = PackageFilesInfo(
                     dest_src_map = {
-                        paths.join(ctx.attr.prefix, dest): src
+                        paths.join(prefix, dest): src
                         for dest, src in s[PackageFilesInfo].dest_src_map.items()
                     },
                     attributes = s[PackageFilesInfo].attributes,
@@ -691,7 +704,7 @@ def _pkg_filegroup_impl(ctx):
 
             if PackageDirsInfo in s:
                 new_pdi = PackageDirsInfo(
-                    dirs = [paths.join(ctx.attr.prefix, d) for d in s[PackageDirsInfo].dirs],
+                    dirs = [paths.join(prefix, d) for d in s[PackageDirsInfo].dirs],
                     attributes = s[PackageDirsInfo].attributes,
                 )
                 dirs.append((new_pdi, s.label))
@@ -699,7 +712,7 @@ def _pkg_filegroup_impl(ctx):
             if PackageSymlinkInfo in s:
                 new_psi = PackageSymlinkInfo(
                     target = s[PackageSymlinkInfo].target,
-                    destination = paths.join(ctx.attr.prefix, s[PackageSymlinkInfo].destination),
+                    destination = paths.join(prefix, s[PackageSymlinkInfo].destination),
                     attributes = s[PackageSymlinkInfo].attributes,
                 )
                 links.append((new_psi, s.label))
@@ -762,6 +775,10 @@ pkg_filegroup = rule(
             - For symbolic links, this is prepended to the "destination" part.
 
             """,
+        ),
+        "package_variables": attr.label(
+            doc = """See [Common Attributes](#package_variables)""",
+            providers = [PackageVariablesInfo],
         ),
     },
     provides = [PackageFilegroupInfo],

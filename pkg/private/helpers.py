@@ -48,7 +48,7 @@ def SplitNameValuePairAtSeparator(arg, sep):
   # if we leave the loop, the character sep was not found unquoted
   return (head, '')
 
-def GetFlagValue(flagvalue, strip=True):
+def GetFlagValue(flagvalue, strip=True, encoding='utf-8'):
   """Converts a raw flag string to a useable value.
 
   1. Expand @filename style flags to the content of filename.
@@ -68,22 +68,36 @@ def GetFlagValue(flagvalue, strip=True):
     Python2: unicode
     Python3: str
   """
-  if flagvalue:
-    if sys.version_info[0] < 3:
-      # python2 gives us raw bytes in argv.
-      flagvalue = flagvalue.decode('utf-8')
-    # assertion: py2: flagvalue is unicode
-    # assertion: py3: flagvalue is str, but in weird format
-    if flagvalue[0] == '@':
-      # Subtle: We do not want to re-encode the value here, because it
-      # is encoded in the right format for file open operations.
-      with open(flagvalue[1:], 'rb') as f:
-        flagvalue = f.read().decode('utf-8')
-    else:
-      # convert fs specific encoding back to proper unicode.
-      if sys.version_info[0] > 2:
-        flagvalue = os.fsencode(flagvalue).decode('utf-8')
 
-    if strip:
-      return flagvalue.strip()
-  return flagvalue
+  if flagvalue is None:
+    return None
+
+  if flagvalue and (sys.version_info[0] < 3):
+    # python2 gives us raw bytes in argv.
+    flagvalue = flagvalue.decode('utf-8')
+
+  # assertion: py2: flagvalue is unicode
+  # assertion: py3: flagvalue is str, but in weird format
+
+  if not flagvalue:
+    data = b''
+  elif flagvalue[0] == '@':
+    with open(flagvalue[1:], 'rb') as f:
+      data = f.read()
+  else:
+    # Convert fs specific encoding back to proper unicode.
+    if sys.version_info[0] > 2:
+      data = os.fsencode(flagvalue)
+    else:
+      data = flagvalue.encode('utf-8')
+
+  # assertion: data is byte array.
+
+  if not encoding:
+    return data
+
+  value = data.decode(encoding)
+
+  if strip:
+    return value.strip()
+  return value
