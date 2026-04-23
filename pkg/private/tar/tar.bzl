@@ -139,7 +139,8 @@ def _pkg_tar_impl(ctx):
     for target, f_dest_path in ctx.attr.files.items():
         target_files = target[DefaultInfo].files.to_list()
         if len(target_files) != 1:
-            fail("Each input must describe exactly one file.", attr = "files") mapping_context.file_deps_direct.append(target_files[0])
+            fail("Each input must describe exactly one file.", attr = "files")
+        mapping_context.file_deps_direct.append(target_files[0])
         add_single_file(
             mapping_context,
             f_dest_path,
