@@ -24,7 +24,7 @@ load(
 )
 load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg:rpm.bzl", "pkg_rpm")
-load("//tests/util:defs.bzl", "generic_base_case_test", "generic_negative_test")
+load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
 
 def _declare_pkg_rpm(name, srcs_ungrouped, tags = None, **kwargs):
     pfg_name = "{}_pfg".format(name)
@@ -288,6 +288,43 @@ def _test_naming(name):
     )
 
     ##################################################
+    # With pkg_variables expanding version/architecture
+    ##################################################
+
+    pkg_files(
+        name = "{}_varsubst_file_base".format(name),
+        srcs = ["foo"],
+        tags = ["manual"],
+    )
+
+    pkg_filegroup(
+        name = "{}_varsubst_pfg".format(name),
+        srcs = [":{}_varsubst_file_base".format(name)],
+        tags = ["manual"],
+    )
+
+    pkg_rpm(
+        name = name + "_varsubst_rpm",
+        srcs = [":{}_varsubst_pfg".format(name)],
+        architecture = "$(BAR)",
+        description = "Description for $(FOO)",
+        license = "N/A",
+        package_variables = ":{}_pkg_variables".format(name),
+        release = "1",
+        summary = "A test",
+        tags = ["manual"],
+        version = "$(FOO)",
+    )
+
+    # Verify that version="$(FOO)"→"foo" and architecture="$(BAR)"→"bar"
+    # are reflected in the output filename (NVR.A format: name-version-release.arch.rpm).
+    package_naming_test(
+        name = name + "_varsubst",
+        target_under_test = ":" + name + "_varsubst_rpm",
+        expected_name = name + "_varsubst_rpm-foo-1.bar.rpm",
+    )
+
+    ##################################################
     # Test suite declaration
     ##################################################
 
@@ -297,9 +334,47 @@ def _test_naming(name):
             ":{}_{}".format(name, test_name)
             for test_name in [
                 "no_extra",
+                "varsubst",
                 "with_different_name",
             ]
         ],
+    )
+
+def _test_rpm_tree_dest_merge(name):
+    # Regression test: two tree artifacts mapping to the same RPM destination
+    # should not raise a conflict error.
+    directory(
+        name = "{}_tree_a".format(name),
+        filenames = ["foo.h"],
+        tags = ["manual"],
+    )
+    directory(
+        name = "{}_tree_b".format(name),
+        filenames = ["bar/bar.h"],
+        tags = ["manual"],
+    )
+    pkg_files(
+        name = "{}_pf_a".format(name),
+        srcs = [":{}_tree_a".format(name)],
+        renames = {":{}_tree_a".format(name): "include"},
+        tags = ["manual"],
+    )
+    pkg_files(
+        name = "{}_pf_b".format(name),
+        srcs = [":{}_tree_b".format(name)],
+        renames = {":{}_tree_b".format(name): "include"},
+        tags = ["manual"],
+    )
+    _declare_pkg_rpm(
+        name = name + "_rpm",
+        srcs_ungrouped = [
+            ":{}_pf_a".format(name),
+            ":{}_pf_b".format(name),
+        ],
+    )
+    generic_base_case_test(
+        name = name,
+        target_under_test = ":" + name + "_rpm",
     )
 
 def analysis_tests(name):
@@ -309,10 +384,12 @@ def analysis_tests(name):
     #
     _test_conflicting_inputs(name = name + "_conflicting_inputs")
     _test_naming(name = name + "_naming")
+    _test_rpm_tree_dest_merge(name = name + "_tree_dest_merge")
     native.test_suite(
         name = name,
         tests = [
             name + "_conflicting_inputs",
             name + "_naming",
+            name + "_tree_dest_merge",
         ],
     )
