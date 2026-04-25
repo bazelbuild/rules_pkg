@@ -113,7 +113,7 @@ def _pkg_tar_impl(ctx):
                 "--owner_names",
                 "%s=%s" % (_quote(key), ctx.attr.ownernames[key]),
             )
-    if ctx.attr.compression_level:
+    if ctx.attr.compression_level >= 0:
         args.add("--compression_level", str(ctx.attr.compression_level))
 
     # Now we begin processing the files.
