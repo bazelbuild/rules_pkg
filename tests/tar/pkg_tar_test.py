@@ -309,7 +309,7 @@ class PkgTarTest(unittest.TestCase):
       file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
       file_size = os.stat(file_path).st_size
       # Fuzzy test for size because compression can vary by compression library.
-      # We want to be less than expections or no more that 1% larger.
+      # We want to be less than expected or no more that 1% larger.
       self.assertLessEqual(file_size, expected_size * 1.01, 'size error for ' + file_name)
 
   def test_preserve_mode(self):
