@@ -338,7 +338,7 @@ builds were accidentally doing it. Never explicitly set this to true for new cod
         # reference resolves to the main repository even though this file lives
         # inside the rules_pkg module.
         "_build_tar": attr.label(
-            default = Label("//datadog_test/dd_tar_writer:dd_tar_writer"),
+            default = Label("@@//bazel/rules/dd_tar_writer:dd_tar_writer"),
             cfg = "exec",
             executable = True,
             allow_files = True,
