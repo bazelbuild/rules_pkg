@@ -26,7 +26,7 @@ register_toolchains(
 
 ### INTERNAL ONLY - lines after this are not included in the release packaging.
 
-# Find the system Git if one is available.
+u# Find the system Git if one is available.
 find_git = use_extension("//toolchains/git:git_configure.bzl", "experimental_find_system_git_extension", dev_dependency = True)
 use_repo(find_git, "rules_pkg_git")
 
@@ -42,8 +42,8 @@ local_repository(
     path = "tests/mappings/external_repo",
 )
 
-bazel_dep(name = "rules_go", version = "0.60.0", dev_dependency = True)
-bazel_dep(name = "gazelle", version = "0.50.0", dev_dependency = True)
+bazel_dep(name = "rules_go", version = "0.60.0")
+bazel_dep(name = "gazelle", version = "0.50.0")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 use_repo(go_sdk, "go_host_compatible_sdk_label")
