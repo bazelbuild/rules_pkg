@@ -15,7 +15,7 @@
 """Packaging related providers."""
 
 load(
-    "@rules_pkg_providers//:providers.bzl", 
+    "@rules_pkg_providers//:providers.bzl",
     _PackageArtifactInfo = "PackageArtifactInfo",
     _PackageDirsInfo = "PackageDirsInfo",
     _PackageFilegroupInfo = "PackageFilegroupInfo",
