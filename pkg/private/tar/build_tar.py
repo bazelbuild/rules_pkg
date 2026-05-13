@@ -414,11 +414,11 @@ def main():
                       action='store_true',
                       help='')
   parser.add_argument(
-      '--preserve_mode', default='False',
+      '--preserve_mode',
       action='store_true',
       help='Preserve original file permissions in the archive. Mode argument is ignored.')
   parser.add_argument(
-      '--preserve_mtime', default='False',
+      '--preserve_mtime',
       action='store_true',
       help='Preserve original file mtime in the archive. mtime argument is ignored.')
   parser.add_argument(
