@@ -3,7 +3,13 @@
     "allow": [
       "Bash(gh issue *)",
       "Bash(buildifier *)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(go get *)",
+      "Bash(go mod *)",
+      "Bash(cat datadog_test/dd_tar_writer/go.sum)",
+      "Bash(sort -u go.sum -o go.sum)",
+      "Bash(python3 *)",
+      "Bash(git -C /Users/tony.aiuto/ws/rules_pkg log --oneline tests/tar/pkg_tar_test.py)"
     ]
   }
 }
