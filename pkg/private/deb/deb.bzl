@@ -137,6 +137,8 @@ def _pkg_deb_impl(ctx):
         for d in ctx.attr.depends:
             args.add("--depends", substitute_package_variables(ctx, d))
 
+    if ctx.attr.installed_size:
+        args.add("--installed_size", substitute_package_variables(ctx, ctx.attr.installed_size))
     if ctx.attr.priority:
         args.add("--priority", substitute_package_variables(ctx, ctx.attr.priority))
     if ctx.attr.section:
@@ -341,6 +343,11 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             See http://www.debian.org/doc/debian-policy/ch-archive.html#s-subsections.""",
         ),
         "homepage": attr.string(doc = """The homepage of the project."""),
+        "installed_size": attr.string(
+            doc = """The approximate total size (in KiB) of the package's installed files.
+            Corresponds to the Installed-Size field in the control file.
+            See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.""",
+        ),
         "license": attr.string(doc = """The license of the project."""),
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",

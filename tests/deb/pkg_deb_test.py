@@ -159,6 +159,7 @@ class PkgDebTest(unittest.TestCase):
         'Breaks: oldbrokenpkg',
         'Provides: hello',
         'License: Apache-2.0',
+        'Installed-Size: 1234',
     ]
     # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not
     # pass on Windows Until we rewrite how description is passed
