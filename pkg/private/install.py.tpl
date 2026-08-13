@@ -81,6 +81,16 @@ class NativeInstaller(object):
 
     def _do_file_copy(self, src, dest):
         logging.debug("COPY %s <- %s", dest, src)
+        # Windows --enable_runfiles uses directory junctions for every runfile.
+        # Junctions cannot point at files, so open() fails with Permission denied.
+        # Follow the reparse point to the real bazel-out file.
+        if sys.platform == "win32":
+            try:
+                target = os.readlink(src)
+            except OSError:
+                target = None
+            if target:
+                src = target
         # Copy to a temporary directory and then move it to the destination.
         # This ensures code-signed executables on certain platforms
         # behave correctly.
