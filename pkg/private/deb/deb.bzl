@@ -346,7 +346,8 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         "installed_size": attr.string(
             doc = """The approximate total size (in KiB) of the package's installed files.
             Corresponds to the Installed-Size field in the control file.
-            See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.""",
+            See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.
+            If unset, it is computed automatically from the uncompressed size of `data`.""",
         ),
         "license": attr.string(doc = """The license of the project."""),
         "breaks": attr.string_list(

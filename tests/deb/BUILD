@@ -125,6 +125,35 @@ package_naming_test(
     target_under_test = ":test_deb",
 )
 
+# Test case for automatic Installed-Size computation when the attribute is
+# left unset.
+pkg_deb(
+    name = "deb_without_installed_size",
+    config = "config",
+    data = ":tar_input",
+    description = "test auto installed size",
+    maintainer = "test@example.com",
+    package = "fizzbuzz-noinstsize",
+    version = "1.0",
+)
+
+py_test(
+    name = "pkg_deb_installed_size_test",
+    size = "medium",
+    srcs = [
+        "pkg_deb_installed_size_test.py",
+    ],
+    data = [
+        ":deb_without_installed_size",
+    ],
+    imports = ["../.."],
+    python_version = "PY3",
+    deps = [
+        ":pkg_deb_test",
+        "@rules_python//python/runfiles",
+    ],
+)
+
 py_test(
     name = "control_field_test",
     size = "small",

@@ -192,6 +192,41 @@ def CreateDebControl(extrafiles=None, **kwargs):
   return control
 
 
+def _SumTarMemberSizes(data):
+  """Sum member sizes of a tar, decompressing zstd via compression.zstd if needed.
+
+  Raises tarfile.ReadError, OSError, or ImportError if data can't be read as
+  a tar. The last case covers zstd-compressed input on a Python without the
+  stdlib compression.zstd module (added in 3.14).
+  """
+  try:
+    with tarfile.open(data, mode='r:*') as f:
+      return sum(member.size for member in f)
+  except tarfile.ReadError:
+    # compression.zstd is stdlib only from Python 3.14 (PEP 784); imported
+    # here, rather than at module scope, since it's only needed on this
+    # fallback path.
+    from compression import zstd
+    with zstd.open(data, mode='rb') as zf:
+      with tarfile.open(fileobj=zf, mode='r|') as f:
+        return sum(member.size for member in f)
+
+
+def ComputeInstalledSizeKib(data):
+  """Approximate the Installed-Size (KiB) from the uncompressed data tar.
+
+  Returns None if the tar can't be read (e.g. zstd-compressed input on a
+  Python without the stdlib compression.zstd module, added in 3.14), so
+  callers can fall back to omitting the field. An empty archive is a valid
+  result and returns '0', not None.
+  """
+  try:
+    total_bytes = _SumTarMemberSizes(data)
+  except (tarfile.ReadError, OSError, ImportError):
+    return None
+  return str((total_bytes + 1023) // 1024)
+
+
 def CreateDeb(output,
               data,
               preinst=None,
@@ -227,6 +262,10 @@ def CreateDeb(output,
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
   if changelog:
     extrafiles['changelog'] = (changelog, 0o644)
+  if not kwargs.get('installedSize'):
+    computed_size = ComputeInstalledSizeKib(data)
+    if computed_size:
+      kwargs['installedSize'] = computed_size
   control = CreateDebControl(extrafiles=extrafiles, **kwargs)
 
   # Write the final AR archive (the deb package)

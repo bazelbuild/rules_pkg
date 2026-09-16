@@ -137,7 +137,7 @@ include both. If you need downstream rule to specifically depend on only the .de
 | <a id="pkg_deb-distribution"></a>distribution |  "distribution: See http://www.debian.org/doc/debian-policy.   | String | optional |  `"unstable"`  |
 | <a id="pkg_deb-enhances"></a>enhances |  See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.   | List of strings | optional |  `[]`  |
 | <a id="pkg_deb-homepage"></a>homepage |  The homepage of the project.   | String | optional |  `""`  |
-| <a id="pkg_deb-installed_size"></a>installed_size |  The approximate total size (in KiB) of the package's installed files. Corresponds to the Installed-Size field in the control file. See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.   | String | optional |  `""`  |
+| <a id="pkg_deb-installed_size"></a>installed_size |  The approximate total size (in KiB) of the package's installed files. Corresponds to the Installed-Size field in the control file. See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size. If unset, it is computed automatically from the uncompressed size of `data`.   | String | optional |  `""`  |
 | <a id="pkg_deb-license"></a>license |  The license of the project.   | String | optional |  `""`  |
 | <a id="pkg_deb-maintainer"></a>maintainer |  The maintainer of the package.   | String | required |  |
 | <a id="pkg_deb-md5sums"></a>md5sums |  A file listing md5 checksums of files in the data archive. This file is optional. See https://manpages.debian.org/bookworm/dpkg-dev/deb-md5sums.5.en.html.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
