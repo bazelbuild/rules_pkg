@@ -102,6 +102,18 @@ py_test(
 )
 
 py_test(
+    name = "explicit_init_test",
+    srcs = ["explicit_init_test.py"],
+    legacy_create_init = 0,
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//pkg/private/deb:make_deb_lib",
+        "//pkg/private/tar:tar_writer",
+    ],
+)
+
+py_test(
     name = "path_test",
     srcs = ["path_test.py"],
     data = ["//pkg:path.bzl"],

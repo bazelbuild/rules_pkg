@@ -204,6 +204,7 @@ def pkg_install(name, srcs, destdir = None, destdir_flag = None, **kwargs):
         name = name,
         srcs = [":" + name + "_install_script"],
         main = name + "_install_script.py",
+        legacy_create_init = 0,
         deps = [Label("//pkg/private:manifest"), Label("@rules_python//python/runfiles")],
         srcs_version = "PY3",
         python_version = "PY3",
