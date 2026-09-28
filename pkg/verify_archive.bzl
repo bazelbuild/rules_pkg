@@ -148,6 +148,7 @@ def verify_archive_test(
         srcs = [":" + test_src],
         main = test_src,
         data = [target],
+        legacy_create_init = 0,
         python_version = "PY3",
         **{key: kwargs[key] for key in COMMON_TEST_ATTR_NAMES if key in kwargs}
     )

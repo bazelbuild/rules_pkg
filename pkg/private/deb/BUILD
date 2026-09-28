@@ -49,6 +49,7 @@ py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
     imports = ["../../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
@@ -58,10 +59,16 @@ py_binary(
 
 py_library(
     name = "make_deb_lib",
-    srcs = ["make_deb.py"],
+    srcs = [
+        "__init__.py",
+        "make_deb.py",
+    ],
     imports = ["../../.."],
     srcs_version = "PY3",
-    visibility = ["//tests/deb:__pkg__"],
+    visibility = [
+        "//tests:__pkg__",
+        "//tests/deb:__pkg__",
+    ],
     deps = [
         "//pkg/private:helpers",
     ],

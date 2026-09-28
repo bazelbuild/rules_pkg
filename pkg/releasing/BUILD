@@ -36,6 +36,7 @@ py_library(
     ],
     imports = ["../.."],
     srcs_version = "PY3",
+    deps = ["//pkg:init"],
 )
 
 py_binary(
@@ -44,6 +45,7 @@ py_binary(
         "print_rel_notes.py",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         ":release_utils",
@@ -53,6 +55,7 @@ py_binary(
 py_test(
     name = "release_tools_test",
     srcs = ["release_tools_test.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         ":release_utils",
@@ -65,6 +68,7 @@ py_binary(
     srcs = [
         "git_changelog_private.py",
     ],
+    legacy_create_init = 0,
     srcs_version = "PY3",
     # TODO(https://github.com/bazelbuild/bazel/issues/7377): Make this private.
     visibility = ["//visibility:public"],
