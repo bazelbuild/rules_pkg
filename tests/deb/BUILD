@@ -101,6 +101,16 @@ pkg_deb(
     version = "4.5.6",
 )
 
+pkg_deb(
+    name = "test_deb_installed_size_file",
+    data = ":tar_input",
+    description = "installed_size_file test package",
+    installed_size_file = "installed_size_file",
+    maintainer = "someone@somewhere.com",
+    package = "fizzbuzz-installed-size-file",
+    version = "1.0.0",
+)
+
 py_test(
     name = "pkg_deb_test",
     size = "medium",
@@ -110,6 +120,7 @@ py_test(
     data = [
         # The target includes both the .deb and .changes files in DefaultInfo
         ":test_deb",
+        ":test_deb_installed_size_file",
     ],
     imports = ["../.."],
     python_version = "PY3",
