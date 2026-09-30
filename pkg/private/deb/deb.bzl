@@ -137,7 +137,12 @@ def _pkg_deb_impl(ctx):
         for d in ctx.attr.depends:
             args.add("--depends", substitute_package_variables(ctx, d))
 
-    if ctx.attr.installed_size:
+    if ctx.attr.installed_size_file:
+        if ctx.attr.installed_size:
+            fail("Both installed_size and installed_size_file attributes were specified")
+        args.add("--installed_size", "@" + ctx.file.installed_size_file.path)
+        files.append(ctx.file.installed_size_file)
+    elif ctx.attr.installed_size:
         args.add("--installed_size", substitute_package_variables(ctx, ctx.attr.installed_size))
     if ctx.attr.priority:
         args.add("--priority", substitute_package_variables(ctx, ctx.attr.priority))
@@ -346,7 +351,13 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         "installed_size": attr.string(
             doc = """The approximate total size (in KiB) of the package's installed files.
             Corresponds to the Installed-Size field in the control file.
-            See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.""",
+            See https://www.debian.org/doc/debian-policy/ch-controlfields.html#installed-size.
+            Mutually exclusive with `installed_size_file`.""",
+        ),
+        "installed_size_file": attr.label(
+            doc = """File that contains the approximate total size (in KiB) of the
+            package's installed files. Mutually exclusive with `installed_size`.""",
+            allow_single_file = True,
         ),
         "license": attr.string(doc = """The license of the project."""),
         "breaks": attr.string_list(

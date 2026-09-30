@@ -65,6 +65,9 @@ class PkgDebTest(unittest.TestCase):
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
     self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/fizzbuzz_4.5.6_all.deb')
     self.deb_file = DebInspect(self.deb_path)
+    self.installed_size_file_deb_path = self.runfiles.Rlocation(
+        'rules_pkg/tests/deb/fizzbuzz-installed-size-file_1.0.0_all.deb')
+    self.installed_size_file_deb_file = DebInspect(self.installed_size_file_deb_path)
 
   def assert_control_content(self, expected, match_order=False):
     self.assert_tar_stream_content(
@@ -171,6 +174,11 @@ class PkgDebTest(unittest.TestCase):
     for field in fields:
       if control.find(field) < 0:
         self.fail('Missing control field: <%s> in <%s>' % (field, control))
+
+  def test_installed_size_file(self):
+    control = self.installed_size_file_deb_file.get_deb_ctl_file('control')
+    if control.find('Installed-Size: 5678') < 0:
+      self.fail('Missing control field: <Installed-Size: 5678> in <%s>' % control)
 
   def test_control_files(self):
     expected = [
