@@ -405,7 +405,8 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             default = [],
         ),
         "extra_control_file": attr.label(
-            doc = """File with extra control fields appended verbatim to the control file.""",
+            doc = """File with extra control fields appended verbatim to the control file.
+            This text is unparsed, so responsibility for correct syntax is up to the user.""",
             allow_single_file = True,
         ),
 

@@ -389,7 +389,9 @@ def main():
       help='The changelog file (prefix item with @ to provide a path).')
   parser.add_argument(
       '--extra_control_file',
-      help='File with extra control fields to append verbatim to the control file.')
+      help=('File with extra control fields to append verbatim to the control '
+            'file. This text is unparsed, so responsibility for correct syntax '
+            'is up to the user.'))
   AddControlFlags(parser)
   options = parser.parse_args()
 
