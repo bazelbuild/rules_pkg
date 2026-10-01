@@ -89,7 +89,7 @@ class TarFile(object):
     # the /a/b/a/b/rest... output we can start an issue and come up with a
     # solution at that time.
     if self.directory and not dest.startswith(self.directory):
-      dest = self.directory + dest
+      dest = normpath(self.directory + dest)
     return dest
 
   def add_file(self, f, destfile, mode=None, ids=None, names=None, mtime=None):
