@@ -1,0 +1,29 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "dd_tar_writer_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/DataDog/datadog-agent/bazel/rules/dd_tar_writer",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_ulikunitz_xz//:xz",
+    ],
+)
+
+go_binary(
+    name = "dd_tar_writer",
+    embed = [":dd_tar_writer_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "dd_tar_writer_test",
+    srcs = ["main_test.go"],
+    embed = [":dd_tar_writer_lib"],
+    gotags = ["test"],
+    deps = [
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@com_github_ulikunitz_xz//:xz",
+    ],
+)
