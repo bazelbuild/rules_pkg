@@ -48,6 +48,7 @@ py_binary(
     name = "build_tar",
     srcs = ["build_tar.py"],
     imports = ["../../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
@@ -63,6 +64,7 @@ py_binary(
 py_library(
     name = "tar_writer",
     srcs = [
+        "__init__.py",
         "tar_writer.py",
     ],
     imports = ["../../.."],
@@ -70,4 +72,5 @@ py_library(
     visibility = [
         "//tests:__subpackages__",
     ],
+    deps = ["//pkg/private:init"],
 )

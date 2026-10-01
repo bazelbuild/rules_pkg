@@ -67,11 +67,22 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# The top level package marker. Everything importing from `pkg.` must depend on
+# this, since we do not rely on implicit __init__.py creation.
+py_library(
+    name = "init",
+    srcs = ["__init__.py"],
+    imports = [".."],
+    srcs_version = "PY3",
+    visibility = ["//:__subpackages__"],
+)
+
 # Used by pkg_rpm in rpm.bzl.
 py_binary(
     name = "make_rpm",
     srcs = ["make_rpm.py"],
     imports = [".."],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     target_compatible_with = select({
@@ -92,6 +103,7 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
+        ":init",
         "//pkg/private:archive",
         "//pkg/private:build_info",
         "//pkg/private:helpers",
@@ -101,6 +113,7 @@ py_library(
 py_binary(
     name = "filter_directory",
     srcs = ["filter_directory.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
@@ -108,8 +121,10 @@ py_binary(
 py_library(
     name = "filter_directory_lib",
     srcs = ["filter_directory.py"],
+    imports = [".."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+    deps = [":init"],
 )
 
 exports_files(["verify_archive_test_main.py.tpl"])
