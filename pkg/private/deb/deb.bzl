@@ -185,6 +185,10 @@ def _pkg_deb_impl(ctx):
         for d in ctx.attr.provides:
             args.add("--provides", substitute_package_variables(ctx, d))
 
+    if ctx.attr.extra_control_file:
+        args.add("--extra_control_file", ctx.file.extra_control_file.path)
+        files.append(ctx.file.extra_control_file)
+
     args.set_param_file_format("flag_per_line")
     args.use_param_file("@%s", use_always = True)
     ctx.actions.run(
@@ -410,6 +414,11 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
         "suggests": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],
+        ),
+        "extra_control_file": attr.label(
+            doc = """File with extra control fields appended verbatim to the control file.
+            This text is unparsed, so responsibility for correct syntax is up to the user.""",
+            allow_single_file = True,
         ),
 
         # Common attributes
