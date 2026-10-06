@@ -23,7 +23,7 @@ load("//pkg:providers.bzl", "PackageDirsInfo", "PackageFilegroupInfo", "PackageF
 load("//pkg/private:pkg_files.bzl", "create_mapping_context_from_ctx", "process_src", "write_manifest")
 
 def _pkg_install_script_impl(ctx):
-    script_file = ctx.actions.declare_file(ctx.attr.name + ".py")
+    script_file = ctx.outputs.out
 
     mapping_context = create_mapping_context_from_ctx(ctx, label = ctx.label, default_mode = "0644")
     for src in ctx.attr.srcs:
@@ -108,6 +108,10 @@ _pkg_install_script = rule(
             ],
             doc = "Source mapping/grouping targets",
         ),
+        "out": attr.output(
+            mandatory = True,
+            doc = "Output path for the generated installer script. Must end in '.py'.",
+        ),
         "destdir": attr.string(),
         "destdir_flag": attr.label(doc = "string flag to obtain destdir from"),
         # This is private for now -- one could perhaps imagine making this
@@ -189,6 +193,7 @@ def pkg_install(name, srcs, destdir = None, destdir_flag = None, **kwargs):
 
     _pkg_install_script(
         name = name + "_install_script",
+        out = name + "_install_script.py",
         srcs = srcs,
         destdir = destdir,
         destdir_flag = destdir_flag,
