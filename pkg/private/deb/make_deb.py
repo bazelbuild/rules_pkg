@@ -101,7 +101,12 @@ def AddArFileEntry(fileobj, filename,
   if isinstance(content, (str, bytes)):
     content_len, content = ConvertToFileLike(content, content_len, io.BytesIO)
   inputs = [
-      (filename + '/').ljust(16),  # filename (SysV)
+      # SysV/GNU ar convention is <name>/<space padding>.
+      # That breaks BSD version of ar, which does not support spaces in names.
+      # macos is BSD style, most linux are GNU style.
+      # dbpk-deb writes without a slash
+      # dpkg is happy to read either way since about 1.15.6
+      filename.ljust(16),  # filename (no '/' terminator, matches dpkg-deb)
       str(timestamp).ljust(12),  # timestamp
       str(owner_id).ljust(6),  # owner id
       str(group_id).ljust(6),  # group id
