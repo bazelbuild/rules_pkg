@@ -6,8 +6,13 @@ module(
 
 # Do not update to newer versions until you need a specific new feature.
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_python", version = "2.3.0")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
+
+# Do not generate __init__.py files for our py_binary and py_test targets.
+# We ship them explicitly.
+rules_python_config = use_extension("@rules_python//python/extensions:config.bzl", "config")
+rules_python_config.explicit_init_py(default = True)
 
 # Only for development
 bazel_dep(name = "platforms", version = "1.0.0", dev_dependency = True)

@@ -49,7 +49,6 @@ py_binary(
     name = "make_deb",
     srcs = ["make_deb.py"],
     imports = ["../../.."],
-    legacy_create_init = 0,
     python_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [

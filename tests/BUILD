@@ -104,7 +104,6 @@ py_test(
 py_test(
     name = "explicit_init_test",
     srcs = ["explicit_init_test.py"],
-    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
