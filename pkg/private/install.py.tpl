@@ -45,6 +45,25 @@ def locate(short_path, repository):
     return RUNFILES.Rlocation(posixpath.normpath(posixpath.join(repository, short_path)))
 
 
+def _resolve_runfile(path):
+    """Return the real file behind a runfile, so that it can be opened.
+
+    With --enable_runfiles on Windows, Bazel may create a directory junction
+    for a file runfile. Such a junction can not be opened, and
+    os.path.realpath fails on it, so we read the junction target instead.
+    """
+    if os.name != "nt":
+        return os.path.realpath(path)
+    try:
+        target = os.readlink(path)
+    except OSError:
+        # Not a link.
+        return path
+    if target.startswith("\\\\?\\"):
+        target = target[4:]
+    return os.path.join(os.path.dirname(path), target)
+
+
 # This is named "NativeInstaller" because it makes use of "native" python
 # functionality for installing files that should be cross-platform.
 #
@@ -81,10 +100,7 @@ class NativeInstaller(object):
 
     def _do_file_copy(self, src, dest):
         logging.debug("COPY %s <- %s", dest, src)
-        # Windows --enable_runfiles uses directory junctions for every runfile.
-        # Junctions cannot point at files, so open() fails with Permission denied.
-        # Follow the reparse point to the real bazel-out file.
-        src = os.path.realpath(src)
+        src = _resolve_runfile(src)
         # Copy to a temporary directory and then move it to the destination.
         # This ensures code-signed executables on certain platforms
         # behave correctly.
