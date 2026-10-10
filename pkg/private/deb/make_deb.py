@@ -157,7 +157,7 @@ def MakeDebianControlField(name: str, value: str, multiline:Multiline=Multiline.
   return result
 
 
-def CreateDebControl(extrafiles=None, extra_control_content=None, **kwargs):
+def CreateDebControl(extrafiles=None, **kwargs):
   """Create the control.tar.gz file."""
   # create the control file
   controlfile = u''
@@ -168,8 +168,6 @@ def CreateDebControl(extrafiles=None, extra_control_content=None, **kwargs):
     key = fieldname[0].lower() + fieldname[1:].replace('-', '')
     if mandatory or (key in kwargs and kwargs[key]):
       controlfile += MakeDebianControlField(fieldname, kwargs[key], multiline)
-  if extra_control_content:
-    controlfile += extra_control_content
   # Create the control.tar file
   tar = io.BytesIO()
   with gzip.GzipFile('control.tar.gz', mode='w', fileobj=tar, mtime=0) as gz:
@@ -206,7 +204,6 @@ def CreateDeb(output,
               md5sums=None,
               conffiles=None,
               changelog=None,
-              extra_control_content=None,
               **kwargs):
   """Create a full debian package."""
   extrafiles = OrderedDict()
@@ -230,7 +227,7 @@ def CreateDeb(output,
     extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
   if changelog:
     extrafiles['changelog'] = (changelog, 0o644)
-  control = CreateDebControl(extrafiles=extrafiles, extra_control_content=extra_control_content, **kwargs)
+  control = CreateDebControl(extrafiles=extrafiles, **kwargs)
 
   # Write the final AR archive (the deb package)
   with open(output, 'wb') as f:
@@ -387,18 +384,8 @@ def main():
   parser.add_argument(
       '--changelog',
       help='The changelog file (prefix item with @ to provide a path).')
-  parser.add_argument(
-      '--extra_control_file',
-      help=('File with extra control fields to append verbatim to the control '
-            'file. This text is unparsed, so responsibility for correct syntax '
-            'is up to the user.'))
   AddControlFlags(parser)
   options = parser.parse_args()
-
-  extra_control_content = None
-  if options.extra_control_file:
-    with open(options.extra_control_file, 'r') as f:
-      extra_control_content = f.read()
 
   CreateDeb(
       options.output,
@@ -413,7 +400,6 @@ def main():
       md5sums=helpers.GetFlagValue(options.md5sums, False),
       conffiles=GetFlagValues(options.conffile),
       changelog=helpers.GetFlagValue(options.changelog, False),
-      extra_control_content=extra_control_content,
       package=options.package,
       version=helpers.GetFlagValue(options.version),
       description=helpers.GetFlagValue(options.description),
