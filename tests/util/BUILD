@@ -14,7 +14,7 @@
 
 # Test utilities
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -34,4 +34,12 @@ py_binary(
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "runfiles_util",
+    srcs = ["runfiles_util.py"],
+    imports = ["../.."],
+    srcs_version = "PY3",
+    visibility = ["//tests:__subpackages__"],
 )

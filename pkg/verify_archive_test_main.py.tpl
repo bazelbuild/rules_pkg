@@ -13,9 +13,30 @@
 # limitations under the License.
 """Tests for generated content manifest."""
 
+import os
 import re
 import tarfile
 import unittest
+
+
+def _resolve_junction(path):
+  """Returns the target of path if it is a Windows junction, else path.
+
+  With --enable_runfiles on Windows, Bazel may create a directory junction
+  for a file runfile. Such a junction can not be opened, and
+  os.path.realpath fails on it, so we read the junction target instead.
+  """
+  if os.name != 'nt':
+    return path
+  try:
+    target = os.readlink(path)
+  except OSError:
+    # Not a link.
+    return path
+  if target.startswith('\\\\?\\'):
+    target = target[4:]
+  return os.path.join(os.path.dirname(path), target)
+
 
 class VerifyArchiveTest(unittest.TestCase):
   """Test harness to see if we wrote the content manifest correctly."""
@@ -37,7 +58,7 @@ class VerifyArchiveTest(unittest.TestCase):
   def load_tar(self, path):
     self.paths = []
     self.links = {}
-    with tarfile.open(path, 'r:*') as f:
+    with tarfile.open(_resolve_junction(path), 'r:*') as f:
       i = 0
       for info in f:
         self.paths.append(info.name)

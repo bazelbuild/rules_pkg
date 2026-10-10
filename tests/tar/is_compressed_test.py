@@ -16,6 +16,7 @@
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 
 
 class IsCompressedTest(unittest.TestCase):
@@ -26,7 +27,7 @@ class IsCompressedTest(unittest.TestCase):
   def get_file_under_test(self, file_name):
     """Get the file path to a generated archive in the runfiles."""
 
-    return self.data_files.Rlocation(
+    return runfiles_util.rlocation(self.data_files,
         "rules_pkg/tests/tar/" + file_name
     )
 

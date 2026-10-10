@@ -21,6 +21,7 @@ import tarfile
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 from pkg.private import archive
 
 
@@ -62,7 +63,7 @@ class PkgDebVariablesTest(unittest.TestCase):
         # my_package_variables provides arch=target_arch, label="some_value", so:
         #   package = "pkg-$(label)" -> "pkg-some_value"
         #   architecture = "$(arch)" -> "target_arch"
-        deb_path = self.runfiles.Rlocation(
+        deb_path = runfiles_util.rlocation(self.runfiles,
             "rules_pkg/tests/deb/pkg-some_value_1.0_target_arch.deb"
         )
         self.deb_file = DebInspect(deb_path)

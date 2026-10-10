@@ -126,6 +126,7 @@ py_test(
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
     ],
 )
@@ -204,6 +205,7 @@ py_test(
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
     ],
 )

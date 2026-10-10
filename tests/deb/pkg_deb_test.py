@@ -23,6 +23,7 @@ import tarfile
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 from pkg.private import archive
 
 
@@ -63,9 +64,10 @@ class PkgDebTest(unittest.TestCase):
     super(PkgDebTest, self).setUp()
     self.runfiles = runfiles.Create()
     # Note: Rlocation requires forward slashes. os.path.join() will not work.
-    self.deb_path = self.runfiles.Rlocation('rules_pkg/tests/deb/fizzbuzz_4.5.6_all.deb')
+    self.deb_path = runfiles_util.rlocation(
+        self.runfiles, 'rules_pkg/tests/deb/fizzbuzz_4.5.6_all.deb')
     self.deb_file = DebInspect(self.deb_path)
-    self.installed_size_file_deb_path = self.runfiles.Rlocation(
+    self.installed_size_file_deb_path = runfiles_util.rlocation(self.runfiles,
         'rules_pkg/tests/deb/fizzbuzz-installed-size-file_1.0.0_all.deb')
     self.installed_size_file_deb_file = DebInspect(self.installed_size_file_deb_path)
 
@@ -257,7 +259,7 @@ class PkgDebTest(unittest.TestCase):
         'some-trigger\n')
 
   def test_changes(self):
-    changes_path = self.runfiles.Rlocation(
+    changes_path = runfiles_util.rlocation(self.runfiles,
         'rules_pkg/tests/deb/fizzbuzz_4.5.6_all.changes')
     with open(changes_path, 'r', encoding='utf-8') as f:
       content = f.read()

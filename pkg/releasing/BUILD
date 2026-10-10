@@ -36,6 +36,7 @@ py_library(
     ],
     imports = ["../.."],
     srcs_version = "PY3",
+    deps = ["//pkg:init"],
 )
 
 py_binary(
