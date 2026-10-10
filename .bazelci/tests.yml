@@ -1,7 +1,7 @@
 # These tests check the run-time behavior under various combinations
 #
 # - Tests: behavior only. release tools are in the integration tests
-# - Platforms: ubuntu, centos, macos, windows
+# - Platforms: ubuntu, macos, windows
 # - bzlmod enabled or not
 # - bazel: LTS-1, LTS, latest
 #
@@ -58,11 +58,6 @@ ubuntu2204: &ubuntu
     - sudo apt-get update
     - sudo apt-get install -y rpm elfutils  # for rpmbuild & eu-strip
 
-centos7: &centos
-  platform: centos7_java11_devtoolset10
-  <<: *common
-  <<: *default_tests_with_rpm
-
 macos: &macos
   platform: macos
   <<: *common
@@ -98,11 +93,6 @@ tasks:
     bazel: latest-1
     <<: *ubuntu
     <<: *nobzlmod
-
-  cent_lts:
-    name: cent_lts
-    bazel: latest
-    <<: *centos
 
   mac_head:
     name: mac_head
