@@ -410,12 +410,8 @@ class RpmBuilder(object):
     if self.install_script_file:
       args += ['--define', 'build_rpm_install %s' % self.install_script_file]
     if self.file_list_path:
-      # %files -f is taken relative to the package root
-      base_path = os.path.basename(self.file_list_path)
-      if debuginfo_type == RpmBuilder.DEBUGINFO_TYPE_FEDORA:
-        base_path = os.path.join("..", base_path)
-
-      args += ['--define', 'build_rpm_files %s' % base_path]
+      # %files -f is taken relative to the build directory, which varies across RPM versions
+      args += ['--define', 'build_rpm_files %s' % os.path.join(dirname, self.file_list_path)]
 
     args.extend(rpmbuild_args)
 
