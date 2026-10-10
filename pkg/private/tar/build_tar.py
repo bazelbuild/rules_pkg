@@ -90,6 +90,9 @@ class TarFile(object):
     # solution at that time.
     if self.directory and not dest.startswith(self.directory):
       dest = normpath(self.directory + dest)
+      # Preserve the leading slash that normpath strips (see #570).
+      if self.directory == './':
+        dest = './' + dest
     return dest
 
   def add_file(self, f, destfile, mode=None, ids=None, names=None, mtime=None):
