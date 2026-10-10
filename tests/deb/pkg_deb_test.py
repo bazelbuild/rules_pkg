@@ -130,6 +130,28 @@ class PkgDebTest(unittest.TestCase):
       if i < len(expected):
         self.fail('Missing file %s' % expected[i])
 
+  def test_ar_member_names(self):
+    # Read the raw ar headers rather than using SimpleArReader, which
+    # tolerates the SysV '/' name terminator. dpkg-deb writes plain names
+    # padded with spaces, so we should too.
+    names = []
+    with open(self.deb_path, 'rb') as f:
+      self.assertEqual(f.read(8), b'!<arch>\n')
+      while True:
+        header = f.read(60)
+        if not header:
+          break
+        self.assertEqual(len(header), 60)
+        self.assertEqual(header[58:60], b'\x60\x0a')
+        names.append(header[0:16])
+        size = int(header[48:58].strip())
+        f.seek(size + (size % 2), os.SEEK_CUR)
+    self.assertEqual(names, [
+        b'debian-binary   ',
+        b'control.tar.gz  ',
+        b'data.tar.gz     ',
+    ])
+
   def test_expected_files(self):
     # Check the set of 'test-tar-basic-*' smoke test.
     expected = [

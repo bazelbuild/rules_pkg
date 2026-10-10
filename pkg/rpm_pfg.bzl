@@ -34,11 +34,7 @@ load(
     "PackageVariablesInfo",
 )
 load("//pkg/private:util.bzl", "get_stamp_detect", "setup_output_files", "substitute_package_variables")
-load(
-    "//toolchains/rpm:rpmbuild_configure.bzl",
-    "DEBUGINFO_TYPE_FEDORA",
-    "DEBUGINFO_TYPE_NONE",
-)
+load("//toolchains/rpm:rpmbuild_configure.bzl", "DEBUGINFO_TYPE_NONE")
 
 rpm_filetype = [".rpm"]
 
@@ -73,13 +69,7 @@ DEFAULT_FILE_MODE = "%defattr(-,root,root)"
 # TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
 _INSTALL_FILE_STANZA_FMT = """
 install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '{0}' '%{{buildroot}}/{1}'
-chmod +w '%{{buildroot}}/{1}'
-""".strip()
-
-_INSTALL_FILE_STANZA_FMT_FEDORA40_DEBUGINFO = """
-install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '../{0}' '%{{buildroot}}/{1}'
+cp '%{{_topdir}}/BUILD/{0}' '%{{buildroot}}/{1}'
 chmod +w '%{{buildroot}}/{1}'
 """.strip()
 
@@ -202,7 +192,7 @@ def _make_rpm_filename(rpm_name, version, architecture, package_name = None, rel
 # TODO(nacl, #459): These are redundant with functions and structures in
 # pkg/private/pkg_files.bzl.  We should really use the infrastructure provided
 # there, but as of writing, it's not quite ready.
-def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debuginfo_type):
+def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest, src in pfi.dest_src_map.items():
         metadata = _package_contents_metadata(origin_label, grouping_label)
         abs_dest = _make_absolute_if_not_already_or_is_macro(dest)
@@ -226,12 +216,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx, debugi
 
             # Files are well-known.  Take care of them right here.
             rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-
-            install_stanza_fmt = _INSTALL_FILE_STANZA_FMT
-            if debuginfo_type == DEBUGINFO_TYPE_FEDORA:
-                install_stanza_fmt = _INSTALL_FILE_STANZA_FMT_FEDORA40_DEBUGINFO
-
-            rpm_ctx.install_script_pieces.append(install_stanza_fmt.format(
+            rpm_ctx.install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
                 src.path,
                 abs_dest,
             ))
@@ -266,7 +251,7 @@ def _process_symlink(psi, origin_label, grouping_label, file_base, rpm_ctx):
         psi.attributes["mode"],
     ))
 
-def _process_dep(dep, rpm_ctx, debuginfo_type):
+def _process_dep(dep, rpm_ctx):
     # NOTE: This does not detect cases where directories are not named
     # consistently.  For example, all of these may collide in reality, but
     # won't be detected by the below:
@@ -290,7 +275,6 @@ def _process_dep(dep, rpm_ctx, debuginfo_type):
             None,  # group label
             _make_filetags(dep[PackageFilesInfo].attributes),  # file_base
             rpm_ctx,
-            debuginfo_type,
         )
 
     if PackageDirsInfo in dep:
@@ -321,7 +305,6 @@ def _process_dep(dep, rpm_ctx, debuginfo_type):
                 dep.label,
                 file_base,
                 rpm_ctx,
-                debuginfo_type,
             )
         for entry, origin in pfg_info.pkg_dirs:
             file_base = _make_filetags(entry.attributes, "%dir")
@@ -343,7 +326,7 @@ def _process_dep(dep, rpm_ctx, debuginfo_type):
                 rpm_ctx,
             )
 
-def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type, effective_release = None):
+def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, effective_release = None):
     sub_rpm_ctx = struct(
         dest_check_map = {},
         install_script_pieces = [],
@@ -407,7 +390,7 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, debuginfo_type, effective_
         ]
 
         for dep in rpm_info.srcs:
-            _process_dep(dep, sub_rpm_ctx, debuginfo_type)
+            _process_dep(dep, sub_rpm_ctx)
 
         # rpmbuild will be unhappy if we have no files so we stick
         # default file mode in for that scenario
@@ -763,7 +746,7 @@ def _pkg_rpm_impl(ctx):
     # they aren't unnecessarily recreated.
 
     for dep in ctx.attr.srcs:
-        _process_dep(dep, rpm_ctx, debuginfo_type)
+        _process_dep(dep, rpm_ctx)
 
     #### subrpms
     if ctx.attr.subrpms:
@@ -774,7 +757,6 @@ def _pkg_rpm_impl(ctx):
                 rpm_name,
                 s[PackageSubRPMInfo],
                 rpm_ctx,
-                debuginfo_type,
                 effective_release = effective_release,
             ))
 
