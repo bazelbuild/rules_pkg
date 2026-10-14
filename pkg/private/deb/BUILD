@@ -58,7 +58,10 @@ py_binary(
 
 py_library(
     name = "make_deb_lib",
-    srcs = ["make_deb.py"],
+    srcs = [
+        "__init__.py",
+        "make_deb.py",
+    ],
     imports = ["../../.."],
     srcs_version = "PY3",
     visibility = ["//tests/deb:__pkg__"],
