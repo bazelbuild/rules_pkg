@@ -84,7 +84,10 @@ py_binary(
 
 py_library(
     name = "make_rpm_lib",
-    srcs = ["make_rpm.py"],
+    srcs = [
+        "__init__.py",
+        "make_rpm.py",
+    ],
     imports = [".."],
     srcs_version = "PY3",
     visibility = [
@@ -107,7 +110,10 @@ py_binary(
 
 py_library(
     name = "filter_directory_lib",
-    srcs = ["filter_directory.py"],
+    srcs = [
+        "__init__.py",
+        "filter_directory.py",
+    ],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
