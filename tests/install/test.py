@@ -23,16 +23,21 @@ import unittest
 
 from pkg.private import manifest
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 
 
 class PkgInstallTestBase(unittest.TestCase):
     _extension = ".exe" if os.name == "nt" else ""
 
     @classmethod
+    def rlocation(cls, path):
+        return runfiles_util.rlocation(cls.runfiles, path)
+
+    @classmethod
     def setUpClass(cls):
         cls.runfiles = runfiles.Create()
         # Somewhat of an implementation detail, but it works.  I think.
-        manifest_file = cls.runfiles.Rlocation("rules_pkg/tests/install/test_installer_install_script-install-manifest.json")
+        manifest_file = cls.rlocation("rules_pkg/tests/install/test_installer_install_script-install-manifest.json")
         cls.manifest_data = {pathlib.Path(e.dest): e for e in manifest.read_entries_from(manifest_file)}
         cls.installdir = pathlib.Path(os.getenv("TEST_TMPDIR")) / "installdir"
 
@@ -44,7 +49,7 @@ class PkgInstallTest(PkgInstallTestBase):
         env = {}
         env.update(cls.runfiles.EnvVars())
         subprocess.check_call([
-            cls.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{cls._extension}"),
+            cls.rlocation(f"rules_pkg/tests/install/test_installer{cls._extension}"),
             "--destdir", cls.installdir,
             "--verbose",
         ],
@@ -212,7 +217,7 @@ class DestdirFlagTest(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
         r = runfiles.Create()
-        cls.script_path = r.Rlocation(
+        cls.script_path = runfiles_util.rlocation(r,
             f"rules_pkg/tests/install/test_installer_flag_install_script.py"
         )
 
@@ -231,7 +236,7 @@ class WipeTest(PkgInstallTestBase):
         (self.installdir / "should_be_deleted.txt").touch()
 
         subprocess.check_call([
-            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
+            self.rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
             "--destdir", self.installdir,
             "--wipe_destdir",
         ],
@@ -249,7 +254,7 @@ class SymlinkOverwriteTest(PkgInstallTestBase):
         if not link.is_symlink():
             link.symlink_to("old_target")
         subprocess.check_call([
-            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
+            self.rlocation(f"rules_pkg/tests/install/test_installer{self._extension}"),
             "--destdir", self.installdir,
         ],
                               env=self.runfiles.EnvVars())
@@ -275,7 +280,7 @@ class CrossRepoInstallTest(unittest.TestCase):
                 destdir = test_tmpdir / f"cross_repo_{case}"
                 subprocess.check_call(
                     [
-                        runfiles_.Rlocation(
+                        runfiles_util.rlocation(runfiles_,
                             f"mappings_test_external_repo/pkg/install_cross_repo{PkgInstallTestBase._extension}"
                         ),
                         f"--destdir={destdir}",

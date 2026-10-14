@@ -40,6 +40,7 @@ py_test(
     ],
     deps = [
         "//pkg/private:manifest",
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
     ],
 )

@@ -97,7 +97,19 @@ py_test(
     srcs_version = "PY3",
     deps = [
         "//pkg/private:archive",
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
+    ],
+)
+
+py_test(
+    name = "explicit_init_test",
+    srcs = ["explicit_init_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//pkg/private/deb:make_deb_lib",
+        "//pkg/private/tar:tar_writer",
     ],
 )
 
@@ -216,6 +228,7 @@ py_test(
     ],
     python_version = "PY3",
     deps = [
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
     ],
 )

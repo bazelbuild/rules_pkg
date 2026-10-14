@@ -37,6 +37,7 @@ py_library(
     imports = ["../.."],
     srcs_version = "PY3",
     deps = [
+        "//tests/util:runfiles_util",
         "@rules_python//python/runfiles",
     ],
 )
