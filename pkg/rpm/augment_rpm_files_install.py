@@ -32,6 +32,14 @@ _FILE_MODE_STANZA_FMT = """
 {0} "{1}"
 """.strip()
 
+_INSTALL_DIR_STANZA_FMT = """
+install -d '%{{buildroot}}/{0}'
+""".strip()
+
+_DIR_MODE_STANZA_FMT = """
+%dir "{0}"
+""".strip()
+
 # Cheapo arg parsing.  Currently this script is single-purpose.
 
 # JSON file containing the TreeArtifact manifest info.
@@ -54,6 +62,7 @@ new_files_path = sys.argv[5]
 # Computed outputs to be combined with the originals
 dir_install_script_segments = []
 dir_files_segments = []
+owned_dirs = set()
 
 with open(dir_data_path, 'r') as fh:
     dir_data = json.load(fh)
@@ -66,6 +75,12 @@ with open(dir_data_path, 'r') as fh:
             # the desired install location relative to the user-provided install
             # destination.
             path_relative_to_install_dest = os.path.relpath(root, start=d["src"])
+
+            dir_dest = os.path.normpath(os.path.join(d["dest"], path_relative_to_install_dest))
+            if d.get("own_dirs") and dir_dest not in owned_dirs:
+                owned_dirs.add(dir_dest)
+                dir_install_script_segments.append(_INSTALL_DIR_STANZA_FMT.format(dir_dest))
+                dir_files_segments.append(_DIR_MODE_STANZA_FMT.format(dir_dest))
 
             for f in files:
                 full_dest = os.path.join(d["dest"], path_relative_to_install_dest, f)

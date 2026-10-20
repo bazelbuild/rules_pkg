@@ -256,3 +256,97 @@ pkg_files(
     ),
     renames = {":test_dir1": REMOVE_BASE_DIRECTORY},
 )
+
+############################################################################
+# Test that rpm_own_tree_dirs makes the RPM own the TreeArtifact directories
+############################################################################
+py_test(
+    name = "owned_tree_dirs",
+    srcs = ["rpm_owned_tree_dirs_test.py"],
+    data = [":owned_tree_dirs_rpm_test_data"],
+    env = {"TEST_RPM": "owned_tree_dirs_rpm-1.1.1-2222.noarch.rpm"},
+    main = "rpm_owned_tree_dirs_test.py",
+    tags = [
+        "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
+    ],
+    deps = [
+        "//tests/rpm:rpm_util",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+sh_library(
+    name = "owned_tree_dirs_rpm_test_data",
+    testonly = True,
+    srcs = [":owned_tree_dirs_rpm"],
+)
+
+pkg_rpm(
+    name = "owned_tree_dirs_rpm",
+    srcs = [
+        ":not_owned_tree_dirs_pf",
+        ":owned_tree_dirs_pf",
+        ":owned_tree_dirs_same_dest_pf",
+    ],
+    architecture = "noarch",
+    description = """pkg_rpm test rpm description""",
+    license = "Apache 2.0",
+    release = "2222",
+    spec_template = "//tests/rpm:template-test.spec.tpl",
+    summary = "pkg_rpm test rpm summary",
+    version = "1.1.1",
+)
+
+pkg_files(
+    name = "owned_tree_dirs_pf",
+    srcs = [
+        ":test_dir1",
+    ],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        rpm_own_tree_dirs = True,
+        user = "root",
+    ),
+    prefix = "opt",
+)
+
+pkg_files(
+    name = "not_owned_tree_dirs_pf",
+    srcs = [
+        ":test_dir1",
+    ],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        rpm_own_tree_dirs = False,
+        user = "root",
+    ),
+    prefix = "srv",
+)
+
+# Shares the destination of owned_tree_dirs_pf, so its directories must only be
+# listed once.
+pkg_files(
+    name = "owned_tree_dirs_same_dest_pf",
+    srcs = [
+        ":test_dir2",
+    ],
+    attributes = pkg_attributes(
+        group = "root",
+        mode = "0644",
+        rpm_own_tree_dirs = True,
+        user = "root",
+    ),
+    prefix = "opt",
+    renames = {":test_dir2": "test_dir"},
+)
+
+directory(
+    name = "test_dir2",
+    contents = "test_dir1",
+    filenames = [
+        "g",
+        "subdir/h",
+    ],
+)
