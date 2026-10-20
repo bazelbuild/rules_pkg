@@ -278,6 +278,16 @@ attrs = {"rpm_filetag": ("config(missingok, noreplace)",)},
 
 Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
 
+The files of a TreeArtifact are listed in the `%files` list, but its
+directories are not, so the package does not own them and they are left
+behind on uninstall. Set `rpm_own_tree_dirs` to `True` in the attributes
+of the packaging rule mapping the TreeArtifact to also add a `%dir` entry
+for the TreeArtifact destination and every directory below it:
+
+```
+attributes = pkg_attributes(rpm_own_tree_dirs = True),
+```
+
 This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
 include both. If you need downstream rule to specifically depend on only the .rpm or
 .changes file then you can use `filegroup` to select distinct output groups.
