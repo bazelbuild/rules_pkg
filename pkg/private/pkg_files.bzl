@@ -137,6 +137,16 @@ def create_mapping_context_from_ctx(
         default_gid = None,
     )
 
+def _is_tree(entry):
+    return entry.src != None and entry.src.is_directory
+
+def _add_entry(content_map, dest, entry):
+    old_entries = content_map.get(dest)
+    if old_entries and _is_tree(entry) and _is_tree(old_entries[0]):
+        content_map[dest] = [e for e in old_entries if e.src != entry.src] + [entry]
+    else:
+        content_map[dest] = [entry]
+
 def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_content = False):
     old_entry = content_map.get(dest)
     if not old_entry:
