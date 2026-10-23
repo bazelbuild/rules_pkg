@@ -386,6 +386,45 @@ verify_archive_test(
     target = ":test-tar-with-only-runfiles",
 )
 
+directory(
+    name = "shared_dest_tree_a",
+    filenames = ["a.h"],
+)
+
+directory(
+    name = "shared_dest_tree_b",
+    filenames = ["b/b.h"],
+)
+
+pkg_files(
+    name = "shared_dest_tree_a_files",
+    srcs = [":shared_dest_tree_a"],
+    renames = {":shared_dest_tree_a": "include"},
+)
+
+pkg_files(
+    name = "shared_dest_tree_b_files",
+    srcs = [":shared_dest_tree_b"],
+    renames = {":shared_dest_tree_b": "include"},
+)
+
+pkg_tar(
+    name = "test-tar-shared-tree-dest",
+    srcs = [
+        ":shared_dest_tree_a_files",
+        ":shared_dest_tree_b_files",
+    ],
+)
+
+verify_archive_test(
+    name = "shared_tree_dest_test",
+    must_contain = [
+        "include/a.h",
+        "include/b/b.h",
+    ],
+    target = ":test-tar-shared-tree-dest",
+)
+
 pkg_tar(
     name = "test-tar-remap-runfiles-base-path",
     srcs = [
