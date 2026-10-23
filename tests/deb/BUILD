@@ -98,6 +98,7 @@ pkg_deb(
     templates = "templates",
     triggers = "deb_triggers",
     urgency = "low",
+    vendor = "Some Vendor <vendor@somewhere.com>",
     version = "4.5.6",
 )
 
