@@ -60,6 +60,7 @@ class TarFile(object):
     self.preserve_mtime = preserve_mtime
 
   def __enter__(self):
+    self.tree_files = manifest.TreeFileTracker()
     self.tarfile = tar_writer.TarFileWriter(
         self.output,
         self.compression,
@@ -284,6 +285,7 @@ class TarFile(object):
       else:
         dest_dir = dest
       for dir in dirs:
+        self.tree_files.add_dir(dest_dir + dir, tree_top)
         to_write[dest_dir + dir] = None
       for file in sorted(files):
         content_path = os.path.abspath(os.path.join(root, file))
@@ -308,7 +310,7 @@ class TarFile(object):
             ids=ids,
             names=names,
             kind=tarfile.DIRTYPE)
-      else:
+      elif self.tree_files.add_file(path, content_path, tree_top):
         # If mode is unspecified, derive the mode from the file's mode.
         if mode is None:
           f_mode = 0o755 if os.access(content_path, os.X_OK) else 0o644

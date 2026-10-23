@@ -20,12 +20,12 @@ Concepts and terms:
             When attributes are empty in DestFile, we let the package
             tool decide their values.
 
-  content map: The map of destination paths to DestFile instances. Note that
+  content map: The map of destination paths to lists of DestFile instances. Note that
                several distinct destinations make share the same source path.
                Attempting to insert a duplicate entry in the content map is
                an error, because it means you are collapsing files together.
                We may want to relax this in the future if their DestFiles
-               are equal.
+               are equal. Only tree artifacts may share a destination.
 
   manifest: The file which represents the content map. This is generated
             by rule implementations and passed to the build_*.py helpers.
@@ -148,9 +148,10 @@ def _add_entry(content_map, dest, entry):
         content_map[dest] = [entry]
 
 def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_content = False):
-    old_entry = content_map.get(dest)
-    if not old_entry:
+    old_entries = content_map.get(dest)
+    if not old_entries:
         return
+    old_entry = old_entries[0]
     if old_entry.src == src or old_entry.origin == origin:
         return
 
@@ -168,7 +169,7 @@ def _check_dest(content_map, dest, src, origin, allow_duplicates_with_different_
         msg = "Duplicate output path: <%s>, declared in %s and %s\n  SRC: %s" % (
             dest,
             origin,
-            content_map[dest].origin,
+            old_entry.origin,
             src,
         )
         if allow_duplicates_with_different_content:
@@ -214,7 +215,7 @@ def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
     for dir in pkg_dirs_info.dirs:
         dest = dir.strip("/")
         _check_dest(mapping_context.content_map, dest, None, origin, mapping_context.allow_duplicates_with_different_content)
-        mapping_context.content_map[dest] = _DestFile(
+        _add_entry(mapping_context.content_map, dest, _DestFile(
             src = None,
             entry_type = ENTRY_IS_DIR,
             mode = attrs[0],
@@ -223,14 +224,14 @@ def _process_pkg_dirs(mapping_context, pkg_dirs_info, origin):
             uid = attrs[3],
             gid = attrs[4],
             origin = origin,
-        )
+        ))
 
 def _process_pkg_files(mapping_context, pkg_files_info, origin):
     attrs = _merge_context_attributes(pkg_files_info, mapping_context)
     for filename, src in pkg_files_info.dest_src_map.items():
         dest = filename.strip("/")
         _check_dest(mapping_context.content_map, dest, src, origin, mapping_context.allow_duplicates_with_different_content)
-        mapping_context.content_map[dest] = _DestFile(
+        _add_entry(mapping_context.content_map, dest, _DestFile(
             src = src,
             entry_type = ENTRY_IS_TREE if src.is_directory else ENTRY_IS_FILE,
             mode = attrs[0],
@@ -239,13 +240,13 @@ def _process_pkg_files(mapping_context, pkg_files_info, origin):
             uid = attrs[3],
             gid = attrs[4],
             origin = origin,
-        )
+        ))
 
 def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
     dest = pkg_symlink_info.destination.strip("/")
     attrs = _merge_context_attributes(pkg_symlink_info, mapping_context)
     _check_dest(mapping_context.content_map, dest, None, origin, mapping_context.allow_duplicates_with_different_content)
-    mapping_context.content_map[dest] = _DestFile(
+    _add_entry(mapping_context.content_map, dest, _DestFile(
         src = None,
         entry_type = ENTRY_IS_LINK,
         mode = attrs[0],
@@ -255,7 +256,7 @@ def _process_pkg_symlink(mapping_context, pkg_symlink_info, origin):
         gid = attrs[4],
         origin = origin,
         link_to = pkg_symlink_info.target,
-    )
+    ))
 
 def _process_pkg_filegroup(mapping_context, pkg_filegroup_info):
     if hasattr(pkg_filegroup_info, "pkg_dirs"):
@@ -327,7 +328,7 @@ def add_directory(mapping_context, dir_path, origin, mode = None, user = None, g
       uid: numeric uid
       gid: numeric gid
     """
-    mapping_context.content_map[dir_path.strip("/")] = _DestFile(
+    _add_entry(mapping_context.content_map, dir_path.strip("/"), _DestFile(
         src = None,
         entry_type = ENTRY_IS_DIR,
         origin = origin,
@@ -336,7 +337,7 @@ def add_directory(mapping_context, dir_path, origin, mode = None, user = None, g
         group = group or mapping_context.default_group,
         uid = uid or mapping_context.default_uid,
         gid = gid or mapping_context.default_gid,
-    )
+    ))
 
 def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add a single file to the content map.
@@ -353,7 +354,7 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
-    mapping_context.content_map[dest] = _DestFile(
+    _add_entry(mapping_context.content_map, dest, _DestFile(
         src = None,
         entry_type = ENTRY_IS_EMPTY_FILE,
         origin = origin,
@@ -362,7 +363,7 @@ def add_empty_file(mapping_context, dest_path, origin, mode = None, user = None,
         group = group or mapping_context.default_group,
         uid = uid or mapping_context.default_uid,
         gid = gid or mapping_context.default_gid,
-    )
+    ))
 
 def add_label_list(mapping_context, srcs):
     """Helper method to add a list of labels (typically 'srcs') to a content_map.
@@ -473,7 +474,7 @@ def add_from_default_info(
                 else:
                     entry_type = ENTRY_IS_FILE
 
-                mapping_context.content_map[d_path] = _DestFile(
+                _add_entry(mapping_context.content_map, d_path, _DestFile(
                     src = rf,
                     entry_type = entry_type,
                     origin = src.label,
@@ -482,7 +483,7 @@ def add_from_default_info(
                     group = mapping_context.default_group,
                     uid = mapping_context.default_uid,
                     gid = mapping_context.default_gid,
-                )
+                ))
 
             if runfiles.files:
                 mapping_context.file_deps_transitive.append(runfiles.files)
@@ -582,7 +583,7 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
     else:
         entry_type = ENTRY_IS_FILE
 
-    mapping_context.content_map[dest] = _DestFile(
+    _add_entry(mapping_context.content_map, dest, _DestFile(
         src = src,
         entry_type = entry_type,
         origin = origin,
@@ -591,7 +592,7 @@ def add_single_file(mapping_context, dest_path, src, origin, mode = None, user =
         group = group or mapping_context.default_group,
         uid = uid or mapping_context.default_uid,
         gid = gid or mapping_context.default_gid,
-    )
+    ))
 
 def add_symlink(mapping_context, dest_path, src, origin):
     """Add a symlink to the content map.
@@ -608,7 +609,7 @@ def add_symlink(mapping_context, dest_path, src, origin):
     """
     dest = dest_path.strip("/")
     _check_dest(mapping_context.content_map, dest, None, origin)
-    mapping_context.content_map[dest] = _DestFile(
+    _add_entry(mapping_context.content_map, dest, _DestFile(
         src = None,
         link_to = src,
         entry_type = ENTRY_IS_LINK,
@@ -618,7 +619,7 @@ def add_symlink(mapping_context, dest_path, src, origin):
         group = mapping_context.default_group,
         uid = mapping_context.default_uid,
         gid = mapping_context.default_gid,
-    )
+    ))
 
 def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = None, group = None, uid = None, gid = None):
     """Add an tree artifact (directory output) to the content map.
@@ -634,7 +635,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
       uid: User id for the entry (probably unused)
       gid: Group id for the entry (probably unused)
     """
-    content_map[dest_path] = _DestFile(
+    _add_entry(content_map, dest_path, _DestFile(
         src = src,
         origin = origin,
         entry_type = ENTRY_IS_TREE,
@@ -643,7 +644,7 @@ def add_tree_artifact(content_map, dest_path, src, origin, mode = None, user = N
         group = group,
         uid = uid,
         gid = gid,
-    )
+    ))
 
 def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pretty_print = False):
     """Write a content map to a manifest file.
@@ -665,8 +666,9 @@ def write_manifest(ctx, manifest_file, content_map, use_short_path = False, pret
         manifest_file,
         "[\n" + ",\n".join(
             [
-                _encode_manifest_entry(ctx, dst, content_map[dst], use_short_path, pretty_print)
+                _encode_manifest_entry(ctx, dst, entry, use_short_path, pretty_print)
                 for dst in sorted(content_map.keys())
+                for entry in content_map[dst]
             ],
         ) + "\n]\n",
     )

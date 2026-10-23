@@ -62,6 +62,7 @@ class NativeInstaller(object):
         self.destdir = destdir
         self.wipe_destdir = wipe_destdir
         self.entries = []
+        self.tree_files = manifest.TreeFileTracker()
 
     # Logger helper method, may not be necessary or desired
     def _subst_destdir(path, self):
@@ -137,11 +138,19 @@ class NativeInstaller(object):
         self._chown_chmod(entry.dest, entry.mode, entry.user, entry.group)
 
     def _install_treeartifact_file(self, entry, src, dst):
+        if not self.tree_files.add_file(dst, src, entry.src):
+            return
         self._do_file_copy(src, dst)
         self._chown_chmod(dst, entry.mode, entry.user, entry.group)
 
     def _install_treeartifact(self, entry):
         logging.debug("COPYTREE %s <- %s/**", entry.dest, entry.src)
+        for root, dirs, _ in os.walk(entry.src):
+            rel_root = os.path.relpath(root, entry.src)
+            for d in dirs:
+                self.tree_files.add_dir(
+                    os.path.normpath(os.path.join(entry.dest, rel_root, d)),
+                    entry.src)
         shutil.copytree(
             src=entry.src,
             dst=entry.dest,
