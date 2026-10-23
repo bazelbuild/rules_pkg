@@ -121,6 +121,14 @@ class ZipContentsTests(zip_test_lib.ZipContentsTestBase):
         {"filename": "generate_tree/b/e"},
     ])
 
+  def test_zip_shared_tree_dest(self):
+    self.assertZipFileContent("test_zip_shared_tree_dest.zip", [
+        {"filename": "include/", "isdir": True, "attr": 0o755},
+        {"filename": "include/a.h", "attr": 0o644},
+        {"filename": "include/b/", "isdir": True, "attr": 0o755},
+        {"filename": "include/b/b.h", "attr": 0o644},
+    ])
+
   def test_compression_deflated(self):
     if sys.version_info >= (3, 7):
       self.assertZipFileContent("test_zip_deflated_level_3.zip", [

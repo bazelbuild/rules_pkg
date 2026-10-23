@@ -15,6 +15,7 @@
 """Common package builder manifest helpers
 """
 
+import filecmp
 import json
 
 
@@ -79,3 +80,43 @@ def entry_type_to_string(et):
         return "empty_file"
     else:
         raise ValueError("Invalid entry id {}".format(et))
+
+
+class TreeFileTracker(object):
+    """Detects conflicting paths provided by several tree artifacts."""
+
+    def __init__(self):
+        self._seen = {}
+
+    def add_file(self, dest, content_path, tree):
+        """Records the file at dest, and returns whether it must be written.
+
+        Raises:
+          ValueError: dest was already provided by another tree as a directory
+            or as a file with different content.
+        """
+        previous = self._seen.get(dest)
+        if previous is None:
+            self._seen[dest] = (content_path, tree)
+            return True
+        previous_path, previous_tree = previous
+        if previous_path is not None and filecmp.cmp(previous_path, content_path, shallow=False):
+            return False
+        raise ValueError(
+            "Conflicting path %s, provided by tree artifacts %s and %s" %
+            (dest, previous_tree, tree))
+
+    def add_dir(self, dest, tree):
+        """Records the directory at dest.
+
+        Raises:
+          ValueError: dest was already provided by another tree as a file.
+        """
+        dest = dest.rstrip("/")
+        previous = self._seen.get(dest)
+        if previous is None:
+            self._seen[dest] = (None, tree)
+        elif previous[0] is not None:
+            raise ValueError(
+                "Conflicting path %s, provided by tree artifacts %s and %s" %
+                (dest, previous[1], tree))

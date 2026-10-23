@@ -132,6 +132,23 @@ cc_binary(
 )
 
 py_test(
+    name = "shared_tree_dest_test",
+    srcs = ["shared_tree_dest_test.py"],
+    data = [
+        "//pkg/private/tar:build_tar",
+        "//pkg/private/zip:build_zip",
+    ],
+    imports = [".."],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    tags = ["no-windows"],
+    deps = [
+        "//pkg/private:manifest",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
     imports = [".."],
