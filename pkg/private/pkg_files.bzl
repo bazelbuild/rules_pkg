@@ -544,8 +544,9 @@ def get_my_executable(src):
 
     # The docs lead you to believe that you could look at
     # files_to_run.executable, but that is filled out even for source
-    # files.
-    if getattr(files_to_run_provider, "runfiles_manifest"):
+    # files. Check repo_mapping_manifest too, since runfiles_manifest is
+    # None with --nobuild_runfile_manifests.
+    if getattr(files_to_run_provider, "runfiles_manifest") or getattr(files_to_run_provider, "repo_mapping_manifest", None):
         # DEBUG print("Got an manifest executable", files_to_run_provider.executable)
         return files_to_run_provider.executable
     return None
