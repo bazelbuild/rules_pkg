@@ -27,6 +27,8 @@ py_test(
     data = [
         ":test_installer",
         ":test_installer_flag",
+        ":test_installer_shared_tree_conflict",
+        ":test_installer_shared_tree_type_conflict",
         "@mappings_test_external_repo//pkg:install_cross_repo",
     ],
     imports = ["../.."],
@@ -130,4 +132,55 @@ pkg_install(
         ":artifact-in-owned-dir",
     ],
     destdir_flag = ":install_dir",
+)
+
+directory(
+    name = "shared_dest_tree_a",
+    contents = "a",
+    filenames = ["x.h"],
+)
+
+directory(
+    name = "shared_dest_tree_b",
+    contents = "b",
+    filenames = ["x.h"],
+)
+
+pkg_files(
+    name = "shared_dest_tree_a_files",
+    srcs = [":shared_dest_tree_a"],
+    renames = {":shared_dest_tree_a": "include"},
+)
+
+pkg_files(
+    name = "shared_dest_tree_b_files",
+    srcs = [":shared_dest_tree_b"],
+    renames = {":shared_dest_tree_b": "include"},
+)
+
+pkg_install(
+    name = "test_installer_shared_tree_conflict",
+    srcs = [
+        ":shared_dest_tree_a_files",
+        ":shared_dest_tree_b_files",
+    ],
+)
+
+directory(
+    name = "shared_dest_tree_dir",
+    filenames = ["x.h/y"],
+)
+
+pkg_files(
+    name = "shared_dest_tree_dir_files",
+    srcs = [":shared_dest_tree_dir"],
+    renames = {":shared_dest_tree_dir": "include"},
+)
+
+pkg_install(
+    name = "test_installer_shared_tree_type_conflict",
+    srcs = [
+        ":shared_dest_tree_a_files",
+        ":shared_dest_tree_dir_files",
+    ],
 )
