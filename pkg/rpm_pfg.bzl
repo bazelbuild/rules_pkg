@@ -207,6 +207,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx):
                 # us from having to having to maintain tag processing
                 # code in multiple places.
                 "tags": file_base,
+                "own_dirs": pfi.attributes.get("rpm_own_tree_dirs", False),
             })
         else:
             if dest in rpm_ctx.dest_check_map:
@@ -944,6 +945,16 @@ pkg_rpm_impl = rule(
     ```
 
     Is the equivalent to `%config(missingok, noreplace)` in the `%files` list.
+
+    The files of a TreeArtifact are listed in the `%files` list, but its
+    directories are not, so the package does not own them and they are left
+    behind on uninstall. Set `rpm_own_tree_dirs` to `True` in the attributes
+    of the packaging rule mapping the TreeArtifact to also add a `%dir` entry
+    for the TreeArtifact destination and every directory below it:
+
+    ```
+    attributes = pkg_attributes(rpm_own_tree_dirs = True),
+    ```
 
     This rule produces 2 artifacts: an .rpm and a .changes file. The DefaultInfo will
     include both. If you need downstream rule to specifically depend on only the .rpm or
