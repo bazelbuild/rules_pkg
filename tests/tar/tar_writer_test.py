@@ -18,6 +18,7 @@ import tarfile
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 from pkg.private.tar import tar_writer
 from tests.tar import compressor
 
@@ -73,6 +74,9 @@ class TarFileWriterTest(unittest.TestCase):
     self.tempfile = os.path.join(os.environ["TEST_TMPDIR"], "test.tar")
     self.data_files = runfiles.Create()
 
+  def data_file(self, path):
+    return runfiles_util.rlocation(self.data_files, path)
+
   def tearDown(self):
     super(TarFileWriterTest, self).tearDown()
     if os.path.exists(self.tempfile):
@@ -127,7 +131,7 @@ class TarFileWriterTest(unittest.TestCase):
     ]
     for ext in [("." + comp if comp else "") for comp in tar_writer.COMPRESSIONS]:
       with tar_writer.TarFileWriter(self.tempfile) as f:
-        datafile = self.data_files.Rlocation(
+        datafile = self.data_file(
             "rules_pkg/tests/testdata/tar_test.tar" + ext)
         f.add_tar(datafile, name_filter=lambda n: n != "./b")
       self.assertTarFileContent(self.tempfile, content)
@@ -139,7 +143,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "foo/ab", "data": b"ab"},
         ]
     with tar_writer.TarFileWriter(self.tempfile, create_parents=True, allow_dups_from_deps=False) as f:
-      datafile = self.data_files.Rlocation(
+      datafile = self.data_file(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
     self.assertTarFileContent(self.tempfile, content)
@@ -158,7 +162,7 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesTrueByDefault(self):
     with tar_writer.TarFileWriter(self.tempfile) as f:
-      input_tar_path = self.data_files.Rlocation(
+      input_tar_path = self.data_file(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       input_tar = tarfile.open(input_tar_path, "r")
@@ -169,7 +173,7 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPreserveTarMtimesFalse(self):
     with tar_writer.TarFileWriter(self.tempfile, preserve_tar_mtimes=False) as f:
-      input_tar_path = self.data_files.Rlocation(
+      input_tar_path = self.data_file(
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(input_tar_path)
       for output_file in f.tar:
@@ -225,7 +229,7 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPackageDirAttribute(self):
     """Tests package_dir of pkg_tar."""
-    package_dir = self.data_files.Rlocation(
+    package_dir = self.data_file(
         "rules_pkg/tests/tar/test_tar_package_dir.tar")
     expected_content = [
         {"name": "my"},
@@ -237,7 +241,7 @@ class TarFileWriterTest(unittest.TestCase):
 
   def testPackageDirFileAttribute(self):
     """Tests package_dir_file attributes of pkg_tar."""
-    package_dir_file = self.data_files.Rlocation(
+    package_dir_file = self.data_file(
         "rules_pkg/tests/tar/test_tar_package_dir_file.tar")
     expected_content = [
         {"name": "package"},
@@ -246,9 +250,9 @@ class TarFileWriterTest(unittest.TestCase):
     self.assertTarFileContent(package_dir_file, expected_content)
 
   def testCustomCompression(self):
-    original = self.data_files.Rlocation(
+    original = self.data_file(
         "rules_pkg/tests/testdata/tar_test.tar")
-    compressed = self.data_files.Rlocation(
+    compressed = self.data_file(
         "rules_pkg/tests/tar/test_tar_compression.tar")
     with open(compressed, "rb") as f_in, open(self.tempfile, "wb") as f_out:
       # "Decompress" by skipping garbage bytes
@@ -267,7 +271,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./b", "data": "q".encode("utf-8")}
     ]
     with tar_writer.TarFileWriter(self.tempfile) as f:
-      datafile = self.data_files.Rlocation(
+      datafile = self.data_file(
         "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile)
       f.add_file('./b', content="q")
@@ -280,7 +284,7 @@ class TarFileWriterTest(unittest.TestCase):
         {"name": "./" + x} for x in ["a", "b", "ab", "a", "b", "ab"]
     ]
     with tar_writer.TarFileWriter(self.tempfile) as f:
-      datafile = self.data_files.Rlocation(
+      datafile = self.data_file(
         "rules_pkg/tests/testdata/tar_test.tar")
 
       f.add_tar(datafile)

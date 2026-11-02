@@ -20,6 +20,7 @@ import unittest
 import zipfile
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 
 # keep in sync with archive.py
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
@@ -79,7 +80,8 @@ class StampTest(unittest.TestCase):
     Args:
         file_name: the path to the TAR file to test.
     """
-    file_path = runfiles.Create().Rlocation('rules_pkg/tests/' + file_name)
+    file_path = runfiles_util.rlocation(
+        runfiles.Create(), 'rules_pkg/tests/' + file_name)
     with tarfile.open(file_path, 'r:*') as f:
       for info in f:
         self.check_mtime(info.mtime, file_path, info.name)
@@ -95,7 +97,8 @@ class StampTest(unittest.TestCase):
     Args:
         file_name: the path to the ZIP file to test.
     """
-    file_path = runfiles.Create().Rlocation('rules_pkg/tests/' + file_name)
+    file_path = runfiles_util.rlocation(
+        runfiles.Create(), 'rules_pkg/tests/' + file_name)
     target_mtime = int(time.time())
     with zipfile.ZipFile(file_path, mode='r') as f:
       for info in f.infolist():

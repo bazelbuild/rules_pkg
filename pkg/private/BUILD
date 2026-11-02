@@ -61,44 +61,48 @@ config_setting(
 )
 
 py_library(
+    name = "init",
+    srcs = ["__init__.py"],
+    imports = ["../.."],
+    srcs_version = "PY3",
+    visibility = ["//:__subpackages__"],
+    deps = ["//pkg:init"],
+)
+
+py_library(
     name = "build_info",
-    srcs = [
-        "build_info.py",
-    ],
+    srcs = ["build_info.py"],
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
         "//tests:__pkg__",
     ],
+    deps = [":init"],
 )
 
 py_library(
     name = "archive",
-    srcs = [
-        "__init__.py",
-        "archive.py",
-    ],
+    srcs = ["archive.py"],
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
         "//tests:__subpackages__",
     ],
+    deps = [":init"],
 )
 
 py_library(
     name = "helpers",
-    srcs = [
-        "__init__.py",
-        "helpers.py",
-    ],
+    srcs = ["helpers.py"],
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
         "//:__subpackages__",
         "//tests:__pkg__",
     ],
+    deps = [":init"],
 )
 
 py_library(
@@ -107,4 +111,5 @@ py_library(
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+    deps = [":init"],
 )

@@ -18,6 +18,7 @@ import unittest
 import zipfile
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 
 
 # Unix dir bit and Windows dir bit. Magic from zip spec
@@ -45,7 +46,8 @@ class ZipTest(unittest.TestCase):
   def get_test_zip(self, zip_file):
     """Get the file path to a generated zip in the runfiles."""
 
-    return self.data_files.Rlocation("rules_pkg/tests/zip/" + zip_file)
+    return runfiles_util.rlocation(
+        self.data_files, "rules_pkg/tests/zip/" + zip_file)
 
 
 class ZipContentsTestBase(ZipTest):

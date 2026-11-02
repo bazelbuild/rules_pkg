@@ -18,6 +18,7 @@ import tarfile
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 from pkg.private.tar import tar_writer
 
 PORTABLE_MTIME = 946684800  # 2000-01-01 00:00:00.000 UTC
@@ -40,7 +41,8 @@ class PkgTarTest(unittest.TestCase):
     """
     # NOTE: This is portable to Windows. os.path.join('rules_pkg', 'tests',
     # filename) is not.
-    file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+    file_path = runfiles_util.rlocation(
+        runfiles.Create(), 'rules_pkg/tests/tar/' + file_name)
     got = []
     with tarfile.open(file_path, 'r:*') as f:
       i = 0
@@ -306,7 +308,8 @@ class PkgTarTest(unittest.TestCase):
       ('test-tar-xz-compression_level-9.tar.xz', 67156),
     ]
     for file_name, expected_size in cases:
-      file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+      file_path = runfiles_util.rlocation(
+          runfiles.Create(), 'rules_pkg/tests/tar/' + file_name)
       file_size = os.stat(file_path).st_size
       self.assertEqual(file_size, expected_size, 'size error for ' + file_name)
 
@@ -322,7 +325,8 @@ class PkgTarTest(unittest.TestCase):
         ('test-tar-preserve_mode-True.tar', "0o644"),  # chmod 644 = rw- r-- r--
       ]
     for file_name, expected_mode in expected_mode:
-      file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+      file_path = runfiles_util.rlocation(
+          runfiles.Create(), 'rules_pkg/tests/tar/' + file_name)
       with tarfile.open(file_path, 'r') as f:
         for member in f.getmembers():
           self.assertEqual(member.name, "hello.txt", "unexpected file name for " + file_name)
@@ -335,7 +339,8 @@ class PkgTarTest(unittest.TestCase):
       ('test-tar-preserve_mtime-True.tar', False),
     ]
     for file_name, should_be_equal_to_portable_mtime in test_cases:
-      file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
+      file_path = runfiles_util.rlocation(
+          runfiles.Create(), 'rules_pkg/tests/tar/' + file_name)
       with tarfile.open(file_path, 'r') as f:
         for member in f.getmembers():
           self.assertEqual(member.name, "hello.txt", "unexpected file name for " + file_name)

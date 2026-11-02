@@ -17,6 +17,7 @@ import json
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 
 class ContentManifestTest(unittest.TestCase):
   """Test harness to see if we wrote the content manifest correctly."""
@@ -25,7 +26,8 @@ class ContentManifestTest(unittest.TestCase):
 
   @classmethod
   def _read_manifest(cls, path, to_string):
-    with open(cls.run_files.Rlocation('rules_pkg/' + path), 'rb') as f:
+    path = runfiles_util.rlocation(cls.run_files, 'rules_pkg/' + path)
+    with open(path, 'rb') as f:
       raw = f.read()
     return {x['dest']: x for x in json.loads(to_string(raw))}
 

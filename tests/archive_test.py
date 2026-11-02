@@ -16,6 +16,7 @@
 import unittest
 
 from python.runfiles import runfiles
+from tests.util import runfiles_util
 from pkg.private import archive
 
 
@@ -62,11 +63,12 @@ class SimpleArReaderTest(unittest.TestCase):
 
   def testEmptyArFile(self):
     self.assertArFileContent(
-        self.data_files.Rlocation("rules_pkg/tests/testdata/empty.ar"),
+        runfiles_util.rlocation(
+            self.data_files, "rules_pkg/tests/testdata/empty.ar"),
         [])
 
   def assertSimpleFileContent(self, names):
-    datafile = self.data_files.Rlocation(
+    datafile = runfiles_util.rlocation(self.data_files,
         "rules_pkg/tests/testdata/" + "_".join(names) + ".ar")
     # pylint: disable=g-complex-comprehension
     content = [{"filename": n,

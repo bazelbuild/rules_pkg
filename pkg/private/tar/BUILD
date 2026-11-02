@@ -63,6 +63,7 @@ py_binary(
 py_library(
     name = "tar_writer",
     srcs = [
+        "__init__.py",
         "tar_writer.py",
     ],
     imports = ["../../.."],
@@ -70,4 +71,5 @@ py_library(
     visibility = [
         "//tests:__subpackages__",
     ],
+    deps = ["//pkg/private:init"],
 )
