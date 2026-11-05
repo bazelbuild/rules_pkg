@@ -16,8 +16,11 @@
 import gzip
 import io
 import os
+import posixpath
+import shutil
 import subprocess
 import tarfile
+import tempfile
 
 try:
   import lzma  # pylint: disable=g-import-not-at-top, unused-import
@@ -62,7 +65,8 @@ class TarFileWriter(object):
                allow_dups_from_deps=True,
                default_mtime=None,
                preserve_tar_mtimes=True,
-               compression_level=-1):
+               compression_level=-1,
+               bsdtar=None):
     """TarFileWriter wraps tarfile.open().
 
     Args:
@@ -73,6 +77,7 @@ class TarFileWriter(object):
           May be an integer or the value 'portable' to use the date
           2000-01-01, which is compatible with non *nix OSes'.
       preserve_tar_mtimes: if true, keep file mtimes from input tar file.
+      bsdtar: path to a bsdtar binary writing the archive instead of tarfile.
     """
     self.preserve_mtime = preserve_tar_mtimes
     if default_mtime is None:
@@ -81,6 +86,17 @@ class TarFileWriter(object):
       self.default_mtime = PORTABLE_MTIME
     else:
       self.default_mtime = int(default_mtime)
+    self.name = name
+    self.existing_members = {}
+    self.create_parents = create_parents
+    self.allow_dups_from_deps = allow_dups_from_deps
+
+    if bsdtar:
+      self.fileobj = None
+      self.compressor_proc = None
+      self.tar = _BsdtarArchive(name, bsdtar, compression, (compressor or '').strip(),
+                                compression_level)
+      return
 
     self.fileobj = None
     self.compressor_cmd = (compressor or '').strip()
@@ -114,13 +130,9 @@ class TarFileWriter(object):
                                               stdin=subprocess.PIPE,
                                               stdout=open(name, 'wb'))
       self.fileobj = self.compressor_proc.stdin
-    self.name = name
 
     self.tar = tarfile.open(name=name, mode=mode, fileobj=self.fileobj,
                             format=tarfile.GNU_FORMAT, **extra_tar_args)
-    self.existing_members = {}
-    self.create_parents = create_parents
-    self.allow_dups_from_deps = allow_dups_from_deps
 
   def __enter__(self):
     return self
@@ -373,3 +385,141 @@ class TarFileWriter(object):
     if self.compressor_proc and self.compressor_proc.wait() != 0:
       raise self.Error('Custom compression command '
                        '"{}" failed'.format(self.compressor_cmd))
+
+
+# Bytes written as is in mtree(5) names and values, all others being octal-escaped.
+_MTREE_SAFE_BYTES = frozenset(
+    b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,-./:@_~')
+
+_MTREE_TYPES = {
+    tarfile.REGTYPE: 'file',
+    tarfile.AREGTYPE: 'file',
+    tarfile.CONTTYPE: 'file',
+    tarfile.LNKTYPE: 'file',  # mtree(5) has no hard links: the target content is copied
+    tarfile.DIRTYPE: 'dir',
+    tarfile.SYMTYPE: 'link',
+    tarfile.CHRTYPE: 'char',
+    tarfile.BLKTYPE: 'block',
+    tarfile.FIFOTYPE: 'fifo',
+}
+
+# bsdtar filter and its option module for each supported compression.
+_BSDTAR_FILTERS = {
+    'gz': ('--gzip', 'gzip'),
+    'tgz': ('--gzip', 'gzip'),
+    'bz2': ('--bzip2', 'bzip2'),
+    'bzip2': ('--bzip2', 'bzip2'),
+    'xz': ('--xz', 'xz'),
+    'lzma': ('--lzma', 'lzma'),
+}
+
+
+def _mtree_escape(text):
+  return ''.join(chr(b) if b in _MTREE_SAFE_BYTES else '\\%03o' % b
+                 for b in text.encode('utf-8'))
+
+
+def _member_path(name):
+  return posixpath.normpath(name[2:] if name.startswith('./') else name).strip('/')
+
+
+class _BsdtarArchive(object):
+  """Stands in for tarfile.TarFile, describing members in mtree(5) specs bsdtar archives."""
+
+  def __init__(self, name, bsdtar, compression, compressor, compression_level):
+    self.name = name
+    self.bsdtar = bsdtar
+    self.compression = compression
+    self.compressor = compressor
+    self.compression_level = compression_level
+    self.spool = tempfile.TemporaryDirectory()
+    # bsdtar merges mtree entries sharing a name, so duplicates start a new spec.
+    self.specs = [[]]
+    self.spec_names = set()
+    self.contents = {}  # member path -> content path, to materialize hard links
+
+  def _content_path(self, tarinfo, fileobj):
+    if tarinfo.type == tarfile.LNKTYPE:
+      target = _member_path(tarinfo.linkname)
+      if target not in self.contents:
+        raise TarFileWriter.Error('Hard link %s targets unknown member %s' % (
+            tarinfo.name, tarinfo.linkname))
+      return self.contents[target]
+    # bsdtar reads files opened by TarFileWriter.add_file in place.
+    if isinstance(getattr(fileobj, 'raw', None), io.FileIO) and isinstance(fileobj.name, str):
+      return os.path.abspath(fileobj.name)
+    if fileobj is None:
+      return None
+    # Spool content only available as a stream, such as members of merged tar files.
+    with tempfile.NamedTemporaryFile(dir=self.spool.name, delete=False) as spooled:
+      shutil.copyfileobj(fileobj, spooled)
+    return spooled.name
+
+  def addfile(self, tarinfo, fileobj=None):
+    kind = _MTREE_TYPES.get(tarinfo.type)
+    if kind is None:
+      raise TarFileWriter.Error('Unsupported member type %r for %s' % (
+          tarinfo.type, tarinfo.name))
+    member = _member_path(tarinfo.name)
+    # A trailing slash keeps bsdtar from descending into directories as relative mtree entries do.
+    name = tarinfo.name.rstrip('/') + ('/' if kind == 'dir' else '')
+    keywords = [
+        'type=' + kind,
+        'mode=%04o' % (tarinfo.mode & 0o7777),
+        'uid=%d' % tarinfo.uid,
+        'gid=%d' % tarinfo.gid,
+        'time=%d.%09d' % divmod(round(tarinfo.mtime * 1e9), 10**9),
+    ]
+    if tarinfo.uname:
+      keywords.append('uname=' + _mtree_escape(tarinfo.uname))
+    if tarinfo.gname:
+      keywords.append('gname=' + _mtree_escape(tarinfo.gname))
+    if kind == 'link':
+      keywords.append('link=' + _mtree_escape(tarinfo.linkname))
+    elif kind in ('char', 'block'):
+      keywords.append('device=native,%d,%d' % (tarinfo.devmajor, tarinfo.devminor))
+    elif kind == 'file':
+      content = self._content_path(tarinfo, fileobj)
+      if content is None:
+        keywords.append('size=0')
+      else:
+        keywords.append('contents=' + _mtree_escape(content))
+        self.contents[member] = content
+    if member in self.spec_names:
+      self.specs.append([])
+      self.spec_names.clear()
+    self.spec_names.add(member)
+    self.specs[-1].append(' '.join([_mtree_escape(name)] + keywords))
+
+  def _compression_args(self):
+    if self.compression not in _BSDTAR_FILTERS:
+      return []
+    flag, module = _BSDTAR_FILTERS[self.compression]
+    options = ['gzip:!timestamp'] if module == 'gzip' else []
+    # Like the tarfile writer, only gzip and xz honor the compression level, defaulting to 6.
+    if module != 'bzip2' and self.compression_level >= 0:
+      options.append('%s:compression-level=%d' % (module, min(self.compression_level, 9)))
+    return [flag] + (['--options', ','.join(options)] if options else [])
+
+  def close(self):
+    try:
+      cmd = [self.bsdtar, '--create', '--format=gnutar', '--file']
+      cmd += ['-'] if self.compressor else [self.name] + self._compression_args()
+      for i, lines in enumerate(self.specs):
+        spec = os.path.join(self.spool.name, 'spec%d.mtree' % i)
+        with open(spec, 'w', encoding='utf-8') as f:
+          f.write('\n'.join(['#mtree'] + lines) + '\n')
+        cmd.append('@' + spec)
+      if not self.compressor:
+        subprocess.run(cmd, check=True)
+        return
+      with open(self.name, 'wb') as out:
+        archiver = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        compressor = subprocess.Popen(self.compressor.split(), stdin=archiver.stdout, stdout=out)
+        archiver.stdout.close()
+        if compressor.wait() != 0:
+          raise TarFileWriter.Error('Custom compression command "%s" failed' % self.compressor)
+        if archiver.wait() != 0:
+          raise subprocess.CalledProcessError(archiver.returncode, cmd)
+    finally:
+      self.spool.cleanup()

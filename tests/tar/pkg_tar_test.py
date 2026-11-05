@@ -295,20 +295,18 @@ class PkgTarTest(unittest.TestCase):
     self.assertTarFileContent('test-respect-externally-defined-duplicates.tar', content)
 
   def test_compression_level(self):
-    cases = [
-      ('test-tar-compression_level--1.tgz', 179),
-      ('test-tar-compression_level-3.tgz', 230),
-      ('test-tar-compression_level-6.tgz', 178),
-      ('test-tar-compression_level-9.tgz', 167),
-      ('test-tar-xz-compression_level--1.tar.xz', 67216),
-      ('test-tar-xz-compression_level-3.tar.xz', 67264),
-      ('test-tar-xz-compression_level-6.tar.xz', 67216),
-      ('test-tar-xz-compression_level-9.tar.xz', 67156),
-    ]
-    for file_name, expected_size in cases:
-      file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name)
-      file_size = os.stat(file_path).st_size
-      self.assertEqual(file_size, expected_size, 'size error for ' + file_name)
+    # Sizes depend on the archive writer, so compare levels with one another.
+    for file_name in ['test-tar-compression_level-%s.tgz',
+                      'test-tar-xz-compression_level-%s.tar.xz']:
+      sizes = {}
+      for level in ['-1', '3', '6', '9']:
+        file_path = runfiles.Create().Rlocation('rules_pkg/tests/tar/' + file_name % level)
+        sizes[level] = os.stat(file_path).st_size
+      # Python's gzip header embeds the archive name, one character longer for -1.
+      self.assertAlmostEqual(sizes['-1'], sizes['6'], delta=1,
+                             msg='default level is not 6 for ' + file_name)
+      self.assertGreater(sizes['3'], sizes['6'], 'level 3 is not larger for ' + file_name)
+      self.assertGreater(sizes['6'], sizes['9'], 'level 9 is not smaller for ' + file_name)
 
   def test_preserve_mode(self):
     if os.name == 'nt':
