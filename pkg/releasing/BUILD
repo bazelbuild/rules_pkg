@@ -41,6 +41,7 @@ py_library(
 py_binary(
     name = "print_rel_notes",
     srcs = [
+        "__init__.py",
         "print_rel_notes.py",
     ],
     imports = ["../.."],
@@ -63,6 +64,7 @@ py_test(
 py_binary(
     name = "git_changelog_private",
     srcs = [
+        "__init__.py",
         "git_changelog_private.py",
     ],
     srcs_version = "PY3",

@@ -47,7 +47,10 @@ exports_files(
 
 py_binary(
     name = "make_deb",
-    srcs = ["make_deb.py"],
+    srcs = [
+        "__init__.py",
+        "make_deb.py",
+    ],
     imports = ["../../.."],
     python_version = "PY3",
     visibility = ["//visibility:public"],
