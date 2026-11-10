@@ -42,5 +42,6 @@ py_binary(
         "__init__.py",
         "augment_rpm_files_install.py",
     ],
+    legacy_create_init = 0,
     visibility = ["//visibility:public"],
 )

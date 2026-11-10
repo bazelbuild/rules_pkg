@@ -227,6 +227,7 @@ directory(
 py_test(
     name = "negative_tests",
     srcs = ["test_filter_directory.py"],
+    legacy_create_init = 0,
     main = "test_filter_directory.py",
     deps = [
         "//pkg:filter_directory_lib",

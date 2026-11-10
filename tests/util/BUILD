@@ -23,6 +23,7 @@ exports_files(["defs.bzl"])
 py_binary(
     name = "md5",
     srcs = ["md5.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
@@ -31,6 +32,7 @@ py_binary(
 py_binary(
     name = "create_directory_with_contents",
     srcs = ["create_directory_with_contents.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

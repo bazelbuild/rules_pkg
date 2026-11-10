@@ -30,6 +30,7 @@ py_test(
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":rpm_sde_insource_data"],
     env = {"TEST_RPM": "rpm_sde_insource-1.1.1-2222.noarch.rpm"},
+    legacy_create_init = 0,
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
@@ -96,6 +97,7 @@ py_test(
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":rpm_sde_fromfile_data"],
     env = {"TEST_RPM": "rpm_sde_fromfile-1.1.1-2222.noarch.rpm"},
+    legacy_create_init = 0,
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
