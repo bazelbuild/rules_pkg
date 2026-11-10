@@ -576,6 +576,10 @@ def _pkg_rpm_impl(ctx):
         preamble_pieces.append("Summary: " + ctx.attr.summary)
     if ctx.attr.url:
         preamble_pieces.append("URL: " + ctx.attr.url)
+    if ctx.attr.vendor:
+        preamble_pieces.append("Vendor: " + ctx.attr.vendor)
+    if ctx.attr.packager:
+        preamble_pieces.append("Packager: " + ctx.attr.packager)
     if ctx.attr.license:
         preamble_pieces.append("License: " + ctx.attr.license)
     if ctx.attr.group:
@@ -1082,6 +1086,12 @@ pkg_rpm_impl = rule(
         ),
         "url": attr.string(
             doc = """RPM "URL" tag; this project/vendor's home on the Internet.""",
+        ),
+        "vendor": attr.string(
+            doc = """RPM "Vendor" tag; the organization distributing this package.""",
+        ),
+        "packager": attr.string(
+            doc = """RPM "Packager" tag; the person or organization that built this package.""",
         ),
         "description": attr.string(
             doc = """Multi-line description of this package, corresponds to RPM %description.

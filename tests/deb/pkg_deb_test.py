@@ -184,6 +184,7 @@ class PkgDebTest(unittest.TestCase):
         'Breaks: oldbrokenpkg',
         'Provides: hello',
         'License: Apache-2.0',
+        'Vendor: Some Vendor <vendor@somewhere.com>',
         'Installed-Size: 1234',
     ]
     # TODO(https://github.com/bazelbuild/rules_pkg/issues/214): This can not

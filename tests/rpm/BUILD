@@ -187,6 +187,7 @@ pkg_rpm(
     conflicts = ["not-a-test"],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
+    packager = "Some Packager <packager@somewhere.com>",
     post_scriptlet = _POST_SCRIPTLET,
     posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
@@ -198,6 +199,7 @@ pkg_rpm(
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
+    vendor = "Some Vendor <vendor@somewhere.com>",
     version = _VERSION,
 )
 

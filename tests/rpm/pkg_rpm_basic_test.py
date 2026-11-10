@@ -83,7 +83,11 @@ echo posttrans
             "SUMMARY": b"pkg_rpm test rpm summary",
         }
         for rpm, fields in [
-            (self.test_rpm_path, {"NAME": b"test_rpm"}),
+            (self.test_rpm_path, {
+                "NAME": b"test_rpm",
+                "VENDOR": b"Some Vendor <vendor@somewhere.com>",
+                "PACKAGER": b"Some Packager <packager@somewhere.com>",
+            }),
             (self.test_rpm_release_version_files, {"NAME": b"test_rpm_release_version_files"}),
             (self.test_rpm_epoch, {"NAME": b"test_rpm_epoch", "EPOCH": b"1"}),
         ]:
