@@ -70,7 +70,10 @@ filegroup(
 # Used by pkg_rpm in rpm.bzl.
 py_binary(
     name = "make_rpm",
-    srcs = ["make_rpm.py"],
+    srcs = [
+        "__init__.py",
+        "make_rpm.py",
+    ],
     imports = [".."],
     python_version = "PY3",
     srcs_version = "PY3",
@@ -84,7 +87,10 @@ py_binary(
 
 py_library(
     name = "make_rpm_lib",
-    srcs = ["make_rpm.py"],
+    srcs = [
+        "__init__.py",
+        "make_rpm.py",
+    ],
     imports = [".."],
     srcs_version = "PY3",
     visibility = [
@@ -100,14 +106,20 @@ py_library(
 
 py_binary(
     name = "filter_directory",
-    srcs = ["filter_directory.py"],
+    srcs = [
+        "__init__.py",
+        "filter_directory.py",
+    ],
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
 
 py_library(
     name = "filter_directory_lib",
-    srcs = ["filter_directory.py"],
+    srcs = [
+        "__init__.py",
+        "filter_directory.py",
+    ],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
