@@ -45,7 +45,7 @@ class TarFile(object):
 
   def __init__(self, output, directory, compression, compressor, create_parents,
                allow_dups_from_deps, default_mtime, compression_level, preserve_mode,
-               preserve_mtime):
+               preserve_mtime, bsdtar=None):
     # Directory prefix on all output paths
     d = directory.strip('/')
     self.directory = (d + '/') if d else None
@@ -58,6 +58,7 @@ class TarFile(object):
     self.compression_level = compression_level
     self.preserve_mode = preserve_mode
     self.preserve_mtime = preserve_mtime
+    self.bsdtar = bsdtar
 
   def __enter__(self):
     self.tarfile = tar_writer.TarFileWriter(
@@ -67,7 +68,8 @@ class TarFile(object):
         self.create_parents,
         self.allow_dups_from_deps,
         default_mtime=self.default_mtime,
-        compression_level=self.compression_level)
+        compression_level=self.compression_level,
+        bsdtar=self.bsdtar)
     return self
 
   def __exit__(self, t, v, traceback):
@@ -427,6 +429,8 @@ def main():
   parser.add_argument(
       '--compression_level', default=-1,
       help='Specify the numeric compress level in gzip mode; may be 0-9 or -1 (default to 6).')
+  parser.add_argument('--bsdtar',
+                      help='bsdtar binary writing the archive instead of Python tarfile.')
   options = parser.parse_args()
 
   # Parse modes arguments
@@ -485,7 +489,8 @@ def main():
       allow_dups_from_deps=options.allow_dups_from_deps,
       compression_level = compression_level,
       preserve_mode = options.preserve_mode,
-      preserve_mtime = options.preserve_mtime) as output:
+      preserve_mtime = options.preserve_mtime,
+      bsdtar = options.bsdtar) as output:
 
     def file_attributes(filename):
       if filename.startswith('/'):

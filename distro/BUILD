@@ -43,6 +43,8 @@ pkg_tar(
         "//pkg/private/tar:standard_package",
         "//pkg/private/zip:standard_package",
         "//pkg/releasing:standard_package",
+        "//toolchains/bsdtar:standard_package",
+        "//toolchains/bsdtar/prebuilt:standard_package",
         "//toolchains/git:standard_package",
         "//toolchains/rpm:standard_package",
     ],
