@@ -1,0 +1,4 @@
+[
+    {"type": "tree", "dest": "include", "src": "tests/mappings/tree_a", "mode": "0644", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests/mappings:tree_a_files", "repository": "_main"},
+    {"type": "tree", "dest": "include", "src": "tests/mappings/tree_b", "mode": "0644", "user": null, "group": null, "uid": null, "gid": null, "origin": "@//tests/mappings:tree_b_files", "repository": "_main"}
+]

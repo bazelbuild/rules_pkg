@@ -100,6 +100,42 @@ manifest_golden_test(
     target = "all",
 )
 
+directory(
+    name = "tree_a",
+    filenames = ["a.h"],
+)
+
+directory(
+    name = "tree_b",
+    filenames = ["b/b.h"],
+)
+
+pkg_files(
+    name = "tree_a_files",
+    srcs = [":tree_a"],
+    renames = {":tree_a": "include"},
+)
+
+pkg_files(
+    name = "tree_b_files",
+    srcs = [":tree_b"],
+    renames = {":tree_b": "include"},
+)
+
+write_content_manifest(
+    name = "shared_tree_dest",
+    srcs = [
+        ":tree_a_files",
+        ":tree_b_files",
+    ],
+)
+
+manifest_golden_test(
+    name = "shared_tree_dest_test",
+    expected = "shared_tree_dest.manifest.golden",
+    target = "shared_tree_dest",
+)
+
 #
 # Unicode handling tests
 #

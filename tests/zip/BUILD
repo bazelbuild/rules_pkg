@@ -15,7 +15,7 @@
 
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
-load("//pkg:mappings.bzl", "pkg_attributes", "pkg_mkdirs", "pkg_mklink")
+load("//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mkdirs", "pkg_mklink")
 load("//pkg:zip.bzl", "pkg_zip")
 load("//tests:my_package_name.bzl", "my_package_naming")
 load("//tests/util:defs.bzl", "directory")
@@ -133,6 +133,36 @@ pkg_zip(
 pkg_zip(
     name = "test_zip_tree",
     srcs = [":generate_tree"],
+)
+
+directory(
+    name = "shared_dest_tree_a",
+    filenames = ["a.h"],
+)
+
+directory(
+    name = "shared_dest_tree_b",
+    filenames = ["b/b.h"],
+)
+
+pkg_files(
+    name = "shared_dest_tree_a_files",
+    srcs = [":shared_dest_tree_a"],
+    renames = {":shared_dest_tree_a": "include"},
+)
+
+pkg_files(
+    name = "shared_dest_tree_b_files",
+    srcs = [":shared_dest_tree_b"],
+    renames = {":shared_dest_tree_b": "include"},
+)
+
+pkg_zip(
+    name = "test_zip_shared_tree_dest",
+    srcs = [
+        ":shared_dest_tree_a_files",
+        ":shared_dest_tree_b_files",
+    ],
 )
 
 pkg_zip(
@@ -305,6 +335,7 @@ py_test(
         ":test_zip_permissions.zip",
         ":test_zip_stored",
         ":test_zip_timestamp.zip",
+        ":test_zip_shared_tree_dest.zip",
         ":test_zip_tree.zip",
     ],
     python_version = "PY3",
