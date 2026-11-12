@@ -63,6 +63,74 @@ PackageSubRPMInfo = provider(
 # default mode for %files
 DEFAULT_FILE_MODE = "%defattr(-,root,root)"
 
+_DEFAULT_ACTION_MEMORY_MB = 250
+
+# Multi-threaded xz needs about 3*3*DictSize + CompMem per thread, see the
+# "Presets" section of https://tukaani.org/xz/man/xz.1.html. Each group books
+# its worst preset: -6 (8 MiB dictionary) and -9 (64 MiB dictionary).
+_XZ_LOW_LEVEL_MEMORY_PER_THREAD_MB = 3 * 3 * 8 + 94
+
+_XZ_HIGH_LEVEL_MEMORY_PER_THREAD_MB = 3 * 3 * 64 + 674
+
+def _threads_2(_os, _inputs_size):
+    return {"cpu": 2, "memory": _DEFAULT_ACTION_MEMORY_MB}
+
+def _threads_4(_os, _inputs_size):
+    return {"cpu": 4, "memory": _DEFAULT_ACTION_MEMORY_MB}
+
+def _threads_8(_os, _inputs_size):
+    return {"cpu": 8, "memory": _DEFAULT_ACTION_MEMORY_MB}
+
+def _threads_16(_os, _inputs_size):
+    return {"cpu": 16, "memory": _DEFAULT_ACTION_MEMORY_MB}
+
+def _xz_low_threads_2(_os, _inputs_size):
+    return {"cpu": 2, "memory": 2 * _XZ_LOW_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_low_threads_4(_os, _inputs_size):
+    return {"cpu": 4, "memory": 4 * _XZ_LOW_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_low_threads_8(_os, _inputs_size):
+    return {"cpu": 8, "memory": 8 * _XZ_LOW_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_low_threads_16(_os, _inputs_size):
+    return {"cpu": 16, "memory": 16 * _XZ_LOW_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_high_threads_2(_os, _inputs_size):
+    return {"cpu": 2, "memory": 2 * _XZ_HIGH_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_high_threads_4(_os, _inputs_size):
+    return {"cpu": 4, "memory": 4 * _XZ_HIGH_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_high_threads_8(_os, _inputs_size):
+    return {"cpu": 8, "memory": 8 * _XZ_HIGH_LEVEL_MEMORY_PER_THREAD_MB}
+
+def _xz_high_threads_16(_os, _inputs_size):
+    return {"cpu": 16, "memory": 16 * _XZ_HIGH_LEVEL_MEMORY_PER_THREAD_MB}
+
+_PAYLOAD_RESOURCE_SETS = {
+    "default": {2: _threads_2, 4: _threads_4, 8: _threads_8, 16: _threads_16},
+    "xz_low": {2: _xz_low_threads_2, 4: _xz_low_threads_4, 8: _xz_low_threads_8, 16: _xz_low_threads_16},
+    "xz_high": {2: _xz_high_threads_2, 4: _xz_high_threads_4, 8: _xz_high_threads_8, 16: _xz_high_threads_16},
+}
+
+def _payload_resource_set(compression):
+    if not compression.startswith("w"):
+        return None
+    mode, _, io_type = compression[1:].partition(".")
+    level, has_threads, threads = mode.partition("T")
+    if not has_threads or not threads.isdigit() or int(threads) < 2:
+        return None
+    bucket = 16
+    for candidate in [2, 4, 8]:
+        if int(threads) <= candidate:
+            bucket = candidate
+            break
+    family = "default"
+    if io_type == "xzdio":
+        family = "xz_high" if level.isdigit() and int(level) > 6 else "xz_low"
+    return _PAYLOAD_RESOURCE_SETS[family][bucket]
+
 # TODO(nacl): __install, __cp
 # {0} is the source, {1} is the dest
 #
@@ -901,6 +969,7 @@ def _pkg_rpm_impl(ctx):
             "PYTHONUTF8": "1",
         },
         tools = tools,
+        resource_set = _payload_resource_set(ctx.attr.binary_payload_compression),
     )
 
     changes = []
@@ -1275,9 +1344,12 @@ pkg_rpm_impl = rule(
             itself.  Defaults may vary per distribution or build of `rpm`;
             consult the relevant documentation for more details.
 
-            WARNING: Bazel is currently not aware of action threading requirements
-            for non-test actions.  Using threaded compression may result in
-            overcommitting your system.
+            When the value requests an explicit number of threads (for example
+            `w6T8.xzdio`), the action reserves that many CPUs from Bazel's local
+            resources, rounded up to 2, 4, 8 or 16 and capped at 16.  For xz,
+            it also reserves the memory xz needs per thread at that level.
+            Values without an explicit thread count (`T` and `T0` let `rpmbuild`
+            pick one) keep Bazel's default reservation.
             """,
         ),
         "defines": attr.string_dict(
