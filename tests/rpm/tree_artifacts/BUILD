@@ -46,6 +46,7 @@ py_test(
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":layer_with_files_test_data"],
     env = {"TEST_RPM": "test_dirs_rpm-1.1.1-2222.noarch.rpm"},
+    legacy_create_init = 0,
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
@@ -155,6 +156,7 @@ py_test(
     srcs = ["rpm_contents_vs_manifest_test.py"],
     data = [":layer_with_files_reversed_test_data"],
     env = {"TEST_RPM": "test_dirs_rpm_reversed-1.1.1-2222.noarch.rpm"},
+    legacy_create_init = 0,
     main = "rpm_contents_vs_manifest_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
@@ -207,6 +209,7 @@ py_test(
     srcs = ["rpm_treeartifact_ops_test.py"],
     data = [":treeartifact_ops_rpm_test_data"],
     env = {"TEST_RPM": "treeartifact_ops_rpm-1.1.1-2222.noarch.rpm"},
+    legacy_create_init = 0,
     main = "rpm_treeartifact_ops_test.py",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
