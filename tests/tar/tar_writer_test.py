@@ -13,6 +13,7 @@
 # limitations under the License.
 """Testing for tar_writer."""
 
+import io
 import os
 import tarfile
 import unittest
@@ -143,6 +144,36 @@ class TarFileWriterTest(unittest.TestCase):
           "rules_pkg/tests/testdata/tar_test.tar")
       f.add_tar(datafile, name_filter=lambda n: n != "./b", prefix="foo")
     self.assertTarFileContent(self.tempfile, content)
+
+  def _make_tar_with_hardlink(self, target, link):
+    path = os.path.join(os.environ["TEST_TMPDIR"], "hardlink.tar")
+    with tarfile.open(path, "w") as tar:
+      info = tarfile.TarInfo(target)
+      info.size = 1
+      tar.addfile(info, io.BytesIO(b"a"))
+      info = tarfile.TarInfo(link)
+      info.type = tarfile.LNKTYPE
+      info.linkname = target
+      tar.addfile(info)
+    return path
+
+  def testMergeTarRelocatedDottedHardlink(self):
+    datafile = self._make_tar_with_hardlink("./a", "./b")
+    with tar_writer.TarFileWriter(self.tempfile) as f:
+      f.add_tar(datafile, prefix="foo")
+    self.assertTarFileContent(self.tempfile, [
+        {"name": "foo/a", "data": b"a"},
+        {"name": "foo/b", "type": tarfile.LNKTYPE, "linkname": "foo/a"},
+    ])
+
+  def testMergeTarRelocatedHardlink(self):
+    datafile = self._make_tar_with_hardlink("bin/a", "bin/b")
+    with tar_writer.TarFileWriter(self.tempfile) as f:
+      f.add_tar(datafile, prefix="foo")
+    self.assertTarFileContent(self.tempfile, [
+        {"name": "foo/bin/a", "data": b"a"},
+        {"name": "foo/bin/b", "type": tarfile.LNKTYPE, "linkname": "foo/bin/a"},
+    ])
 
   def testDefaultMtimeNotProvided(self):
     with tar_writer.TarFileWriter(self.tempfile) as f:
