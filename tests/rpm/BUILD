@@ -429,6 +429,37 @@ genrule(
     """,
 )
 
+# A renamed file next to files keeping their name, in the same directory
+pkg_files(
+    name = "renamed_test_files",
+    srcs = [
+        "//tests:testdata/a.ar",
+        "//tests:testdata/b.ar",
+    ],
+    prefix = "/renamed",
+)
+
+pkg_files(
+    name = "renamed_test_renamed_file",
+    srcs = ["//tests:testdata/b.ar"],
+    prefix = "/renamed",
+    renames = {"//tests:testdata/b.ar": "b_renamed.ar"},
+)
+
+pkg_rpm(
+    name = "test_rpm_renamed",
+    srcs = [
+        ":renamed_test_files",
+        ":renamed_test_renamed_file",
+    ],
+    architecture = "noarch",
+    description = "Description",
+    license = "Some license",
+    release = _RELEASE,
+    summary = "Summary",
+    version = _VERSION,
+)
+
 # One cannot simply pass the output of pkg_rpm as runfiles content (#161).  This
 # seems to be the easiest way around this problem.
 sh_library(
@@ -442,6 +473,7 @@ sh_library(
         ":test_rpm_manifest",
         ":test_rpm_metadata",
         ":test_rpm_release_version_files",
+        ":test_rpm_renamed",
         ":test_rpm_scriptlets_files",
     ],
 )
