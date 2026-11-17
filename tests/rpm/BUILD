@@ -647,6 +647,50 @@ diff_test(
 )
 
 ############################################################################
+# autoreqprov tests
+############################################################################
+pkg_rpm(
+    name = "test_rpm_autoreqprov",
+    srcs = [":test_debuginfo_rpm_files"],
+    description = "Description",
+    license = "Some license",
+    release = _RELEASE,
+    summary = "Summary",
+    version = _VERSION,
+)
+
+pkg_rpm(
+    name = "test_rpm_no_autoreqprov",
+    srcs = [":test_debuginfo_rpm_files"],
+    autoreqprov = False,
+    description = "Description",
+    license = "Some license",
+    release = _RELEASE,
+    summary = "Summary",
+    version = _VERSION,
+)
+
+py_test(
+    name = "pkg_rpm_autoreqprov_test",
+    srcs = ["pkg_rpm_autoreqprov_test.py"],
+    data = [
+        ":test_rpm_autoreqprov",
+        ":test_rpm_no_autoreqprov",
+    ],
+    env = {
+        "TEST_RPM_AUTOREQPROV": "$(rlocationpath :test_rpm_autoreqprov)",
+        "TEST_RPM_NO_AUTOREQPROV": "$(rlocationpath :test_rpm_no_autoreqprov)",
+    },
+    python_version = "PY3",
+    tags = [
+        "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
+    ],
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
+)
+
+############################################################################
 # Common tests
 ############################################################################
 
