@@ -600,6 +600,8 @@ def _pkg_rpm_impl(ctx):
                 for capability in ctx.attr.requires_contextual[scriptlet]
             ],
         )
+    if not ctx.attr.autoreqprov:
+        preamble_pieces.append("AutoReqProv: no")
 
     # TODO: BuildArch is usually not hardcoded in spec files, unless the package
     # is indeed restricted to a particular CPU architecture, or is actually
@@ -1206,6 +1208,17 @@ pkg_rpm_impl = rule(
 
             See also: https://rpm-software-management.github.io/rpm/manual/dependencies.html
             """,
+        ),
+        "autoreqprov": attr.bool(
+            doc = """Whether rpmbuild generates dependencies from the packaged files.
+
+            When False, sets the "AutoReqProv: no" preamble tag: rpmbuild does
+            not scan the packaged files for dependencies, and the package only
+            requires and provides what is declared explicitly.
+
+            See also: https://rpm-software-management.github.io/rpm/manual/dependency_generators.html
+            """,
+            default = True,
         ),
         "requires_contextual": attr.string_list_dict(
             doc = """Contextualized requirement specifications
