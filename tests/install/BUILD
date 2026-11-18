@@ -30,6 +30,7 @@ py_test(
         "@mappings_test_external_repo//pkg:install_cross_repo",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     main = "test.py",
     tags = [
         # TODO(nacl): investigate this.  See also

@@ -124,6 +124,7 @@ py_test(
         ":test_deb_installed_size_file",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",
@@ -144,6 +145,7 @@ py_test(
         "control_field_test.py",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         "//pkg/private/deb:make_deb_lib",
@@ -202,6 +204,7 @@ py_test(
         ":deb_with_package_variables",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         "//pkg/private:archive",

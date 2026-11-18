@@ -49,6 +49,7 @@ py_test(
         "//tests:testdata/test_tar_package_dir_file.txt",
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -82,6 +83,7 @@ directory(
 py_binary(
     name = "compressor",
     srcs = ["compressor.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
 )
@@ -524,6 +526,7 @@ py_test(
         for compression in SUPPORTED_TAR_COMPRESSIONS
     ],
     imports = ["../.."],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         "//pkg/private/tar:tar_writer",
@@ -607,6 +610,7 @@ py_test(
         ":test-tar-compression-from-extension-targz",
         ":test-tar-compression-from-extension-tgz",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
