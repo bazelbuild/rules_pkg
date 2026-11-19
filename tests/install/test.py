@@ -257,6 +257,32 @@ class SymlinkOverwriteTest(PkgInstallTestBase):
         self.assertEqual(os.readlink(link), "fake.so.1.2.3")
 
 
+class SharedTreeConflictTest(PkgInstallTestBase):
+    """Tests that trees providing the same path fail."""
+
+    def test_conflict(self):
+        result = subprocess.run([
+            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer_shared_tree_conflict{self._extension}"),
+            "--destdir", self.installdir / "conflict",
+        ],
+                                env=self.runfiles.EnvVars(),
+                                capture_output=True,
+                                text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Conflicting path", result.stderr)
+
+    def test_type_conflict(self):
+        result = subprocess.run([
+            self.runfiles.Rlocation(f"rules_pkg/tests/install/test_installer_shared_tree_type_conflict{self._extension}"),
+            "--destdir", self.installdir / "type_conflict",
+        ],
+                                env=self.runfiles.EnvVars(),
+                                capture_output=True,
+                                text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Conflicting path", result.stderr)
+
+
 class CrossRepoInstallTest(unittest.TestCase):
     """Test external repo's pkg_install can reference main repo files."""
 

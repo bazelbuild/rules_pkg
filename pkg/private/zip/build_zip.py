@@ -93,6 +93,7 @@ class ZipWriter(object):
     self.output_path = output_path
     self.time_stamp = time_stamp
     self.default_mode = default_mode
+    self.tree_files = manifest.TreeFileTracker()
     compressions = {
       "deflated": zipfile.ZIP_DEFLATED,
       "lzma": zipfile.ZIP_LZMA,
@@ -224,6 +225,7 @@ class ZipWriter(object):
         dest_dir = dest + rel_path_from_top + '/'
       else:
         dest_dir = dest
+      self.tree_files.add_dir(dest_dir, tree_top)
       to_write[dest_dir] = None
       for file in files:
         content_path = os.path.abspath(os.path.join(root, file))
@@ -239,6 +241,8 @@ class ZipWriter(object):
     for path in sorted(to_write.keys()):
       content_path = to_write[path]
       if content_path:
+        if not self.tree_files.add_file(path, content_path, tree_top):
+          continue
         # If mode is unspecified, derive the mode from the file's mode.
         if mode is None:
           f_mode = "0o755" if os.access(content_path, os.X_OK) else self.default_mode
@@ -253,6 +257,8 @@ class ZipWriter(object):
         dir_path = path
         if not dir_path.endswith('/'):
           dir_path += '/'
+        if dir_path in self.zip_file.NameToInfo:
+          continue
         entry_info = self.make_zipinfo(path=dir_path, mode="0o755")
         entry_info.compress_type = zipfile.ZIP_STORED
         # Set directory bits
@@ -261,10 +267,16 @@ class ZipWriter(object):
 
 def _load_manifest(prefix, manifest_path):
   manifest_map = {}
+  shared_dest_trees = []
 
   for entry in manifest.read_entries_from(manifest_path):
     entry.dest = _combine_paths(prefix, entry.dest)
-    manifest_map[entry.dest] = entry
+    existing = manifest_map.get(entry.dest)
+    if (entry.type == manifest.ENTRY_IS_TREE and existing is not None and
+        existing.type == manifest.ENTRY_IS_TREE):
+      shared_dest_trees.append(entry)
+    else:
+      manifest_map[entry.dest] = entry
 
   # We modify the dictionary as we're iterating over it, so we need to listify
   # the keys here.
@@ -288,7 +300,7 @@ def _load_manifest(prefix, manifest_path):
               origin = "parent directory of {}".format(manifest_map[dest].origin),
             )
 
-  return sorted(manifest_map.values(), key = lambda x: x.dest)
+  return sorted(list(manifest_map.values()) + shared_dest_trees, key = lambda x: x.dest)
 
 def main(args):
   unix_ts = max(ZIP_EPOCH, args.timestamp)
