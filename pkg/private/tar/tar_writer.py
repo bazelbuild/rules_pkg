@@ -338,11 +338,11 @@ class TarFileWriter(object):
             uname=tarinfo.uname,
             gname=tarinfo.gname)
 
-        if prefix is not None:
-          # Relocate internal hardlinks as well to avoid breaking them.
-          link = tarinfo.linkname
-          if link.startswith('.') and tarinfo.type == tarfile.LNKTYPE:
-            tarinfo.linkname = '.' + prefix + link.lstrip('.')
+        if prefix and tarinfo.type == tarfile.LNKTYPE:
+          # Relocate internal hardlinks as well to avoid breaking them. The
+          # target is another member, so it must be moved exactly as its name.
+          tarinfo.linkname = os.path.normpath(
+              prefix + tarinfo.linkname).replace(os.path.sep, '/')
 
         # Remove path pax header to ensure that the proposed name is going
         # to be used. Without this, files with long names will not be
