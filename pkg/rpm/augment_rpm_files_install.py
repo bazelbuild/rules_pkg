@@ -23,10 +23,7 @@ import sys
 import json
 
 # NOTE: Keep those two in sync with the same variables in rpm_pfg.bzl
-_INSTALL_FILE_STANZA_FMT = """
-install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '%{{_topdir}}/BUILD/{0}' '%{{buildroot}}/{1}'
-""".strip()
+_MAX_PATHS_PER_COMMAND = 100
 
 _FILE_MODE_STANZA_FMT = """
 {0} "{1}"
@@ -51,9 +48,20 @@ existing_files_path = sys.argv[3]
 new_install_script_path = sys.argv[4]
 new_files_path = sys.argv[5]
 
+
+def _chunks(items):
+    return [items[i:i + _MAX_PATHS_PER_COMMAND]
+            for i in range(0, len(items), _MAX_PATHS_PER_COMMAND)]
+
+
 # Computed outputs to be combined with the originals
 dir_install_script_segments = []
 dir_files_segments = []
+
+# Sources to copy, per destination directory.  Files of a TreeArtifact keep
+# their name, so each destination directory is created once and its files are
+# copied together.
+srcs_by_dest_dir = {}
 
 with open(dir_data_path, 'r') as fh:
     dir_data = json.load(fh)
@@ -67,13 +75,20 @@ with open(dir_data_path, 'r') as fh:
             # destination.
             path_relative_to_install_dest = os.path.relpath(root, start=d["src"])
 
+            dest_dir = os.path.join(d["dest"], path_relative_to_install_dest)
             for f in files:
-                full_dest = os.path.join(d["dest"], path_relative_to_install_dest, f)
-                dir_install_script_segments.append(_INSTALL_FILE_STANZA_FMT.format(
-                    os.path.join(root, f),
-                    full_dest
-                ))
-                dir_files_segments.append(_FILE_MODE_STANZA_FMT.format(d["tags"], full_dest))
+                srcs_by_dest_dir.setdefault(dest_dir, []).append(os.path.join(root, f))
+                dir_files_segments.append(_FILE_MODE_STANZA_FMT.format(
+                    d["tags"], os.path.join(dest_dir, f)))
+
+for chunk in _chunks(list(srcs_by_dest_dir)):
+    dir_install_script_segments.append("install -d " + " ".join(
+        "'%{{buildroot}}/{}'".format(d) for d in chunk))
+for dest_dir, srcs in srcs_by_dest_dir.items():
+    for chunk in _chunks(srcs):
+        dir_install_script_segments.append("cp {} '%{{buildroot}}/{}/'".format(
+            " ".join("'%{{_topdir}}/BUILD/{}'".format(s) for s in chunk),
+            dest_dir))
 
 with open(existing_install_script_path, 'r') as fh:
     existing_install_script = fh.read()
