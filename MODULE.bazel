@@ -8,6 +8,19 @@ module(
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_python", version = "1.7.0")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "tar.bzl", version = "0.10.9")
+
+# Prebuilt bsdtar binaries pkg_tar uses once //toolchains/bsdtar/prebuilt:all is registered.
+bsdtar = use_extension("@tar.bzl//tar:extensions.bzl", "toolchains")
+use_repo(
+    bsdtar,
+    "bsd_tar_toolchains_darwin_amd64",
+    "bsd_tar_toolchains_darwin_arm64",
+    "bsd_tar_toolchains_linux_amd64",
+    "bsd_tar_toolchains_linux_arm64",
+    "bsd_tar_toolchains_windows_amd64",
+    "bsd_tar_toolchains_windows_arm64",
+)
 
 # Only for development
 bazel_dep(name = "platforms", version = "1.0.0", dev_dependency = True)
@@ -32,6 +45,12 @@ use_repo(find_git, "rules_pkg_git")
 
 register_toolchains(
     "@rules_pkg_git//:all",
+    dev_dependency = True,
+)
+
+# Test pkg_tar with bsdtar.
+register_toolchains(
+    "//toolchains/bsdtar/prebuilt:all",
     dev_dependency = True,
 )
 
