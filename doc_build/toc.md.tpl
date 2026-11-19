@@ -25,4 +25,12 @@
     <li><a href="#pkg_attributes">//pkg:mappings.bzl%pkg_attributes</a></li>
     <li><a href="#strip_prefix.files_only">//pkg:mappings.bzl%strip_prefix</a></li>
   </ul>
+
+  <h2>Extending rules_pkg</h2>
+  <ul>
+    <li><a href="#create_mapping_context_from_ctx">//pkg:package_content.bzl%create_mapping_context_from_ctx</a></li>
+    <li><a href="#add_label_list">//pkg:package_content.bzl%add_label_list</a></li>
+    <li><a href="#process_src">//pkg:package_content.bzl%process_src</a></li>
+    <li><a href="#write_manifest">//pkg:package_content.bzl%write_manifest</a></li>
+  </ul>
 </div>
