@@ -37,7 +37,7 @@ in a package. Format-specific rules (`pkg_tar`, `pkg_zip`, `pkg_deb`,
 ```
 pkg/            Runtime rules and providers (shipped in the distribution)
   mappings.bzl  pkg_files, pkg_filegroup, pkg_mkdirs, pkg_mklink
-  providers.bzl Copy of //providers:providers.bzl (keep identical)
+  providers.bzl Re-exports @rules_pkg_providers//:providers.bzl (compat shim)
   private/      Internal implementation helpers (not public API)
     util.bzl    substitute_package_variables, setup_output_files, ...
     deb/ tar/ zip/  Format-specific implementations
