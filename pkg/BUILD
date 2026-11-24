@@ -62,6 +62,7 @@ filegroup(
         "//pkg/private/zip:standard_package",
         "//pkg/releasing:standard_package",
         "@bazel_skylib//lib:paths",
+        "@rules_pkg_providers//:providers.bzl",
         "@rules_python//python:defs.bzl",
     ],
     visibility = ["//visibility:public"],
