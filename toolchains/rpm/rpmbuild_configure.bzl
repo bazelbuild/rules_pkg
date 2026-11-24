@@ -104,11 +104,12 @@ def _build_repo_for_rpmbuild_toolchain_impl(rctx):
         if len(version_parts) > 1 and version_parts[0].isdigit() and version_parts[1].isdigit():
             major = int(version_parts[0])
             minor = int(version_parts[1])
-            if major < 4 or (major == 4 and minor < 18):
-                debuginfo_type = DEBUGINFO_TYPE_CENTOS
-            else:
+            if major == 4 and minor in (18, 19):
                 # https://rpm.org/wiki/Releases/4.18.0: "Make %{buildsubdir} settable outside %setup"
+                # https://rpm.org/releases/4.20.0: "A per-package build directory that’s fully RPM-controlled is now used"
                 debuginfo_type = DEBUGINFO_TYPE_FEDORA
+            else:
+                debuginfo_type = DEBUGINFO_TYPE_CENTOS
         elif rctx.path(RELEASE_PATH).exists:
             rctx.watch(RELEASE_PATH)
             os_name, _ = _parse_release_info(rctx.read(RELEASE_PATH))
@@ -137,8 +138,8 @@ build_repo_for_rpmbuild_toolchain = repository_rule(
             The underlying debuginfo configuration for the system rpmbuild.
 
             One of:
-            - `centos` (RPM < 4.18),
-            - `fedora` (RPM >= 4.18),
+            - `centos` (RPM < 4.18 or >= 4.20),
+            - `fedora` (RPM 4.18 and 4.19),
             - `none`,
             - `default` (detects from `rpmbuild` version if available, otherwise looks up `/etc/os-release`)
             """,

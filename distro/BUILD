@@ -102,6 +102,7 @@ py_test(
     ],
     env_inherit = ["PATH"],
     imports = [".."],
+    legacy_create_init = 0,
     local = True,
     python_version = "PY3",
     tags = [

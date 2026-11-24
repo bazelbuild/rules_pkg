@@ -38,6 +38,10 @@ filegroup(
 # those found in TreeArtifacts (directory outputs) See also #292.
 py_binary(
     name = "augment_rpm_files_install",
-    srcs = ["augment_rpm_files_install.py"],
+    srcs = [
+        "__init__.py",
+        "augment_rpm_files_install.py",
+    ],
+    legacy_create_init = 0,
     visibility = ["//visibility:public"],
 )

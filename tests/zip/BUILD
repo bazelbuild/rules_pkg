@@ -308,6 +308,7 @@ py_test(
         ":test_zip_timestamp.zip",
         ":test_zip_tree.zip",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         ":zip_test_lib",
@@ -322,6 +323,7 @@ py_test(
     data = [
         ":test_zip_symlink",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     tags = ["REQUIRES_BAZEL_8"],
     deps = [
@@ -346,6 +348,7 @@ py_test(
         ":test_zip_package_dir1.zip",
         ":test_zip_package_dir2.zip",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         ":zip_test_lib",
@@ -365,6 +368,7 @@ py_test(
     data = [
         ":unicode_names",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         ":zip_test_lib",

@@ -152,6 +152,8 @@ def _pkg_deb_impl(ctx):
         args.add("--homepage", substitute_package_variables(ctx, ctx.attr.homepage))
     if ctx.attr.license:
         args.add("--license", substitute_package_variables(ctx, ctx.attr.license))
+    if ctx.attr.vendor:
+        args.add("--vendor", substitute_package_variables(ctx, ctx.attr.vendor))
 
     args.add("--distribution", substitute_package_variables(ctx, ctx.attr.distribution))
     args.add("--urgency", substitute_package_variables(ctx, ctx.attr.urgency))
@@ -364,6 +366,7 @@ See https://www.debian.org/doc/debian-policy/ch-files.html#s-config-files.""",
             allow_single_file = True,
         ),
         "license": attr.string(doc = """The license of the project."""),
+        "vendor": attr.string(doc = """The vendor of the package."""),
         "breaks": attr.string_list(
             doc = """See http://www.debian.org/doc/debian-policy/ch-relationships.html#s-binarydeps.""",
             default = [],

@@ -228,9 +228,12 @@ def _pkg_files_impl(ctx):
     # Exclude excludes
     srcs = []  # srcs is source File objects, not Targets
     file_to_target = {}
+
+    # A dict avoids scanning all excludes for every file.
+    excludes = {f: None for f in ctx.files.excludes}
     for src in ctx.attr.srcs:
         for f in src[DefaultInfo].files.to_list():
-            if f not in ctx.files.excludes:
+            if f not in excludes:
                 srcs.append(f)
                 file_to_target[f] = src
 

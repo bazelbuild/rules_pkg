@@ -93,6 +93,7 @@ py_test(
         "//tests:testdata/empty.ar",
     ],
     imports = [".."],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -117,6 +118,7 @@ py_test(
     name = "path_test",
     srcs = ["path_test.py"],
     data = ["//pkg:path.bzl"],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
 )
@@ -147,6 +149,7 @@ py_test(
     name = "helpers_test",
     srcs = ["helpers_test.py"],
     imports = [".."],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -226,6 +229,7 @@ py_test(
         "stamped_tar.tar",
         "stamped_zip.zip",
     ],
+    legacy_create_init = 0,
     python_version = "PY3",
     deps = [
         "//tests/util:runfiles_util",

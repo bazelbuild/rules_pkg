@@ -61,17 +61,11 @@ config_setting(
 )
 
 py_library(
-    name = "init",
-    srcs = ["__init__.py"],
-    imports = ["../.."],
-    srcs_version = "PY3",
-    visibility = ["//:__subpackages__"],
-    deps = ["//pkg:init"],
-)
-
-py_library(
     name = "build_info",
-    srcs = ["build_info.py"],
+    srcs = [
+        "__init__.py",
+        "build_info.py",
+    ],
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = [
@@ -107,7 +101,10 @@ py_library(
 
 py_library(
     name = "manifest",
-    srcs = ["manifest.py"],
+    srcs = [
+        "__init__.py",
+        "manifest.py",
+    ],
     imports = ["../.."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

@@ -25,7 +25,7 @@ import json
 # NOTE: Keep those two in sync with the same variables in rpm_pfg.bzl
 _INSTALL_FILE_STANZA_FMT = """
 install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '{0}' '%{{buildroot}}/{1}'
+cp '%{{_topdir}}/BUILD/{0}' '%{{buildroot}}/{1}'
 """.strip()
 
 _FILE_MODE_STANZA_FMT = """

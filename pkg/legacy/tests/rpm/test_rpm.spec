@@ -18,7 +18,7 @@ This is a package description.
 %build
 
 %install
-cp -r ./pkg/legacy %{buildroot}/
+cp -r %{_topdir}/BUILD/pkg/legacy %{buildroot}/
 
 %files
 /legacy/rpm.bzl

@@ -187,6 +187,7 @@ pkg_rpm(
     conflicts = ["not-a-test"],
     description = """pkg_rpm test rpm description""",
     license = "Apache 2.0",
+    packager = "Some Packager <packager@somewhere.com>",
     post_scriptlet = _POST_SCRIPTLET,
     posttrans_scriptlet = _POSTTRANS_SCRIPTLET,
     postun_scriptlet = _POSTUN_SCRIPTLET,
@@ -198,6 +199,7 @@ pkg_rpm(
     requires_contextual = {"preun": ["bash"]},
     spec_template = "template-test.spec.tpl",
     summary = "pkg_rpm test rpm summary",
+    vendor = "Some Vendor <vendor@somewhere.com>",
     version = _VERSION,
 )
 
@@ -645,6 +647,50 @@ diff_test(
 )
 
 ############################################################################
+# autoreqprov tests
+############################################################################
+pkg_rpm(
+    name = "test_rpm_autoreqprov",
+    srcs = [":test_debuginfo_rpm_files"],
+    description = "Description",
+    license = "Some license",
+    release = _RELEASE,
+    summary = "Summary",
+    version = _VERSION,
+)
+
+pkg_rpm(
+    name = "test_rpm_no_autoreqprov",
+    srcs = [":test_debuginfo_rpm_files"],
+    autoreqprov = False,
+    description = "Description",
+    license = "Some license",
+    release = _RELEASE,
+    summary = "Summary",
+    version = _VERSION,
+)
+
+py_test(
+    name = "pkg_rpm_autoreqprov_test",
+    srcs = ["pkg_rpm_autoreqprov_test.py"],
+    data = [
+        ":test_rpm_autoreqprov",
+        ":test_rpm_no_autoreqprov",
+    ],
+    env = {
+        "TEST_RPM_AUTOREQPROV": "$(rlocationpath :test_rpm_autoreqprov)",
+        "TEST_RPM_NO_AUTOREQPROV": "$(rlocationpath :test_rpm_no_autoreqprov)",
+    },
+    python_version = "PY3",
+    tags = [
+        "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
+    ],
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
+)
+
+############################################################################
 # Common tests
 ############################################################################
 
@@ -658,6 +704,7 @@ py_library(
 py_test(
     name = "make_rpm_test",
     srcs = ["make_rpm_test.py"],
+    legacy_create_init = 0,
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -670,6 +717,7 @@ py_test(
     name = "pkg_rpm_basic_test",
     srcs = ["pkg_rpm_basic_test.py"],
     data = [":pkg_rpm_basic_test_data"],
+    legacy_create_init = 0,
     python_version = "PY3",
     tags = [
         "no_windows",  # Windows doesn't have rpm(8) or rpmbuild(8)
