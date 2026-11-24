@@ -29,7 +29,7 @@ here.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load(
-    "//pkg:providers.bzl",
+    "@rules_pkg_providers//:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",

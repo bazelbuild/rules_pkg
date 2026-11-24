@@ -13,7 +13,7 @@
 # limitations under the License.
 """Internal utilities for rules_pkg."""
 
-load("//pkg:providers.bzl", "PackageVariablesInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageVariablesInfo")
 
 _stamp_condition = Label("//pkg/private:private_stamp_detect")
 

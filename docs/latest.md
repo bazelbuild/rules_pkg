@@ -777,7 +777,7 @@ Packaging related providers.
 ## PackageArtifactInfo
 
 <pre>
-load("@rules_pkg//providers:providers.bzl", "PackageArtifactInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageArtifactInfo")
 
 PackageArtifactInfo(<a href="#PackageArtifactInfo-file">file</a>, <a href="#PackageArtifactInfo-file_name">file_name</a>, <a href="#PackageArtifactInfo-label">label</a>)
 </pre>
@@ -803,7 +803,7 @@ Packaging related providers.
 ## PackageDirsInfo
 
 <pre>
-load("@rules_pkg//providers:providers.bzl", "PackageDirsInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageDirsInfo")
 
 PackageDirsInfo(<a href="#PackageDirsInfo-attributes">attributes</a>, <a href="#PackageDirsInfo-dirs">dirs</a>)
 </pre>
@@ -828,7 +828,7 @@ Packaging related providers.
 ## PackageFilegroupInfo
 
 <pre>
-load("@rules_pkg//providers:providers.bzl", "PackageFilegroupInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageFilegroupInfo")
 
 PackageFilegroupInfo(<a href="#PackageFilegroupInfo-pkg_files">pkg_files</a>, <a href="#PackageFilegroupInfo-pkg_dirs">pkg_dirs</a>, <a href="#PackageFilegroupInfo-pkg_symlinks">pkg_symlinks</a>)
 </pre>
@@ -859,7 +859,7 @@ Packaging related providers.
 ## PackageFilesInfo
 
 <pre>
-load("@rules_pkg//providers:providers.bzl", "PackageFilesInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageFilesInfo")
 
 PackageFilesInfo(<a href="#PackageFilesInfo-attributes">attributes</a>, <a href="#PackageFilesInfo-dest_src_map">dest_src_map</a>)
 </pre>
@@ -884,7 +884,7 @@ Packaging related providers.
 ## PackageSymlinkInfo
 
 <pre>
-load("@rules_pkg//providers:providers.bzl", "PackageSymlinkInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageSymlinkInfo")
 
 PackageSymlinkInfo(<a href="#PackageSymlinkInfo-attributes">attributes</a>, <a href="#PackageSymlinkInfo-destination">destination</a>, <a href="#PackageSymlinkInfo-target">target</a>)
 </pre>

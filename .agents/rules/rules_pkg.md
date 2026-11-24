@@ -17,12 +17,13 @@ description: rules_pkg architecture, API design, and distribution invariants
   from `pkg/*.bzl`; root `*.bzl` files are compatibility shims for those.
 * Every public rule attribute and macro argument needs a `doc =` string or
   docstring entry. If you touch an attribute, update its doc.
-* `pkg/providers.bzl` and `providers/providers.bzl` must stay identical.
-  `providers/` is published separately as `@rules_pkg_providers`; change both
-  files together.
+* Providers are defined in `providers/providers.bzl`, published as the
+  `rules_pkg_providers` module. `pkg/providers.bzl` only re-exports them.
+  Changing `providers/` requires a new `rules_pkg_providers` release and a
+  `bazel_dep` version bump in `MODULE.bazel` (the local override hides the lag).
 
 ## package_variables (`$(VAR)` substitution)
-1. Load `PackageVariablesInfo` from `//pkg:providers.bzl` and
+1. Load `PackageVariablesInfo` from `@rules_pkg_providers//:providers.bzl` and
    `substitute_package_variables` from `//pkg/private:util.bzl`.
 2. Add the attribute:
    ```python

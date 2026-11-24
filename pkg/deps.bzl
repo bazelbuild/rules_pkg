@@ -47,6 +47,14 @@ def rules_pkg_dependencies():
     )
 
     http_archive(
+        name = "rules_pkg_providers",
+        sha256 = "e843873d34cfc54288549536dbbf1611cd4f5b3aa717f7f853ac95db44116916",
+        urls = [
+            "https://github.com/bazelbuild/rules_pkg/releases/download/rules_pkg_providers-0.0.1/rules_pkg_providers-0.0.1.tgz",
+        ],
+    )
+
+    http_archive(
         name = "rules_license",
         urls = [
             "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz",
