@@ -23,7 +23,7 @@ description: rules_pkg architecture, API design, and distribution invariants
   `bazel_dep` version bump in `MODULE.bazel` (the local override hides the lag).
 
 ## package_variables (`$(VAR)` substitution)
-1. Load `PackageVariablesInfo` from `//pkg:providers.bzl` and
+1. Load `PackageVariablesInfo` from `@rules_pkg_providers//:providers.bzl` and
    `substitute_package_variables` from `//pkg/private:util.bzl`.
 2. Add the attribute:
    ```python
