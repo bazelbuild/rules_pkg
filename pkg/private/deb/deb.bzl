@@ -13,7 +13,7 @@
 # limitations under the License.
 """Rule for creating Debian packages."""
 
-load("//pkg:providers.bzl", "PackageVariablesInfo")
+load("@rules_pkg_providers//:providers.bzl", "PackageVariablesInfo")
 load("//pkg/private:util.bzl", "setup_output_files", "substitute_package_variables")
 
 _tar_filetype = [".tar", ".tar.gz", ".tgz", ".tar.bz2", "tar.xz", "tar.zst"]

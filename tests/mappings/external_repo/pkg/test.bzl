@@ -19,9 +19,9 @@ Test implementation copied from pkg/mappings.bzl
 """
 
 load("@//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@//pkg:providers.bzl", "PackageFilesInfo")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("@rules_pkg_providers//:providers.bzl", "PackageFilesInfo")
 
 #### BEGIN copied code
 

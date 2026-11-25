@@ -31,14 +31,14 @@ Concepts and terms:
             by rule implementations and passed to the build_*.py helpers.
 """
 
-load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
-    "//pkg:providers.bzl",
+    "@rules_pkg_providers//:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
     "PackageSymlinkInfo",
 )
+load("//pkg:path.bzl", "compute_data_path", "dest_path")
 load(
     "//pkg/private:util.bzl",
     "get_files_to_run_provider",

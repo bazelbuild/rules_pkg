@@ -14,7 +14,7 @@
 """Zip archive creation rule and associated logic."""
 
 load(
-    "//pkg:providers.bzl",
+    "@rules_pkg_providers//:providers.bzl",
     "PackageVariablesInfo",
 )
 load(

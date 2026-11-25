@@ -15,6 +15,7 @@
 """Tests for RPM generation analysis"""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load("@rules_pkg_providers//:providers.bzl", "PackageVariablesInfo")
 load(
     "//pkg:mappings.bzl",
     "pkg_filegroup",
@@ -22,7 +23,6 @@ load(
     "pkg_mkdirs",
     "pkg_mklink",
 )
-load("//pkg:providers.bzl", "PackageVariablesInfo")
 load("//pkg:rpm.bzl", "pkg_rpm")
 load("//tests/util:defs.bzl", "directory", "generic_base_case_test", "generic_negative_test")
 

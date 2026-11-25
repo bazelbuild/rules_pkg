@@ -41,9 +41,9 @@ py_library(
     ],
 )
 
-mappings_unit_tests()
+mappings_unit_tests(name = "mappings_unit_tests")
 
-mappings_analysis_tests()
+mappings_analysis_tests(name = "mappings_analysis_tests")
 
 mappings_external_repo_analysis_tests()
 

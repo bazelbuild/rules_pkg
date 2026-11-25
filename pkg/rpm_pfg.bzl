@@ -26,7 +26,7 @@ find_system_rpmbuild(name="rules_pkg_rpmbuild")
 """
 
 load(
-    "//pkg:providers.bzl",
+    "@rules_pkg_providers//:providers.bzl",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",

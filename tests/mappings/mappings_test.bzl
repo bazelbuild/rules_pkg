@@ -16,6 +16,15 @@
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load(
+    "@rules_pkg_providers//:providers.bzl",
+    "PackageArtifactInfo",
+    "PackageDirsInfo",
+    "PackageFilegroupInfo",
+    "PackageFilesInfo",
+    "PackageSymlinkInfo",
+    "PackageVariablesInfo",
+)
 load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
@@ -27,12 +36,16 @@ load(
     "pkg_mklink",
     "strip_prefix",
 )
+
+# Loading from //pkg:providers.bzl is deprecated; it only re-exports the above.
 load(
     "//pkg:providers.bzl",
-    "PackageDirsInfo",
-    "PackageFilegroupInfo",
-    "PackageFilesInfo",
-    "PackageSymlinkInfo",
+    old_PackageArtifactInfo = "PackageArtifactInfo",
+    old_PackageDirsInfo = "PackageDirsInfo",
+    old_PackageFilegroupInfo = "PackageFilegroupInfo",
+    old_PackageFilesInfo = "PackageFilesInfo",
+    old_PackageSymlinkInfo = "PackageSymlinkInfo",
+    old_PackageVariablesInfo = "PackageVariablesInfo",
 )
 load("//tests:my_package_name.bzl", "my_package_naming")
 load(
@@ -1031,8 +1044,32 @@ def _test_pkg_files_tree_dest_merge():
     )
 
 # buildifier: disable=unnamed-macro
-def mappings_analysis_tests():
-    """Declare mappings.bzl analysis tests"""
+def _provider_load_paths_impl(ctx):
+    env = unittest.begin(ctx)
+    for old, new in [
+        (old_PackageArtifactInfo, PackageArtifactInfo),
+        (old_PackageDirsInfo, PackageDirsInfo),
+        (old_PackageFilegroupInfo, PackageFilegroupInfo),
+        (old_PackageFilesInfo, PackageFilesInfo),
+        (old_PackageSymlinkInfo, PackageSymlinkInfo),
+        (old_PackageVariablesInfo, PackageVariablesInfo),
+    ]:
+        asserts.true(env, old == new, "%s differs between load paths" % old)
+    return unittest.end(env)
+
+_provider_load_paths_test = unittest.make(_provider_load_paths_impl)
+
+def _test_provider_load_paths(name):
+    """The old //pkg:providers.bzl re-exports the @rules_pkg_providers symbols."""
+    _provider_load_paths_test(name = name)
+
+def mappings_analysis_tests(name):
+    """Declare mappings.bzl analysis tests
+
+    Args:
+      name: everything has a name.
+    """
+    _test_provider_load_paths(name = "provider_load_paths_test")
     _test_pkg_files_contents()
     _test_pkg_files_exclusions()
     _test_pkg_files_rename()
@@ -1047,7 +1084,7 @@ def mappings_analysis_tests():
     _test_pkg_files_tree_dest_merge()
 
     native.test_suite(
-        name = "pkg_files_analysis_tests",
+        name = name,
         # We should find a way to get rid of this test list; it would be nice if
         # it could be derived from something else...
         tests = [
@@ -1091,7 +1128,7 @@ def mappings_analysis_tests():
         ],
     )
 
-def mappings_unit_tests():
+def mappings_unit_tests(name):
     unittest.suite(
         "mappings_unit_tests",
         strip_prefix_test,

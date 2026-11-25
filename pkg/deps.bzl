@@ -21,6 +21,7 @@ def http_archive(**kwargs):
     maybe(_http_archive, **kwargs)
 
 def rules_pkg_dependencies():
+    """Bring in the dependencies for this module while in legacy WORKSPACE mode."""
     http_archive(
         name = "bazel_skylib",
         sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
@@ -44,6 +45,14 @@ def rules_pkg_dependencies():
         sha256 = "4f7e2aa1eb9aa722d96498f5ef514f426c1f55161c3c9ae628c857a7128ceb07",
         strip_prefix = "rules_python-1.0.0",
         url = "https://github.com/bazelbuild/rules_python/releases/download/1.0.0/rules_python-1.0.0.tar.gz",
+    )
+
+    http_archive(
+        name = "rules_pkg_providers",
+        sha256 = "e843873d34cfc54288549536dbbf1611cd4f5b3aa717f7f853ac95db44116916",
+        urls = [
+            "https://github.com/bazelbuild/rules_pkg/releases/download/rules_pkg_providers-0.0.1/rules_pkg_providers-0.0.1.tgz",
+        ],
     )
 
     http_archive(
