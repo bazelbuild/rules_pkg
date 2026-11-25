@@ -13,6 +13,7 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:rpm.bzl", "pkg_rpm")
 
