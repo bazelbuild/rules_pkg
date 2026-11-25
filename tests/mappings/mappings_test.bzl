@@ -1063,8 +1063,12 @@ def _test_provider_load_paths(name):
     """The old //pkg:providers.bzl re-exports the @rules_pkg_providers symbols."""
     _provider_load_paths_test(name = name)
 
-def mappings_analysis_tests():
-    """Declare mappings.bzl analysis tests"""
+def mappings_analysis_tests(name):
+    """Declare mappings.bzl analysis tests
+
+    Args:
+      name: everything has a name.
+    """
     _test_provider_load_paths(name = "provider_load_paths_test")
     _test_pkg_files_contents()
     _test_pkg_files_exclusions()
@@ -1080,7 +1084,7 @@ def mappings_analysis_tests():
     _test_pkg_files_tree_dest_merge()
 
     native.test_suite(
-        name = "pkg_files_analysis_tests",
+        name = name,
         # We should find a way to get rid of this test list; it would be nice if
         # it could be derived from something else...
         tests = [
@@ -1124,7 +1128,7 @@ def mappings_analysis_tests():
         ],
     )
 
-def mappings_unit_tests():
+def mappings_unit_tests(name):
     unittest.suite(
         "mappings_unit_tests",
         strip_prefix_test,
