@@ -16,6 +16,15 @@
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load(
+    "@rules_pkg_providers//:providers.bzl",
+    new_PackageArtifactInfo = "PackageArtifactInfo",
+    new_PackageDirsInfo = "PackageDirsInfo",
+    new_PackageFilegroupInfo = "PackageFilegroupInfo",
+    new_PackageFilesInfo = "PackageFilesInfo",
+    new_PackageSymlinkInfo = "PackageSymlinkInfo",
+    new_PackageVariablesInfo = "PackageVariablesInfo",
+)
 load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//pkg:mappings.bzl",
@@ -29,10 +38,12 @@ load(
 )
 load(
     "//pkg:providers.bzl",
+    "PackageArtifactInfo",
     "PackageDirsInfo",
     "PackageFilegroupInfo",
     "PackageFilesInfo",
     "PackageSymlinkInfo",
+    "PackageVariablesInfo",
 )
 load("//tests:my_package_name.bzl", "my_package_naming")
 load(
@@ -1031,8 +1042,28 @@ def _test_pkg_files_tree_dest_merge():
     )
 
 # buildifier: disable=unnamed-macro
+def _provider_load_paths_impl(ctx):
+    env = unittest.begin(ctx)
+    for old, new in [
+        (PackageArtifactInfo, new_PackageArtifactInfo),
+        (PackageDirsInfo, new_PackageDirsInfo),
+        (PackageFilegroupInfo, new_PackageFilegroupInfo),
+        (PackageFilesInfo, new_PackageFilesInfo),
+        (PackageSymlinkInfo, new_PackageSymlinkInfo),
+        (PackageVariablesInfo, new_PackageVariablesInfo),
+    ]:
+        asserts.true(env, old == new, "%s differs between load paths" % old)
+    return unittest.end(env)
+
+_provider_load_paths_test = unittest.make(_provider_load_paths_impl)
+
+def _test_provider_load_paths(name):
+    """The old //pkg:providers.bzl re-exports the @rules_pkg_providers symbols."""
+    _provider_load_paths_test(name = name)
+
 def mappings_analysis_tests():
     """Declare mappings.bzl analysis tests"""
+    _test_provider_load_paths(name = "provider_load_paths_test")
     _test_pkg_files_contents()
     _test_pkg_files_exclusions()
     _test_pkg_files_rename()
