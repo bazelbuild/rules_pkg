@@ -21,6 +21,7 @@ def http_archive(**kwargs):
     maybe(_http_archive, **kwargs)
 
 def rules_pkg_dependencies():
+    """Bring in the dependencies for this module while in legacy WORKSPACE mode."""
     http_archive(
         name = "bazel_skylib",
         sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
