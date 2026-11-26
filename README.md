@@ -65,6 +65,11 @@ find_rpm = use_extension("//toolchains/rpm:rpmbuild_configure.bzl", "find_system
 use_repo(find_rpm, "rules_pkg_rpmbuild")
 register_toolchains("@rules_pkg_rpmbuild//:all")
 ```
+To make `pkg_tar()` write archives with a prebuilt `bsdtar` instead of
+Python's `tarfile`, register these toolchains.
+```starlark
+register_toolchains("@rules_pkg//toolchains/bsdtar/prebuilt:all")
+```
 
 ### For developers
 

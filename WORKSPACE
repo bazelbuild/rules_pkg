@@ -50,6 +50,18 @@ find_system_rpmbuild(
     verbose = False,
 )
 
+# Prebuilt bsdtar binaries of //toolchains/bsdtar/prebuilt, left unregistered to test Python tarfile.
+http_archive(
+    name = "tar.bzl",
+    integrity = "sha256-ijt4EgUQli/HS1d6qvUkElN8+8JciKWWo3W9QJ5muYo=",
+    strip_prefix = "tar.bzl-0.10.9",
+    urls = ["https://github.com/bazel-contrib/tar.bzl/releases/download/v0.10.9/tar.bzl-v0.10.9.tar.gz"],
+)
+
+load("@tar.bzl//tar:extensions.bzl", "create_repositories")
+
+create_repositories()
+
 # Needed for making our release notes
 load("@rules_pkg//toolchains/git:git_configure.bzl", "experimental_find_system_git")
 

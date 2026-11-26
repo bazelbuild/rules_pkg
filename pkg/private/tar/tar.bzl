@@ -38,6 +38,7 @@ SUPPORTED_TAR_COMPRESSIONS = (
     ["", "gz", "bz2", "xz"] if HAS_XZ_SUPPORT else ["", "gz", "bz2"]
 )
 _DEFAULT_MTIME = -1
+_BSDTAR_TOOLCHAIN_TYPE = Label("//toolchains/bsdtar:bsdtar_toolchain_type")
 
 def _remap(remap_paths, path):
     """If path starts with a key in remap_paths, rewrite it."""
@@ -191,20 +192,27 @@ def _pkg_tar_impl(ctx):
         transitive = mapping_context.file_deps_transitive,
     )
 
+    tools = [ctx.executable.compressor] if ctx.executable.compressor else []
+    env = {
+        "LANG": "en_US.UTF-8",
+        "LC_CTYPE": "UTF-8",
+        "PYTHONIOENCODING": "UTF-8",
+        "PYTHONUTF8": "1",
+    }
+    bsdtar = ctx.toolchains[_BSDTAR_TOOLCHAIN_TYPE]
+    if bsdtar:
+        args.add("--bsdtar", bsdtar.tarinfo.binary)
+        env.update(bsdtar.tarinfo.default_env)
+
     ctx.actions.run(
         mnemonic = "PackageTar",
         progress_message = "Writing: %s" % output_file.path,
         inputs = inputs,
-        tools = [ctx.executable.compressor] if ctx.executable.compressor else [],
+        tools = depset(tools, transitive = [bsdtar.default.files] if bsdtar else []),
         executable = ctx.executable._build_tar,
         arguments = [args],
         outputs = [output_file],
-        env = {
-            "LANG": "en_US.UTF-8",
-            "LC_CTYPE": "UTF-8",
-            "PYTHONIOENCODING": "UTF-8",
-            "PYTHONUTF8": "1",
-        },
+        env = env,
         use_default_shell_env = True,
     )
     return [
@@ -224,6 +232,7 @@ def _pkg_tar_impl(ctx):
 # A rule for creating a tar file, see README.md
 pkg_tar_impl = rule(
     implementation = _pkg_tar_impl,
+    toolchains = [config_common.toolchain_type(_BSDTAR_TOOLCHAIN_TYPE, mandatory = False)],
     attrs = {
         "strip_prefix": attr.string(
             doc = """(note: Use strip_prefix = "." to strip path to the package but preserve relative paths of sub directories beneath the package.)""",
