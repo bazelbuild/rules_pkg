@@ -54,7 +54,19 @@ class PkgRpmBasicTest(unittest.TestCase):
             "rules_pkg/tests/rpm/test_rpm_release_version_files-.noarch.rpm")
         self.test_rpm_epoch = self.runfiles.Rlocation(
             "rules_pkg/tests/rpm/test_rpm_epoch-1.1.1-2222.noarch.rpm")
+        self.test_rpm_renamed = self.runfiles.Rlocation(
+            "rules_pkg/tests/rpm/test_rpm_renamed-1.1.1-2222.noarch.rpm")
         self.maxDiff = None
+
+    def test_renamed_file_next_to_same_name_files(self):
+        files = rpm_util.read_rpm_filedata(self.test_rpm_renamed)
+        self.assertEqual(
+            sorted(files),
+            ["/renamed/a.ar", "/renamed/b.ar", "/renamed/b_renamed.ar"])
+        self.assertEqual(files["/renamed/b_renamed.ar"]["digest"],
+                         files["/renamed/b.ar"]["digest"])
+        self.assertNotEqual(files["/renamed/b_renamed.ar"]["digest"],
+                            files["/renamed/a.ar"]["digest"])
 
     def test_scriptlet_content(self):
         expected = b"""\

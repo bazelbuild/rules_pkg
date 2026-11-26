@@ -63,15 +63,9 @@ PackageSubRPMInfo = provider(
 # default mode for %files
 DEFAULT_FILE_MODE = "%defattr(-,root,root)"
 
-# TODO(nacl): __install, __cp
-# {0} is the source, {1} is the dest
-#
-# TODO(nacl, #292): cp -r does not do the right thing with TreeArtifacts
-_INSTALL_FILE_STANZA_FMT = """
-install -d "%{{buildroot}}/$(dirname '{1}')"
-cp '%{{_topdir}}/BUILD/{0}' '%{{buildroot}}/{1}'
-chmod +w '%{{buildroot}}/{1}'
-""".strip()
+# Upper bound on the paths passed to a single command of the %install script,
+# so that its command lines stay well below ARG_MAX on every host.
+_MAX_PATHS_PER_COMMAND = 100
 
 # TODO(nacl): __install
 # {0} is the directory name
@@ -187,6 +181,51 @@ def _make_rpm_filename(rpm_name, version, architecture, package_name = None, rel
 
     return fmt % tuple(items + [architecture])
 
+def _chunks(items):
+    return [
+        items[i:i + _MAX_PATHS_PER_COMMAND]
+        for i in range(0, len(items), _MAX_PATHS_PER_COMMAND)
+    ]
+
+def _install_files_script(installed_files):
+    """Renders the %install commands copying the regular files of the package.
+
+    Spawning a few processes per file is slow for large packages, so each
+    destination directory is created once, and files keeping their name are
+    copied to their destination directory together.
+
+    Args:
+      installed_files: list of (source path, absolute destination) tuples.
+
+    Returns:
+      The lines of the %install scriptlet.
+    """
+    dest_dirs = {}
+    same_name_srcs = {}
+    renamed = []
+    for src, dest in installed_files:
+        dest_dir = dest.rpartition("/")[0] or "/"
+        dest_dirs[dest_dir] = True
+        if src.rpartition("/")[2] == dest.rpartition("/")[2]:
+            same_name_srcs.setdefault(dest_dir, []).append(src)
+        else:
+            renamed.append((src, dest))
+
+    lines = []
+    for chunk in _chunks(dest_dirs.keys()):
+        lines.append("install -d " + " ".join(["'%{buildroot}/" + d + "'" for d in chunk]))
+    for dest_dir, srcs in same_name_srcs.items():
+        for chunk in _chunks(srcs):
+            lines.append("cp {} '%{{buildroot}}/{}/'".format(
+                " ".join(["'%{_topdir}/BUILD/" + s + "'" for s in chunk]),
+                dest_dir,
+            ))
+    for src, dest in renamed:
+        lines.append("cp '%{_topdir}/BUILD/" + src + "' '%{buildroot}/" + dest + "'")
+    for chunk in _chunks([dest for _, dest in installed_files]):
+        lines.append("chmod +w " + " ".join(["'%{buildroot}/" + d + "'" for d in chunk]))
+    return lines
+
 #### Input processing helper functions.
 
 # TODO(nacl, #459): These are redundant with functions and structures in
@@ -216,10 +255,7 @@ def _process_files(pfi, origin_label, grouping_label, file_base, rpm_ctx):
 
             # Files are well-known.  Take care of them right here.
             rpm_ctx.rpm_files_list.append(_FILE_MODE_STANZA_FMT.format(file_base, abs_dest))
-            rpm_ctx.install_script_pieces.append(_INSTALL_FILE_STANZA_FMT.format(
-                src.path,
-                abs_dest,
-            ))
+            rpm_ctx.installed_files.append((src.path, abs_dest))
 
 def _process_dirs(pdi, origin_label, grouping_label, file_base, rpm_ctx):
     for dest in pdi.dirs:
@@ -330,6 +366,7 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, effective_release = None):
     sub_rpm_ctx = struct(
         dest_check_map = {},
         install_script_pieces = [],
+        installed_files = [],
         packaged_directories = [],
         rpm_files_list = [],
     )
@@ -400,6 +437,7 @@ def _process_subrpm(ctx, rpm_name, rpm_info, rpm_ctx, effective_release = None):
         rpm_lines.append("")
 
     rpm_ctx.install_script_pieces.extend(sub_rpm_ctx.install_script_pieces)
+    rpm_ctx.installed_files.extend(sub_rpm_ctx.installed_files)
     rpm_ctx.packaged_directories.extend(sub_rpm_ctx.packaged_directories)
 
     package_file_name = _make_rpm_filename(
@@ -437,8 +475,12 @@ def _pkg_rpm_impl(ctx):
         # to err on the side of correctness here.
         dest_check_map = {},
 
-        # The contents of the "%install" scriptlet
+        # The contents of the "%install" scriptlet, besides regular files
         install_script_pieces = [],
+
+        # (source, destination) of the regular files to install, rendered into
+        # the "%install" scriptlet by _install_files_script()
+        installed_files = [],
 
         # The list of entries in the "%files" list
         rpm_files_list = [],
@@ -745,12 +787,6 @@ def _pkg_rpm_impl(ctx):
 
     # Iterate over all incoming data, checking for conflicts and creating
     # datasets as we go from the actual contents of the RPM.
-    #
-    # This is a naive approach to script creation is almost guaranteed to
-    # produce an installation script that is longer than necessary.  A better
-    # implementation would track directories that are created and ensure that
-    # they aren't unnecessarily recreated.
-
     for dep in ctx.attr.srcs:
         _process_dep(dep, rpm_ctx)
 
@@ -806,7 +842,7 @@ def _pkg_rpm_impl(ctx):
     install_script = ctx.actions.declare_file("{}.spec.install".format(rpm_name))
     ctx.actions.write(
         install_script,
-        "\n".join(rpm_ctx.install_script_pieces),
+        "\n".join(rpm_ctx.install_script_pieces + _install_files_script(rpm_ctx.installed_files)),
     )
 
     rpm_files_file = ctx.actions.declare_file(
